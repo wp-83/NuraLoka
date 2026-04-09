@@ -3,6 +3,8 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Inertia\Inertia;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,6 +15,17 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         //
     })
-    ->withExceptions(function (Exceptions $exceptions) {
-        //
+    ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (HttpExceptionInterface $e, $request) {
+
+            if ($request->expectsJson()) {
+                return;
+            }
+
+            return Inertia::render('Error', [
+                'status' => $e->getStatusCode(),
+            ])->toResponse($request)
+            ->setStatusCode($e->getStatusCode());
+
+        });
     })->create();
