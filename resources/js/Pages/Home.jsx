@@ -5,4 +5,5 @@ export default function Home({ title }){
             <p>Test commit and push</p>
         </>
     );
+    <h1>Halo NuraVerse!!</h1>
 }
