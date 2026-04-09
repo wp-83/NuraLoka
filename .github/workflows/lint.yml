@@ -13,9 +13,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v5
+        uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.5
+          php-version: 8.4
 
       - name: Validate composer files
         run: composer validate --no-check-publish
