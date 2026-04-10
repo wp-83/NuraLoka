@@ -23,4 +23,5 @@ export default function Home({ title }){
                             <div className=""><div className=""></div><p>ksandksndlksad</p></div>
         </>
     );
+    <h1>Halo NuraVerse!!</h1>
 }
