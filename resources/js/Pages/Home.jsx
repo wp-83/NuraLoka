@@ -15,7 +15,7 @@ export default function Home({ title }){
                                                         </div>
             <  li>1.3
                 gj
-                                        </li>
+                                            </li>
                                         hjjhjhj
                             <p>lklklk
                                 lklklk
