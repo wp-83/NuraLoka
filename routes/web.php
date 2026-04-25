@@ -1,7 +1,7 @@
 <?php
 
-use Inertia\Inertia;
 use App\Http\Controllers\MapController;
+use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
