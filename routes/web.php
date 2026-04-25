@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\MapController;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', function () {
     return inertia('Home', [
@@ -14,7 +14,7 @@ Route::get('/test-404', function () {
     abort(404);
 });
 
-Route::get("/lint", function () {
+Route::get('/lint', function () {
     return Inertia::render('Test');
 });
 
