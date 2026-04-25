@@ -4,7 +4,7 @@ export default function Home({ title }){
             <p>Hai, ini React!</p>
             <p>Test commit and push</p>
             <p>Aku Anesssssssssssssssss!</p>
-            <p>Hai JE</p><div>    
+            <p>Hai JE</p><div>
 
 
 
@@ -15,7 +15,7 @@ export default function Home({ title }){
                                                         </div>
             <  li>1.3
                 gj
-                                        </li> 
+                                        </li>
                                         hjjhjhj
                             <p>lklklk
                                 lklklk
