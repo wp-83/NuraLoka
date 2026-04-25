@@ -16,11 +16,11 @@ return new class extends Migration
             $table->integer('user_id');
             $table->string('title');
             $table->string('origin_name');
-            $table->decimal('origin_latitude',10,8);
-            $table->decimal('origin_longitude', 11,8);
+            $table->decimal('origin_latitude', 10, 8);
+            $table->decimal('origin_longitude', 11, 8);
             $table->string('destination_name');
-            $table->decimal('destination_latitude',10,8);
-            $table->decimal('destination_longitude', 11,8);
+            $table->decimal('destination_latitude', 10, 8);
+            $table->decimal('destination_longitude', 11, 8);
             $table->date('trip_date');
             $table->boolean('is_public');
             $table->timestamps();
