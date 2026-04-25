@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\MapController;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', function () {
     return inertia('Home', [
