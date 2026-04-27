@@ -28,9 +28,9 @@ class RegisterTest extends TestCase
     public function test_user_can_submit_register_step1_with_valid_data(): void
     {
         $response = $this->post('/register', [
-            'username'              => 'johndoe',
-            'email'                 => 'john@example.com',
-            'password'              => 'password123',
+            'username' => 'johndoe',
+            'email' => 'john@example.com',
+            'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
 
@@ -42,9 +42,9 @@ class RegisterTest extends TestCase
     public function test_register_step1_requires_username(): void
     {
         $response = $this->post('/register', [
-            'username'              => '',
-            'email'                 => 'john@example.com',
-            'password'              => 'password123',
+            'username' => '',
+            'email' => 'john@example.com',
+            'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
 
@@ -57,9 +57,9 @@ class RegisterTest extends TestCase
         User::factory()->create(['username' => 'johndoe']);
 
         $response = $this->post('/register', [
-            'username'              => 'johndoe',
-            'email'                 => 'baru@example.com',
-            'password'              => 'password123',
+            'username' => 'johndoe',
+            'email' => 'baru@example.com',
+            'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
 
@@ -70,9 +70,9 @@ class RegisterTest extends TestCase
     public function test_register_step1_requires_email(): void
     {
         $response = $this->post('/register', [
-            'username'              => 'johndoe',
-            'email'                 => '',
-            'password'              => 'password123',
+            'username' => 'johndoe',
+            'email' => '',
+            'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
 
@@ -83,9 +83,9 @@ class RegisterTest extends TestCase
     public function test_register_step1_requires_valid_email(): void
     {
         $response = $this->post('/register', [
-            'username'              => 'johndoe',
-            'email'                 => 'bukan-email',
-            'password'              => 'password123',
+            'username' => 'johndoe',
+            'email' => 'bukan-email',
+            'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
 
@@ -98,9 +98,9 @@ class RegisterTest extends TestCase
         User::factory()->create(['email' => 'john@example.com']);
 
         $response = $this->post('/register', [
-            'username'              => 'johndoe2',
-            'email'                 => 'john@example.com',
-            'password'              => 'password123',
+            'username' => 'johndoe2',
+            'email' => 'john@example.com',
+            'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
 
@@ -111,9 +111,9 @@ class RegisterTest extends TestCase
     public function test_register_step1_requires_password(): void
     {
         $response = $this->post('/register', [
-            'username'              => 'johndoe',
-            'email'                 => 'john@example.com',
-            'password'              => '',
+            'username' => 'johndoe',
+            'email' => 'john@example.com',
+            'password' => '',
             'password_confirmation' => '',
         ]);
 
@@ -124,9 +124,9 @@ class RegisterTest extends TestCase
     public function test_register_step1_fails_if_password_too_short(): void
     {
         $response = $this->post('/register', [
-            'username'              => 'johndoe',
-            'email'                 => 'john@example.com',
-            'password'              => '123',
+            'username' => 'johndoe',
+            'email' => 'john@example.com',
+            'password' => '123',
             'password_confirmation' => '123',
         ]);
 
@@ -137,9 +137,9 @@ class RegisterTest extends TestCase
     public function test_register_step1_fails_if_password_confirmation_mismatch(): void
     {
         $response = $this->post('/register', [
-            'username'              => 'johndoe',
-            'email'                 => 'john@example.com',
-            'password'              => 'password123',
+            'username' => 'johndoe',
+            'email' => 'john@example.com',
+            'password' => 'password123',
             'password_confirmation' => 'passwordbeda',
         ]);
 
@@ -155,11 +155,11 @@ class RegisterTest extends TestCase
     public function test_user_can_submit_register_step2_with_valid_data(): void
     {
         $response = $this->post('/register/info', [ // sesuaikan route
-            'nama_lengkap'   => 'John Doe',
-            'tanggal_lahir'  => '2000-01-15',
-            'jenis_kelamin'  => 'Laki-laki',
-            'provinsi'       => 'Jawa Barat',
-            'agreement'      => true,
+            'nama_lengkap' => 'John Doe',
+            'tanggal_lahir' => '2000-01-15',
+            'jenis_kelamin' => 'Laki-laki',
+            'provinsi' => 'Jawa Barat',
+            'agreement' => true,
         ]);
 
         $response->assertRedirect('/dashboard'); // sesuaikan
@@ -170,11 +170,11 @@ class RegisterTest extends TestCase
     public function test_register_step2_requires_nama_lengkap(): void
     {
         $response = $this->post('/register/info', [
-            'nama_lengkap'   => '',
-            'tanggal_lahir'  => '2000-01-15',
-            'jenis_kelamin'  => 'Laki-laki',
-            'provinsi'       => 'Jawa Barat',
-            'agreement'      => true,
+            'nama_lengkap' => '',
+            'tanggal_lahir' => '2000-01-15',
+            'jenis_kelamin' => 'Laki-laki',
+            'provinsi' => 'Jawa Barat',
+            'agreement' => true,
         ]);
 
         $response->assertSessionHasErrors(['nama_lengkap']);
@@ -184,11 +184,11 @@ class RegisterTest extends TestCase
     public function test_register_step2_requires_tanggal_lahir(): void
     {
         $response = $this->post('/register/info', [
-            'nama_lengkap'   => 'John Doe',
-            'tanggal_lahir'  => '',
-            'jenis_kelamin'  => 'Laki-laki',
-            'provinsi'       => 'Jawa Barat',
-            'agreement'      => true,
+            'nama_lengkap' => 'John Doe',
+            'tanggal_lahir' => '',
+            'jenis_kelamin' => 'Laki-laki',
+            'provinsi' => 'Jawa Barat',
+            'agreement' => true,
         ]);
 
         $response->assertSessionHasErrors(['tanggal_lahir']);
@@ -198,11 +198,11 @@ class RegisterTest extends TestCase
     public function test_register_step2_requires_valid_tanggal_lahir(): void
     {
         $response = $this->post('/register/info', [
-            'nama_lengkap'   => 'John Doe',
-            'tanggal_lahir'  => 'bukan-tanggal',
-            'jenis_kelamin'  => 'Laki-laki',
-            'provinsi'       => 'Jawa Barat',
-            'agreement'      => true,
+            'nama_lengkap' => 'John Doe',
+            'tanggal_lahir' => 'bukan-tanggal',
+            'jenis_kelamin' => 'Laki-laki',
+            'provinsi' => 'Jawa Barat',
+            'agreement' => true,
         ]);
 
         $response->assertSessionHasErrors(['tanggal_lahir']);
@@ -212,11 +212,11 @@ class RegisterTest extends TestCase
     public function test_register_step2_requires_jenis_kelamin(): void
     {
         $response = $this->post('/register/info', [
-            'nama_lengkap'   => 'John Doe',
-            'tanggal_lahir'  => '2000-01-15',
-            'jenis_kelamin'  => '',
-            'provinsi'       => 'Jawa Barat',
-            'agreement'      => true,
+            'nama_lengkap' => 'John Doe',
+            'tanggal_lahir' => '2000-01-15',
+            'jenis_kelamin' => '',
+            'provinsi' => 'Jawa Barat',
+            'agreement' => true,
         ]);
 
         $response->assertSessionHasErrors(['jenis_kelamin']);
@@ -226,11 +226,11 @@ class RegisterTest extends TestCase
     public function test_register_step2_requires_provinsi(): void
     {
         $response = $this->post('/register/info', [
-            'nama_lengkap'   => 'John Doe',
-            'tanggal_lahir'  => '2000-01-15',
-            'jenis_kelamin'  => 'Laki-laki',
-            'provinsi'       => '',
-            'agreement'      => true,
+            'nama_lengkap' => 'John Doe',
+            'tanggal_lahir' => '2000-01-15',
+            'jenis_kelamin' => 'Laki-laki',
+            'provinsi' => '',
+            'agreement' => true,
         ]);
 
         $response->assertSessionHasErrors(['provinsi']);
@@ -240,11 +240,11 @@ class RegisterTest extends TestCase
     public function test_register_step2_requires_agreement(): void
     {
         $response = $this->post('/register/info', [
-            'nama_lengkap'   => 'John Doe',
-            'tanggal_lahir'  => '2000-01-15',
-            'jenis_kelamin'  => 'Laki-laki',
-            'provinsi'       => 'Jawa Barat',
-            'agreement'      => false,
+            'nama_lengkap' => 'John Doe',
+            'tanggal_lahir' => '2000-01-15',
+            'jenis_kelamin' => 'Laki-laki',
+            'provinsi' => 'Jawa Barat',
+            'agreement' => false,
         ]);
 
         $response->assertSessionHasErrors(['agreement']);
@@ -258,9 +258,9 @@ class RegisterTest extends TestCase
     public function test_password_is_hashed_after_register(): void
     {
         $this->post('/register', [
-            'username'              => 'johndoe',
-            'email'                 => 'john@example.com',
-            'password'              => 'password123',
+            'username' => 'johndoe',
+            'email' => 'john@example.com',
+            'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
 

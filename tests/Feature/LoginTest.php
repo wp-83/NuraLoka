@@ -19,12 +19,12 @@ class LoginTest extends TestCase
     public function test_user_can_login_with_email(): void
     {
         $user = User::factory()->create([
-            'email'    => 'user@example.com',
+            'email' => 'user@example.com',
             'password' => bcrypt('password123'),
         ]);
 
         $response = $this->post('/login', [
-            'login'    => 'user@example.com',
+            'login' => 'user@example.com',
             'password' => 'password123',
         ]);
 
@@ -40,7 +40,7 @@ class LoginTest extends TestCase
         ]);
 
         $response = $this->post('/login', [
-            'login'    => 'johndoe',
+            'login' => 'johndoe',
             'password' => 'password123',
         ]);
 
@@ -51,14 +51,14 @@ class LoginTest extends TestCase
     public function test_user_can_login_with_remember_me(): void
     {
         $user = User::factory()->create([
-            'email'    => 'user@example.com',
+            'email' => 'user@example.com',
             'password' => bcrypt('password123'),
         ]);
 
         $response = $this->post('/login', [
-            'login'     => 'user@example.com',
-            'password'  => 'password123',
-            'remember'  => true,
+            'login' => 'user@example.com',
+            'password' => 'password123',
+            'remember' => true,
         ]);
 
         $response->assertRedirect('/dashboard');
@@ -68,12 +68,12 @@ class LoginTest extends TestCase
     public function test_user_cannot_login_with_wrong_password(): void
     {
         User::factory()->create([
-            'email'    => 'user@example.com',
+            'email' => 'user@example.com',
             'password' => bcrypt('password123'),
         ]);
 
         $response = $this->post('/login', [
-            'login'    => 'user@example.com',
+            'login' => 'user@example.com',
             'password' => 'passwordsalah',
         ]);
 
@@ -84,7 +84,7 @@ class LoginTest extends TestCase
     public function test_user_cannot_login_with_unregistered_credential(): void
     {
         $response = $this->post('/login', [
-            'login'    => 'tidakada@example.com',
+            'login' => 'tidakada@example.com',
             'password' => 'password123',
         ]);
 
@@ -95,7 +95,7 @@ class LoginTest extends TestCase
     public function test_login_requires_login_field(): void
     {
         $response = $this->post('/login', [
-            'login'    => '',
+            'login' => '',
             'password' => 'password123',
         ]);
 
@@ -106,7 +106,7 @@ class LoginTest extends TestCase
     public function test_login_requires_password(): void
     {
         $response = $this->post('/login', [
-            'login'    => 'user@example.com',
+            'login' => 'user@example.com',
             'password' => '',
         ]);
 
