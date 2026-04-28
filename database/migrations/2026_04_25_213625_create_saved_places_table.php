@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('saved_places', function (Blueprint $table) {
             $table->id();
+            $table->integer('user_id');
+            $table->integer('place_id');
             $table->timestamps();
         });
     }

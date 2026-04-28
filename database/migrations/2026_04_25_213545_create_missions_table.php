@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('missions', function (Blueprint $table) {
             $table->id();
+            $table->integer('badge_id');
+            $table->string('title');
+            $table->string('description');
+            $table->integer('points_reward');
             $table->timestamps();
         });
     }
