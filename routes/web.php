@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\GoogleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -15,4 +16,12 @@ Route::get('/test-404', function () {
 
 Route::get('/lint', function () {
     return Inertia::render('Test');
+});
+
+/**
+ * Google Authentication Routes
+ */
+Route::prefix('auth')->group(function () {
+    Route::get('/google', [GoogleController::class, 'redirect'])->name('google.login');
+    Route::get('/google/callback', [GoogleController::class, 'callback']);
 });
