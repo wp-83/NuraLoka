@@ -1,0 +1,283 @@
+/* Font Family */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* PRIMARY */
+    --primary-100: #5A3812; /* main color */
+    --primary-85:  #724233;
+    --primary-70:  #8A6654;
+    --primary-50:  #AB907F;
+    --primary-30:  #D5B9AA;
+    --primary-10:  #F3EDE9;
+
+    /* SECONDARY */
+    --secondary-100: #1B5E20; /* strong green */
+    --secondary-85:  #3E7A42;
+    --secondary-70:  #629764;
+    --secondary-50:  #8DBE90;
+    --secondary-30:  #A8D0BC;
+    --secondary-10:  #E8F6E9;
+
+    /* ACCENT */
+    --accent-100: #239A90; /* highlight color */
+    --accent-85:  #3FAB9F;
+    --accent-70:  #58BCAF;
+    --accent-50:  #8FD3CB;
+    --accent-30:  #C3E9E7;
+    --accent-10:  #E9F7F6;
+
+    /* GRAYS */
+    --gray-100: #000000; /* pure black */
+    --gray-85:  #262626;
+    --gray-70:  #4D4D4D;
+    --gray-50:  #808080;
+    --gray-30:  #B3B3B3;
+    --gray-10:  #E6E6E6;
+
+    /* SYSTEM COLORS */
+    /* success */
+    --success-dark:   #008D0D;
+    --success-medium: #3EC147;
+    --success-light:  #CCFDD1;
+
+    /* warning */
+    --warning-dark:   #BEB100;
+    --warning-medium: #E8DD3B;
+    --warning-light:  #FFF88F;
+
+    /* error */
+    --error-dark:   #C3080B;
+    --error-medium: #FB5050;
+    --error-light:  #FFCCCC;
+
+    /* info */
+    --info-dark:   #004EA7;
+    --info-medium: #1B86FF;
+    --info-light:  #C4E0FF;
+
+    /* BW */
+    --white: #FFFFFF; /* background base */
+    --black: #000000;
+
+    /* Font Family */
+    --font-heading: "Poppins";
+    --font-body: "Carlito";
+
+    /* TYPOGRAPHY SCALE */
+    --text-hero: 3rem;
+    --text-title: 2rem;
+    --text-subtitle: 1.5rem;
+    --text-paragraph: 1.125rem;
+    --text-body: 1rem;
+    --text-small: 0.875rem;
+    --text-micro: 0.75rem;
+
+    /* BUTTON TYPOGRAPHY SCALE */
+    --btn-lg: 1.25rem;
+    --btn-md: 1rem;
+    --btn-sm: 0.875rem;
+}
+
+/* Normal Text */
+.hero {
+    font-family: var(--font-heading);
+    font-size: var(--text-hero);
+    line-height: 1.2;
+}
+
+.title {
+    font-family: var(--font-heading);
+    font-size: var(--text-title);
+    line-height: 1.3;
+}
+
+.subtitle {
+    font-family: var(--font-body);
+    font-size: var(--text-subtitle);
+    line-height: 1.4;
+}
+
+.paragraph {
+    font-family: var(--font-body);
+    font-size: var(--text-paragraph);
+    line-height: 1.5;
+}
+
+.body-text {
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: 1.5;
+}
+
+.small-text {
+    font-family: var(--font-body);
+    font-size: var(--text-small);
+    line-height: 1.5;
+}
+
+.micro-text {
+    font-family: var(--font-body);
+    font-size: var(--text-micro);
+    line-height: 1.4;
+}
+
+/* BUTTON */
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    padding-inline: 1rem;
+    padding-block: .6rem;
+    border-radius: .5rem;
+    color: white;
+    font-family: var(--font-body);
+    line-height: 1.2;
+    transition: transform .25s ease;
+    font-size: var(--btn-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .25rem;
+}
+
+button:hover:not(.btn-inactive) {
+    transform: translateY(3px);
+    opacity: .7;
+}
+
+.btn-lg {
+    font-size: var(--btn-lg);
+    line-height: 1.2;
+}
+
+.btn-md {
+    font-size: var(--btn-md);
+    line-height: 1.27;
+}
+
+.btn-sm {
+    font-size: var(--btn-sm);
+    line-height: 1.22;
+}
+
+.btn-primary {
+    background-color: var(--primary-100);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-100);
+}
+
+.btn-error {
+    background-color: var(--error-dark);
+}
+
+.btn-warning {
+    background-color: var(--warning-dark);
+}
+
+.btn-success {
+    background-color: var(--success-dark);
+}
+
+.btn-info {
+    background-color: var(--info-dark);
+}
+
+.btn-gray {
+    background-color: var(--gray-30);
+}
+
+.btn-inactive {
+    background-color: var(--gray-50);
+}
+
+/* BASIC STYLE GUIDES */
+.container {
+    width: min(100%, 1440px);
+    padding-inline: 2rem;
+    margin-inline: auto;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    color: var(--black);
+    background-color: var(--primary-10);
+}
+
+a {
+    color: var(--accent-100);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--accent-70);
+}
+
+/* HEADING TAGS */
+h1 {
+    font-family: var(--font-heading);
+    font-size: var(--text-hero);
+    line-height: 1.2;
+}
+
+h2 {
+    font-family: var(--font-heading);
+    font-size: var(--text-title);
+    line-height: 1.3;
+}
+
+h3 {
+    font-family: var(--font-heading);
+    font-size: var(--text-subtitle);
+    line-height: 1.4;
+}
+
+p {
+    font-family: var(--font-body);
+    font-size: var(--text-paragraph);
+    line-height: 1.5;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.italic {
+    font-style: italic;
+}
+
+.underline {
+    text-decoration: underline;
+}
+
+@media screen and (max-width: 768px) {
+    html {
+        font-size: 15px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    html {
+        font-size: 14px;
+    }
+}
