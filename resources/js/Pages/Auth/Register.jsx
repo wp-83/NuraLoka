@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import '../../../js/Pages/Auth/Register.css';
+import '@css/Auth/Register.css';
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -20,7 +20,7 @@ export default function Register() {
     return (
         <section className="auth-container">
             <Head title="Daftar Akun" />
-            
+
             {/* Left Side: Form Section */}
             <section className="auth-form-section">
                 {/* Top Left Circle Decoration */}
@@ -44,12 +44,12 @@ export default function Register() {
                             <label htmlFor="username">Username</label>
                             <div className="input-wrapper">
                                 <i className="icon-user"></i>
-                                <input 
+                                <input
                                     id="username"
-                                    type="text" 
+                                    type="text"
                                     name="username"
                                     value={data.username}
-                                    placeholder="cth: kocakbanget123" 
+                                    placeholder="cth: kocakbanget123"
                                     onChange={(e) => setData('username', e.target.value)}
                                     required
                                 />
@@ -61,12 +61,12 @@ export default function Register() {
                             <label htmlFor="email">Email</label>
                             <div className="input-wrapper">
                                 <i className="icon-email"></i>
-                                <input 
+                                <input
                                     id="email"
-                                    type="email" 
+                                    type="email"
                                     name="email"
                                     value={data.email}
-                                    placeholder="email.kamu@gmail.com" 
+                                    placeholder="email.kamu@gmail.com"
                                     onChange={(e) => setData('email', e.target.value)}
                                     required
                                 />
@@ -78,12 +78,12 @@ export default function Register() {
                             <label htmlFor="password">Kata Sandi</label>
                             <div className="input-wrapper">
                                 <i className="icon-lock"></i>
-                                <input 
+                                <input
                                     id="password"
-                                    type="password" 
+                                    type="password"
                                     name="password"
                                     value={data.password}
-                                    placeholder="Kata sandi kamu" 
+                                    placeholder="Kata sandi kamu"
                                     onChange={(e) => setData('password', e.target.value)}
                                     required
                                 />
@@ -96,12 +96,12 @@ export default function Register() {
                             <label htmlFor="password_confirmation">Konfirmasi Kata Sandi</label>
                             <div className="input-wrapper">
                                 <i className="icon-lock"></i>
-                                <input 
+                                <input
                                     id="password_confirmation"
-                                    type="password" 
+                                    type="password"
                                     name="password_confirmation"
                                     value={data.password_confirmation}
-                                    placeholder="Konfirmasi kata sandi kamu" 
+                                    placeholder="Konfirmasi kata sandi kamu"
                                     onChange={(e) => setData('password_confirmation', e.target.value)}
                                     required
                                 />
@@ -113,7 +113,7 @@ export default function Register() {
                         <button type="submit" className="btn-submit" disabled={processing}>
                             {processing ? 'Mendaftarkan...' : 'Daftar Akun'}
                         </button>
-                        
+
                         <button type="button" className="btn-google">
                             {/* <img src="/images/icons/google.png" alt="" /> */} Daftar dengan Google
                         </button>
