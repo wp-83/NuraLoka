@@ -3,7 +3,7 @@ export default function Home({ title }){
         <>
             <p>Hai, ini React!</p>
             <p>Test commit and push</p>
-            <p>Aku Anessss</p>
+            <p>Aku Andi</p>
             <div className=""><div className=""></div><p>ksandksndlksad</p></div>
 
              {/* Di dalam komponen React kamu */}
