@@ -22,7 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return;
             }
 
-            return Inertia::render('Error', [
+            return Inertia::render('Error/Index', [
                 'status' => $e->getStatusCode(),
             ])->toResponse($request)
                 ->setStatusCode($e->getStatusCode());
