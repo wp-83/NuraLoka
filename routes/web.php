@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\MapController;
+use App\Http\Controllers\Auth\GoogleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -19,12 +19,9 @@ Route::get('/lint', function () {
 });
 
 /**
- * Test map hiraukan saja
+ * Google Authentication Routes
  */
-Route::get('/map-test', function () {
-    return Inertia::render('Map/SimpleMap1');
+Route::prefix('auth')->group(function () {
+    Route::get('/google', [GoogleController::class, 'redirect'])->name('google.login');
+    Route::get('/google/callback', [GoogleController::class, 'callback']);
 });
-
-Route::get('/map', [MapController::class, 'index']);
-
-Route::post('/filter-pois', [MapController::class, 'filterByPath'])->name('pois.filter');
