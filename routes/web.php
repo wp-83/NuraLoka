@@ -1,9 +1,8 @@
 <?php
 
+use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
-use App\Http\Controllers\Auth\RegisteredUserController;
 
 Route::get('/', function () {
     return inertia('Home', [
