@@ -57,5 +57,5 @@ class User extends Authenticatable
         return $this->belongsToMany(Place::class)
             ->withPivot('id')
             ->withTimestamps();
-    } 
+    }
 }
