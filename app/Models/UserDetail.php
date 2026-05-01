@@ -11,4 +11,9 @@ class UserDetail extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function province()
+    {
+        return $this->belongsTo(Province::class);
+    }
 }
