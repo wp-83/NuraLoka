@@ -65,4 +65,9 @@ class User extends Authenticatable
             ->withPivot('id')
             ->withTimestamps();
     }
+
+    public function userDetails()
+    {
+        return $this->hasOne(UserDetail::class);
+    }
 }
