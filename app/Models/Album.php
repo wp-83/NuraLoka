@@ -6,5 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Album extends Model
 {
-    //
+    // Relationships
+    public function tripPhotos()
+    {
+        return $this->hasMany(TripPhoto::class);
+    }
 }
