@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class UserBadge extends Model
+class UserBadge extends Pivot
 {
     protected $table = 'user_badges';
 }
