@@ -77,4 +77,11 @@ class User extends Authenticatable
             ->withPivot('id')
             ->withTimestamps();
     }
+
+    public function trips()
+    {
+        return $this->belongsToMany(Trip::class)
+            ->withPivot('id')
+            ->withTimestamps();
+    }
 }
