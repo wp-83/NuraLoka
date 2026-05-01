@@ -13,4 +13,9 @@ class Trip extends Model
             ->withPivot('id')
             ->withTimestamps();
     }
+
+    public function album()
+    {
+        return $this->hasOne(Album::class);
+    }
 }
