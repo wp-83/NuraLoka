@@ -13,4 +13,9 @@ class Badge extends Model
             ->withPivot('id')
             ->withTimestamps();
     }
+
+    public function missions()
+    {
+        return $this->hasMany(Mission::class);
+    }
 }

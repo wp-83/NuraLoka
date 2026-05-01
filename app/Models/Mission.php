@@ -13,4 +13,9 @@ class Mission extends Model
             ->withPivot('id')
             ->withTimestamps();
     }
+
+    public function badge()
+    {
+        return $this->belongsTo(Badge::class);
+    }
 }
