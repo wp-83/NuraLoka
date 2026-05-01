@@ -13,4 +13,11 @@ class Place extends Model
             ->withPivot('id')
             ->withTimestamps();
     }
+
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class)
+            ->withPivot('id')
+            ->withTimestamps();
+    }
 }
