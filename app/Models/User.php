@@ -50,4 +50,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // Relationships
+    public function places()
+    {
+        return $this->belongsToMany(Place::class)
+            ->withPivot('id')
+            ->withTimestamps();
+    } 
 }

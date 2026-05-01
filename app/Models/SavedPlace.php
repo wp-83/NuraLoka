@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class SavedPlace extends Model
+class SavedPlace extends Pivot
 {
-    //
+    protected $table = 'saved_places';
 }
