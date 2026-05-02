@@ -15,9 +15,10 @@ class LoginController extends Controller
         return inertia('Auth/Login');
     }
 
-    public function login(Request $request):RedirectResponse { 
+    public function login(Request $request): RedirectResponse
+    {
         $request->validate([
-            'login'    => 'required|string',
+            'login' => 'required|string',
             'password' => 'required|string',
         ]);
 
@@ -25,8 +26,8 @@ class LoginController extends Controller
         $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
         $credentials = [
-            $loginField  => $request->login,
-            'password'   => $request->password,
+            $loginField => $request->login,
+            'password' => $request->password,
         ];
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
@@ -51,6 +52,6 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect(route('login'));
-    
+
     }
 }
