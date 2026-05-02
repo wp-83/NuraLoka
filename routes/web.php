@@ -1,38 +1,33 @@
 <?php
 
+use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\Auth\RegisteredController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return inertia('Home');
+    return redirect('auth/login');
 });
 
-// Route::get('/', function () {
-//     return inertia('Home', [
-//         'title' => 'Hello Inertia React',
-//     ]);
-// })->name('home');
+Route::prefix('/auth')->name('auth.')->middleware('guest')->group(function() {
+    // login
+    Route::controller(LoginController::class)->prefix('/login')->name('login.')->group(function() {
+        Route::get('/', 'show')->name('index');
+        Route::post('/', 'login')->name('authenticate');
+    });
 
-// Route::middleware('guest')->group(function () {
-//     Route::get('register', [RegisteredUserController::class, 'create'])
-//         ->name('register');
+    // register
+    Route::controller(RegisterController::class)->prefix('/register')->name('register.')->group(function () {
+        Route::get('/', 'register')->name('index');
+        Route::post('register', 'store');
+    });
 
-//     Route::post('register', [RegisteredUserController::class, 'store']);
-// });
-
-// Route::get('/test-404', function () {
-//     abort(404);
-// });
-
-// Route::get('/lint', function () {
-//     return Inertia::render('Test');
-// });
-
-// /**
-//  * Google Authentication Routes
-//  */
-// Route::prefix('auth')->group(function () {
-//     Route::get('/google', [GoogleController::class, 'redirect'])->name('google.login');
-//     Route::get('/google/callback', [GoogleController::class, 'callback']);
-// });
+    // google auth
+    Route::controller(GoogleController::class)->prefix('google')->name('google.')->group(function () {
+        Route::get('/', 'redirect')->name('google.login');
+        Route::get('/callback', 'callback');
+    });
+});
