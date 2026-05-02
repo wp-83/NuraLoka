@@ -1,0 +1,230 @@
+.login-section {
+    max-width: 100%;
+    display: flex;
+    overflow: hidden;
+}
+
+.login-section .left-section, .login-section .right-section {
+    width: 50%;
+    position: relative;
+    height: 100vh;
+}
+
+.login-section .left-section {
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+.login-section .right-section {
+    padding-block: 2.75rem;
+    padding-inline: 4rem;
+    color: var(--primary-85);
+    overflow: hidden;
+}
+
+.login-container {
+    height: 100vh;
+    overflow-y: auto;
+    padding-bottom: 7rem;
+    position: relative;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.login-container::-webkit-scrollbar {
+    display: none;
+}
+
+.left-section.fade {
+    opacity: 1;
+}
+
+.left-section .login-bg {
+    height: 100vh;
+    opacity: .85;
+}
+
+.left-section .bg-desc {
+    position: absolute;
+    inset: 0;
+    margin: 1.5rem 0 0 1.5rem;
+    height: max-content;
+    width: 68%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.bg-desc .bg-main-content h2 {
+    color: var(--white);
+    filter: drop-shadow(2px 2px 4px black);
+}
+
+.bg-desc .bg-main-content p {
+    color: var(--accent-10);
+}
+
+.bg-desc .bg-additional-content {
+    filter: drop-shadow(2px 2px 4px white);
+}
+
+.white {
+    color: white;
+}
+
+.right-section .top-right-decoration {
+    position: absolute;
+    width: 24rem;
+    height: 24rem;
+    right: -8rem;
+    top: -16rem;
+    zoom: .8;
+}
+
+.right-section .bottom-left-decoration {
+    position: absolute;
+    width: 16rem;
+    height: 16rem;
+    bottom: 0;
+    left: 0;
+    transform: translate(-50%, 50%);
+    zoom: .8;
+}
+
+.decoration-wrapper {
+    position: relative;
+}
+
+.top-right-decoration .circle:first-child {
+    width: 24rem;
+    height: 24rem;
+    clip-path: circle();
+    background-color: var(--primary-100);
+}
+
+.top-right-decoration .circle:nth-child(2) {
+    width: 8rem;
+    height: 8rem;
+    background-color: var(--primary-30);
+    clip-path: circle();
+    bottom: -3rem;
+    right: 4.5rem;
+    position: absolute;
+    z-index: 10;
+}
+
+.top-right-decoration .circle:last-child {
+    width: 4.5rem;
+    height: 4.5rem;
+    background-color: var(--primary-70);
+    clip-path: circle();
+    position: absolute;
+    z-index: 15;
+    bottom: 0;
+    transform: translateY(60%);
+    left: 9rem;
+}
+
+.bottom-left-decoration .circle:first-child {
+    width: 16rem;
+    height: 16rem;
+    clip-path: circle();
+    background-color: var(--primary-50);
+}
+
+.bottom-left-decoration .circle:last-child {
+    width: 6rem;
+    height: 6rem;
+    position: absolute;
+    right: -40%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    clip-path: circle();
+    background-color: var(--primary-85);
+}
+
+.logo-auth {
+    width: 12rem;
+    margin-bottom: 2rem;
+}
+
+.page-context {
+    margin-bottom: 1rem;
+}
+
+.forget-password-container {
+    display: flex;
+    justify-content: flex-end;font-style: italic;
+    font-size: var(--text-paragraph);
+}
+
+.login-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+}
+
+.login-btn-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.login-btn-container button {
+    width: 100%;
+}
+
+.google-login-btn img {
+    width: 28px;
+}
+
+.login-section .footer-content {
+    width: 100%;
+    text-align: center;
+    margin-top: 1.25rem;
+}
+
+@media screen and (max-width: 768px) {
+    .login-section .left-section {
+        width: 100%;
+        position: relative;
+    }
+
+    .login-section .right-section {
+        position: absolute;
+        width: 100%;
+        inset: 0;
+    }
+
+    .left-section.fade {
+        opacity: .25;
+    }
+
+    .left-section .bg-desc {
+        display: none;
+    }
+
+    .login-container {
+        padding-top: 2rem;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .login-section .right-section {
+        padding-inline: 2rem;
+    }
+
+    .login-container {
+        padding-top: 4rem;
+        padding-inline: 0;
+    }
+
+    .right-section .top-right-decoration {
+        zoom: .6;
+    }
+
+    .right-section .bottom-left-decoration {
+        zoom: .6;
+    }
+}
