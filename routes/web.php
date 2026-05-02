@@ -1,20 +1,17 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleController;
-use App\Http\Controllers\Auth\RegisteredController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', function () {
     return redirect('auth/login');
 });
 
-Route::prefix('/auth')->name('auth.')->middleware('guest')->group(function() {
+Route::prefix('/auth')->name('auth.')->middleware('guest')->group(function () {
     // login
-    Route::controller(LoginController::class)->prefix('/login')->name('login.')->group(function() {
+    Route::controller(LoginController::class)->prefix('/login')->name('login.')->group(function () {
         Route::get('/', 'show')->name('index');
         Route::post('/', 'login')->name('authenticate');
     });
