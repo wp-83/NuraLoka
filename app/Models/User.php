@@ -50,4 +50,38 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // Relationships
+    public function places()
+    {
+        return $this->belongsToMany(Place::class)
+            ->withPivot('id')
+            ->withTimestamps();
+    }
+
+    public function badges()
+    {
+        return $this->belongsToMany(Badge::class)
+            ->withPivot('id')
+            ->withTimestamps();
+    }
+
+    public function userDetails()
+    {
+        return $this->hasOne(UserDetail::class);
+    }
+
+    public function missions()
+    {
+        return $this->belongsToMany(Mission::class)
+            ->withPivot('id')
+            ->withTimestamps();
+    }
+
+    public function trips()
+    {
+        return $this->belongsToMany(Trip::class)
+            ->withPivot('id')
+            ->withTimestamps();
+    }
 }
