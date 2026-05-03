@@ -18,7 +18,7 @@ Route::prefix('/auth')->name('auth.')->middleware('guest')->group(function () {
 
     // register
     Route::controller(RegisterController::class)->prefix('/register')->name('register.')->group(function () {
-        Route::get('/', 'register')->name('index');
+        Route::get('/', 'create')->name('index');
         Route::post('register', 'store');
     });
 
