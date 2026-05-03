@@ -1,211 +1,240 @@
-/* .circle-decoration-container {
-    background-color: red;
-    position: absolute;
-    width: max-content;
-    height: 12rem;
-    inset: 0;
-    right: -2.5rem;
-    top: 0;
-    transform: scaleX(-1);
-}
-
-.circle:first-child {
-    background-color: #5A3612;
-    width: 12rem;
-    height: 12rem;
-    clip-path: circle();
-}
-
-.circle:nth-child(2) {
-    background-color: #8A6654;
-    width: 8rem;
-    height: 8rem;
-    position: absolute;
-    inset: 0;
-    left: 8rem;
-    clip-path: circle();
-}
-
-.circle:nth-child(3) {
-    background-color: #D5B9AA;
-    width: 4rem;
-    height: 4rem;
-    position: absolute;
-    inset: 0;
-    left: 9rem;
-    top: 50%;
-    clip-path: circle();
-}
-
-.auth-container {
-    min-height: 100vh;
+.register-section {
+    max-width: 100%;
     display: flex;
-    font-family: 'Poppins', sans-serif;
+    overflow: hidden;
+    animation: swipeFromRight .5s ease;
 }
 
-/* Sisi Kiri 
-.auth-form-section {
+@keyframes swipeFromRight {
+    from {
+        transform: translateX(50%);
+        opacity: .25;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.register-section .left-section, .register-section .right-section {
     width: 50%;
-    background-color: white;
     position: relative;
+    height: 100vh;
     overflow: hidden;
+}
+
+.register-section .right-section {
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+.right-section.fade {
+    opacity: 1;
+}
+
+.right-section .register-bg {
+    height: 100vh;
+    opacity: .85;
+}
+
+.register-form {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
+    gap: .25rem;
 }
 
-.form-content {
-    width: 100%;
-    max-width: 400px;
+.right-section .bg-desc {
+    position: absolute;
+    inset: 0;
+    margin: 1.5rem 0 0 1.5rem;
+    height: max-content;
+    width: 68%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.left-section .top-left-decoration {
+    position: absolute;
+    width: 24rem;
+    height: 24rem;
+    left: -8rem;
+    top: -16rem;
+    zoom: .8;
+    transform: scaleX(-1);
     z-index: 10;
 }
 
-.logo-wrapper {
-    text-align: center;
-    margin-bottom: 1.5rem;
-}
-
-.greeting {
-    font-size: 0.8rem;
-    color: #666;
-    margin-bottom: 0.5rem;
-}
-
-.logo-img {
-    width: 10rem;
-}
-
-.form-title {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #5A3612;
-    margin-bottom: 0.5rem;
-}
-
-.form-subtitle {
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
-}
-
-.brand-highlight {
-    color: #D67B27;
-    font-weight: bold;
-}
-
-.input-group {
-    margin-bottom: 1rem;
-}
-
-.input-group label {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin-bottom: 0.4rem;
-}
-
-.input-wrapper {
-    display: flex;
-    align-items: center;
-    border: 1.5px solid #ccc;
-    border-radius: 8px;
-    padding: 0.6rem 1rem;
-}
-
-.input-wrapper input {
-    border: none;
-    outline: none;
-    width: 100%;
-    margin-left: 0.5rem;
-    font-size: 0.9rem;
-}
-
-
-.btn-submit {
-    width: 100%;
-    background-color: #5A3612;
-    color: white;
-    padding: 0.8rem;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 1rem;
-}
-
-.btn-google {
-    width: 100%;
-    background-color: white;
-    border: 1.5px solid #5A3612;
-    color: #5A3612;
-    padding: 0.8rem;
-    border-radius: 8px;
-    margin-top: 0.8rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    cursor: pointer;
-}
-
-.login-redirect {
-    text-align: center;
-    margin-top: 1.5rem;
-    font-size: 0.85rem;
-}
-
-.login-redirect a {
-    color: #2D9CDB;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-
-.circle-decoration-container {
-    position: absolute;
-    width: 12rem;
-    height: 12rem;
-    z-index: 0;
-    pointer-events: none;
-}
-
-.top-left {
-    top: -2rem;
-    left: -2rem;
-}
-
-.bottom-right {
-    bottom: -3rem;
-    right: -3rem;
-    transform: rotate(180deg);
-}
-
-.circle:nth-child(1) { background-color: #5A3612; width: 12rem; height: 12rem; border-radius: 50%; position: absolute; }
-.circle:nth-child(2) { background-color: #8A6654; width: 8rem; height: 8rem; border-radius: 50%; position: absolute; left: 6rem; }
-.circle:nth-child(3) { background-color: #D5B9AA; width: 4rem; height: 4rem; border-radius: 50%; position: absolute; left: 8rem; top: 4rem; }
-
-
-.auth-image-section {
-    width: 50%;
+.decoration-wrapper {
     position: relative;
 }
 
-.bg-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.top-left-decoration .circle:first-child {
+    width: 24rem;
+    height: 24rem;
+    clip-path: circle();
+    background-color: var(--primary-100);
 }
 
-.image-overlay-text {
+.top-left-decoration .circle:nth-child(2) {
+    width: 8rem;
+    height: 8rem;
+    background-color: var(--primary-30);
+    clip-path: circle();
+    bottom: -3rem;
+    right: 4.5rem;
     position: absolute;
-    top: 2rem;
-    left: 2rem;
-    color: white;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    max-width: 80%;
+    z-index: 10;
 }
 
-.image-overlay-text h2 { font-size: 2.5rem; margin: 0; }
-.location { font-style: italic; margin-bottom: 1rem; }
-.description { font-size: 1rem; line-height: 1.4; } */
+.top-left-decoration .circle:last-child {
+    width: 4.5rem;
+    height: 4.5rem;
+    background-color: var(--primary-70);
+    clip-path: circle();
+    position: absolute;
+    z-index: 15;
+    bottom: 0;
+    transform: translateY(60%);
+    left: 9rem;
+}
+
+.left-section .bottom-right-decoration {
+    position: absolute;
+    width: 16rem;
+    height: 16rem;
+    bottom: 0;
+    right: 0;
+    transform: translate(50%, 50%) scaleX(-1);
+    zoom: .7;
+}
+
+.bottom-right-decoration .circle:first-child {
+    width: 16rem;
+    height: 16rem;
+    clip-path: circle();
+    background-color: var(--primary-50);
+}
+
+.bottom-right-decoration .circle:last-child {
+    width: 6rem;
+    height: 6rem;
+    position: absolute;
+    right: -40%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    clip-path: circle();
+    background-color: var(--primary-85);
+}
+
+.register-section .left-section {
+    padding-block: 2.75rem;
+    padding-inline: 4rem;
+    color: var(--primary-85);
+}
+
+.logo-auth {
+    width: 12rem;
+    margin-bottom: 1rem;
+}
+
+.register-container {
+    height: 100vh;
+    overflow-y: auto;
+    padding-bottom: 7rem;
+    position: relative;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    animation: swipeUp .75s ease;
+}
+
+@keyframes swipeUp {
+    from {
+        transform: translateY(4%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.register-container::-webkit-scrollbar {
+    display: none;
+}
+
+.register-container .header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.register-btn-container {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.register-btn-container button {
+    width: 100%;
+}
+
+.google-register-btn img {
+    width: 28px;
+}
+
+.footer-content {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+@media screen and (max-width: 768px) {
+    .register-section .right-section {
+        width: 100%;
+    }
+
+    .right-section .bg-desc {
+        display: none;
+    }
+
+    .right-section.fade {
+        opacity: .2;
+    }
+
+    .register-section .left-section {
+        position: absolute;
+        width: 100%;
+        z-index: 20;
+    }
+
+    .register-container {
+        padding-top: .75rem;
+    }
+
+    .register-section {
+        animation: none;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .register-section .left-section {
+        padding-inline: 2rem;
+    }
+
+    .register-container {
+        padding-top: 2.5rem;
+        padding-inline: none;
+    }
+
+    .left-section .top-left-decoration {
+        zoom: 0.65;
+    }
+
+    .left-section .bottom-right-decoration {
+        zoom: 0.6;
+    }
+}
