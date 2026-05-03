@@ -10,11 +10,18 @@ Route::get('/', function () {
 });
 
 Route::prefix('/auth')->name('auth.')->middleware('guest')->group(function () {
-    // login
-    Route::controller(LoginController::class)->prefix('/login')->name('login.')->group(function () {
-        Route::get('/', 'show')->name('index');
-        Route::post('/', 'login')->name('authenticate');
-    });
+    // Login
+    Route::get('/login', [LoginController::class, 'show'])
+        ->name('login')
+        ->middleware('guest');
+
+    Route::post('/login', [LoginController::class, 'store'])
+        ->middleware('guest');
+
+    // Logout
+    Route::post('/logout', [LoginController::class, 'destroy'])
+        ->name('logout')
+        ->middleware('auth');
 
     // register
     Route::controller(RegisterController::class)->prefix('/register')->name('register.')->group(function () {
