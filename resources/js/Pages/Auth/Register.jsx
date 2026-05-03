@@ -1,161 +1,174 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import '@css/Init.css';
 import '@css/Auth/Register.css';
+import { Head, Link } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
+import { FaEye, FaEyeSlash, FaRegUserCircle } from 'react-icons/fa';
+import { MdOutlineMail } from 'react-icons/md';
+import { GiPadlock } from 'react-icons/gi';
 
+// SEO, error message and field style, flash wrong
 export default function Register() {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        username: '',
-        email: '',
-        password: '',
-        password_confirmation: '',
-    });
+    const amountBgImage = 5;
+    const [currIdx, setCurrIdx] = useState(0);
+    const [showPass, setShowPass] = useState(false);
+    const [showPassConfirm, setShowPassConfirm] = useState(false);
+    const [fade, setFade] = useState(true);
 
-    const submit = (e) => {
-        e.preventDefault();
-
-        post('/register', {
-            onFinish: () => reset('password', 'password_confirmation'),
-        });
+    const bgIdentity = {
+        'name' : [
+            'Raja Ampat',
+            'Tugu Khatulistiwa',
+            'Garang Asem Ayam',
+            'Mie Celor',
+            'Proses Canting Batik Tulis',
+        ],
+        'loc' : [
+            'Kabupaten Raja Ampat (Waisai), Papua Barat Daya',
+            'Pontianak, Kalimantan Barat',
+            'Semarang, Jawa Tengah',
+            'Palembang, Sumatera Selatan',
+            'Surakarta, Jawa Tengah',
+        ],
+        'desc': [
+            'Gugusan pulau karst dengan laut jernih, dikenal sebagai salah satu destinasi wisata bahari terbaik di dunia.',
+            'Monumen penanda garis khatulistiwa (0° lintang) yang menjadi ikon kota dan objek wisata edukasi.',
+            'Hidangan ayam berkuah asam segar dengan cabai dan belimbing wuluh, biasanya dimasak dalam bungkus daun pisang.',
+            'Mie khas dengan kuah kental berbasis santan/udang, disajikan dengan telur, tauge, dan bawang goreng.',
+            'Menorehkan malam (lilin panas) pada kain dengan canting untuk membentuk motif secara manual.',
+        ],
     };
 
+    useEffect(() => {
+        const slider = setInterval(() => {
+            setFade(false);
+
+            setTimeout(() => {
+                setFade(true);
+
+                setCurrIdx((prev) => {
+                    if (prev == amountBgImage - 1) return 0;
+                    else return prev + 1;
+                });
+            }, 750);
+        }, 5000);
+
+        return () => clearInterval(slider);
+    }, []);
+
     return (
-        <section className="auth-container">
-            <Head title="Daftar Akun" />
+        <>
+            <Head>
+                <title>NuraLoka | Register</title>
 
-            {/* Left Side: Form Section */}
-            <section className="auth-form-section">
-                {/* Top Left Circle Decoration */}
-                <div className='circle-decoration-container top-left'>
-                    <div className="circle"></div>
-                    <div className="circle"></div>
-                    <div className="circle"></div>
-                </div>
+                <meta
+                    name="description"
+                    content="Temukan rekomendasi tempat wisata, kuliner, dan lokasi persinggahan terbaik di sepanjang rute perjalanan antar kota di Indonesia bersama NuraLoka."
+                />
+            </Head>
 
-                <div className="form-content">
-                    <div className="logo-wrapper">
-                        <p className="greeting">Hi, Nuravers! Selamat datang di</p>
-                        <img src="/images/logo/with-tagline.png" alt="logo" className="logo-img" />
+            <section className='register-section'>
+                <section className='left-section'>
+                    <div className='top-left-decoration'>
+                        <div className='decoration-wrapper'>
+                            <div className='circle'></div>
+                            <div className='circle'></div>
+                            <div className='circle'></div>
+                        </div>
                     </div>
-
-                    <h1 className="form-title">Daftar Akun</h1>
-                    <p className="form-subtitle">Segera jadi bagian langsung dari <span className="brand-highlight">NuraLoka!</span></p>
-
-                    <form className="register-form" onSubmit={submit}>
-                        <div className="input-group">
-                            <label htmlFor="username">Username</label>
-                            <div className="input-wrapper">
-                                <i className="icon-user"></i>
-                                <input
-                                    id="username"
-                                    type="text"
-                                    name="username"
-                                    value={data.username}
-                                    placeholder="cth: kocakbanget123"
-                                    onChange={(e) => setData('username', e.target.value)}
-                                    required
-                                />
-                            </div>
-                            {errors.username && <span className="error-message">{errors.username}</span>}
+                    <div className='container register-container'>
+                        <div className='header-content'>
+                            <p><b>Hi, Nuravers!</b> Selamat datang di</p>
+                            <img src="/images/logo/with-tagline.png" alt="logo" className='logo-auth' />
                         </div>
-
-                        <div className="input-group">
-                            <label htmlFor="email">Email</label>
-                            <div className="input-wrapper">
-                                <i className="icon-email"></i>
-                                <input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    value={data.email}
-                                    placeholder="email.kamu@gmail.com"
-                                    onChange={(e) => setData('email', e.target.value)}
-                                    required
-                                />
+                        <div className='main-content'>
+                            <div className='page-context'>
+                                <h2><b>Daftar Akun</b></h2>
+                                <p>Segera jadi bagian langsung dari <span className='nuraloka-text'><span>Nura</span><span>Loka</span></span>!</p>
                             </div>
-                            {errors.email && <span className="error-message">{errors.email}</span>}
+                            <form className='register-form'>
+                                <div className='input-group'>
+                                    <label htmlFor="username">Username</label>
+                                    <div className='input-wrapper'>
+                                        <div className='illustration-icon'>
+                                            <FaRegUserCircle className='icon' />
+                                        </div>
+                                        <input type="text" placeholder='kocakbanget123' id='username' name='username' autoComplete='off' />
+                                    </div>
+                                </div>
+                                <div className='input-group'>
+                                    <label htmlFor="email">Email</label>
+                                    <div className='input-wrapper'>
+                                        <div className='illustration-icon'>
+                                            <MdOutlineMail className='icon' />
+                                        </div>
+                                        <input type="text" placeholder='email.kamu@gmail.com' id='email' name='email' autoComplete='off' />
+                                    </div>
+                                </div>
+                                <div className='input-group'>
+                                    <label htmlFor="password">Kata Sandi</label>
+                                    <div className='input-wrapper'>
+                                        <div className='illustration-icon'>
+                                            <GiPadlock className='icon' />
+                                        </div>
+                                        <input type={(showPass) ? 'text' : 'password'} placeholder='Kata sandi kamu' id='password' name='password' />
+                                        <div className='passHideBtn' onClick={() => setShowPass((prev) => !prev)}>
+                                            {
+                                                (showPass) ? (
+                                                    <FaEye className='icon' />
+                                                ) : (
+                                                    <FaEyeSlash className='icon' />
+                                                )
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className='input-group'>
+                                    <label htmlFor="passwordConfirm">Konfirmasi Kata Sandi</label>
+                                    <div className='input-wrapper'>
+                                        <div className='illustration-icon'>
+                                            <GiPadlock className='icon' />
+                                        </div>
+                                        <input type={(showPassConfirm) ? 'text' : 'password'} placeholder='Konfirmasi kata sandi kamu' id='passwordConfirm' name='passwordConfirm' />
+                                        <div className='passHideBtn' onClick={() => setShowPassConfirm((prev) => !prev)}>
+                                            {
+                                                (showPassConfirm) ? (
+                                                    <FaEye className='icon' />
+                                                ) : (
+                                                    <FaEyeSlash className='icon' />
+                                                )
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className='register-btn-container'>
+                                    <button className='btn-primary'>Daftar Akun</button>
+                                    <button className='btn-white google-register-btn'>
+                                        <img src="/images/icons/google.png" alt="google-icon" />
+                                        <p>Daftar dengan Google</p>
+                                    </button>
+                                </div>
+                            </form>
+                            <p className='footer-content'>Sudah punya akun? <Link href={route('auth.login.index')}>Masuk Sekarang!</Link></p>
                         </div>
-
-                        <div className="input-group">
-                            <label htmlFor="password">Kata Sandi</label>
-                            <div className="input-wrapper">
-                                <i className="icon-lock"></i>
-                                <input
-                                    id="password"
-                                    type="password"
-                                    name="password"
-                                    value={data.password}
-                                    placeholder="Kata sandi kamu"
-                                    onChange={(e) => setData('password', e.target.value)}
-                                    required
-                                />
-                                <i className="icon-eye"></i>
-                            </div>
-                            {errors.password && <span className="error-message">{errors.password}</span>}
+                    </div>
+                    <div className='bottom-right-decoration'>
+                        <div className='decoration-wrapper'>
+                            <div className='circle'></div>
+                            <div className='circle'></div>
                         </div>
-
-                        <div className="input-group">
-                            <label htmlFor="password_confirmation">Konfirmasi Kata Sandi</label>
-                            <div className="input-wrapper">
-                                <i className="icon-lock"></i>
-                                <input
-                                    id="password_confirmation"
-                                    type="password"
-                                    name="password_confirmation"
-                                    value={data.password_confirmation}
-                                    placeholder="Konfirmasi kata sandi kamu"
-                                    onChange={(e) => setData('password_confirmation', e.target.value)}
-                                    required
-                                />
-                                <i className="icon-eye"></i>
-                            </div>
-                            {errors.password_confirmation && <span className="error-message">{errors.password_confirmation}</span>}
+                    </div>
+                </section>
+                <section className={`right-section ${(fade ? 'fade' : '')}`}>
+                    <img src={`/images/background-auth/register/${currIdx+1}.jpg`} alt="register-bg" className='register-bg' />
+                    <div className='bg-desc'>
+                        <div className='bg-main-content'>
+                            <h2><b>{bgIdentity.name[currIdx]}</b></h2>
+                            <p><i>{bgIdentity.loc[currIdx]}</i></p>
                         </div>
-
-                        <button type="submit" className="btn-submit" disabled={processing}>
-                            {processing ? 'Mendaftarkan...' : 'Daftar Akun'}
-                        </button>
-
-                        <button type="button" className="btn-google">
-                            {/* <img src="/images/icons/google.png" alt="" /> */} Daftar dengan Google
-                        </button>
-                    </form>
-
-                    <p className="login-redirect">
-                        Sudah Punya Akun? <Link href="/login">Masuk Sekarang!</Link>
-                    </p>
-                </div>
-
-                {/* Bottom Right Circle Decoration */}
-                <div className='circle-decoration-container bottom-right'>
-                    <div className="circle"></div>
-                    <div className="circle"></div>
-                    <div className="circle"></div>
-                </div>
+                        <p className={`${(currIdx == 4 ? 'white' : 'bg-additional-content')}`}>{bgIdentity.desc[currIdx]}</p>
+                    </div>
+                </section>
             </section>
-
-            {/* Right Side: Image & Tourism Info */}
-            <section className="auth-image-section">
-                <img src="/images/background-auth/1.jpg" alt="Tugu Khatulistiwa" className="bg-image" />
-                <div className="image-overlay-text">
-                    <h2>Tugu Khatulistiwa</h2>
-                    <p className="location">Pontianak, Kalimantan Barat</p>
-                    <p className="description">
-                        Monumen penanda garis khatulistiwa (0° lintang) yang menjadi ikon kota dan objek wisata edukasi.
-                    </p>
-                </div>
-            </section>
-
-            <style>{`
-                .error-message {
-                    color: #ff4d4f;
-                    font-size: 0.8rem;
-                    margin-top: 4px;
-                    display: block;
-                }
-                .btn-submit:disabled {
-                    opacity: 0.7;
-                    cursor: not-allowed;
-                }
-            `}</style>
-        </section>
+        </>
     );
-}
+};
