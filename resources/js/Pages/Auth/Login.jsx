@@ -1,6 +1,6 @@
 import '@css/Init.css';
 import '@css/Auth/Login.css';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { FaEye, FaEyeSlash, FaRegUserCircle } from 'react-icons/fa';
 import { GiPadlock } from 'react-icons/gi';
@@ -11,6 +11,10 @@ export default function Login() {
     const [currIdx, setCurrIdx] = useState(0);
     const [showPass, setShowPass] = useState(false);
     const [fade, setFade] = useState(true);
+
+    const [data, setData, post, processing, errors] = useForm([
+        
+    ]);
 
     const bgIdentity = {
         'name' : [
