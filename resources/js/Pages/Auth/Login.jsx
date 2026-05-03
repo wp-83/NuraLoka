@@ -1,6 +1,6 @@
 import '@css/Init.css';
 import '@css/Auth/Login.css';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { FaEye, FaEyeSlash, FaRegUserCircle } from 'react-icons/fa';
 import { GiPadlock } from 'react-icons/gi';
@@ -135,7 +135,7 @@ export default function Login() {
                                     </button>
                                 </div>
                             </form>
-                            <p className='footer-content'>Belum punya akun? <a href="">Daftar Sekarang!</a></p>
+                            <p className='footer-content'>Belum punya akun? <Link href={route('auth.register.index')}>Daftar Sekarang!</Link></p>
                         </div>
                     </div>
                     <div className='bottom-left-decoration'>
