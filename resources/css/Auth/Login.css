@@ -211,6 +211,12 @@
     margin-top: 1.25rem;
 }
 
+.login-form .additional-content-password:has(.error-message) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 @media screen and (max-width: 768px) {
     .login-section .left-section {
         width: 100%;
@@ -224,7 +230,7 @@
     }
 
     .left-section.fade {
-        opacity: .25;
+        opacity: .15;
     }
 
     .left-section .bg-desc {
