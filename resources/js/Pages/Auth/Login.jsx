@@ -27,7 +27,7 @@ export default function Login() {
         flash.message = null;
 
         post(route('auth.login.authenticate'), {
-            forceFormData: true,
+            onSuccess: () => reset(),
         });
     };
 
@@ -168,10 +168,12 @@ export default function Login() {
                                             ) : 'Masuk'
                                         }
                                     </button>
-                                    <button className='btn-white google-login-btn' type='button'>
-                                        <img src="/images/icons/google.png" alt="google-icon" />
-                                        <p>Masuk dengan Google</p>
-                                    </button>
+                                    <Link href={route('auth.google.authenticate')}>
+                                        <button className='btn-white google-login-btn' type='button'>
+                                            <img src="/images/icons/google.png" alt="google-icon" />
+                                            <p>Masuk dengan Google</p>
+                                        </button>
+                                    </Link>
                                 </div>
                             </form>
                             <p className='footer-content'>Belum punya akun? <Link href={route('auth.register.index')}>Daftar Sekarang!</Link></p>
