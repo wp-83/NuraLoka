@@ -6,32 +6,34 @@ use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect('auth/login');
-});
+    return inertia('Home');
+})->name('/')->middleware('auth');
 
-Route::prefix('/auth')->name('auth.')->middleware('guest')->group(function () {
+Route::get('/login', function () {
+    return redirect(route('auth.login.index'));
+})->name('login');
+
+Route::prefix('/auth')->name('auth.')->group(function () {
     // Login
-    Route::get('/login', [LoginController::class, 'show'])
-        ->name('login')
-        ->middleware('guest');
-
-    Route::post('/login', [LoginController::class, 'store'])
-        ->middleware('guest');
+    Route::prefix('/login')->name('login.')->middleware('guest')->controller(LoginController::class)->group(function () {
+        Route::get('/', 'show')->name('index');
+        Route::post('/', 'login')->name('authenticate');
+    });
 
     // Logout
-    Route::post('/logout', [LoginController::class, 'destroy'])
-        ->name('logout')
-        ->middleware('auth');
+    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
     // register
-    Route::controller(RegisterController::class)->prefix('/register')->name('register.')->group(function () {
-        Route::get('/', 'register')->name('index');
-        Route::post('register', 'store');
+    Route::controller(RegisterController::class)->prefix('/register')->name('register.')->middleware('guest')->group(function () {
+        Route::get('/', 'show')->name('index');
+        Route::post('register', 'store')->name('store');
+
+        Route::get('/detail-account', 'detail')->name('detail');
     });
 
     // google auth
     Route::controller(GoogleController::class)->prefix('google')->name('google.')->group(function () {
-        Route::get('/', 'redirect')->name('google.login');
-        Route::get('/callback', 'callback');
+        Route::get('/', 'redirect')->name('authenticate');
+        Route::get('/callback', 'callback')->name('callback');
     });
 });

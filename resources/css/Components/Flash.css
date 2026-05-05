@@ -1,0 +1,79 @@
+.flash {
+    background-color: var(--white);
+    min-width: 2rem;
+    min-height: 2rem;
+    max-width: calc(100vw - 4rem);
+    width: max-content;
+    height: max-content;
+    position: absolute;
+    inset: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
+    z-index: 1000;
+    margin-top: 0;
+    border-radius: .5rem;
+    overflow: hidden;
+    opacity: 0;
+    transition: transform .25s ease, opacity .25s ease;
+}
+
+.flash-show {
+    transform: translateX(-50%) translateY(0);
+    margin-top: 1.5rem;
+    opacity: 1;
+    box-shadow: 0 0 0 100vmax rgba(0,0,0,.15);
+}
+
+.flash-content {
+    display: flex;
+    align-items: center;
+    padding-inline: .75rem;
+    padding-block: .1rem;
+    gap: 1.5rem;
+}
+
+.flash-content .main-content {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+}
+
+.flash-content .main-content p {
+    font-size: var(--text-body);
+}
+
+.flash-content img {
+    width: 3rem;
+}
+
+.flash-loading-bar {
+    width: 100%;
+    height: .2rem;
+    animation: progressBar 4s linear;
+}
+
+@keyframes progressBar {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+.flash-loading-bar.success {
+    background-color: var(--success-dark);
+}
+
+.flash-loading-bar.error {
+    background-color: var(--error-dark);
+}
+
+.flash-loading-bar.warning {
+    background-color: var(--warning-dark);
+}
+
+.flash-loading-bar.info {
+    background-color: var(--info-dark);
+}

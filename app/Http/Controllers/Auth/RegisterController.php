@@ -19,7 +19,7 @@ class RegisterController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): Response
+    public function show(): Response
     {
         return Inertia::render('Auth/Register');
     }
@@ -31,22 +31,28 @@ class RegisterController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'username' => 'required|string|lowercase|max:255|unique:'.User::class,
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        // $request->validate([
+        //     'username' => 'required|string|lowercase|max:255|unique:'.User::class,
+        //     'email' => 'required|email|lowercase|email|max:255|unique:'.User::class,
+        //     'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        //     'confirmPassword' => ['required', 'confirmed', Rules\Password::defaults()],
+        // ]);
 
-        $user = User::create([
-            'username' => $request->username,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        // $user = User::create([
+        //     'username' => $request->username,
+        //     'email' => $request->email,
+        //     'password' => Hash::make($request->password),
+        // ]);
 
-        event(new Registered($user));
+        // event(new Registered($user));
 
-        Auth::login($user);
+        // Auth::login($user);
 
-        return redirect(route('home', absolute: false));
+        return redirect(route('auth.register.detail'));
+    }
+
+    public function detail()
+    {
+        return inertia('Auth/DetailAcount');
     }
 }
