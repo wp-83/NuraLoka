@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
@@ -18,27 +17,29 @@ class LoginController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $request->validate([
-            'login' => 'required|string',
+            'identity' => 'required|string',
             'password' => 'required|string',
+            'rememberMe' => 'boolean',
         ]);
 
-        // Deteksi apakah input berupa email atau username
+        // Deteksi whether the input is email or username
         $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
         $credentials = [
-            $loginField => $request->login,
+            $loginField => $request->identity,
             'password' => $request->password,
         ];
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
-            throw ValidationException::withMessages([
-                'login' => __('auth.failed'),
+        if (! Auth::attempt($credentials, $request->boolean('rememberMe'))) {
+            return redirect()->route('auth.login.index')->with([
+                'flash.type' => 'error',
+                'flash.message' => 'Data Anda tidak valid.',
             ]);
         }
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('home', absolute: false));
+        return redirect()->route('/');
     }
 
     /**
