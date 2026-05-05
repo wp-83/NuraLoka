@@ -1,9 +1,10 @@
 import '@css/Init.css';
 import '@css/Auth/Login.css';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { FaEye, FaEyeSlash, FaRegUserCircle } from 'react-icons/fa';
 import { GiPadlock } from 'react-icons/gi';
+import Flash from '../../Components/Flash';
 
 // SEO, error message and field style, flash wrong
 export default function Login() {
@@ -11,10 +12,24 @@ export default function Login() {
     const [currIdx, setCurrIdx] = useState(0);
     const [showPass, setShowPass] = useState(false);
     const [fade, setFade] = useState(true);
+    const { flash } = usePage().props;
 
-    const [data, setData, post, processing, errors] = useForm([
-        
-    ]);
+    const { data, setData, post, processing, errors, reset } = useForm({
+        'identity': '',
+        'password': '',
+        'rememberMe': false,
+    });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        flash.type = null;
+        flash.message = null;
+
+        post(route('auth.login.authenticate'), {
+            forceFormData: true,
+        });
+    };
 
     const bgIdentity = {
         'name' : [
@@ -60,7 +75,7 @@ export default function Login() {
     return (
         <>
             <Head>
-                <title>NuraLoka | Login</title>
+                <title>NuraLoka | Masuk Akun</title>
 
                 <meta
                     name="description"
@@ -69,6 +84,9 @@ export default function Login() {
             </Head>
 
             <section className='login-section'>
+                {
+                    (flash.type != null && flash.message != null) && (<Flash type={flash.type} message={flash.message}></Flash>)
+                }
                 <section className={`left-section ${(fade ? 'fade' : '')}`}>
                     <img src={`/images/background-auth/login/${currIdx+1}.jpg`} alt="login-bg" className='login-bg' />
                     <div className='bg-desc'>
@@ -97,15 +115,18 @@ export default function Login() {
                                 <h2><b>Masuk Akun</b></h2>
                                 <p>Ayo masuk ke akun Anda untuk eksplorasi Indonesia bersama <span className='nuraloka-text'><span>Nura</span><span>Loka</span></span>!</p>
                             </div>
-                            <form className='login-form'>
+                            <form method='POST' className='login-form' onSubmit={handleSubmit}>
                                 <div className='input-group'>
                                     <label htmlFor="identity">Email atau Username</label>
                                     <div className='input-wrapper'>
                                         <div className='illustration-icon'>
                                             <FaRegUserCircle className='icon' />
                                         </div>
-                                        <input type="text" placeholder='email.kamu@gmail.com' id='identity' name='identity' autoComplete='off' />
+                                        <input type="text" placeholder='email.kamu@gmail.com' id='identity' name='identity' autoComplete='off' value={data.identity} onChange={(e) => setData('identity', e.target.value)} />
                                     </div>
+                                    {
+                                        (errors.identity) && (<p className='error-message'>{errors.identity}</p>)
+                                    }
                                 </div>
                                 <div className='input-group'>
                                     <label htmlFor="password">Kata Sandi</label>
@@ -113,7 +134,7 @@ export default function Login() {
                                         <div className='illustration-icon'>
                                             <GiPadlock className='icon' />
                                         </div>
-                                        <input type={(showPass) ? 'text' : 'password'} placeholder='Kata sandi kamu' id='password' name='password' />
+                                        <input type={(showPass) ? 'text' : 'password'} placeholder='Kata sandi kamu' id='password' name='password' value={data.password} onChange={(e) => setData('password', e.target.value) } />
                                         <div className='passHideBtn' onClick={() => setShowPass((prev) => !prev)}>
                                             {
                                                 (showPass) ? (
@@ -124,16 +145,30 @@ export default function Login() {
                                             }
                                         </div>
                                     </div>
-                                    <a href="" className='forget-password-container'>Lupa kata sandi?</a>
+                                    <div className='additional-content-password'>
+                                        {
+                                            (errors.password) && (<p className='error-message'>{errors.password}</p>)
+                                        }
+                                        <a href="" className='forget-password-container'>Lupa kata sandi?</a>
+                                    </div>
                                 </div>
                                 <label htmlFor="rememberMe" className='checkbox'>
                                     <span className='box'></span>
-                                    <input type="checkbox" name="rememberMe" id="rememberMe" />
+                                    <input type="checkbox" name="rememberMe" id="rememberMe" checked={data.rememberMe} onChange={(e) => setData('rememberMe', e.target.checked)} />
                                     <p className='content-label'>Ingat Saya untuk 30 Hari Ke Depan</p>
                                 </label>
                                 <div className='login-btn-container'>
-                                    <button className='btn-primary'>Masuk</button>
-                                    <button className='btn-white google-login-btn'>
+                                    <button className={(processing) ? 'btn-inactive' : 'btn-primary'} type='submit' disabled={(processing) ? true : false}>
+                                        {
+                                            (processing) ? (
+                                                <>
+                                                    <div className='loading-bar'></div>
+                                                    <p>Memeriksa data...</p>
+                                                </>
+                                            ) : 'Masuk'
+                                        }
+                                    </button>
+                                    <button className='btn-white google-login-btn' type='button'>
                                         <img src="/images/icons/google.png" alt="google-icon" />
                                         <p>Masuk dengan Google</p>
                                     </button>
