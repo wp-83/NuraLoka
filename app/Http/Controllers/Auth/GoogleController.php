@@ -31,8 +31,8 @@ class GoogleController extends Controller
                     'username' => $this->generateUniqueUsername($googleUser->getName()),
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
-                    'password' => null, // Password dikosongkan
-                    'email_verified_at' => now(), // Anggap email Google sudah pasti valid
+                    'password' => null, // No password since user will login with Google
+                    'email_verified_at' => now(), // Mark email as verified since it's coming from Google
                 ]);
             } else {
                 // if user already exists, update the google_id in case it's not set

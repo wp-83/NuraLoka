@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Place extends Model
 {
+    use HasFactory;
     // Relationships
     public function users()
     {
@@ -16,7 +18,7 @@ class Place extends Model
 
     public function categories()
     {
-        return $this->belongsToMany(Category::class)
+        return $this->belongsToMany(Category::class, 'category_places')
             ->withPivot('id')
             ->withTimestamps();
     }
