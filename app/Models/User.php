@@ -19,9 +19,13 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'username',
         'name',
         'email',
         'password',
+        'username',
+        'google_id',
+        'email_verified_at',
     ];
 
     /**
@@ -45,5 +49,39 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Relationships
+    public function places()
+    {
+        return $this->belongsToMany(Place::class)
+            ->withPivot('id')
+            ->withTimestamps();
+    }
+
+    public function badges()
+    {
+        return $this->belongsToMany(Badge::class)
+            ->withPivot('id')
+            ->withTimestamps();
+    }
+
+    public function userDetails()
+    {
+        return $this->hasOne(UserDetail::class);
+    }
+
+    public function missions()
+    {
+        return $this->belongsToMany(Mission::class)
+            ->withPivot('id')
+            ->withTimestamps();
+    }
+
+    public function trips()
+    {
+        return $this->belongsToMany(Trip::class)
+            ->withPivot('id')
+            ->withTimestamps();
     }
 }

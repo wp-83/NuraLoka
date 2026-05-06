@@ -1,27 +1,16 @@
-export default function Home({ title }){
+import '@css/Init.css';
+
+export default function Home(){
     return (
-        <>
-            <p>Hai, ini React!</p>
-            <p>Test commit and push</p>
-            <p>Aku Anesssssssssssssssss!</p>
-            <p>Hai JE</p><div>
-
-
-
-
-
-
-
-                                                        </div>
-            <  li>1.3
-                gj
-                                        </li>
-                                        hjjhjhj
-                            <p>lklklk
-                                lklklk
-                            </p>
-                            <div className=""><div className=""></div><p>ksandksndlksad</p></div>
-        </>
+        <div style={{ padding: '2rem', display: 'flex', gap: '2rem' }}>
+            <button className='btn-primary'>button label</button>
+            <button className='btn-secondary'>button label</button>
+            <button className='btn-error'>button label</button>
+            <button className='btn-warning'>button label</button>
+            <button className='btn-success'>button label</button>
+            <button className='btn-info'>button label</button>
+            <button className='btn-gray'>button label</button>
+            <button className='btn-inactive'>button label</button>
+        </div>
     );
-    <h1>Halo NuraVerse!!</h1>
-}
+};

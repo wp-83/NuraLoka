@@ -1,30 +1,45 @@
 <?php
 
-use App\Http\Controllers\MapController;
+use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\PlaceController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', function () {
-    return inertia('Home', [
-        'title' => 'Hello Inertia React',
-    ]);
+    return inertia('Home');
+})->name('/')->middleware('auth');
+
+Route::get('/login', function () {
+    return redirect(route('auth.login.index'));
+})->name('login');
+
+Route::prefix('/auth')->name('auth.')->group(function () {
+    // Login
+    Route::prefix('/login')->name('login.')->middleware('guest')->controller(LoginController::class)->group(function () {
+        Route::get('/', 'show')->name('index');
+        Route::post('/', 'login')->name('authenticate');
+    });
+
+    // register
+    Route::controller(RegisterController::class)->prefix('/register')->name('register.')->middleware('guest')->group(function () {
+        Route::get('/', 'show')->name('index');
+        Route::post('register', 'store')->name('store');
+
+        Route::get('/detail-account', 'detail')->name('detail');
+        Route::post('/detail-account', 'saveAccountDetail')->name('store.detail');
+    });
+
+    // Logout
+    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+
+    // google auth
+    Route::controller(GoogleController::class)->prefix('google')->name('google.')->group(function () {
+        Route::get('/', 'redirect')->name('authenticate');
+        Route::get('/callback', 'callback')->name('callback');
+    });
 });
 
-Route::get('/test-404', function () {
-    abort(404);
+Route::middleware('guest')->group(function () {
+    Route::get('/places', [PlaceController::class, 'index'])->name('places.index');
 });
-
-Route::get('/lint', function () {
-    return Inertia::render('Test');
-});
-
-/**
- * Test map hiraukan saja
- */
-Route::get('/map-test', function () {
-    return Inertia::render('Map/SimpleMap1');
-});
-
-Route::get('/map', [MapController::class, 'index']);
-
-Route::post('/filter-pois', [MapController::class, 'filterByPath'])->name('pois.filter');

@@ -12,7 +12,7 @@ class LoginTest extends TestCase
 
     public function test_login_page_is_accessible(): void
     {
-        $response = $this->get('/login');
+        $response = $this->get('/auth/login');
         $response->assertStatus(200);
     }
 
