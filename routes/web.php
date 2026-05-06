@@ -19,7 +19,7 @@ Route::prefix('/auth')->name('auth.')->group(function () {
         Route::get('/', 'show')->name('index');
         Route::post('/', 'login')->name('authenticate');
     });
-    
+
     // register
     Route::controller(RegisterController::class)->prefix('/register')->name('register.')->middleware('guest')->group(function () {
         Route::get('/', 'show')->name('index');
