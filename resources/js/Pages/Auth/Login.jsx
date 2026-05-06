@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { FaEye, FaEyeSlash, FaRegUserCircle } from 'react-icons/fa';
 import { GiPadlock } from 'react-icons/gi';
 import Flash from '../../Components/Flash';
+import { route } from 'ziggy-js';
 
 // SEO, error message and field style, flash wrong
 export default function Login() {
@@ -168,12 +169,12 @@ export default function Login() {
                                             ) : 'Masuk'
                                         }
                                     </button>
-                                    <Link href={route('auth.google.authenticate')}>
+                                    <a href={route('auth.google.authenticate')}>
                                         <button className='btn-white google-login-btn' type='button'>
                                             <img src="/images/icons/google.png" alt="google-icon" />
                                             <p>Masuk dengan Google</p>
                                         </button>
-                                    </Link>
+                                    </a>
                                 </div>
                             </form>
                             <p className='footer-content'>Belum punya akun? <Link href={route('auth.register.index')}>Daftar Sekarang!</Link></p>
