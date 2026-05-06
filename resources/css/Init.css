@@ -262,19 +262,19 @@ button:hover:not(.btn-inactive) {
     color: var(--white);
 }
 
-/* input style */
-.input-group {
+/* input and select style */
+.input-group, .select-group {
     display: flex;
     flex-direction: column;
     gap: .25rem;
     margin-block: .25rem;
 }
 
-.input-group label {
+label {
     font-size: var(--text-paragraph);
 }
 
-.input-wrapper {
+.input-wrapper, .select-wrapper {
     display: flex;
     justify-content: space-between;
     gap: .5rem;
@@ -308,6 +308,10 @@ button:hover:not(.btn-inactive) {
     width: 100%;
 }
 
+.input-wrapper:not(:has(.illustration-icon)) input {
+    padding-inline: 1rem;
+}
+
 .input-wrapper .passHideBtn {
     color: var(--primary-100);
     display: flex;
@@ -316,13 +320,50 @@ button:hover:not(.btn-inactive) {
     cursor: pointer;
 }
 
+.input-error {
+    background-color: var(--error-light);
+    border-color: var(--error-dark);
+}
+
+.select-wrapper {
+    display: flex;
+    justify-content: space-between;
+    gap: .5rem;
+    background-color: white;
+    color: var(--black);
+    border: 2px solid var(--primary-85);
+    border-radius: .5rem;
+    transition: background-color .15s ease;
+    overflow: hidden;
+    min-height: 0;
+    padding-block: .6rem;
+    padding-inline: 1rem;
+}
+
+.select-wrapper select {
+    width: 100%;
+}
+
+.select-wrapper:hover:not(:focus-within) {
+    background-color: var(--secondary-10);
+}
+
+select:invalid {
+    color: gray;
+}
+
+input[type="date"]:invalid {
+    color: gray;
+}
+
 .checkbox {
     display: flex;
     align-items: center;
-    gap: .5rem;
+    gap: .75rem;
     margin-block: .25rem;
     cursor: pointer;
-    width: max-content;
+    width: 100%;
+    text-align: justify;
 }
 
 .checkbox input {
@@ -330,8 +371,8 @@ button:hover:not(.btn-inactive) {
 }
 
 .checkbox .box {
-    width: 1.5rem;
-    height: 1.5rem;
+    min-width: 1.5rem;
+    min-height: 1.5rem;
     border: 2px solid var(--primary-85);
     border-radius: .25rem;
     display: inline-block;
