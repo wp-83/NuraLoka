@@ -19,21 +19,21 @@ class UserSeeder extends Seeder
         // ── 1. ADMIN ──────────────────────────────────────────────────────────
         $admin = User::factory()->create([
             'username' => 'admin_nuraloka',
-            'email'    => 'admin@nuraloka.id',
+            'email' => 'admin@nuraloka.id',
             'password' => bcrypt('Admin@1234'),
         ]);
         UserDetails::factory()->create([
-            'user_id'       => $admin->id,
-            'name'          => 'Admin NuraLoka',
-            'gender'        => 'male',
-            'total_points'  => 9999,
-            'province_id'   => DB::table('provinces')->where('name', 'DKI Jakarta')->value('id') ?? 1,
+            'user_id' => $admin->id,
+            'name' => 'Admin NuraLoka',
+            'gender' => 'male',
+            'total_points' => 9999,
+            'province_id' => DB::table('provinces')->where('name', 'DKI Jakarta')->value('id') ?? 1,
         ]);
 
         // ── 2. DEMO USER (user tetap untuk login demo) ────────────────────────
         $demo = User::factory()->create([
             'username' => 'demo_traveler',
-            'email'    => 'demo@nuraloka.id',
+            'email' => 'demo@nuraloka.id',
             'password' => bcrypt('Demo@1234'),
         ]);
         $this->attachDetails($demo, 'Demo Traveler', 'female', 1200);
@@ -58,8 +58,8 @@ class UserSeeder extends Seeder
         // ── 6. TOP LEADERBOARD USERS (3 users poin tinggi) ────────────────────
         collect(['Budi Santoso', 'Siti Rahayu', 'Ahmad Fauzi'])->each(function ($name, $i) {
             $user = User::factory()->create([
-                'username' => Str::slug($name) . '_' . ($i + 1),
-                'email'    => Str::slug($name) . '@nuraloka.id',
+                'username' => Str::slug($name).'_'.($i + 1),
+                'email' => Str::slug($name).'@nuraloka.id',
             ]);
             $this->attachDetails($user, $name, ['male', 'female', 'male'][$i], 3000 + ($i * 500));
             $this->attachBadgesAndMissions($user, $this->randomBadgeNames(5), 6);
@@ -74,9 +74,9 @@ class UserSeeder extends Seeder
         int $points = -1
     ): void {
         UserDetails::factory()->create([
-            'user_id'      => $user->id,
-            'name'         => $name,
-            'gender'       => $gender,
+            'user_id' => $user->id,
+            'name' => $name,
+            'gender' => $gender,
             'total_points' => $points >= 0 ? $points : null,
         ]);
     }
@@ -88,7 +88,7 @@ class UserSeeder extends Seeder
             $badge = Badge::where('name', $badgeName)->first();
             if ($badge) {
                 UserBadge::firstOrCreate([
-                    'user_id'  => $user->id,
+                    'user_id' => $user->id,
                     'badge_id' => $badge->id,
                 ]);
             }
@@ -97,7 +97,7 @@ class UserSeeder extends Seeder
         Mission::inRandomOrder()->take($missionCount)->get()->each(function ($mission) use ($user) {
             UserMission::firstOrCreate(
                 ['user_id' => $user->id, 'mission_id' => $mission->id],
-                ['status'  => fake()->randomElement(['ongoing', 'completed'])]
+                ['status' => fake()->randomElement(['ongoing', 'completed'])]
             );
         });
     }

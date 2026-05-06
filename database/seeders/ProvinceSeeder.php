@@ -25,7 +25,7 @@ class ProvinceSeeder extends Seeder
 
         foreach ($provinces as $name) {
             DB::table('provinces')->insertOrIgnore([
-                'name'       => $name,
+                'name' => $name,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
