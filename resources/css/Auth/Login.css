@@ -1,7 +1,20 @@
 .login-section {
-    max-width: 100%;
+    width: 100%;
     display: flex;
     overflow: hidden;
+    animation: swipeFromLeft .5s ease;
+}
+
+@keyframes swipeFromLeft {
+    from {
+        transform: translateX(-50%);
+        opacity: .25;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 .login-section .left-section, .login-section .right-section {
@@ -29,6 +42,19 @@
     position: relative;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    animation: swipeUp .75s ease;
+}
+
+@keyframes swipeUp {
+    from {
+        transform: translateY(4%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .login-container::-webkit-scrollbar {
@@ -185,6 +211,12 @@
     margin-top: 1.25rem;
 }
 
+.login-form .additional-content-password:has(.error-message) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 @media screen and (max-width: 768px) {
     .login-section .left-section {
         width: 100%;
@@ -198,7 +230,7 @@
     }
 
     .left-section.fade {
-        opacity: .25;
+        opacity: .15;
     }
 
     .left-section .bg-desc {
@@ -208,15 +240,19 @@
     .login-container {
         padding-top: 2rem;
     }
+
+    .login-section {
+        animation: none;
+    }
 }
 
 @media screen and (max-width: 480px) {
     .login-section .right-section {
-        padding-inline: 2rem;
+        padding-inline: 4rem;
     }
 
     .login-container {
-        padding-top: 4rem;
+        padding-top: 4.25rem;
         padding-inline: 0;
     }
 
