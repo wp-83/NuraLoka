@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { FaEye, FaEyeSlash, FaRegUserCircle } from 'react-icons/fa';
 import { GiPadlock } from 'react-icons/gi';
 import Flash from '../../Components/Flash';
+import { route } from 'ziggy-js';
 
 // SEO, error message and field style, flash wrong
 export default function Login() {
