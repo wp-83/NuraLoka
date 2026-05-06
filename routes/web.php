@@ -19,17 +19,18 @@ Route::prefix('/auth')->name('auth.')->group(function () {
         Route::get('/', 'show')->name('index');
         Route::post('/', 'login')->name('authenticate');
     });
-
-    // Logout
-    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
-
+    
     // register
     Route::controller(RegisterController::class)->prefix('/register')->name('register.')->middleware('guest')->group(function () {
         Route::get('/', 'show')->name('index');
         Route::post('register', 'store')->name('store');
 
         Route::get('/detail-account', 'detail')->name('detail');
+        Route::post('/detail-account', 'saveAccountDetail')->name('store.detail');
     });
+
+    // Logout
+    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
     // google auth
     Route::controller(GoogleController::class)->prefix('google')->name('google.')->group(function () {
