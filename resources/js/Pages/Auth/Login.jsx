@@ -119,7 +119,7 @@ export default function Login() {
                             <form method='POST' className='login-form' onSubmit={handleSubmit}>
                                 <div className='input-group'>
                                     <label htmlFor="identity">Email atau Username</label>
-                                    <div className='input-wrapper'>
+                                    <div className={`input-wrapper ${(errors.identity) ? 'input-error' : ''}`}>
                                         <div className='illustration-icon'>
                                             <FaRegUserCircle className='icon' />
                                         </div>
@@ -131,7 +131,7 @@ export default function Login() {
                                 </div>
                                 <div className='input-group'>
                                     <label htmlFor="password">Kata Sandi</label>
-                                    <div className='input-wrapper'>
+                                    <div className={`input-wrapper ${(errors.password) ? 'input-error' : ''}`}>
                                         <div className='illustration-icon'>
                                             <GiPadlock className='icon' />
                                         </div>

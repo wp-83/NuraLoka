@@ -1,0 +1,22 @@
+.detail-account-split {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.detail-account-split .split-element {
+    flex: 1;
+}
+
+@media screen and (max-width: 480px) {
+    .detail-account-split {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .detail-account-split .split-element {
+        width: 100%;
+    }
+}
