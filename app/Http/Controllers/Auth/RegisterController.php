@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Province;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -53,6 +54,15 @@ class RegisterController extends Controller
 
     public function detail()
     {
-        return inertia('Auth/DetailAcount');
+        $provinces = Province::select('id', 'name')->get();
+
+        return inertia('Auth/DetailAcount', [
+            'provinces' => $provinces,
+        ]);
+    }
+
+    public function saveAccountDetail(Request $request)
+    {
+        // dd($request->fullname);
     }
 }
