@@ -118,7 +118,7 @@ export default function Login() {
                             <form method='POST' className='login-form' onSubmit={handleSubmit}>
                                 <div className='input-group'>
                                     <label htmlFor="identity">Email atau Username</label>
-                                    <div className='input-wrapper'>
+                                    <div className={`input-wrapper ${(errors.identity) ? 'input-error' : ''}`}>
                                         <div className='illustration-icon'>
                                             <FaRegUserCircle className='icon' />
                                         </div>
@@ -130,7 +130,7 @@ export default function Login() {
                                 </div>
                                 <div className='input-group'>
                                     <label htmlFor="password">Kata Sandi</label>
-                                    <div className='input-wrapper'>
+                                    <div className={`input-wrapper ${(errors.password) ? 'input-error' : ''}`}>
                                         <div className='illustration-icon'>
                                             <GiPadlock className='icon' />
                                         </div>
@@ -168,12 +168,12 @@ export default function Login() {
                                             ) : 'Masuk'
                                         }
                                     </button>
-                                    <Link href={route('auth.google.authenticate')}>
+                                    <a href={route('auth.google.authenticate')}>
                                         <button className='btn-white google-login-btn' type='button'>
                                             <img src="/images/icons/google.png" alt="google-icon" />
                                             <p>Masuk dengan Google</p>
                                         </button>
-                                    </Link>
+                                    </a>
                                 </div>
                             </form>
                             <p className='footer-content'>Belum punya akun? <Link href={route('auth.register.index')}>Daftar Sekarang!</Link></p>
