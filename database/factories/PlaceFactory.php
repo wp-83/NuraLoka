@@ -22,12 +22,12 @@ class PlaceFactory extends Factory
 
         // Koordinat sekitar Indonesia
         return [
-            'name'        => $name,
-            'slug'        => Str::slug($name),
+            'name' => $name,
+            'slug' => Str::slug($name),
             'description' => $this->faker->paragraph(3),
-            'latitude'    => $this->faker->latitude(-8.5, -6.0),   // Pulau Jawa
-            'longitude'   => $this->faker->longitude(106.0, 111.0),
-            'address'     => $this->faker->address(),
+            'latitude' => $this->faker->latitude(-8.5, -6.0),   // Pulau Jawa
+            'longitude' => $this->faker->longitude(106.0, 111.0),
+            'address' => $this->faker->address(),
         ];
     }
 }

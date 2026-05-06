@@ -11,7 +11,7 @@ class Place extends Model
 
     protected $fillable = [
         'name', 'slug', 'description',
-        'latitude', 'longitude', 'address'
+        'latitude', 'longitude', 'address',
     ];
 
     // Relationships
