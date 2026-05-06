@@ -12,50 +12,50 @@ class BadgeSeeder extends Seeder
     {
         $badges = [
             [
-                'name'                    => 'Penjelajah Pemula',
+                'name' => 'Penjelajah Pemula',
                 'requirement_description' => 'Selesaikan 1 perjalanan pertama.',
-                'icon_path'               => 'badges/explorer_beginner.svg',
+                'icon_path' => 'badges/explorer_beginner.svg',
             ],
             [
-                'name'                    => 'Petualang Nusantara',
+                'name' => 'Petualang Nusantara',
                 'requirement_description' => 'Kunjungi 5 destinasi berbeda.',
-                'icon_path'               => 'badges/adventurer.svg',
+                'icon_path' => 'badges/adventurer.svg',
             ],
             [
-                'name'                    => 'Fotografer Jalan',
+                'name' => 'Fotografer Jalan',
                 'requirement_description' => 'Upload 10 foto perjalanan.',
-                'icon_path'               => 'badges/photographer.svg',
+                'icon_path' => 'badges/photographer.svg',
             ],
             [
-                'name'                    => 'Pahlawan UMKM',
+                'name' => 'Pahlawan UMKM',
                 'requirement_description' => 'Kunjungi 3 UMKM lokal.',
-                'icon_path'               => 'badges/umkm_hero.svg',
+                'icon_path' => 'badges/umkm_hero.svg',
             ],
             [
-                'name'                    => 'Road Tripper',
+                'name' => 'Road Tripper',
                 'requirement_description' => 'Selesaikan 1 road trip dengan jarak >100 km.',
-                'icon_path'               => 'badges/road_tripper.svg',
+                'icon_path' => 'badges/road_tripper.svg',
             ],
             [
-                'name'                    => 'Hidden Gem Hunter',
+                'name' => 'Hidden Gem Hunter',
                 'requirement_description' => 'Temukan dan kunjungi 3 hidden gem.',
-                'icon_path'               => 'badges/hidden_gem.svg',
+                'icon_path' => 'badges/hidden_gem.svg',
             ],
             [
-                'name'                    => 'Wisatawan Elite',
+                'name' => 'Wisatawan Elite',
                 'requirement_description' => 'Kumpulkan 2000 poin.',
-                'icon_path'               => 'badges/elite.svg',
+                'icon_path' => 'badges/elite.svg',
             ],
         ];
 
         foreach ($badges as $badge) {
             DB::table('badges')->insertOrIgnore([
-                'name'                    => $badge['name'],
-                'slug'                    => Str::slug($badge['name']),
-                'icon_path'               => $badge['icon_path'],
+                'name' => $badge['name'],
+                'slug' => Str::slug($badge['name']),
+                'icon_path' => $badge['icon_path'],
                 'requirement_description' => $badge['requirement_description'],
-                'created_at'              => now(),
-                'updated_at'              => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
     }

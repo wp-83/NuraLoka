@@ -25,13 +25,13 @@ class MissionSeeder extends Seeder
             $badgeId = DB::table('badges')->where('name', $m['badge'])->value('id');
 
             DB::table('missions')->insertOrIgnore([
-                'badge_id'    => $badgeId,
-                'title'       => $m['title'],
-                'slug'        => Str::slug($m['title']),
+                'badge_id' => $badgeId,
+                'title' => $m['title'],
+                'slug' => Str::slug($m['title']),
                 'description' => $m['description'],
                 'points_reward' => $m['points_reward'],
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
     }

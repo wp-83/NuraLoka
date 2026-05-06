@@ -13,14 +13,14 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'username'           => $this->faker->unique()->userName(),
-            'email'              => $this->faker->unique()->safeEmail(),
-            'google_id'          => null,
-            'email_verified_at'  => now(),
-            'password'           => bcrypt('password'),
-            'remember_token'     => Str::random(10),
-            'created_at'         => $this->faker->dateTimeBetween('-1 year', 'now'),
-            'updated_at'         => now(),
+            'username' => $this->faker->unique()->userName(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'google_id' => null,
+            'email_verified_at' => now(),
+            'password' => bcrypt('password'),
+            'remember_token' => Str::random(10),
+            'created_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
+            'updated_at' => now(),
         ];
     }
 
@@ -35,7 +35,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn () => [
             'google_id' => $this->faker->numerify('####################'),
-            'password'  => null,
+            'password' => null,
         ]);
     }
 }

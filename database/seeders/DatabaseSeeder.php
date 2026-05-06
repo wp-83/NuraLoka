@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             PlaceSeeder::class,
             UserSeeder::class,        // <-- users + details + badges + missions
-        // User::factory(10)->create();
+            // User::factory(10)->create();
+        ]);
     }
 }
