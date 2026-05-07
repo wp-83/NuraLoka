@@ -52,7 +52,7 @@ jobs:
             -e "ssh -p ${{ secrets.PORT }}" \
             ./ "${{ secrets.USER }}@${{ secrets.HOST }}:${{ secrets.APP_DIR }}/"
 
-      - name: Composer + Artisan (server) (NO DB changes)
+      - name: Composer + Artisan (server) (FRESH DB + SEED)
         shell: bash
         run: |
           ssh -p "${{ secrets.PORT }}" "${{ secrets.USER }}@${{ secrets.HOST }}" << 'EOF'
@@ -76,8 +76,8 @@ jobs:
             rm -rf public/storage
             ln -s "${{ secrets.APP_DIR }}/storage/app/public" "${{ secrets.APP_DIR }}/public/storage"
 
-            # uncomment line below if you want to migrate new tables/row/cols but not refresh the table
-            "$PHP" artisan migrate --force
+            # refresh database and run seeders
+            "$PHP" artisan migrate:fresh --seed --force
 
             "$PHP" artisan config:cache || true
             "$PHP" artisan route:cache || true
