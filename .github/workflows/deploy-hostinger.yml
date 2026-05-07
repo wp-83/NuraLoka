@@ -5,6 +5,8 @@ on:
     branches:
       - main
 
+  workflow_dispatch:
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -18,6 +20,7 @@ jobs:
         with:
           php-version: '8.3'
           extensions: pdo, pdo_mysql, mbstring, bcmath, intl, gd, zip, fileinfo
+          tools: composer:v2
 
       - name: Install Composer dependencies
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
@@ -26,11 +29,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install NPM dependencies
         run: npm ci
 
-      - name: Build frontend assets
+      - name: Build React/Inertia assets
         run: npm run build
 
       - name: Prepare SSH
@@ -45,21 +49,37 @@ jobs:
           rsync -avz --delete \
             -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.HOSTINGER_PORT }}" \
             --exclude=".git" \
+            --exclude=".github" \
             --exclude="node_modules" \
             --exclude=".env" \
+            --exclude="hostinger_deploy_key" \
+            --exclude="hostinger_deploy_key.pub" \
             --exclude="storage/logs" \
             --exclude="storage/framework/cache" \
             --exclude="storage/framework/sessions" \
             --exclude="storage/framework/views" \
+            --exclude="public/storage" \
             ./ ${{ secrets.HOSTINGER_USERNAME }}@${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PATH }}
 
       - name: Run Laravel commands on Hostinger
         run: |
-          ssh -i ~/.ssh/deploy_key -p ${{ secrets.HOSTINGER_PORT }} \
-            ${{ secrets.HOSTINGER_USERNAME }}@${{ secrets.HOSTINGER_HOST }} << 'EOF'
-              cd ${{ secrets.HOSTINGER_PATH }}
-              php artisan migrate --force
-              php artisan config:cache
-              php artisan route:cache
-              php artisan view:cache
-            EOF
+          ssh -i ~/.ssh/deploy_key -p ${{ secrets.HOSTINGER_PORT }} ${{ secrets.HOSTINGER_USERNAME }}@${{ secrets.HOSTINGER_HOST }} "
+            cd ${{ secrets.HOSTINGER_PATH }} &&
+
+            PHP_BIN=/opt/alt/php83/usr/bin/php &&
+
+            mkdir -p storage/framework/cache/data &&
+            mkdir -p storage/framework/sessions &&
+            mkdir -p storage/framework/views &&
+            mkdir -p storage/logs &&
+            mkdir -p bootstrap/cache &&
+
+            chmod -R 775 storage bootstrap/cache &&
+
+            \$PHP_BIN artisan optimize:clear &&
+            \$PHP_BIN artisan migrate --force &&
+            \$PHP_BIN artisan storage:link &&
+            \$PHP_BIN artisan config:cache &&
+            \$PHP_BIN artisan route:cache &&
+            \$PHP_BIN artisan view:cache
+          "
