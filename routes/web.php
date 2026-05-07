@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\PlaceController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -50,3 +51,5 @@ Route::prefix('/auth')->name('auth.')->group(function () {
 Route::middleware('guest')->group(function () {
     Route::get('/places', [PlaceController::class, 'index'])->name('places.index');
 });
+
+Route::resource('users', UserController::class)->middleware('auth');
