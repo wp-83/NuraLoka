@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserDetail extends Model
 {
+    protected $guarded = [
+        'id',
+    ];
+
     // Relationships
     public function user()
     {
