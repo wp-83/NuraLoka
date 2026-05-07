@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('user_missions', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id');
-            $table->integer('mission_id');
+            $table->foreignId('user_id')->constrained();
+            $table->foreignId('mission_id')->constrained();
             $table->enum('status', ['on_going', 'completed']);
             $table->timestamps();
         });

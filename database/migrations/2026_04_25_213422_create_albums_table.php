@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('albums', function (Blueprint $table) {
             $table->id();
-            $table->integer('trip_id');
+            $table->foreignId('trip_id')->constrained();
             $table->string('caption');
             $table->timestamps();
         });

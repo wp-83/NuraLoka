@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('missions', function (Blueprint $table) {
             $table->id();
-            $table->integer('badge_id');
+            $table->foreignId('badge_id')->constrained();
             $table->string('title');
             $table->string('description');
             $table->integer('points_reward');

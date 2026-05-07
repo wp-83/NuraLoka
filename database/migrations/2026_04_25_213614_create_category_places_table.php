@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('category_places', function (Blueprint $table) {
             $table->id();
-            $table->integer('category_id');
-            $table->integer('place_id');
+            $table->foreignId('category_id')->constrained();
+            $table->foreignId('place_id')->constrained();
             $table->timestamps();
         });
     }
