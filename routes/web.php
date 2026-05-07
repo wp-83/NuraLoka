@@ -16,10 +16,17 @@ Route::get('/login', function () {
 
 Route::prefix('/auth')->name('auth.')->group(function () {
     // Login
-    Route::prefix('/login')->name('login.')->middleware('guest')->controller(LoginController::class)->group(function () {
-        Route::get('/', 'show')->name('index');
-        Route::post('/', 'login')->name('authenticate');
-    });
+    Route::get('/login', [LoginController::class, 'show'])
+        ->name('login')
+        ->middleware('guest');
+
+    Route::post('/login', [LoginController::class, 'login'])
+        ->middleware('guest');
+
+    // Logout
+    Route::post('/logout', [LoginController::class, 'destroy'])
+        ->name('logout')
+        ->middleware('auth');
 
     // register
     Route::controller(RegisterController::class)->prefix('/register')->name('register.')->middleware('guest')->group(function () {
