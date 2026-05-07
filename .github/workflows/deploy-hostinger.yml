@@ -22,6 +22,12 @@ jobs:
           extensions: pdo, pdo_mysql, mbstring, bcmath, intl, gd, zip, fileinfo
           tools: composer:v2
 
+      - name: Check PHP Extensions
+        run: |
+          php -v
+          php -m | grep -i pdo
+          php -m | grep -i mysql
+
       - name: Install Composer dependencies
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
@@ -66,7 +72,9 @@ jobs:
           ssh -i ~/.ssh/deploy_key -p ${{ secrets.HOSTINGER_PORT }} ${{ secrets.HOSTINGER_USERNAME }}@${{ secrets.HOSTINGER_HOST }} "
             cd ${{ secrets.HOSTINGER_PATH }} &&
 
-            PHP_BIN=/opt/alt/php83/usr/bin/php &&
+            PHP_BIN=/opt/alt/php84/usr/bin/php &&
+
+            \$PHP_BIN -v &&
 
             mkdir -p storage/framework/cache/data &&
             mkdir -p storage/framework/sessions &&
