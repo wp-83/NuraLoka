@@ -1,4 +1,5 @@
 import '@css/Init.css';
+import { Link } from '@inertiajs/react';
 
 export default function Home(){
     return (
@@ -11,6 +12,11 @@ export default function Home(){
             <button className='btn-info'>button label</button>
             <button className='btn-gray'>button label</button>
             <button className='btn-inactive'>button label</button>
+
+            <Link href={route('logout')} method='POST' as="button" className='btn-primary'>
+                Logout
+            </Link>
         </div>
+
     );
 };

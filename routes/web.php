@@ -14,7 +14,7 @@ Route::get('/login', function () {
     return redirect(route('auth.login.index'));
 })->name('login');
 
-Route::prefix('/auth')->name('auth.')->group(function () {
+Route::prefix('/auth')->name('auth.')->middleware('guest')->group(function () {
     // Login
     Route::prefix('/login')->name('login.')->middleware('guest')->controller(LoginController::class)->group(function () {
         Route::get('/', 'show')->name('index');
@@ -30,15 +30,15 @@ Route::prefix('/auth')->name('auth.')->group(function () {
         Route::post('/detail-account', 'saveAccountDetail')->name('store.detail');
     });
 
-    // Logout
-    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
-
     // google auth
     Route::controller(GoogleController::class)->prefix('google')->name('google.')->group(function () {
         Route::get('/', 'redirect')->name('authenticate');
         Route::get('/callback', 'callback')->name('callback');
     });
 });
+
+// Logout
+Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->middleware('auth');
 
 Route::middleware('guest')->group(function () {
     Route::get('/places', [PlaceController::class, 'index'])->name('places.index');

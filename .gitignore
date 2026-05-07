@@ -21,3 +21,5 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+hostinger_deploy_key
+hostinger_deploy_key.pub

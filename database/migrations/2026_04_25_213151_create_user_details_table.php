@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('user_details', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id');
-            $table->integer('province_id');
-            $table->string('name');
-            $table->string('profile_path')->nullable();
+            $table->foreignId('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('province_id')->constrained();
+            $table->string('fullname');
             $table->date('dob');
             $table->enum('gender', ['male', 'female', 'unspecified']);
-            $table->integer('total_points');
+            $table->string('profile_path')->nullable();
+            $table->integer('total_points')->default(0);
             $table->timestamps();
         });
     }
