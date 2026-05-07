@@ -10,11 +10,11 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             ProvinceSeeder::class,
-            BadgeSeeder::class,
-            MissionSeeder::class,
-            CategorySeeder::class,
-            PlaceSeeder::class,
-            UserSeeder::class,        // <-- users + details + badges + missions
+            // BadgeSeeder::class,
+            // MissionSeeder::class,
+            // CategorySeeder::class,
+            // PlaceSeeder::class,
+            // UserSeeder::class,        // <-- users + details + badges + missions
             // User::factory(10)->create();
         ]);
     }
