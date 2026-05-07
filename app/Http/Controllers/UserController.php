@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Hash;
+use Inertia\Inertia;
 
 class UserController extends Controller
 {
@@ -40,20 +39,20 @@ class UserController extends Controller
     {
         $request->validate([
             'username' => 'required|string|lowercase|max:255|unique:users',
-            'name'     => 'nullable|string|max:255',
-            'email'    => 'required|string|lowercase|email|max:255|unique:users',
+            'name' => 'nullable|string|max:255',
+            'email' => 'required|string|lowercase|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
         User::create([
             'username' => $request->username,
-            'name'     => $request->name,
-            'email'    => $request->email,
+            'name' => $request->name,
+            'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
         return redirect()->route('users.index')->with('success', 'User created successfully.');
-    
+
     }
 
     /**
@@ -88,20 +87,19 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $request->validate([
-            'username' => 'required|string|lowercase|max:255|unique:users,username,' . $user->id,
-            'name'     => 'nullable|string|max:255',
-            'email'    => 'required|string|lowercase|email|max:255|unique:users,email,' . $user->id,
+            'username' => 'required|string|lowercase|max:255|unique:users,username,'.$user->id,
+            'name' => 'nullable|string|max:255',
+            'email' => 'required|string|lowercase|email|max:255|unique:users,email,'.$user->id,
         ]);
 
         $user->update([
             'username' => $request->username,
-            'name'     => $request->name,
-            'email'    => $request->email,
+            'name' => $request->name,
+            'email' => $request->email,
         ]);
 
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
-    
-    
+
     }
 
     /**
@@ -109,7 +107,7 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-          $user = User::findOrFail($id);
+        $user = User::findOrFail($id);
 
         // Cegah user hapus akunnya sendiri
         if ($user->id === Auth::id()) {
@@ -123,4 +121,3 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
 }
-
