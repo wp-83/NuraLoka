@@ -1,93 +1,88 @@
-name: Deploy to Hostinger
+name: Deploy to Hostinger (Laravel + React)
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
 
-  workflow_dispatch:
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          extensions: pdo, pdo_mysql, mbstring, bcmath, intl, gd, zip, fileinfo
-          tools: composer:v2
-
-      - name: Check PHP Extensions
-        run: |
-          php -v
-          php -m | grep -i pdo
-          php -m | grep -i mysql
-
-      - name: Install Composer dependencies
-        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
-      - name: Install NPM dependencies
+      - name: Install JS dependencies
         run: npm ci
 
-      - name: Build React/Inertia assets
+      - name: Build frontend
         run: npm run build
 
-      - name: Prepare SSH
+      - name: Setup SSH
+        shell: bash
         run: |
+          set -e
           mkdir -p ~/.ssh
-          echo "${{ secrets.HOSTINGER_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p ${{ secrets.HOSTINGER_PORT }} ${{ secrets.HOSTINGER_HOST }} >> ~/.ssh/known_hosts
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${{ secrets.PORT }}" -H "${{ secrets.HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy files to Hostinger
+      - name: Upload project to server (rsync - no deletes, protect runtime dirs)
+        shell: bash
         run: |
-          rsync -avz --delete \
-            -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.HOSTINGER_PORT }}" \
-            --exclude=".git" \
-            --exclude=".github" \
-            --exclude="node_modules" \
-            --exclude=".env" \
-            --exclude="hostinger_deploy_key" \
-            --exclude="hostinger_deploy_key.pub" \
-            --exclude="storage/logs" \
-            --exclude="storage/framework/cache" \
-            --exclude="storage/framework/sessions" \
-            --exclude="storage/framework/views" \
-            --exclude="public/storage" \
-            ./ ${{ secrets.HOSTINGER_USERNAME }}@${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PATH }}
+          set -e
+          rsync -az \
+            --filter='P .env' \
+            --filter='P storage/***' \
+            --filter='P public/storage/profile-images/***' \
+            --exclude ".git/" \
+            --exclude ".github/" \
+            --exclude "node_modules/" \
+            --exclude "vendor/" \
+            -e "ssh -p ${{ secrets.PORT }}" \
+            ./ "${{ secrets.USER }}@${{ secrets.HOST }}:${{ secrets.APP_DIR }}/"
 
-      - name: Run Laravel commands on Hostinger
+      - name: Composer + Artisan (server) (NO DB changes)
+        shell: bash
         run: |
-          ssh -i ~/.ssh/deploy_key -p ${{ secrets.HOSTINGER_PORT }} ${{ secrets.HOSTINGER_USERNAME }}@${{ secrets.HOSTINGER_HOST }} "
-            cd ${{ secrets.HOSTINGER_PATH }} &&
+          ssh -p "${{ secrets.PORT }}" "${{ secrets.USER }}@${{ secrets.HOST }}" << 'EOF'
+            set -euo pipefail
+            cd "${{ secrets.APP_DIR }}"
 
-            PHP_BIN=/opt/alt/php83/usr/bin/php &&
+            # ensure env exists (won't be overwritten by rsync)
+            test -f .env
+            ls -la .env
 
-            \$PHP_BIN -v &&
+            PHP="${{ secrets.PHP_BIN }}"
+            "$PHP" -v
 
-            mkdir -p storage/framework/cache/data &&
-            mkdir -p storage/framework/sessions &&
-            mkdir -p storage/framework/views &&
-            mkdir -p storage/logs &&
-            mkdir -p bootstrap/cache &&
+            "$PHP" "$(command -v composer)" install \
+              --no-dev \
+              --prefer-dist \
+              --no-interaction \
+              --optimize-autoloader
 
-            chmod -R 775 storage bootstrap/cache &&
+            # recreate storage symlink (safe)
+            rm -rf public/storage
+            ln -s "${{ secrets.APP_DIR }}/storage/app/public" "${{ secrets.APP_DIR }}/public/storage"
 
-            \$PHP_BIN artisan optimize:clear &&
-            \$PHP_BIN artisan migrate --force &&
-            \$PHP_BIN artisan storage:link &&
-            \$PHP_BIN artisan config:cache &&
-            \$PHP_BIN artisan route:cache &&
-            \$PHP_BIN artisan view:cache
-          "
+            # uncomment line below if you want to migrate new tables/row/cols but not refresh the table
+            # "$PHP" artisan migrate --force
+
+            "$PHP" artisan config:cache || true
+            "$PHP" artisan route:cache || true
+            "$PHP" artisan view:cache || true
+
+            # optional if you use queues
+            "$PHP" artisan queue:restart || true
+          EOF
