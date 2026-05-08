@@ -3,7 +3,7 @@
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\PlaceController;
+// use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -48,8 +48,8 @@ Route::prefix('/auth')->name('auth.')->middleware('guest')->group(function () {
 // Logout
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->middleware('auth');
 
-Route::middleware('guest')->group(function () {
-    Route::get('/places', [PlaceController::class, 'index'])->name('places.index');
-});
+// Route::middleware('guest')->group(function () {
+//     Route::get('/places', [PlaceController::class, 'index'])->name('places.index');
+// });
 
 Route::resource('users', UserController::class)->middleware('auth');
