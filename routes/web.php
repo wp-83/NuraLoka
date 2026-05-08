@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\PlaceController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -16,10 +17,17 @@ Route::get('/login', function () {
 
 Route::prefix('/auth')->name('auth.')->middleware('guest')->group(function () {
     // Login
-    Route::prefix('/login')->name('login.')->middleware('guest')->controller(LoginController::class)->group(function () {
-        Route::get('/', 'show')->name('index');
-        Route::post('/', 'login')->name('authenticate');
-    });
+    Route::get('/login', [LoginController::class, 'show'])
+        ->name('login')
+        ->middleware('guest');
+
+    Route::post('/login', [LoginController::class, 'login'])
+        ->middleware('guest');
+
+    // Logout
+    Route::post('/logout', [LoginController::class, 'destroy'])
+        ->name('logout')
+        ->middleware('auth');
 
     // register
     Route::controller(RegisterController::class)->prefix('/register')->name('register.')->middleware('guest')->group(function () {
@@ -43,3 +51,5 @@ Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->mid
 Route::middleware('guest')->group(function () {
     Route::get('/places', [PlaceController::class, 'index'])->name('places.index');
 });
+
+Route::resource('users', UserController::class)->middleware('auth');
