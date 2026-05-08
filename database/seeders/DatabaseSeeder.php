@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -15,8 +14,7 @@ class DatabaseSeeder extends Seeder
             MissionSeeder::class,
             CategorySeeder::class,
             PlaceSeeder::class,
-            UserSeeder::class,        // <-- users + details + badges + missions
-            // User::factory(10)->create()
+            UserSeeder::class,
         ]);
     }
 }
