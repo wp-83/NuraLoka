@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('badge_id')->constrained();
             $table->string('title');
+            $table->string('slug')->unique();
             $table->string('description');
             $table->integer('points_reward');
             $table->timestamps();

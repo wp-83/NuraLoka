@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Badge;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class BadgeSeeder extends Seeder
 {
@@ -49,14 +48,13 @@ class BadgeSeeder extends Seeder
         ];
 
         foreach ($badges as $badge) {
-            DB::table('badges')->insertOrIgnore([
-                'name' => $badge['name'],
-                'slug' => Str::slug($badge['name']),
-                'icon_path' => $badge['icon_path'],
-                'requirement_description' => $badge['requirement_description'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            Badge::updateOrCreate(
+                ['name' => $badge['name']],
+                [
+                    'icon_path' => $badge['icon_path'],
+                    'requirement_description' => $badge['requirement_description'],
+                ]
+            );
         }
     }
 }
