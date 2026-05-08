@@ -2,11 +2,10 @@
 
 namespace Tests\Feature\Admin;
 
-use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\Hash;
+use Tests\TestCase;
 
 class UserManagementTest extends TestCase
 {
@@ -20,7 +19,7 @@ class UserManagementTest extends TestCase
 
         $this->admin = User::factory()->create([
             'username' => 'admin_nuraloka',
-            'email'    => 'admin@nuraloka.com',
+            'email' => 'admin@nuraloka.com',
         ]);
         $this->admin->assignRole('admin');
     }
@@ -36,23 +35,23 @@ class UserManagementTest extends TestCase
     {
         $payload = [
             'username' => 'newuser',
-            'email'    => 'newuser@example.com',
+            'email' => 'newuser@example.com',
             'password' => 'Secret@123',
-            'role'     => 'user',
+            'role' => 'user',
         ];
 
         $response = $this->actingAs($this->admin)
-                         ->postJson('/api/admin/users', $payload);
+            ->postJson('/api/admin/users', $payload);
 
         $response->assertStatus(201)
-                 ->assertJsonStructure([
-                     'message',
-                     'data' => ['id', 'username', 'email', 'created_at'],
-                 ]);
+            ->assertJsonStructure([
+                'message',
+                'data' => ['id', 'username', 'email', 'created_at'],
+            ]);
 
         $this->assertDatabaseHas('users', [
             'username' => 'newuser',
-            'email'    => 'newuser@example.com',
+            'email' => 'newuser@example.com',
         ]);
     }
 
@@ -64,15 +63,15 @@ class UserManagementTest extends TestCase
         User::factory()->create(['email' => 'existing@example.com']);
 
         $response = $this->actingAs($this->admin)
-                         ->postJson('/api/admin/users', [
-                             'username' => 'anotheruser',
-                             'email'    => 'existing@example.com',
-                             'password' => 'Secret@123',
-                             'role'     => 'user',
-                         ]);
+            ->postJson('/api/admin/users', [
+                'username' => 'anotheruser',
+                'email' => 'existing@example.com',
+                'password' => 'Secret@123',
+                'role' => 'user',
+            ]);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['email']);
+            ->assertJsonValidationErrors(['email']);
     }
 
     /**
@@ -83,15 +82,15 @@ class UserManagementTest extends TestCase
         User::factory()->create(['username' => 'existinguser']);
 
         $response = $this->actingAs($this->admin)
-                         ->postJson('/api/admin/users', [
-                             'username' => 'existinguser',
-                             'email'    => 'unique@example.com',
-                             'password' => 'Secret@123',
-                             'role'     => 'user',
-                         ]);
+            ->postJson('/api/admin/users', [
+                'username' => 'existinguser',
+                'email' => 'unique@example.com',
+                'password' => 'Secret@123',
+                'role' => 'user',
+            ]);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['username']);
+            ->assertJsonValidationErrors(['username']);
     }
 
     /**
@@ -102,12 +101,12 @@ class UserManagementTest extends TestCase
         $regularUser = User::factory()->create();
 
         $response = $this->actingAs($regularUser)
-                         ->postJson('/api/admin/users', [
-                             'username' => 'unauthorizedcreate',
-                             'email'    => 'unauthorized@example.com',
-                             'password' => 'Secret@123',
-                             'role'     => 'user',
-                         ]);
+            ->postJson('/api/admin/users', [
+                'username' => 'unauthorizedcreate',
+                'email' => 'unauthorized@example.com',
+                'password' => 'Secret@123',
+                'role' => 'user',
+            ]);
 
         $response->assertStatus(403);
     }
@@ -124,15 +123,15 @@ class UserManagementTest extends TestCase
         User::factory()->count(5)->create();
 
         $response = $this->actingAs($this->admin)
-                         ->getJson('/api/admin/users');
+            ->getJson('/api/admin/users');
 
         $response->assertStatus(200)
-                 ->assertJsonStructure([
-                     'data' => [
-                         '*' => ['id', 'username', 'email', 'created_at'],
-                     ],
-                     'meta' => ['total', 'per_page', 'current_page'],
-                 ]);
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => ['id', 'username', 'email', 'created_at'],
+                ],
+                'meta' => ['total', 'per_page', 'current_page'],
+            ]);
     }
 
     /**
@@ -143,14 +142,14 @@ class UserManagementTest extends TestCase
         $targetUser = User::factory()->create();
 
         $response = $this->actingAs($this->admin)
-                         ->getJson("/api/admin/users/{$targetUser->id}");
+            ->getJson("/api/admin/users/{$targetUser->id}");
 
         $response->assertStatus(200)
-                 ->assertJsonFragment([
-                     'id'       => $targetUser->id,
-                     'username' => $targetUser->username,
-                     'email'    => $targetUser->email,
-                 ]);
+            ->assertJsonFragment([
+                'id' => $targetUser->id,
+                'username' => $targetUser->username,
+                'email' => $targetUser->email,
+            ]);
     }
 
     /**
@@ -161,7 +160,7 @@ class UserManagementTest extends TestCase
         $regularUser = User::factory()->create();
 
         $response = $this->actingAs($regularUser)
-                         ->getJson('/api/admin/users');
+            ->getJson('/api/admin/users');
 
         $response->assertStatus(403);
     }
@@ -172,7 +171,7 @@ class UserManagementTest extends TestCase
     public function test_returns_404_for_nonexistent_user(): void
     {
         $response = $this->actingAs($this->admin)
-                         ->getJson('/api/admin/users/999999');
+            ->getJson('/api/admin/users/999999');
 
         $response->assertStatus(404);
     }
@@ -190,19 +189,19 @@ class UserManagementTest extends TestCase
 
         $payload = [
             'username' => 'updated_by_admin',
-            'email'    => 'updated@example.com',
+            'email' => 'updated@example.com',
         ];
 
         $response = $this->actingAs($this->admin)
-                         ->putJson("/api/admin/users/{$targetUser->id}", $payload);
+            ->putJson("/api/admin/users/{$targetUser->id}", $payload);
 
         $response->assertStatus(200)
-                 ->assertJsonFragment(['username' => 'updated_by_admin']);
+            ->assertJsonFragment(['username' => 'updated_by_admin']);
 
         $this->assertDatabaseHas('users', [
-            'id'       => $targetUser->id,
+            'id' => $targetUser->id,
             'username' => 'updated_by_admin',
-            'email'    => 'updated@example.com',
+            'email' => 'updated@example.com',
         ]);
     }
 
@@ -215,12 +214,12 @@ class UserManagementTest extends TestCase
         $targetUser = User::factory()->create();
 
         $response = $this->actingAs($this->admin)
-                         ->putJson("/api/admin/users/{$targetUser->id}", [
-                             'username' => 'taken_username',
-                         ]);
+            ->putJson("/api/admin/users/{$targetUser->id}", [
+                'username' => 'taken_username',
+            ]);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['username']);
+            ->assertJsonValidationErrors(['username']);
     }
 
     /**
@@ -232,12 +231,12 @@ class UserManagementTest extends TestCase
         $targetUser = User::factory()->create();
 
         $response = $this->actingAs($this->admin)
-                         ->putJson("/api/admin/users/{$targetUser->id}", [
-                             'email' => 'taken@example.com',
-                         ]);
+            ->putJson("/api/admin/users/{$targetUser->id}", [
+                'email' => 'taken@example.com',
+            ]);
 
         $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['email']);
+            ->assertJsonValidationErrors(['email']);
     }
 
     /**
@@ -246,9 +245,9 @@ class UserManagementTest extends TestCase
     public function test_admin_update_returns_404_for_nonexistent_user(): void
     {
         $response = $this->actingAs($this->admin)
-                         ->putJson('/api/admin/users/999999', [
-                             'username' => 'ghostuser',
-                         ]);
+            ->putJson('/api/admin/users/999999', [
+                'username' => 'ghostuser',
+            ]);
 
         $response->assertStatus(404);
     }
@@ -265,10 +264,10 @@ class UserManagementTest extends TestCase
         $targetUser = User::factory()->create();
 
         $response = $this->actingAs($this->admin)
-                         ->deleteJson("/api/admin/users/{$targetUser->id}");
+            ->deleteJson("/api/admin/users/{$targetUser->id}");
 
         $response->assertStatus(200)
-                 ->assertJsonFragment(['message' => 'User berhasil dihapus.']);
+            ->assertJsonFragment(['message' => 'User berhasil dihapus.']);
 
         $this->assertSoftDeleted('users', ['id' => $targetUser->id]);
     }
@@ -279,10 +278,10 @@ class UserManagementTest extends TestCase
     public function test_admin_cannot_delete_own_account(): void
     {
         $response = $this->actingAs($this->admin)
-                         ->deleteJson("/api/admin/users/{$this->admin->id}");
+            ->deleteJson("/api/admin/users/{$this->admin->id}");
 
         $response->assertStatus(403)
-                 ->assertJsonFragment(['message' => 'Tidak dapat menghapus akun sendiri.']);
+            ->assertJsonFragment(['message' => 'Tidak dapat menghapus akun sendiri.']);
     }
 
     /**
@@ -291,7 +290,7 @@ class UserManagementTest extends TestCase
     public function test_admin_delete_returns_404_for_nonexistent_user(): void
     {
         $response = $this->actingAs($this->admin)
-                         ->deleteJson('/api/admin/users/999999');
+            ->deleteJson('/api/admin/users/999999');
 
         $response->assertStatus(404);
     }
@@ -307,14 +306,14 @@ class UserManagementTest extends TestCase
     {
         User::factory()->create([
             'username' => 'findme_user',
-            'email'    => 'findme@example.com',
+            'email' => 'findme@example.com',
         ]);
 
         $response = $this->actingAs($this->admin)
-                         ->getJson('/api/admin/users?search=findme_user');
+            ->getJson('/api/admin/users?search=findme_user');
 
         $response->assertStatus(200)
-                 ->assertJsonFragment(['username' => 'findme_user']);
+            ->assertJsonFragment(['username' => 'findme_user']);
     }
 
     /**
@@ -323,9 +322,9 @@ class UserManagementTest extends TestCase
     public function test_admin_can_filter_users_by_province(): void
     {
         $response = $this->actingAs($this->admin)
-                         ->getJson('/api/admin/users?province_id=1');
+            ->getJson('/api/admin/users?province_id=1');
 
         $response->assertStatus(200)
-                 ->assertJsonStructure(['data', 'meta']);
+            ->assertJsonStructure(['data', 'meta']);
     }
 }
