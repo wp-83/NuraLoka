@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->string(('slug'))->unique();
             $table->string('origin_name');
-            $table->decimal('origin_latitude', 10, 8);
+            $table->decimal('origin_latitude', 10, 8); 
             $table->decimal('origin_longitude', 11, 8);
             $table->string('destination_name');
             $table->decimal('destination_latitude', 10, 8);
