@@ -37,14 +37,13 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p "${{ secrets.PORT }}" -H "${{ secrets.HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Upload project to server (rsync - no deletes, protect runtime dirs)
+      - name: Upload project to server
         shell: bash
         run: |
           set -e
-          rsync -az \
+          rsync -az --delete \
             --filter='P .env' \
             --filter='P storage/***' \
-            --filter='P public/storage/profile-images/***' \
             --exclude ".git/" \
             --exclude ".github/" \
             --exclude "node_modules/" \
@@ -52,14 +51,13 @@ jobs:
             -e "ssh -p ${{ secrets.PORT }}" \
             ./ "${{ secrets.USER }}@${{ secrets.HOST }}:${{ secrets.APP_DIR }}/"
 
-      - name: Composer + Artisan (server) (FRESH DB + SEED)
+      - name: Composer + Artisan server
         shell: bash
         run: |
           ssh -p "${{ secrets.PORT }}" "${{ secrets.USER }}@${{ secrets.HOST }}" << 'EOF'
             set -euo pipefail
             cd "${{ secrets.APP_DIR }}"
 
-            # ensure env exists (won't be overwritten by rsync)
             test -f .env
             ls -la .env
 
@@ -72,17 +70,27 @@ jobs:
               --no-interaction \
               --optimize-autoloader
 
-            # recreate storage symlink (safe)
-            rm -rf public/storage
-            ln -s "${{ secrets.APP_DIR }}/storage/app/public" "${{ secrets.APP_DIR }}/public/storage"
+            # recreate storage symlink safely
+            if [ -L public/storage ]; then
+              rm public/storage
+            elif [ -e public/storage ]; then
+              echo "public/storage exists but is not a symlink. Skipping delete."
+            fi
 
-            # refresh database and run seeders
+            if [ ! -e public/storage ]; then
+              ln -s "${{ secrets.APP_DIR }}/storage/app/public" "${{ secrets.APP_DIR }}/public/storage"
+            fi
+
             "$PHP" artisan migrate:fresh --seed --force
+
+            "$PHP" artisan config:clear || true
+            "$PHP" artisan route:clear || true
+            "$PHP" artisan view:clear || true
+            "$PHP" artisan cache:clear || true
 
             "$PHP" artisan config:cache || true
             "$PHP" artisan route:cache || true
             "$PHP" artisan view:cache || true
 
-            # optional if you use queues
             "$PHP" artisan queue:restart || true
           EOF
