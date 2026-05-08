@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('trip_photos', function (Blueprint $table) {
             $table->id();
-            $table->integer('album_id');
-            $table->integer('place_id');
+            $table->foreignId('album_id')->constrained();
+            $table->foreignId('place_id')->constrained();
             $table->string('photo_path');
             $table->timestamps();
         });

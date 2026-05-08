@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('saved_trips', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id');
-            $table->integer('trip_id');
+            $table->foreignId('user_id')->constrained();
+            $table->foreignId('trip_id')->constrained();
             $table->timestamps();
         });
     }

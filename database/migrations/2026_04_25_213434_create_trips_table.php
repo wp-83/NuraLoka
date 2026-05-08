@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('trips', function (Blueprint $table) {
             $table->id();
-            $table->integer('user_id');
             $table->string('title');
+            $table->string(('slug'))->unique();
             $table->string('origin_name');
             $table->decimal('origin_latitude', 10, 8);
             $table->decimal('origin_longitude', 11, 8);
