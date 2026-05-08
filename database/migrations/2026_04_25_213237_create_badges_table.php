@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('badges', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('slug')->unique();
             $table->string('icon_path');
             $table->string('requirement_description');
             $table->timestamps();
