@@ -24,7 +24,7 @@ class GoogleController extends Controller
      * Redirect the user to Google for authentication as a registration flow.
      */
     public function redirectRegister()
-    { 
+    {
         session(['google_auth_mode' => 'register']);
 
         return Socialite::driver('google')->redirect();
