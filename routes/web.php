@@ -32,7 +32,8 @@ Route::prefix('/auth')->name('auth.')->middleware('guest')->group(function () {
 
     // google auth
     Route::controller(GoogleController::class)->prefix('google')->name('google.')->group(function () {
-        Route::get('/', 'redirect')->name('authenticate');
+        Route::get('/login', 'redirectLogin')->name('login');
+        Route::get('/register', 'redirectRegister')->name('register');
         Route::get('/callback', 'callback')->name('callback');
     });
 });
