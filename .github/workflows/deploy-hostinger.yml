@@ -65,7 +65,7 @@ jobs:
             "$PHP" -v
 
             "$PHP" "$(command -v composer)" install \
-              --no-dev \
+              # --no-dev \
               --prefer-dist \
               --no-interaction \
               --optimize-autoloader
