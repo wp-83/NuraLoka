@@ -10,13 +10,13 @@ class Badge extends Model
 {
     use HasSlug;
 
-    public function getSlugOptions() : SlugOptions
+    public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
             ->generateSlugsFrom('name')
             ->saveSlugsTo('slug');
     }
-    
+
     // Relationships
     public function users()
     {
