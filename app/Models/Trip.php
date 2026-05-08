@@ -16,7 +16,7 @@ class Trip extends Model
             ->generateSlugsFrom('name')
             ->saveSlugsTo('slug');
     }
-    
+
     // relationships
     public function users()
     {
