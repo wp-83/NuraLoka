@@ -18,6 +18,7 @@ export default defineConfig({
         alias: {
             '@js': path.resolve(__dirname, 'resources/js'),
             '@css': path.resolve(__dirname, 'resources/css'),
+            '@components': path.resolve(__dirname, 'resources/js/Components'),
         },
     },
 });
