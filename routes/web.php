@@ -3,8 +3,8 @@
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\ExploreController;
+use App\Http\Controllers\PlaceController;
 // use App\Http\Controllers\PlaceController;
 use Illuminate\Support\Facades\Route;
 
