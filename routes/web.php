@@ -16,7 +16,7 @@ Route::get('/login', function () {
 })->name('login');
 
 Route::prefix('/auth')->name('auth.')->group(function () {
-    Route::middleware('guest')->group(function() {
+    Route::middleware('guest')->group(function () {
         // Login
         Route::prefix('/login')->name('login.')->controller(LoginController::class)->group(function () {
             Route::get('/', 'show')->name('index');
@@ -40,15 +40,12 @@ Route::prefix('/auth')->name('auth.')->group(function () {
         });
 
         // forget password
-        Route::controller(ForgetPasswordController::class)->prefix('forget-password')->name('forget-password.')->group(function(){
-            
-        });
+        Route::controller(ForgetPasswordController::class)->prefix('forget-password')->name('forget-password.')->group(function () {});
     });
 
     // Logout
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->middleware('auth');
 });
-
 
 // Route::middleware('guest')->group(function () {
 //     Route::get('/places', [PlaceController::class, 'index'])->name('places.index');

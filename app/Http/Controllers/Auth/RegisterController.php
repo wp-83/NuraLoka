@@ -52,7 +52,7 @@ class RegisterController extends Controller
 
     public function detail()
     {
-        if (!session()->has('register_user_id')) {
+        if (! session()->has('register_user_id')) {
             return redirect(route('auth.register.index'));
         }
 

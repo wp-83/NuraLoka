@@ -80,7 +80,7 @@ class GoogleController extends Controller
         | The user is not logged in yet because their detail account data is
         | still incomplete.
         */
-        if (!$user) {
+        if (! $user) {
             $user = User::create([
                 'username' => $this->generateUsernameFromEmail($email),
                 'email' => $email,
@@ -104,7 +104,7 @@ class GoogleController extends Controller
         | If the user registered manually before using the same email, but the
         | google_id is still empty, connect the local account to Google.
         */
-        if (!$user->google_id) {
+        if (! $user->google_id) {
             $user->update([
                 'google_id' => $googleId,
                 'email_verified_at' => $user->email_verified_at ?? now(),
