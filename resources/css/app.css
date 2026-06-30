@@ -1,12 +1,82 @@
 @import 'tailwindcss';
+@import './Init.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source "../**/*.blade.php";
 @source "../**/*.js";
+@source "../**/*.jsx";
 @source "../**/*.vue";
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+/* ── Bridge: expose Init.css CSS variables as Tailwind theme tokens ── */
+@theme inline {
+    /* Colors: Primary */
+    --color-primary-100: var(--primary-100);
+    --color-primary-85: var(--primary-85);
+    --color-primary-70: var(--primary-70);
+    --color-primary-50: var(--primary-50);
+    --color-primary-30: var(--primary-30);
+    --color-primary-10: var(--primary-10);
+
+    /* Colors: Secondary */
+    --color-secondary-100: var(--secondary-100);
+    --color-secondary-85: var(--secondary-85);
+    --color-secondary-70: var(--secondary-70);
+    --color-secondary-50: var(--secondary-50);
+    --color-secondary-30: var(--secondary-30);
+    --color-secondary-10: var(--secondary-10);
+
+    /* Colors: Accent */
+    --color-accent-100: var(--accent-100);
+    --color-accent-85: var(--accent-85);
+    --color-accent-70: var(--accent-70);
+    --color-accent-50: var(--accent-50);
+    --color-accent-30: var(--accent-30);
+    --color-accent-10: var(--accent-10);
+
+    /* Colors: Gray */
+    --color-brand-gray-100: var(--gray-100);
+    --color-brand-gray-85: var(--gray-85);
+    --color-brand-gray-70: var(--gray-70);
+    --color-brand-gray-50: var(--gray-50);
+    --color-brand-gray-30: var(--gray-30);
+    --color-brand-gray-10: var(--gray-10);
+
+    /* Colors: Status */
+    --color-success-dark: var(--success-dark);
+    --color-success-medium: var(--success-medium);
+    --color-success-light: var(--success-light);
+
+    --color-warning-dark: var(--warning-dark);
+    --color-warning-medium: var(--warning-medium);
+    --color-warning-light: var(--warning-light);
+
+    --color-error-dark: var(--error-dark);
+    --color-error-medium: var(--error-medium);
+    --color-error-light: var(--error-light);
+
+    --color-info-dark: var(--info-dark);
+    --color-info-medium: var(--info-medium);
+    --color-info-light: var(--info-light);
+
+    --color-white: var(--white);
+    --color-black: var(--black);
+
+    /* Fonts */
+    --font-carlito: var(--font-body);
+
+    /* Button text sizes (names differ from Init.css vars — no circular ref) */
+    --text-btn-large: var(--btn-lg);
+    --text-btn-md: var(--btn-md);
+    --text-btn-sm: var(--btn-sm);
 }
+
+/* ── Text-size utilities: reference Init.css vars directly ── */
+/* Cannot use @theme for these — names clash with Init.css vars causing circular refs */
+@utility text-hero      { font-size: var(--text-hero); }
+@utility text-title     { font-size: var(--text-title); }
+@utility text-subtitle  { font-size: var(--text-subtitle); }
+@utility text-paragraph { font-size: var(--text-paragraph); }
+@utility text-body      { font-size: var(--text-body); }
+@utility text-small     { font-size: var(--text-small); }
+@utility text-micro     { font-size: var(--text-micro); }

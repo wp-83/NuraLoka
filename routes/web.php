@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\PlaceController;
+use App\Http\Controllers\ExploreController;
 // use App\Http\Controllers\PlaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +38,11 @@ Route::prefix('/auth')->name('auth.')->middleware('guest')->group(function () {
         Route::get('/register', 'redirectRegister')->name('register');
         Route::get('/callback', 'callback')->name('callback');
     });
+});
+
+// Explore
+Route::prefix('/jelajah')->name('explore.')->controller(ExploreController::class)->group(function () {
+    Route::get('/', 'index')->name('index');
 });
 
 // Logout
