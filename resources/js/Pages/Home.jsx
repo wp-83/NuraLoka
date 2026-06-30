@@ -13,7 +13,7 @@ export default function Home(){
             <button className='btn-gray'>button label</button>
             <button className='btn-inactive'>button label</button>
 
-            <Link href={route('logout')} method='POST' as="button" className='btn-primary'>
+            <Link href={route('auth.logout')} method='POST' as="button" className='btn-primary'>
                 Logout
             </Link>
         </div>

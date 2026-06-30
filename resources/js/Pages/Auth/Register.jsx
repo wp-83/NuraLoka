@@ -98,10 +98,12 @@ export default function Register(){
                 </div>
                 <div className='register-btn-container'>
                     <button type='submit' className='btn-primary'>Daftar Akun</button>
-                    <button type='button' className='btn-white google-register-btn'>
-                        <img src="/images/icons/google.png" alt="google-icon" />
-                        <p>Daftar dengan Google</p>
-                    </button>
+                    <a href={route('auth.google.register')}>
+                        <button type='button' className='btn-white google-register-btn'>
+                            <img src="/images/icons/google.png" alt="google-icon" />
+                            <p>Daftar dengan Google</p>
+                        </button>
+                    </a>
                 </div>
             </form>
             <p className='footer-content'>Sudah punya akun? <Link href={route('auth.login.index')}>Masuk Sekarang!</Link></p>

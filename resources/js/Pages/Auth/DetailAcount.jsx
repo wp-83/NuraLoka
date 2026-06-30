@@ -7,11 +7,11 @@ import '@css/Auth/DetailAccount.css';
 import { useState } from 'react';
 
 export default function DetailAccount(){
-    const { provinces } = usePage().props;
+    const { provinces, fullname } = usePage().props;
     const [disabledBtn, setDisabledBtn] = useState(true);
 
     const { data, setData, post, reset, processing, errors } = useForm({
-        'fullname': '',
+        'fullname': fullname ?? '',
         'dob': '',
         'gender': '',
         'province': '',
