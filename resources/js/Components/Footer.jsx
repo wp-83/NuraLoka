@@ -12,7 +12,7 @@ import { HiLocationMarker } from 'react-icons/hi';
 */
 export default function Footer() {
     return (
-        <footer className="relative w-full bg-[#FDF6EE] border-t border-[#E8D8C4] pt-12 pb-6 overflow-hidden">
+        <footer className="relative w-full bg-amber-50 border-t border-amber-200 pt-12 pb-6 overflow-hidden">
             {/* ── Background pattern — clipPath menggantikan overflow-hidden ── */}
             <img
                 src="/images/patterns/object.png"
@@ -37,8 +37,8 @@ export default function Footer() {
                             />
                         </div>
                         <p className="text-sm text-gray-600 text-center max-w-[22rem] leading-relaxed">
-                            <span className="font-bold text-[#DF6908]">Nura</span>
-                            <span className="font-bold text-[#1B5E20]">Loka</span>
+                            <span className="font-bold text-orange-600">Nura</span>
+                            <span className="font-bold text-green-800">Loka</span>
                             {' '}hadir menjadi teman perjalanan Anda dalam eksplorasi di seluruh wilayah Nusantara.
                         </p>
                     </div>
@@ -54,15 +54,15 @@ export default function Footer() {
                         </h4>
                         <ul className="flex flex-col gap-2 text-xs text-gray-600 list-none p-0 m-0">
                             <li className="flex items-start gap-2">
-                                <HiLocationMarker size={14} className="text-[#5A3812] flex-shrink-0 mt-0.5" />
+                                <HiLocationMarker size={14} className="text-amber-800 flex-shrink-0 mt-0.5" />
                                 <span>Jl. Pakuan No. 3, Sumur Batu, Kec. Babakan Madang, Kabupaten Bogor, Jawa Barat 16810, Indonesia</span>
                             </li>
                             <li className="flex items-center gap-2">
-                                <span className="text-[#5A3812] text-xs">✉</span>
+                                <span className="text-amber-800 text-xs">✉</span>
                                 <span>nuraloka.team@gmail.com</span>
                             </li>
                             <li className="flex items-center gap-2">
-                                <span className="text-[#5A3812] text-xs">📞</span>
+                                <span className="text-amber-800 text-xs">📞</span>
                                 <span>345 333 55</span>
                             </li>
                         </ul>
@@ -79,8 +79,8 @@ export default function Footer() {
                             />
                         </div>
                         <p className="text-sm mt-1">
-                            <span className="text-[#DF6908]">Mantapkan </span>
-                            <span className="text-[#1B5E20]">Langkahmu!</span>
+                            <span className="text-orange-600">Mantapkan </span>
+                            <span className="text-green-800">Langkahmu!</span>
                         </p>
                     </div>
 
@@ -101,10 +101,10 @@ export default function Footer() {
                 </div>
 
                 {/* ── Row 3: Copyright ── */}
-                <div className="border-t border-[#E8D8C4] pt-4 text-center text-xs text-gray-500">
+                <div className="border-t border-amber-200 pt-4 text-center text-xs text-gray-500">
                     © 2026{' '}
-                    <span className="font-bold text-[#DF6908]">Nura</span>
-                    <span className="font-bold text-[#1B5E20]">Loka</span>
+                    <span className="font-bold text-orange-600">Nura</span>
+                    <span className="font-bold text-green-800">Loka</span>
                     . Seluruh Hak Cipta Dilindungi.
                 </div>
             </div>

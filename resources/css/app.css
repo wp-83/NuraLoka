@@ -63,7 +63,9 @@
     --color-black: var(--black);
 
     /* Fonts */
-    --font-carlito: var(--font-body);
+    --font-body: var(--font-body);
+    --font-heading: var(--font-heading);
+
 
     /* Button text sizes (names differ from Init.css vars — no circular ref) */
     --text-btn-large: var(--btn-lg);
@@ -73,10 +75,30 @@
 
 /* ── Text-size utilities: reference Init.css vars directly ── */
 /* Cannot use @theme for these — names clash with Init.css vars causing circular refs */
-@utility text-hero      { font-size: var(--text-hero); }
-@utility text-title     { font-size: var(--text-title); }
-@utility text-subtitle  { font-size: var(--text-subtitle); }
-@utility text-paragraph { font-size: var(--text-paragraph); }
-@utility text-body      { font-size: var(--text-body); }
-@utility text-small     { font-size: var(--text-small); }
-@utility text-micro     { font-size: var(--text-micro); }
+@utility text-hero {
+    font-size: var(--text-hero);
+}
+
+@utility text-title {
+    font-size: var(--text-title);
+}
+
+@utility text-subtitle {
+    font-size: var(--text-subtitle);
+}
+
+@utility text-paragraph {
+    font-size: var(--text-paragraph);
+}
+
+@utility text-body {
+    font-size: var(--text-body);
+}
+
+@utility text-small {
+    font-size: var(--text-small);
+}
+
+@utility text-micro {
+    font-size: var(--text-micro);
+}

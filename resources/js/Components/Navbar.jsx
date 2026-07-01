@@ -39,16 +39,16 @@ export default function Navbar() {
                                 {item.routeName ? (
                                     <Link
                                         href={item.routeName === '/' ? '/' : route(item.routeName)}
-                                        className={`inline-flex flex-col items-start font-carlito text-btn-sm transition-colors no-underline ${isActive(item.routeName) ? 'text-accent-100' : 'text-primary-100 hover:text-secondary-100'}`}
+                                        className={`inline-flex flex-col items-start text-sm font-medium transition-colors no-underline ${isActive(item.routeName) ? 'text-green-700' : 'text-gray-700 hover:text-green-600'}`}
                                     >
                                         <span className="flex items-center gap-1">
                                             {isActive(item.routeName) && <FiMapPin size={13} />}
                                             {item.label}
                                         </span>
-                                        <div className={`h-0.5 w-1/2 mt-0.5 rounded-full ${isActive(item.routeName) ? 'bg-accent-100' : 'bg-transparent'}`} />
+                                        <div className={`h-0.5 w-1/2 mt-0.5 rounded-full ${isActive(item.routeName) ? 'bg-green-700' : 'bg-transparent'}`} />
                                     </Link>
                                 ) : (
-                                    <span className="inline-flex flex-col items-center font-carlito text-btn-sm text-primary-100 cursor-not-allowed">
+                                    <span className="inline-flex flex-col items-center text-sm font-medium text-gray-700 cursor-not-allowed">
                                         {item.label}
                                         <div className="h-0.5 w-full mt-0.5 bg-transparent" />
                                     </span>
@@ -58,10 +58,10 @@ export default function Navbar() {
                     </ul>
                     <div className="col-start-11 col-end-13 flex items-center justify-end gap-3">
                         <div className="text-right hidden sm:block">
-                            <p className="text-small font-bold text-primary-100 leading-tight">Jayadi Christopher Alam</p>
-                            <p className="text-micro text-primary-30">Pemula</p>
+                            <p className="text-sm font-bold text-gray-800 leading-tight">Jayadi Christopher Alam</p>
+                            <p className="text-xs text-gray-400">Pemula</p>
                         </div>
-                        <div className="w-9 h-9 rounded-full bg-[#D5B9AA] overflow-hidden flex items-center justify-center flex-shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-amber-200 overflow-hidden flex items-center justify-center flex-shrink-0">
                             <img
                                 src="/images/defaults/avatar.png"
                                 alt="avatar"

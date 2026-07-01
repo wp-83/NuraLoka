@@ -48,15 +48,15 @@ function ExplorePanel({ activeTab, setActiveTab, searchQuery, setSearchQuery, ac
     };
     return (
         <div className="bg-white rounded-2xl shadow-xl p-4 w-full" style={{ maxHeight: '100%', overflowY: 'auto' }}>
-            <h2 className="text-base font-bold mb-3" style={{ fontFamily: 'Poppins, sans-serif', color: '#5A3812' }}>
-                Ekplor Sesuai Gayamu!
+            <h2 className="text-sm font-bold text-gray-800 mb-3" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                Eksplor Sesuai Gayamu!
             </h2>
             <div className="flex bg-gray-100 rounded-xl p-1 mb-3">
                 {['Satu Titik', 'Dua Titik'].map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`flex-1 py-1.5 rounded-lg transition-all duration-200 ${activeTab === tab ? 'bg-white text-[#5A3812] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                        className={`flex-1 py-1.5 rounded-lg transition-all duration-200 ${activeTab === tab ? 'bg-white text-amber-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                         style={{ fontSize: '0.75rem', fontWeight: activeTab === tab ? 700 : 500 }}
                     >
                         {tab}
@@ -80,7 +80,7 @@ function ExplorePanel({ activeTab, setActiveTab, searchQuery, setSearchQuery, ac
                     <button
                         key={label}
                         onClick={() => toggleFilter(label)}
-                        className={`flex items-center gap-1 px-3 py-1.5 rounded-xl border transition-all duration-150 ${activeFilters.includes(label) ? 'bg-[#1B5E20] text-white border-[#1B5E20]' : 'bg-white text-gray-700 border-gray-200 hover:border-[#239A90] hover:text-[#239A90]'}`}
+                        className={`flex items-center gap-1 px-3 py-1.5 rounded-xl border transition-all duration-150 ${activeFilters.includes(label) ? 'bg-green-800 text-white border-green-800' : 'bg-white text-gray-700 border-gray-200 hover:border-teal-500 hover:text-teal-600'}`}
                         style={{ fontSize: '0.68rem', fontWeight: 600 }}
                     >
                         {filterIconMap[icon]}{label}
@@ -146,7 +146,7 @@ function PlaceCard({ place }) {
                 {place.img ? (
                     <img src={place.img} alt={place.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #e5e7eb, #d1d5db)' }}>
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
                         <FiMapPin size={32} className="text-gray-400" />
                     </div>
                 )}
@@ -191,7 +191,7 @@ export default function ExploreIndex({ places = [], auth }) {
                 <meta name="description" content="Jelajahi destinasi wisata, kuliner, dan tempat menarik di seluruh Nusantara bersama NuraLoka." />
             </Head>
 
-            <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F3EDE9' }}>
+            <div className="min-h-screen flex flex-col bg-amber-50">
 
                 {/* ── Navbar ── */}
                 <Navbar />
@@ -203,17 +203,17 @@ export default function ExploreIndex({ places = [], auth }) {
                     </div>
                     <div className="absolute inset-y-0 left-0 right-0 flex justify-center pointer-events-none z-[400] py-4">
                         <div className="container mx-auto px-4 md:px-6 lg:px-8 grid grid-cols-12 items-start gap-5 w-full">
-                        <div className="col-start-1 col-end-4 pointer-events-auto" style={{ maxHeight: 'calc(100% - 2rem)', overflowY: 'auto' }}>
-                            <ExplorePanel
-                                activeTab={activeTab} setActiveTab={setActiveTab}
-                                searchQuery={searchQuery} setSearchQuery={setSearchQuery}
-                                activeFilters={activeFilters} setActiveFilters={setActiveFilters}
-                            />
-                        </div>
-                        <div className="col-start-4 col-end-10" />
-                        <div className="col-start-10 col-end-13 pointer-events-auto">
-                            <RecentlyVisitedPanel />
-                        </div>
+                            <div className="col-start-1 col-end-4 pointer-events-auto" style={{ maxHeight: 'calc(100% - 2rem)', overflowY: 'auto' }}>
+                                <ExplorePanel
+                                    activeTab={activeTab} setActiveTab={setActiveTab}
+                                    searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+                                    activeFilters={activeFilters} setActiveFilters={setActiveFilters}
+                                />
+                            </div>
+                            <div className="col-start-4 col-end-10" />
+                            <div className="col-start-10 col-end-13 pointer-events-auto">
+                                <RecentlyVisitedPanel />
+                            </div>
                         </div>
                     </div>
                     <MapTooltip />
@@ -228,35 +228,35 @@ export default function ExploreIndex({ places = [], auth }) {
                     <div className="overflow-hidden">
                         <div className="container mx-auto px-4 md:px-6 lg:px-8">
                             <div className="grid grid-cols-12 gap-5">
-                            <div className="col-start-2 col-end-12 flex items-center gap-4 mb-6">
-                                <div className="w-20 flex-shrink-0">
-                                    <img
-                                        src="/images/mascots/camera-v2.png"
-                                        alt="mascot"
-                                        className="w-full object-contain"
-                                        onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
-                                </div>
-                                <div>
-                                    <h2 className="font-bold text-2xl text-gray-900 leading-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                        Ramai Dikunjungi oleh Nuravers
-                                    </h2>
-                                    <p className="text-sm text-gray-500 mt-1 max-w-[28rem]">
-                                        Sedang tren di kalangan Nuravers! Temukan tempat-tempat yang ramai dikunjungi
-                                        dan layak masuk daftar perjalananmu
-                                    </p>
-                                </div>
-                            </div>
-                            <div
-                                className="col-start-2 col-end-12 flex flex-row gap-5"
-                                style={{ overflowX: 'auto', overflowY: 'hidden', paddingBottom: '0.75rem', scrollSnapType: 'x mandatory' }}
-                            >
-                                {TRENDING_PLACES.map((place) => (
-                                    <div key={place.id} className="flex-shrink-0" style={{ width: '20rem', scrollSnapAlign: 'start' }}>
-                                        <PlaceCard place={place} />
+                                <div className="col-start-2 col-end-12 flex items-center gap-4 mb-6">
+                                    <div className="w-20 flex-shrink-0">
+                                        <img
+                                            src="/images/mascots/camera-v2.png"
+                                            alt="mascot"
+                                            className="w-full object-contain"
+                                            onError={(e) => { e.target.style.display = 'none'; }}
+                                        />
                                     </div>
-                                ))}
-                            </div>
+                                    <div>
+                                        <h2 className="font-bold text-2xl text-gray-900 leading-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                            Ramai Dikunjungi oleh Nuravers
+                                        </h2>
+                                        <p className="text-sm text-gray-500 mt-1 max-w-[28rem]">
+                                            Sedang tren di kalangan Nuravers! Temukan tempat-tempat yang ramai dikunjungi
+                                            dan layak masuk daftar perjalananmu
+                                        </p>
+                                    </div>
+                                </div>
+                                <div
+                                    className="col-start-2 col-end-12 flex flex-row gap-5"
+                                    style={{ overflowX: 'auto', overflowY: 'hidden', paddingBottom: '0.75rem', scrollSnapType: 'x mandatory' }}
+                                >
+                                    {TRENDING_PLACES.map((place) => (
+                                        <div key={place.id} className="flex-shrink-0" style={{ width: '20rem', scrollSnapAlign: 'start' }}>
+                                            <PlaceCard place={place} />
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
