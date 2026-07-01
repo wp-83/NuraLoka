@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Place;
 use App\Models\Category;
+use App\Models\Place;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -29,7 +29,7 @@ class ExploreController extends Controller
 
         // Ambil data place-nya, tapi urutkan sesuai dengan order $trendingPlaceIds
         $trendingPlaces = collect();
-        if (!empty($trendingPlaceIds)) {
+        if (! empty($trendingPlaceIds)) {
             $idsOrdered = implode(',', $trendingPlaceIds);
             $trendingPlaces = Place::with('categories')
                 ->whereIn('id', $trendingPlaceIds)
@@ -39,9 +39,9 @@ class ExploreController extends Controller
 
         // 4. Recently Visited: ambil array place_id dari session, misal maksimal 5
         $recentlyVisitedIds = $request->session()->get('recently_visited_places', []);
-        
+
         $recentlyVisited = collect();
-        if (!empty($recentlyVisitedIds)) {
+        if (! empty($recentlyVisitedIds)) {
             $idsOrdered = implode(',', $recentlyVisitedIds);
             $recentlyVisited = Place::with('categories')
                 ->whereIn('id', $recentlyVisitedIds)

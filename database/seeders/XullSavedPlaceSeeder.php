@@ -30,7 +30,7 @@ class XullSavedPlaceSeeder extends Seeder
             // Sebagian besar user nge-save tempat trending ini
             foreach ($trendingPlaces as $tpId) {
                 // Probabilitas tinggi untuk disimpan
-                if (rand(1, 100) <= 80) { 
+                if (rand(1, 100) <= 80) {
                     $savedPlaces[] = [
                         'user_id' => $userId,
                         'place_id' => $tpId,
@@ -43,7 +43,7 @@ class XullSavedPlaceSeeder extends Seeder
             // User juga nge-save beberapa tempat random secara acak
             $randomSavesCount = rand(1, 4);
             $randomKeys = array_rand($normalPlaces, $randomSavesCount);
-            if (!is_array($randomKeys)) {
+            if (! is_array($randomKeys)) {
                 $randomKeys = [$randomKeys];
             }
 
