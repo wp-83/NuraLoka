@@ -26,7 +26,7 @@ class XullCategorySeeder extends Seeder
 
         foreach ($categories as $name) {
             DB::table('categories')->insertOrIgnore([
-                'name'       => $name,
+                'name' => $name,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
