@@ -31,6 +31,7 @@ class XullDatabaseSeeder extends Seeder
             XullUserSeeder::class,
             XullPlaceSeeder::class,
             XullTripSeeder::class,
+            XullSavedPlaceSeeder::class,
         ]);
     }
 }

@@ -43,6 +43,7 @@ Route::prefix('/auth')->name('auth.')->middleware('guest')->group(function () {
 // Explore
 Route::prefix('/jelajah')->name('explore.')->controller(ExploreController::class)->group(function () {
     Route::get('/', 'index')->name('index');
+    Route::post('/track', 'trackVisit')->name('track');
 });
 
 // Logout

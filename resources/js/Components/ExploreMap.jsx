@@ -50,7 +50,7 @@ const MapUpdater = ({ selectedPlace }) => {
   return null;
 };
 
-export default function ExploreMap({ places = [], selectedPlace = null }) {
+export default function ExploreMap({ places = [], selectedPlace = null, onVisit }) {
   // Default center (Indonesia center)
   const defaultCenter = [-8.0, 113.0];
   const [center, setCenter] = React.useState(defaultCenter);
@@ -94,6 +94,11 @@ export default function ExploreMap({ places = [], selectedPlace = null }) {
               key={place.id}
               position={[parseFloat(place.latitude), parseFloat(place.longitude)]}
               icon={markerIcon}
+              eventHandlers={{
+                click: () => {
+                  if (onVisit) onVisit(place);
+                },
+              }}
             >
               <Popup>
                 <div style={{ maxWidth: '250px' }}>
