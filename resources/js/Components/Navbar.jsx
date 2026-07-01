@@ -58,8 +58,8 @@ export default function Navbar() {
                     </ul>
                     <div className="col-start-11 col-end-13 flex items-center justify-end gap-3">
                         <div className="text-right hidden sm:block">
-                            <p className="text-sm font-bold text-gray-800 leading-tight">Jayadi Christopher Alam</p>
-                            <p className="text-xs text-gray-400">Pemula</p>
+                            <span className="block text-sm font-bold text-gray-800 leading-tight">Jayadi Christopher Alam</span>
+                            <span className="text-xs text-gray-400">Pemula</span>
                         </div>
                         <div className="w-9 h-9 rounded-full bg-amber-200 overflow-hidden flex items-center justify-center flex-shrink-0">
                             <img

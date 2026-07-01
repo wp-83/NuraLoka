@@ -1,4 +1,4 @@
-import '@css/Init.css';
+// import '@css/Init.css';
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import ExploreMap from '@components/ExploreMap';
