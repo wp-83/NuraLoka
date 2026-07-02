@@ -20,7 +20,7 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="sticky top-0 z-50 w-full bg-white shadow-sm border-b border-gray-100">
+        <nav className="sticky top-0 z-[999] w-full bg-white shadow-sm border-b border-gray-100">
             <div className="container mx-auto">
                 <div className="grid grid-cols-12 items-center py-2 gap-5">
                     <div className="col-start-1 col-end-3 flex items-center">
