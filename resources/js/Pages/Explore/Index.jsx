@@ -4,6 +4,7 @@ import ExploreMap from '@components/ExploreMap';
 import Footer from '@components/Footer';
 import Navbar from '@components/Navbar';
 import LocationSearchInput from '@components/LocationSearchInput';
+import PlaceCard from '@components/PlaceCard';
 import { FiMapPin, FiSearch, FiChevronLeft, FiBookmark, FiGlobe } from 'react-icons/fi';
 import { MdRestaurant, MdBeachAccess, MdDiamond, MdMuseum, MdWaterDrop, MdSportsHandball } from 'react-icons/md';
 import { FaMountain } from 'react-icons/fa6';
@@ -373,49 +374,7 @@ function MapTooltip({ isVisible }) {
     );
 }
 
-/* ── PlaceCard ── */
-function PlaceCard({ place, onVisit }) {
-    return (
-        <div
-            onClick={() => onVisit(place)}
-            className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 group cursor-pointer"
-        >
-            <div className="relative h-44 bg-gray-200 overflow-hidden">
-                {place.img ? (
-                    <img src={place.img} alt={place.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
-                        <FiMapPin size={32} className="text-gray-400" />
-                    </div>
-                )}
-                <button
-                    className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center hover:bg-white transition-colors shadow"
-                    style={{ backgroundColor: 'rgba(255,255,255,0.8)' }}
-                    onClick={(e) => { e.stopPropagation(); /* saved places — future feature */ }}
-                >
-                    <FiBookmark size={14} className="text-gray-600" />
-                </button>
-            </div>
-            <div className="p-4">
-                <h3 className="font-bold text-gray-900 text-base mb-0.5 truncate" style={{ fontFamily: 'Poppins, sans-serif' }}>{place.name}</h3>
-                <p className="text-xs text-gray-500 mb-3 truncate">{place.address}</p>
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                    {place.categories && place.categories.map((cat) => (
-                        <span key={cat.id} className="bg-amber-600 text-white px-3 py-1 rounded-full flex items-center gap-1 font-semibold" style={{ fontSize: '0.68rem' }}>
-                            🏛 {cat.name}
-                        </span>
-                    ))}
-                </div>
-                <div className="flex items-center gap-1.5">
-                    <div className="w-6 h-6">
-                        <img src="/images/mascots/hi.png" alt="visitor" className="w-full h-full object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
-                    </div>
-                    <span className="text-xs text-gray-500">Ramai disimpan Nuravers</span>
-                </div>
-            </div>
-        </div>
-    );
-}
+
 
 // ─────────────────────────────────────────────
 // MAIN PAGE
@@ -678,12 +637,12 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
                 {/* ── Trending Section ── */}
                 <section id="trending-section" className="w-full py-10">
                     <div className="overflow-hidden">
-                        <div className="container mx-auto px-4 md:px-6 lg:px-8">
+                        <div className="container mx-auto px-4 md:px-6 lg:px-8 my-5">
                             <div className="grid grid-cols-12 gap-5">
                                 <div className="col-start-2 col-end-12 flex items-center gap-4 mb-6">
-                                    <div className="w-20 flex-shrink-0">
+                                    <div className="w-40 flex-shrink-0 scale-x-[-1]">
                                         <img
-                                            src="/images/mascots/camera-v2.png"
+                                            src="/images/mascots/map-v2.png"
                                             alt="mascot"
                                             className="w-full object-contain"
                                             onError={(e) => { e.target.style.display = 'none'; }}
@@ -700,11 +659,11 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
                                     </div>
                                 </div>
                                 <div
-                                    className="col-start-2 col-end-12 flex flex-row gap-5"
+                                    className="col-start-2 col-end-12 flex flex-row gap-5 hide-scrollbar"
                                     style={{ overflowX: 'auto', overflowY: 'hidden', paddingBottom: '0.75rem', scrollSnapType: 'x mandatory' }}
                                 >
                                     {trendingPlaces.map((place) => (
-                                        <div key={place.id} className="flex-shrink-0" style={{ width: '20rem', scrollSnapAlign: 'start' }}>
+                                        <div key={place.id} className="flex-shrink-0" style={{ width: '24rem', scrollSnapAlign: 'start' }}>
                                             <PlaceCard place={place} onVisit={handleVisit} />
                                         </div>
                                     ))}
