@@ -88,7 +88,7 @@ class PlaceController extends Controller
     public function show(string $slug)
     {
         $place = Place::with('categories')->where('slug', $slug)->firstOrFail();
-        
+
         return Inertia::render('Place/Show', [
             'place' => $place,
         ]);
