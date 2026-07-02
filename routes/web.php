@@ -52,3 +52,6 @@ Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->mid
 Route::middleware('guest')->group(function () {
     Route::get('/places', [PlaceController::class, 'index'])->name('places.index');
 });
+
+// Detail Place
+Route::get('/places/{slug}', [PlaceController::class, 'show'])->name('places.show');

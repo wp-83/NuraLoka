@@ -265,7 +265,7 @@ function RecentlyVisitedPanel({ recentlyVisited = [], onVisit }) {
                 Baru Saja Dikunjungi
             </h3>
             <div className="flex flex-col gap-2">
-                {recentlyVisited.slice(0, 3).map((place) => (
+                {recentlyVisited.slice(0, 2).map((place) => (
                     <div
                         key={place.id}
                         className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded-lg p-1 transition-colors"
@@ -511,10 +511,10 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
         }
     }, [origin, destination, fetchRoute]);
 
+    // ── Visit / Click handler ──
     const handleVisit = (place) => {
-        setSelectedPlace(place);
-        if (place.source !== 'osm') {
-            router.post('/jelajah/track', { place_id: place.id }, { preserveScroll: true, preserveState: true });
+        if (place && place.slug) {
+            router.visit(route('places.show', place.slug));
         }
     };
 
