@@ -20,7 +20,7 @@ class AdminNewsController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%");
+                    ->orWhere('content', 'like', "%{$search}%");
             });
         }
 
@@ -60,10 +60,10 @@ class AdminNewsController extends Controller
         if ($request->hasFile('thumbnail')) {
             $file = $request->file('thumbnail');
             $filename = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
-            
+
             // Ensure directory exists
             $destinationPath = public_path('images/news');
-            if (!file_exists($destinationPath)) {
+            if (! file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
             }
 
@@ -119,9 +119,19 @@ class AdminNewsController extends Controller
 
         $thumbnailPath = $newsItem->thumbnail;
 
-        if ($request->hasFile('thumbnail')) {
-            // Delete old file if it was custom uploaded
+        // If explicitly requested to remove current thumbnail
+        if ($request->boolean('remove_thumbnail')) {
             if ($newsItem->thumbnail && file_exists(public_path($newsItem->thumbnail))) {
+                if (str_starts_with($newsItem->thumbnail, '/images/news/')) {
+                    @unlink(public_path($newsItem->thumbnail));
+                }
+            }
+            $thumbnailPath = null;
+        }
+
+        if ($request->hasFile('thumbnail')) {
+            // Delete old file if it was custom uploaded (and not already deleted above)
+            if (! $request->boolean('remove_thumbnail') && $newsItem->thumbnail && file_exists(public_path($newsItem->thumbnail))) {
                 if (str_starts_with($newsItem->thumbnail, '/images/news/')) {
                     @unlink(public_path($newsItem->thumbnail));
                 }
@@ -129,9 +139,9 @@ class AdminNewsController extends Controller
 
             $file = $request->file('thumbnail');
             $filename = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
-            
+
             $destinationPath = public_path('images/news');
-            if (!file_exists($destinationPath)) {
+            if (! file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
             }
 

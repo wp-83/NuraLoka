@@ -57,10 +57,10 @@ export default function Index({ news, filters }) {
             )}
 
             <div className="admin-news-container">
-                {/* Back button to public news */}
+                {/* Back button to Admin Dashboard */}
                 <div className="back-navigation">
-                    <Link href={route('news.index')} className="back-to-home-link">
-                        <FaArrowLeft className="mr-2" style={{ fontSize: '0.9rem' }} /> Kembali ke Wawasan Wisata
+                    <Link href={route('admin.dashboard')} className="back-to-home-link">
+                        <FaArrowLeft style={{ fontSize: '0.9rem', marginRight: '0.5rem' }} /> Kembali ke Dashboard Admin
                     </Link>
                 </div>
 

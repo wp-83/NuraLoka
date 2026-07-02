@@ -1,11 +1,12 @@
 import { Link, Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
-import { FaArrowLeft, FaUpload } from 'react-icons/fa';
+import { FaArrowLeft, FaUpload, FaTrash, FaSearchPlus } from 'react-icons/fa';
 import '@css/Init.css';
 import '@css/Admin/News.css';
 
 export default function Create() {
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm({
         title: '',
@@ -22,6 +23,19 @@ export default function Create() {
         } else {
             setPreviewUrl(null);
         }
+    };
+
+    const handleRemoveImage = () => {
+        setData('thumbnail', null);
+        setPreviewUrl(null);
+        const fileInput = document.getElementById('thumbnail-file');
+        if (fileInput) {
+            fileInput.value = '';
+        }
+    };
+
+    const triggerFileInput = () => {
+        document.getElementById('thumbnail-file')?.click();
     };
 
     const handleSubmit = (e) => {
@@ -83,16 +97,49 @@ export default function Create() {
                         <div className="input-group" style={{ marginTop: '1.5rem' }}>
                             <label><b>Gambar Thumbnail</b></label>
                             <div className="thumbnail-upload-section">
-                                <div className="thumbnail-preview-box">
+                                <div 
+                                    className={`thumbnail-preview-box ${!previewUrl ? 'clickable-preview' : ''}`}
+                                    onClick={!previewUrl ? triggerFileInput : undefined}
+                                    style={{ cursor: !previewUrl ? 'pointer' : 'default' }}
+                                >
                                     {previewUrl ? (
-                                        <img src={previewUrl} alt="Thumbnail Preview" />
+                                        <div className="preview-image-wrapper">
+                                            <img src={previewUrl} alt="Thumbnail Preview" />
+                                            <div className="preview-overlay">
+                                                <button 
+                                                    type="button" 
+                                                    className="overlay-action-btn view-btn"
+                                                    onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
+                                                    title="Lihat Gambar"
+                                                >
+                                                    <FaSearchPlus />
+                                                </button>
+                                                <button 
+                                                    type="button" 
+                                                    className="overlay-action-btn delete-btn"
+                                                    onClick={(e) => { e.stopPropagation(); handleRemoveImage(); }}
+                                                    title="Hapus Gambar"
+                                                >
+                                                    <FaTrash />
+                                                </button>
+                                            </div>
+                                        </div>
                                     ) : (
                                         <div className="no-preview">Belum ada gambar</div>
                                     )}
                                 </div>
                                 <div className="file-input-wrapper">
-                                    <div className={`select-wrapper ${errors.thumbnail ? 'input-error' : ''}`} style={{ padding: '0', display: 'flex', alignItems: 'center' }}>
-                                        <label htmlFor="thumbnail-file" className="btn-white" style={{ border: 'none', margin: '0', borderRadius: '0', paddingBlock: '0.6rem', paddingInline: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--text-small)' }}>
+                                    <div 
+                                        className={`select-wrapper ${errors.thumbnail ? 'input-error' : ''}`} 
+                                        style={{ padding: '0', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                                        onClick={triggerFileInput}
+                                    >
+                                        <label 
+                                            htmlFor="thumbnail-file" 
+                                            className="btn-white" 
+                                            style={{ border: 'none', margin: '0', borderRadius: '0', paddingBlock: '0.6rem', paddingInline: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--text-small)' }}
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
                                             <FaUpload /> Pilih File
                                         </label>
                                         <input
@@ -102,7 +149,7 @@ export default function Create() {
                                             onChange={handleFileChange}
                                             style={{ display: 'none' }}
                                         />
-                                        <span style={{ paddingInline: '1rem', fontSize: 'var(--text-small)', color: 'var(--gray-70)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        <span style={{ paddingInline: '1rem', fontSize: 'var(--text-small)', color: 'var(--gray-70)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexGrow: 1 }}>
                                             {data.thumbnail ? data.thumbnail.name : 'Tidak ada berkas dipilih'}
                                         </span>
                                     </div>
@@ -149,6 +196,19 @@ export default function Create() {
                     </form>
                 </div>
             </div>
+
+            {/* Full size image popup modal */}
+            {isModalOpen && previewUrl && (
+                <div className="image-popup-modal" onClick={() => setIsModalOpen(false)}>
+                    <div className="modal-content-wrapper" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-close-btn" onClick={() => setIsModalOpen(false)}>&times;</div>
+                        <img 
+                            src={previewUrl} 
+                            alt="Preview Besar" 
+                        />
+                    </div>
+                </div>
+            )}
         </>
     );
 }

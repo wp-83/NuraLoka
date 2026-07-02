@@ -1,12 +1,13 @@
 <?php
 
+use App\Http\Controllers\AdminNewsController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
 // use App\Http\Controllers\PlaceController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\NewsController;
-use App\Http\Controllers\AdminNewsController;
 use App\Models\News;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -59,14 +60,28 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-// Admin CRUD for News
-Route::middleware(['auth', 'admin'])->prefix('/admin/wawasan-wisata')->name('admin.news.')->group(function () {
-    Route::get('/', [AdminNewsController::class, 'index'])->name('index');
-    Route::get('/create', [AdminNewsController::class, 'create'])->name('create');
-    Route::post('/', [AdminNewsController::class, 'store'])->name('store');
-    Route::get('/{id}/edit', [AdminNewsController::class, 'edit'])->name('edit');
-    Route::post('/{id}', [AdminNewsController::class, 'update'])->name('update');
-    Route::delete('/{id}', [AdminNewsController::class, 'destroy'])->name('destroy');
+// Admin Management Portal
+Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', function () {
+        $totalNews = News::count();
+        $totalUsers = User::count();
+
+        return inertia('Admin/Dashboard', [
+            'stats' => [
+                'totalNews' => $totalNews,
+                'totalUsers' => $totalUsers,
+            ],
+        ]);
+    })->name('dashboard');
+
+    Route::prefix('/wawasan-wisata')->name('news.')->group(function () {
+        Route::get('/', [AdminNewsController::class, 'index'])->name('index');
+        Route::get('/create', [AdminNewsController::class, 'create'])->name('create');
+        Route::post('/', [AdminNewsController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [AdminNewsController::class, 'edit'])->name('edit');
+        Route::post('/{id}', [AdminNewsController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdminNewsController::class, 'destroy'])->name('destroy');
+    });
 });
 
 // Route::middleware('guest')->group(function () {

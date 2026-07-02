@@ -70,17 +70,7 @@ export default function Index({ news }) {
                         <p className="news-index-subtitle">
                             Jelajahi berbagai artikel menarik seputar keindahan destinasi, nilai budaya, serta tips perjalanan berharga dari NuraLoka.
                         </p>
-                        {auth?.user?.is_admin && (
-                            <div style={{ marginTop: '1rem' }}>
-                                <Link 
-                                    href={route('admin.news.index')} 
-                                    className="btn-secondary btn-sm" 
-                                    style={{ display: 'inline-flex', width: 'fit-content', textDecoration: 'none', color: 'white' }}
-                                >
-                                    Kelola Wawasan Wisata &rarr;
-                                </Link>
-                            </div>
-                        )}
+
                     </div>
                 </div>
 
