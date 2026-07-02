@@ -340,19 +340,30 @@ function RouteFilterPanel({ routeData, categories, activeFilters, toggleFilter, 
 }
 
 /* ── MapTooltip ── */
-function MapTooltip() {
-    const [visible, setVisible] = useState(true);
-    if (!visible) return null;
+function MapTooltip({ isVisible }) {
+    if (!isVisible) return null;
+
+    const handleScroll = () => {
+        const el = document.getElementById('trending-section');
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     return (
-        <div className="absolute bottom-16 right-72 z-[400] flex items-end gap-2">
-            <div className="bg-white rounded-2xl shadow-xl px-5 py-3 max-w-xs relative">
+        <div
+            onClick={handleScroll}
+            className="flex flex-col items-end cursor-pointer hover:scale-105 transition-transform duration-300"
+        >
+            <div className="bg-white rounded-2xl shadow-xl px-5 py-3 max-w-xs relative mr-16 z-10">
                 <p className="text-sm font-bold text-gray-800 mb-0.5">Masih bingung mau ke mana?</p>
                 <p className="text-xs text-gray-500">Yuk, lihat tempat-tempat populer pilihan Nuravers!</p>
-                <div className="absolute -bottom-2 right-6 w-4 h-4 bg-white rotate-45 shadow-sm" />
+                {/* Panah menunjuk ke bawah, pas di atas kepala kiri maskot */}
+                <div className="absolute -bottom-2 right-2 w-4 h-4 bg-white rotate-45 shadow-sm" style={{ zIndex: -1 }} />
             </div>
-            <div className="w-16 h-16 flex-shrink-0">
+            <div className="w-20 h-20 flex-shrink-0 -mt-4 drop-shadow-lg">
                 <img
-                    src="/images/mascots/telescope.png"
+                    src="/images/mascots/wait.png"
                     alt="mascot"
                     className="w-full h-full object-contain"
                     onError={(e) => { e.target.style.display = 'none'; }}
@@ -453,7 +464,7 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
         setOsmLoading(true);
         try {
             const query = buildOverpassQuery(south, west, north, east);
-            
+
             // Daftar server publik Overpass API
             const ENDPOINTS = [
                 'https://overpass-api.de/api/interpreter',
@@ -586,6 +597,11 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
             .slice(0, 5);
     }, [places, searchQuery]);
 
+    // Cek apakah user sudah berinteraksi (search/filter/titik rute)
+    const hasInteracted =
+        (activeTab === 'Satu Titik' && (searchQuery.trim() !== '' || activeFilters.length > 0 || selectedPlace !== null)) ||
+        (activeTab === 'Dua Titik' && (origin !== null || destination !== null));
+
     return (
         <>
             <Head title="NuraLoka | Jelajah">
@@ -611,7 +627,9 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
                             onBoundsChange={handleBoundsChange}
                         />
                     </div>
-                    <div className="absolute inset-y-0 left-0 right-0 flex justify-center pointer-events-none z-[400] py-4">
+
+                    {/* ── Top Area (Panels) ── */}
+                    <div className="absolute inset-0 pointer-events-none z-[400] pt-4">
                         <div className="container mx-auto px-4 md:px-6 lg:px-8 grid grid-cols-12 items-start gap-5 w-full">
                             <div className="col-start-1 col-end-4 pointer-events-auto relative">
                                 <ExplorePanel
@@ -646,11 +664,19 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
                             </div>
                         </div>
                     </div>
-                    <MapTooltip />
+
+                    {/* ── Bottom Area (Tooltip) ── */}
+                    <div className="absolute bottom-6 left-0 right-0 pointer-events-none z-[400]">
+                        <div className="container mx-auto px-4 md:px-6 lg:px-8 grid grid-cols-12 gap-5 w-full">
+                            <div className="col-start-10 col-end-13 pointer-events-auto flex justify-end">
+                                <MapTooltip isVisible={!hasInteracted} />
+                            </div>
+                        </div>
+                    </div>
                 </section>
 
                 {/* ── Trending Section ── */}
-                <section className="w-full py-10">
+                <section id="trending-section" className="w-full py-10">
                     <div className="overflow-hidden">
                         <div className="container mx-auto px-4 md:px-6 lg:px-8">
                             <div className="grid grid-cols-12 gap-5">
