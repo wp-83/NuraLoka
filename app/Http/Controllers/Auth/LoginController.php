@@ -22,7 +22,7 @@ class LoginController extends Controller
         ]);
 
         // Deteksi whether the input is email or username
-        $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $loginField = filter_var($request->identity, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
         $credentials = [
             $loginField => $request->identity,

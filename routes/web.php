@@ -4,15 +4,17 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 // use App\Http\Controllers\PlaceController;
+use App\Http\Controllers\NewsController;
+use App\Http\Controllers\AdminNewsController;
+use App\Models\News;
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\NewsController;
-
 Route::get('/', function () {
-    $latestNews = \App\Models\News::with('user.userDetails')
+    $latestNews = News::with('user.userDetails')
         ->orderBy('publish_date', 'desc')
         ->take(3)
         ->get();
+
     return inertia('Home', [
         'latestNews' => $latestNews,
     ]);
@@ -55,6 +57,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/{id}', 'show')->name('show');
     });
+});
+
+// Admin CRUD for News
+Route::middleware(['auth', 'admin'])->prefix('/admin/wawasan-wisata')->name('admin.news.')->group(function () {
+    Route::get('/', [AdminNewsController::class, 'index'])->name('index');
+    Route::get('/create', [AdminNewsController::class, 'create'])->name('create');
+    Route::post('/', [AdminNewsController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [AdminNewsController::class, 'edit'])->name('edit');
+    Route::post('/{id}', [AdminNewsController::class, 'update'])->name('update');
+    Route::delete('/{id}', [AdminNewsController::class, 'destroy'])->name('destroy');
 });
 
 // Route::middleware('guest')->group(function () {

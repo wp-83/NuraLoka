@@ -18,7 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
         ]);
 
-        //
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\IsAdmin::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (HttpExceptionInterface $e, $request) {
