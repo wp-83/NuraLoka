@@ -1,7 +1,7 @@
 import '@css/Init.css';
 import { Link } from '@inertiajs/react';
 
-export default function Home(){
+export default function Home() {
     return (
         <div style={{ padding: '2rem', display: 'flex', gap: '2rem' }}>
             <button className='btn-primary'>button label</button>
