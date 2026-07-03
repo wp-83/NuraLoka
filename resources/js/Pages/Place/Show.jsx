@@ -22,13 +22,13 @@ export default function Show({ place }) {
     return (
         <div className="min-h-screen bg-[#FDFBF7] flex flex-col font-sans">
             <Head title={place?.name || 'Detail Tempat'} />
-            
+
             <Navbar />
 
             {/* Hero Section */}
             <section className="relative w-full overflow-hidden">
                 {/* Background Image with Overlay */}
-                <div 
+                <div
                     className="absolute inset-0 z-0"
                     style={{
                         backgroundImage: `url(${place?.img || '/images/placeholders/default.jpg'})`,
@@ -42,7 +42,7 @@ export default function Show({ place }) {
                 <div className="container mx-auto px-4 md:px-6 lg:px-8 relative z-10 pt-8 pb-16">
                     {/* Top Buttons */}
                     <div className="flex justify-between items-center mb-8">
-                        <Link 
+                        <Link
                             href={route('explore.index')}
                             className="inline-flex items-center gap-2 bg-[#7C5A41] text-white px-5 py-2.5 rounded-lg hover:bg-[#634834] transition-colors font-medium text-sm shadow-md"
                         >
@@ -64,7 +64,7 @@ export default function Show({ place }) {
                             <p className="text-emerald-800 font-medium text-lg max-w-3xl mb-6 leading-relaxed">
                                 {place?.description || "Deskripsi wisata belum tersedia."}
                             </p>
-                            
+
                             <div className="flex flex-wrap gap-3 mb-8">
                                 {place?.categories && place.categories.length > 0 ? (
                                     place.categories.map(cat => (
@@ -110,7 +110,7 @@ export default function Show({ place }) {
                                 <div className="relative w-full h-56 bg-emerald-50 rounded-xl overflow-hidden border border-gray-100">
                                     {/* Map roads mock */}
                                     <div className="absolute top-0 bottom-0 left-12 w-2 bg-amber-800/80"></div>
-                                    
+
                                     {/* Map Pins */}
                                     <div className="absolute top-6 left-8 flex items-center gap-2">
                                         <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center border-2 border-emerald-600 shadow-sm z-10 relative">
@@ -132,7 +132,7 @@ export default function Show({ place }) {
                                         </div>
                                         <span className="text-xs font-bold text-gray-700 bg-white/80 px-2 py-0.5 rounded shadow-sm">Tebing Breksi</span>
                                     </div>
-                                    
+
                                     <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '16px 16px' }}></div>
                                 </div>
                             </div>
@@ -144,10 +144,10 @@ export default function Show({ place }) {
             {/* Gallery Section */}
             <section className="container mx-auto px-4 md:px-6 lg:px-8 py-12">
                 <div className="flex items-center gap-4 mb-10">
-                    <div className="w-24 h-24 flex-shrink-0 drop-shadow-md">
-                        <img 
-                            src="/images/mascots/camera-v2.png" 
-                            alt="Mascot Camera" 
+                    <div className="w-24 h-24 flex-shrink-0 drop-shadow-md scale-x-[-1] transform">
+                        <img
+                            src="/images/mascots/camera.png"
+                            alt="Mascot Camera"
                             className="w-full h-full object-contain"
                             onError={(e) => {
                                 e.target.onerror = null;
@@ -166,11 +166,11 @@ export default function Show({ place }) {
                         <div key={item.id} className="break-inside-avoid rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer relative">
                             {/* In real app, we'd use actual gallery images. Using place.img as fallback for all */}
                             <div className={`w-full ${item.height} bg-gray-200`}>
-                                <img 
-                                    src={place?.img || `/images/placeholders/default.jpg`} 
-                                    alt={`${place?.name} potret ${index + 1}`} 
+                                <img
+                                    src={place?.img || `/images/placeholders/default.jpg`}
+                                    alt={`${place?.name} potret ${index + 1}`}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                    style={{ filter: index % 3 === 1 ? 'grayscale(100%)' : 'none' }} 
+                                    style={{ filter: index % 3 === 1 ? 'grayscale(100%)' : 'none' }}
                                 />
                             </div>
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>

@@ -17,13 +17,15 @@ export default function PlaceCard({ place, onVisit }) {
                 )}
             </div>
             <div className="p-4 relative z-10">
-                <div className="flex justify-between items-start gap-2 mb-0.5">
-                    <h3 className="font-bold text-gray-900 text-base truncate flex-grow" style={{ fontFamily: 'Poppins, sans-serif' }}>{place.name}</h3>
+                <div className="flex justify-between items-start gap-2 mb-0.5 w-full overflow-hidden">
+                    <h3 className="font-bold text-gray-900 text-base truncate flex-grow min-w-0" style={{ fontFamily: 'Poppins, sans-serif' }}>{place.name}</h3>
                     <button
-                        className="flex-shrink-0 text-gray-400 hover:text-amber-600 transition-colors mt-0.5"
+                        type="button"
+                        className="flex-shrink-0 text-gray-900 hover:text-amber-600 transition-colors relative z-50 flex items-center justify-center"
+                        style={{ width: '22px', height: '22px' }}
                         onClick={(e) => { e.stopPropagation(); /* saved places — future feature */ }}
                     >
-                        <FiBookmark size={18} />
+                        <FiBookmark size={22} style={{ minWidth: '22px', minHeight: '22px' }} />
                     </button>
                 </div>
                 <p className="text-xs text-gray-500 mb-3 truncate">{place.address}</p>
@@ -40,7 +42,7 @@ export default function PlaceCard({ place, onVisit }) {
             </div>
 
             {/* Background Mascot Overlay */}
-            <div className="absolute -bottom-10 right-0 w-32 h-32 opacity-60 pointer-events-none z-0">
+            <div className="absolute -bottom-10 right-0 w-32 h-32 opacity-60 pointer-events-none z-0 transition-all duration-500 group-hover:-rotate-[-13.69deg] group-hover:opacity-100">
                 <img src="/images/mascots/camera.png" alt="mascot-bg" className="w-full h-full object-contain" />
             </div>
         </div>
