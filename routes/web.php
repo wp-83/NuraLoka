@@ -3,6 +3,8 @@
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\ExploreController;
+use App\Http\Controllers\PlaceController;
 // use App\Http\Controllers\PlaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,14 +34,24 @@ Route::prefix('/auth')->name('auth.')->middleware('guest')->group(function () {
 
     // google auth
     Route::controller(GoogleController::class)->prefix('google')->name('google.')->group(function () {
-        Route::get('/', 'redirect')->name('authenticate');
+        Route::get('/login', 'redirectLogin')->name('login');
+        Route::get('/register', 'redirectRegister')->name('register');
         Route::get('/callback', 'callback')->name('callback');
     });
+});
+
+// Explore
+Route::prefix('/jelajah')->name('explore.')->controller(ExploreController::class)->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::post('/track', 'trackVisit')->name('track');
 });
 
 // Logout
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->middleware('auth');
 
-// Route::middleware('guest')->group(function () {
-//     Route::get('/places', [PlaceController::class, 'index'])->name('places.index');
-// });
+Route::middleware('guest')->group(function () {
+    Route::get('/places', [PlaceController::class, 'index'])->name('places.index');
+});
+
+// Detail Place
+Route::get('/places/{slug}', [PlaceController::class, 'show'])->name('places.show');

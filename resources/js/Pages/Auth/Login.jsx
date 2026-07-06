@@ -33,14 +33,14 @@ export default function Login() {
     };
 
     const bgIdentity = {
-        'name' : [
+        'name': [
             'Candi Borobudur',
             'Gunung Kerinci',
             'Papeda',
             'Proses Tenun Tradisional',
             'Kilometer 0 Indonesia',
         ],
-        'loc' : [
+        'loc': [
             'Magelang, Jawa Tengah',
             'Kerinci, Jambi',
             'Jayapura, Papua',
@@ -89,7 +89,7 @@ export default function Login() {
                     (flash.type != null && flash.message != null) && (<Flash type={flash.type} message={flash.message}></Flash>)
                 }
                 <section className={`left-section ${(fade ? 'fade' : '')}`}>
-                    <img src={`/images/background-auth/login/${currIdx+1}.jpg`} alt="login-bg" className='login-bg' />
+                    <img src={`/images/background-auth/login/${currIdx + 1}.jpg`} alt="login-bg" className='login-bg' />
                     <div className='bg-desc'>
                         <div className='bg-main-content'>
                             <h2><b>{bgIdentity.name[currIdx]}</b></h2>
@@ -135,7 +135,7 @@ export default function Login() {
                                         <div className='illustration-icon'>
                                             <GiPadlock className='icon' />
                                         </div>
-                                        <input type={(showPass) ? 'text' : 'password'} placeholder='Kata sandi kamu' id='password' name='password' value={data.password} onChange={(e) => setData('password', e.target.value) } />
+                                        <input type={(showPass) ? 'text' : 'password'} placeholder='Kata sandi kamu' id='password' name='password' value={data.password} onChange={(e) => setData('password', e.target.value)} />
                                         <div className='passHideBtn' onClick={() => setShowPass((prev) => !prev)}>
                                             {
                                                 (showPass) ? (
@@ -169,7 +169,7 @@ export default function Login() {
                                             ) : 'Masuk'
                                         }
                                     </button>
-                                    <a href={route('auth.google.authenticate')}>
+                                    <a href={route('auth.google.login')}>
                                         <button className='btn-white google-login-btn' type='button'>
                                             <img src="/images/icons/google.png" alt="google-icon" />
                                             <p>Masuk dengan Google</p>
