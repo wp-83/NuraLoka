@@ -6,7 +6,7 @@ import { Link, useForm, usePage } from '@inertiajs/react';
 import '@css/Auth/DetailAccount.css';
 import { useState } from 'react';
 
-export default function DetailAccount(){
+export default function DetailAccount() {
     const { provinces } = usePage().props;
     const [disabledBtn, setDisabledBtn] = useState(true);
 
@@ -45,7 +45,7 @@ export default function DetailAccount(){
                     <div className='select-group split-element'>
                         <label htmlFor="gender">Jenis Kelamin</label>
                         <div className='select-wrapper'>
-                            <select name="gender" id="gender" value={data.gender} required onChange={(e) => setData('gender', e.target.value)} value={data.gender}>
+                            <select name="gender" id="gender" value={data.gender} required onChange={(e) => setData('gender', e.target.value)}>
                                 <option value="" disabled hidden>Jenis kelamin kamu</option>
                                 <option value="male">Laki-laki</option>
                                 <option value="female">Perempuan</option>
