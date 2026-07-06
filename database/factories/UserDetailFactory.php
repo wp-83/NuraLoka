@@ -4,19 +4,19 @@ namespace Database\Factories;
 
 use App\Models\Province;
 use App\Models\User;
-use App\Models\UserDetails;
+use App\Models\UserDetail;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class UserDetailsFactory extends Factory
+class UserDetailFactory extends Factory
 {
-    protected $model = UserDetails::class;
+    protected $model = UserDetail::class;
 
     public function definition(): array
     {
         return [
             'user_id' => User::factory(),
-            'province_id' => Province::inRandomOrder()->first()?->id ?? 1,
-            'name' => $this->faker->name(),
+            'province_id' => Province::inRandomOrder('')->first()?->id,
+            'fullname' => $this->faker->name(),
             'profile_path' => 'profiles/'.$this->faker->uuid().'.jpg',
             'dob' => $this->faker->dateTimeBetween('-50 years', '-18 years')->format('Y-m-d'),
             'gender' => $this->faker->randomElement(['male', 'female', 'unspecified']),

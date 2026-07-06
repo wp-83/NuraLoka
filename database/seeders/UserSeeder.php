@@ -6,7 +6,7 @@ use App\Models\Badge;
 use App\Models\Mission;
 use App\Models\User;
 use App\Models\UserBadge;
-use App\Models\UserDetails;
+use App\Models\UserDetail;
 use App\Models\UserMission;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -21,10 +21,11 @@ class UserSeeder extends Seeder
             'username' => 'admin_nuraloka',
             'email' => 'admin@nuraloka.id',
             'password' => bcrypt('Admin@1234'),
+            'is_admin' => true,
         ]);
-        UserDetails::factory()->create([
+        UserDetail::factory()->create([
             'user_id' => $admin->id,
-            'name' => 'Admin NuraLoka',
+            'fullname' => 'Admin NuraLoka',
             'gender' => 'male',
             'total_points' => 9999,
             'province_id' => DB::table('provinces')->where('name', 'DKI Jakarta')->value('id') ?? 1,
@@ -69,15 +70,20 @@ class UserSeeder extends Seeder
     // ── Helper: buat UserDetails ──────────────────────────────────────────────
     private function attachDetails(
         User $user,
-        ?string $name = null,
+        ?string $fullname = null,
         ?string $gender = null,
-        int $points = -1
+        int $points = -1,
+        ?int $provinceId = null
     ): void {
-        UserDetails::factory()->create([
+        UserDetail::factory()->create([
             'user_id' => $user->id,
-            'name' => $name,
-            'gender' => $gender,
-            'total_points' => $points >= 0 ? $points : null,
+            'province_id' => $provinceId
+                ?? DB::table('provinces')->inRandomOrder()->value('id')
+                ?? 1,
+            'fullname' => $fullname ?? fake()->name(),
+            'dob' => fake()->date(), // atau fake()->dateTimeBetween('-50 years', '-15 years')->format('Y-m-d')
+            'gender' => $gender ?? 'unspecified',
+            'total_points' => $points >= 0 ? $points : fake()->numberBetween(0, 2000),
         ]);
     }
 
@@ -97,7 +103,6 @@ class UserSeeder extends Seeder
         Mission::inRandomOrder()->take($missionCount)->get()->each(function ($mission) use ($user) {
             UserMission::firstOrCreate(
                 ['user_id' => $user->id, 'mission_id' => $mission->id],
-                ['status' => fake()->randomElement(['ongoing', 'completed'])]
             );
         });
     }

@@ -22,7 +22,7 @@ class LoginController extends Controller
         ]);
 
         // Deteksi whether the input is email or username
-        $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $loginField = filter_var($request->identity, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
         $credentials = [
             $loginField => $request->identity,
@@ -37,6 +37,10 @@ class LoginController extends Controller
         }
 
         $request->session()->regenerate();
+
+        if (Auth::user()->is_admin && (Auth::user()->email === 'admin@nuraloka.id' || Auth::user()->username === 'admin_nuraloka')) {
+            return redirect()->route('admin.dashboard');
+        }
 
         return redirect()->route('/');
     }

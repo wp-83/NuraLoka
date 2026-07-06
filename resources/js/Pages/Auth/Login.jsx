@@ -169,7 +169,7 @@ export default function Login() {
                                             ) : 'Masuk'
                                         }
                                     </button>
-                                    <a href={route('auth.google.authenticate')}>
+                                    <a href={route('auth.google.login')}>
                                         <button className='btn-white google-login-btn' type='button'>
                                             <img src="/images/icons/google.png" alt="google-icon" />
                                             <p>Masuk dengan Google</p>

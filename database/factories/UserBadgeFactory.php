@@ -15,7 +15,7 @@ class UserBadgeFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'badge_id' => Badge::inRandomOrder()->first()?->id ?? 1,
+            'badge_id' => Badge::inRandomOrder('')->first()?->id ?? 1,
             'created_at' => $this->faker->dateTimeBetween('-6 months', 'now'),
             'updated_at' => now(),
         ];

@@ -1,11 +1,11 @@
-name: Deploy to Hostinger (Laravel + React)
+name: Deploy to Hostinger Development (Laravel + React)
 
 on:
   push:
     branches: ["main"]
 
 concurrency:
-  group: deploy-production
+  group: deploy-development
   cancel-in-progress: true
 
 jobs:
@@ -65,12 +65,10 @@ jobs:
             "$PHP" -v
 
             "$PHP" "$(command -v composer)" install \
-              --no-dev \
               --prefer-dist \
               --no-interaction \
               --optimize-autoloader
 
-            # recreate storage symlink safely
             if [ -L public/storage ]; then
               rm public/storage
             elif [ -e public/storage ]; then

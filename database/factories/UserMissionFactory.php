@@ -16,7 +16,6 @@ class UserMissionFactory extends Factory
         return [
             'user_id' => User::factory(),
             'mission_id' => Mission::inRandomOrder()->first()?->id ?? 1,
-            'status' => $this->faker->randomElement(['ongoing', 'completed']),
             'created_at' => $this->faker->dateTimeBetween('-3 months', 'now'),
             'updated_at' => now(),
         ];

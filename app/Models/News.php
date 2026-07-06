@@ -5,22 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class UserDetail extends Model
+class News extends Model
 {
     use HasFactory;
 
-    protected $guarded = [
-        'id',
+    protected $fillable = [
+        'user_id',
+        'title',
+        'content',
+        'thumbnail',
+        'publish_date',
     ];
 
-    // Relationships
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function province()
-    {
-        return $this->belongsTo(Province::class);
     }
 }
