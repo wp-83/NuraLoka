@@ -13,14 +13,14 @@ export default function SignUp({ title, content }) {
     const [fade, setFade] = useState(true);
 
     const bgIdentity = {
-        'name' : [
+        'name': [
             'Raja Ampat',
             'Tugu Khatulistiwa',
             'Garang Asem Ayam',
             'Mie Celor',
             'Proses Canting Batik Tulis',
         ],
-        'loc' : [
+        'loc': [
             'Kabupaten Raja Ampat (Waisai), Papua Barat Daya',
             'Pontianak, Kalimantan Barat',
             'Semarang, Jawa Tengah',
@@ -88,7 +88,7 @@ export default function SignUp({ title, content }) {
                     </div>
                 </section>
                 <section className={`right-section ${(fade ? 'fade' : '')}`}>
-                    <img src={`/images/background-auth/register/${currIdx+1}.jpg`} alt="register-bg" className='register-bg' />
+                    <img src={`/images/background-auth/register/${currIdx + 1}.jpg`} alt="register-bg" className='register-bg' />
                     <div className='bg-desc'>
                         <div className='bg-main-content'>
                             <h2><b>{bgIdentity.name[currIdx]}</b></h2>
