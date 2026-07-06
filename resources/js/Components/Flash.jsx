@@ -4,7 +4,7 @@ import { MdOutlineClose } from 'react-icons/md';
 import { useEffect, useState, useRef } from 'react';
 
 // success, warning, info, error
-export default function Flash({ type="success", message="message" }){
+export default function Flash({ type = "success", message = "message" }) {
     const [visible, setVisible] = useState(false);
     const flashRef = useRef(null);
 
