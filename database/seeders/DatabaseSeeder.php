@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             PlaceSeeder::class,
             UserSeeder::class,
+            NewsSeederFW::class,
         ]);
     }
 }
