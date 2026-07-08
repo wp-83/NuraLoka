@@ -5,7 +5,6 @@ use App\Http\Controllers\Auth\ForgetPasswordController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ExploreController;
 // use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\NewsController;
@@ -24,10 +23,6 @@ Route::get('/', function () {
         'latestNews' => $latestNews,
     ]);
 })->name('/')->middleware('auth');
-
-Route::get('/login', function () {
-    return redirect(route('auth.login.index'));
-})->name('login');
 
 Route::prefix('/auth')->name('auth.')->group(function () {
     Route::middleware('guest')->group(function () {

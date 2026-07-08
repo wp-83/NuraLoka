@@ -31,7 +31,6 @@
 .login-section .right-section {
     padding-block: 2.75rem;
     padding-inline: 4rem;
-    color: var(--primary-85);
     overflow: hidden;
 }
 
@@ -62,12 +61,12 @@
 }
 
 .left-section.fade {
-    opacity: 1;
+    opacity: .9;
 }
 
 .left-section .login-bg {
     height: 100vh;
-    opacity: .85;
+    opacity: .75;
 }
 
 .left-section .bg-desc {
@@ -82,12 +81,7 @@
 }
 
 .bg-desc .bg-main-content h2 {
-    color: var(--white);
     filter: drop-shadow(2px 2px 4px black);
-}
-
-.bg-desc .bg-main-content p {
-    color: var(--accent-10);
 }
 
 .bg-desc .bg-additional-content {
@@ -125,13 +119,11 @@
     width: 24rem;
     height: 24rem;
     clip-path: circle();
-    background-color: var(--primary-100);
 }
 
 .top-right-decoration .circle:nth-child(2) {
     width: 8rem;
     height: 8rem;
-    background-color: var(--primary-30);
     clip-path: circle();
     bottom: -3rem;
     right: 4.5rem;
@@ -142,7 +134,6 @@
 .top-right-decoration .circle:last-child {
     width: 4.5rem;
     height: 4.5rem;
-    background-color: var(--primary-70);
     clip-path: circle();
     position: absolute;
     z-index: 15;
@@ -155,7 +146,6 @@
     width: 16rem;
     height: 16rem;
     clip-path: circle();
-    background-color: var(--primary-50);
 }
 
 .bottom-left-decoration .circle:last-child {
@@ -166,7 +156,6 @@
     top: 50%;
     transform: translate(-50%, -50%);
     clip-path: circle();
-    background-color: var(--primary-85);
 }
 
 .logo-auth {
