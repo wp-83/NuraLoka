@@ -6,9 +6,9 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ExploreController;
-// use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PlaceController;
+use App\Http\Controllers\WishlistController;
 use App\Models\News;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +23,10 @@ Route::get('/', function () {
         'latestNews' => $latestNews,
     ]);
 })->name('/')->middleware('auth');
+
+Route::get('/login', function () {
+    return redirect(route('auth.login.index'));
+})->name('login');
 
 Route::prefix('/auth')->name('auth.')->group(function () {
     Route::middleware('guest')->group(function () {
@@ -71,6 +75,13 @@ Route::middleware('guest')->group(function () {
 
 // Detail Place
 Route::get('/places/{slug}', [PlaceController::class, 'show'])->name('places.show');
+
+// Wishlist (Impian)
+Route::middleware('auth')->prefix('/impian')->name('wishlist.')->controller(WishlistController::class)->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::post('/toggle', 'toggle')->name('toggle');
+    Route::get('/{slug}', 'show')->name('show');
+});
 // News (Wawasan Wisata)
 Route::middleware('auth')->group(function () {
     Route::controller(NewsController::class)->prefix('/wawasan-wisata')->name('news.')->group(function () {

@@ -6,7 +6,7 @@ const NAV_LINKS = [
     { label: 'Beranda', routeName: '/' },
     { label: 'Jelajah', routeName: 'explore.index' },
     { label: 'Tantangan', routeName: null },
-    { label: 'Impian', routeName: null },
+    { label: 'Impian', routeName: 'wishlist.index' },
     { label: 'Album', routeName: null },
 ];
 

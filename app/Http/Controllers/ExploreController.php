@@ -49,11 +49,18 @@ class ExploreController extends Controller
                 ->get();
         }
 
+        // 5. Saved Place IDs: untuk state bookmark pada PlaceCard
+        $savedPlaceIds = [];
+        if (auth()->check()) {
+            $savedPlaceIds = auth()->user()->savedPlaces()->pluck('places.id')->toArray();
+        }
+
         return inertia('Explore/Index', [
             'places' => $places,
             'categories' => $categories,
             'trendingPlaces' => $trendingPlaces,
             'recentlyVisited' => $recentlyVisited,
+            'savedPlaceIds' => $savedPlaceIds,
         ]);
     }
 
