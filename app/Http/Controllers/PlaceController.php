@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Place;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class PlaceController extends Controller
@@ -94,7 +95,7 @@ class PlaceController extends Controller
             $isSaved = auth()->user()->savedPlaces()->where('place_id', $place->id)->exists();
         }
 
-        $totalSaves = \Illuminate\Support\Facades\DB::table('saved_places')->where('place_id', $place->id)->count();
+        $totalSaves = DB::table('saved_places')->where('place_id', $place->id)->count();
 
         return Inertia::render('Place/Show', [
             'place' => $place,
