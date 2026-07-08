@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client'
 createInertiaApp({
     progress: {
         delay: 250,
-        color: "#FFC7A5",
+        color: "#8A6654",
         includeCSS: true,
         showSpinner: false,
     },

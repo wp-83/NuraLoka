@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -35,156 +34,140 @@ class GoogleController extends Controller
      */
     public function callback()
     {
-        try {
-            /**
-             * Get the authentication mode from the session.
-             * If the mode does not exist, use "login" as the default mode.
-             */
-            $mode = session()->pull('google_auth_mode', 'login');
+        /*
+        |--------------------------------------------------------------------------
+        | Get Google Auth Mode
+        |--------------------------------------------------------------------------
+        | This value tells us whether the user came from:
+        | - Sign in with Google
+        | - Sign up with Google
+        |
+        | In this controller, both flows are allowed to create or login the user.
+        */
+        $mode = session()->pull('google_auth_mode', 'login');
 
-            /**
-             * Retrieve the authenticated Google user information.
-             */
-            $googleUser = Socialite::driver('google')->user();
+        /*
+        |--------------------------------------------------------------------------
+        | Get Google User Data
+        |--------------------------------------------------------------------------
+        | This retrieves the authenticated Google account information.
+        */
+        $googleUser = Socialite::driver('google')->user();
 
-            $email = $googleUser->getEmail();
-            $googleId = $googleUser->getId();
+        $email = $googleUser->getEmail();
+        $googleId = $googleUser->getId();
+        $googleName = $googleUser->getName();
 
-            /**
-             * Check whether a user with the same email already exists
-             * in the local users table.
-             */
-            $user = User::where('email', $email)->first();
+        /*
+        |--------------------------------------------------------------------------
+        | Find Existing User
+        |--------------------------------------------------------------------------
+        | Email is used as the main identifier because one email should only
+        | belong to one local user account.
+        */
+        $user = User::where('email', $email)->first();
 
-            /*
-            |--------------------------------------------------------------------------
-            | Google Registration Flow
-            |--------------------------------------------------------------------------
-            | This flow is used when the user clicks "Sign Up with Google".
-            |
-            | Rules:
-            | - If the email already exists, do not create a new account.
-            | - Redirect the user to the login page instead.
-            | - If the email does not exist, create a new user in the users table.
-            | - After creating the user, log them in and redirect them to
-            |   the detail account page to complete their profile information.
-            */
-            if ($mode === 'register') {
-                if ($user) {
-                    return redirect()
-                        ->route('auth.login')
-                        ->with('error', 'This Google account is already registered. Please sign in instead.');
-                }
+        /*
+        |--------------------------------------------------------------------------
+        | Create Basic Account If User Does Not Exist
+        |--------------------------------------------------------------------------
+        | This applies to both login and registration flow.
+        |
+        | If the user clicks "Login with Google" but the account does not exist,
+        | the system will automatically create a basic account and redirect the
+        | user to the detail account page.
+        |
+        | The user is not logged in yet because their detail account data is
+        | still incomplete.
+        */
+        if (! $user) {
+            $user = User::create([
+                'username' => $this->generateUsernameFromEmail($email),
+                'email' => $email,
+                'google_id' => $googleId,
+                'password' => null,
+                'email_verified_at' => now(),
+            ]);
 
-                $user = User::create([
-                    'username' => $this->generateUsernameFromEmail($email),
-                    'email' => $email,
-                    'google_id' => $googleId,
-                    'password' => null,
-                    'email_verified_at' => now(),
-                ]);
+            session([
+                'register_user_id' => $user->id,
+                'google_fullname' => $googleName,
+            ]);
 
-                Auth::login($user);
-                request()->session()->regenerate();
-
-                return redirect()->route('auth.register.detail');
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Google Login Flow
-            |--------------------------------------------------------------------------
-            | This flow is used when the user clicks "Sign In with Google".
-            |
-            | Rules:
-            | - If the email does not exist, do not register the user automatically.
-            | - Redirect the user to the registration page instead.
-            | - If the email exists, log the user in.
-            */
-            if (! $user) {
-                return redirect()
-                    ->route('auth.register')
-                    ->with('error', 'This Google account is not registered yet. Please sign up first.');
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Link Existing Local Account with Google
-            |--------------------------------------------------------------------------
-            | If the user previously registered manually using the same email,
-            | but the google_id is still empty, connect that account with
-            | the authenticated Google account.
-            */
-            if (! $user->google_id) {
-                $user->update([
-                    'google_id' => $googleId,
-                    'email_verified_at' => $user->email_verified_at ?? now(),
-                ]);
-            }
-
-            /**
-             * Log the user into the application and regenerate the session
-             * to prevent session fixation attacks.
-             */
-            Auth::login($user);
-            request()->session()->regenerate();
-
-            /**
-             * Redirect the user to their intended page,
-             * or to the homepage if no intended page exists.
-             */
-            return redirect()->intended('/');
-
-        } catch (\Throwable $e) {
-            /**
-             * Report the exception to Laravel's logging system.
-             * Avoid using dd() in production because it can expose sensitive data.
-             */
-            report($e);
-
-            return redirect()
-                ->route('auth.login')
-                ->with('error', 'Failed to authenticate with Google.');
+            return redirect()->route('auth.register.detail');
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Link Existing Manual Account with Google
+        |--------------------------------------------------------------------------
+        | If the user registered manually before using the same email, but the
+        | google_id is still empty, connect the local account to Google.
+        */
+        if (! $user->google_id) {
+            $user->update([
+                'google_id' => $googleId,
+                'email_verified_at' => $user->email_verified_at ?? now(),
+            ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Login Existing Complete Account
+        |--------------------------------------------------------------------------
+        | If the user already exists and the detail account is complete, log them
+        | in automatically.
+        |
+        | This also handles the case where the user clicks "Sign Up with Google"
+        | even though their account already exists.
+        */
+        auth()->login($user);
+        request()->session()->regenerate();
+
+        return redirect()->intended('/');
     }
 
     /**
      * Generate a unique username from the user's email address.
-     *
-     * Example:
-     * - Email: vergie@example.com
-     * - Base username: vergie
-     *
-     * If the generated username already exists, random numbers will be
-     * appended until a unique username is found.
      */
     private function generateUsernameFromEmail(string $email): string
     {
-        /**
-         * Get the part of the email before the "@" symbol.
-         */
+        /*
+        |--------------------------------------------------------------------------
+        | Get Email Prefix
+        |--------------------------------------------------------------------------
+        | Example:
+        | vergie@example.com becomes vergie
+        */
         $baseUsername = Str::before($email, '@');
 
-        /**
-         * Convert the base username into a slug format.
-         * This removes unsupported characters and spaces.
-         */
+        /*
+        |--------------------------------------------------------------------------
+        | Convert Username to Slug
+        |--------------------------------------------------------------------------
+        | This removes unsupported characters and spaces.
+        */
         $baseUsername = Str::slug($baseUsername, '');
 
-        /**
-         * Use a default username if the email prefix cannot be converted
-         * into a valid username.
-         */
+        /*
+        |--------------------------------------------------------------------------
+        | Fallback Username
+        |--------------------------------------------------------------------------
+        | If the email prefix cannot be converted into a valid username,
+        | use "user" as the default base username.
+        */
         if ($baseUsername === '') {
             $baseUsername = 'user';
         }
 
         $username = $baseUsername;
 
-        /**
-         * Keep generating a new username while the current username
-         * already exists in the database.
-         */
+        /*
+        |--------------------------------------------------------------------------
+        | Ensure Username is Unique
+        |--------------------------------------------------------------------------
+        | If the username already exists, append random numbers.
+        */
         while (User::where('username', $username)->exists()) {
             $username = $baseUsername.rand(100, 999);
         }

@@ -60,6 +60,7 @@ class RegisterController extends Controller
 
         return inertia('Auth/DetailAcount', [
             'provinces' => $provinces,
+            'fullname' => session('google_fullname'),
         ]);
     }
 
@@ -82,7 +83,10 @@ class RegisterController extends Controller
             'user_id' => $user->id,
         ]);
 
-        session()->forget('register_user_id');
+        session()->forget([
+            'register_user_id',
+            'google_fullname',
+        ]);
         Auth::login($user);
 
         return redirect()->route('/');
