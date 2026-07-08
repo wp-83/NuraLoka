@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         Authenticate::redirectUsing(function ($request) {
-            return route('auth.login');
+            return route('auth.login.index');
         });
 
         $middleware->web(append: [
