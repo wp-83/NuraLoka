@@ -90,4 +90,9 @@ class User extends Authenticatable
         return $this->belongsToMany(Place::class, 'saved_places')
             ->withTimestamps();
     }
+
+    public function albums()
+    {
+        return $this->hasManyThrough(Album::class, Trip::class);
+    }
 }
