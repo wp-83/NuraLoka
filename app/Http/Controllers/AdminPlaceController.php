@@ -56,21 +56,21 @@ class AdminPlaceController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'        => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'description' => 'required|string',
-            'latitude'    => 'required|numeric|between:-90,90',
-            'longitude'   => 'required|numeric|between:-180,180',
-            'address'     => 'required|string|max:500',
-            'categories'  => 'nullable|array',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'address' => 'required|string|max:500',
+            'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:categories,id',
         ]);
 
         $place = Place::create([
-            'name'        => $request->name,
+            'name' => $request->name,
             'description' => $request->description,
-            'latitude'    => $request->latitude,
-            'longitude'   => $request->longitude,
-            'address'     => $request->address,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'address' => $request->address,
         ]);
 
         // Sync categories
@@ -93,7 +93,7 @@ class AdminPlaceController extends Controller
         $categories = Category::orderBy('name')->get();
 
         return Inertia::render('Admin/Place/Edit', [
-            'place'      => $place,
+            'place' => $place,
             'categories' => $categories,
         ]);
     }
@@ -106,21 +106,21 @@ class AdminPlaceController extends Controller
         $place = Place::findOrFail($id);
 
         $request->validate([
-            'name'        => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'description' => 'required|string',
-            'latitude'    => 'required|numeric|between:-90,90',
-            'longitude'   => 'required|numeric|between:-180,180',
-            'address'     => 'required|string|max:500',
-            'categories'  => 'nullable|array',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'address' => 'required|string|max:500',
+            'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:categories,id',
         ]);
 
         $place->update([
-            'name'        => $request->name,
+            'name' => $request->name,
             'description' => $request->description,
-            'latitude'    => $request->latitude,
-            'longitude'   => $request->longitude,
-            'address'     => $request->address,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'address' => $request->address,
         ]);
 
         // Sync categories (detach old, attach new)

@@ -47,7 +47,7 @@ class AdminCategoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'      => 'required|string|max:255|unique:categories,name',
+            'name' => 'required|string|max:255|unique:categories,name',
             'icon_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:1024',
         ]);
 
@@ -66,7 +66,7 @@ class AdminCategoryController extends Controller
         }
 
         Category::create([
-            'name'      => $request->name,
+            'name' => $request->name,
             'icon_path' => $iconPath,
         ]);
 
@@ -96,9 +96,9 @@ class AdminCategoryController extends Controller
         $category = Category::findOrFail($id);
 
         $request->validate([
-            'name'         => 'required|string|max:255|unique:categories,name,'.$id,
-            'icon_path'    => 'nullable',
-            'remove_icon'  => 'nullable|boolean',
+            'name' => 'required|string|max:255|unique:categories,name,'.$id,
+            'icon_path' => 'nullable',
+            'remove_icon' => 'nullable|boolean',
         ]);
 
         if ($request->hasFile('icon_path')) {
@@ -141,7 +141,7 @@ class AdminCategoryController extends Controller
         }
 
         $category->update([
-            'name'      => $request->name,
+            'name' => $request->name,
             'icon_path' => $iconPath,
         ]);
 

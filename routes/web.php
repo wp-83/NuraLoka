@@ -92,9 +92,9 @@ Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(fu
 
         return inertia('Admin/Dashboard', [
             'stats' => [
-                'totalNews'       => $totalNews,
-                'totalUsers'      => $totalUsers,
-                'totalPlaces'     => $totalPlaces,
+                'totalNews' => $totalNews,
+                'totalUsers' => $totalUsers,
+                'totalPlaces' => $totalPlaces,
                 'totalCategories' => $totalCategories,
             ],
         ]);
