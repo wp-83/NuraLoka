@@ -42,7 +42,7 @@ class LoginController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        return redirect()->route('/');
+        return redirect()->route('home');
     }
 
     /**
@@ -55,7 +55,7 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('auth.login.index');
+        return redirect()->route('landing-page.index');
 
     }
 }

@@ -43,6 +43,9 @@ class HandleInertiaRequests extends Middleware
                     'email' => $request->user()->email,
                     'is_admin' => $request->user()->is_admin,
                 ] : null,
+                // 'auth' => [
+                //     'user' => $request->user(),
+                // ],
             ],
             'flash' => [
                 // type => success, error, and info

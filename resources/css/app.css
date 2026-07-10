@@ -11,6 +11,23 @@
 @source "../**/*.vue";
 
 @layer base {
+    html {
+        font-size: 16px;
+        scroll-behavior: smooth;
+    }
+
+    @media screen and (max-width: 768px) {
+        html {
+            font-size: 15px;
+        }
+    }
+
+    @media screen and (max-width: 480px) {
+        html {
+            font-size: 14px;
+        }
+    }
+
     img {
         object-fit: cover;
     }
@@ -55,5 +72,19 @@
 
     .hide-scrollbar::-webkit-scrollbar {
         display: none; /* Chrome, Safari and Opera */
+    }
+
+    @keyframes progress {
+        from {
+            width: 100%;
+        }
+
+        to {
+            width: 0%;
+        }
+    }
+
+    .animate-progress {
+        animation: progress 4s linear forwards;
     }
 }

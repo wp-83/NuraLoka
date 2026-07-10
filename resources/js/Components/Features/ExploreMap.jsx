@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, Polyline, CircleMarker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap, useMapEvents, Polyline, CircleMarker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -46,7 +46,7 @@ const MapUpdater = ({ selectedPlace, routeData }) => {
 };
 
 // BoundsWatcher — fires onBoundsChange when user pans or zooms the map, and on mount
-const BoundsWatcher = ({ onBoundsChange }) => {
+const BoundsWatcher = ({ onBoundsChange, onZoomChange }) => {
   const map = useMapEvents({
     moveend: () => {
       if (onBoundsChange) {
@@ -61,6 +61,7 @@ const BoundsWatcher = ({ onBoundsChange }) => {
       }
     },
     zoomend: () => {
+      if (onZoomChange) onZoomChange(map.getZoom());
       if (onBoundsChange) {
         const b = map.getBounds();
         onBoundsChange({
@@ -75,17 +76,20 @@ const BoundsWatcher = ({ onBoundsChange }) => {
   });
 
   React.useEffect(() => {
-    if (onBoundsChange && map) {
-      const b = map.getBounds();
-      onBoundsChange({
-        south: b.getSouth(),
-        west: b.getWest(),
-        north: b.getNorth(),
-        east: b.getEast(),
-        zoom: map.getZoom(),
-      });
+    if (map) {
+      if (onZoomChange) onZoomChange(map.getZoom());
+      if (onBoundsChange) {
+        const b = map.getBounds();
+        onBoundsChange({
+          south: b.getSouth(),
+          west: b.getWest(),
+          north: b.getNorth(),
+          east: b.getEast(),
+          zoom: map.getZoom(),
+        });
+      }
     }
-  }, [map, onBoundsChange]);
+  }, [map, onBoundsChange, onZoomChange]);
 
   return null;
 };
@@ -117,6 +121,7 @@ export default function ExploreMap({
 }) {
   const defaultCenter = [-8.0, 113.0];
   const [center, setCenter] = React.useState(defaultCenter);
+  const [currentZoom, setCurrentZoom] = React.useState(selectedPlace ? 15 : 5);
 
   React.useEffect(() => {
     if (routeData && routeData.coordinates && routeData.coordinates.length > 0) {
@@ -147,7 +152,7 @@ export default function ExploreMap({
         <MapUpdater selectedPlace={selectedPlace} routeData={routeData} />
 
         {/* Bounds watcher — triggers OSM data fetch when user pans/zooms */}
-        <BoundsWatcher onBoundsChange={onBoundsChange} />
+        <BoundsWatcher onBoundsChange={onBoundsChange} onZoomChange={setCurrentZoom} />
 
         {/* Route Polyline */}
         {routeData && routeData.coordinates && (
@@ -188,6 +193,16 @@ export default function ExploreMap({
                 fillOpacity: 0.9,
               }}
             >
+              {currentZoom >= 13 && (
+                <Tooltip direction="top" offset={[0, -7]} permanent opacity={0.9} className="font-bold text-xs" style={{ whiteSpace: 'nowrap', backgroundColor: 'rgba(255,255,255,0.85)', border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', padding: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {place.img && (
+                      <img src={place.img} alt={place.name} style={{ width: '24px', height: '24px', objectFit: 'cover', borderRadius: '4px' }} />
+                    )}
+                    <span>{place.name}</span>
+                  </div>
+                </Tooltip>
+              )}
               <Popup>
                 <div style={{ maxWidth: '220px', fontFamily: 'sans-serif' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '7px', flexWrap: 'wrap' }}>
@@ -234,10 +249,17 @@ export default function ExploreMap({
               key={`local-${place.id}`}
               position={[parseFloat(place.latitude), parseFloat(place.longitude)]}
               icon={markerIcon}
-              eventHandlers={{
-                click: () => { if (onVisit) onVisit(place); },
-              }}
             >
+              {currentZoom >= 13 && (
+                <Tooltip direction="top" offset={[0, -32]} permanent opacity={0.9} className="font-bold text-xs" style={{ whiteSpace: 'nowrap', backgroundColor: 'rgba(255,255,255,0.85)', border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', padding: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {place.img && (
+                      <img src={place.img} alt={place.name} style={{ width: '24px', height: '24px', objectFit: 'cover', borderRadius: '4px' }} />
+                    )}
+                    <span>{place.name}</span>
+                  </div>
+                </Tooltip>
+              )}
               <Popup>
                 <div style={{ maxWidth: '220px', fontFamily: 'sans-serif' }}>
                   <div style={{ marginBottom: '7px' }}>
@@ -250,10 +272,21 @@ export default function ExploreMap({
                   </h4>
                   <p style={{ margin: '0 0 6px 0', fontSize: '11px', color: '#777' }}>{place.address}</p>
                   {place.categories?.length > 0 && (
-                    <span style={{ background: '#fef3c7', color: '#92400e', fontSize: '10px', padding: '2px 7px', borderRadius: '8px', fontWeight: '600' }}>
-                      {place.categories[0].name}
-                    </span>
+                    <div style={{ marginBottom: '8px' }}>
+                      <span style={{ background: '#fef3c7', color: '#92400e', fontSize: '10px', padding: '2px 7px', borderRadius: '8px', fontWeight: '600' }}>
+                        {place.categories[0].name}
+                      </span>
+                    </div>
                   )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onVisit) onVisit(place);
+                    }}
+                    style={{ display: 'block', width: '100%', padding: '6px 0', background: '#d97706', color: 'white', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginTop: '4px' }}
+                  >
+                    Lihat Detail
+                  </button>
                 </div>
               </Popup>
             </Marker>
