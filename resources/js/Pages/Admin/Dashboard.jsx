@@ -1,6 +1,5 @@
 import { Link, Head } from '@inertiajs/react';
 import { FaNewspaper, FaMapMarkedAlt, FaUsers, FaArrowLeft, FaSignOutAlt, FaTrophy } from 'react-icons/fa';
-import '@css/Init.css';
 import '@css/Admin/Dashboard.css';
 
 export default function Dashboard({ stats }) {
@@ -24,9 +23,9 @@ export default function Dashboard({ stats }) {
 
                 {/* Header */}
                 <div className="dashboard-header">
-                    <img 
-                        src="/images/mascots/welcome.png" 
-                        alt="NuraLoka Mascot" 
+                    <img
+                        src="/images/mascots/welcome.png"
+                        alt="NuraLoka Mascot"
                         className="dashboard-mascot"
                     />
                     <div className="dashboard-title-wrapper">
@@ -84,8 +83,8 @@ export default function Dashboard({ stats }) {
                                 </p>
                             </div>
                             <div className="menu-card-action">
-                                <Link 
-                                    href={route('admin.news.index')} 
+                                <Link
+                                    href={route('admin.news.index')}
                                     className="menu-card-link"
                                 >
                                     Buka Manajemen &rarr;
@@ -137,10 +136,10 @@ export default function Dashboard({ stats }) {
                         </Link>
                     </div>
                     <div className="dashboard-footer-right">
-                        <Link 
-                            href={route('logout')} 
-                            method="post" 
-                            as="button" 
+                        <Link
+                            href={route('logout')}
+                            method="post"
+                            as="button"
                             className="btn-error"
                             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
                         >

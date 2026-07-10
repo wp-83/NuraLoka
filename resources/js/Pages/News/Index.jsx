@@ -1,5 +1,4 @@
 import { Link, Head, usePage } from '@inertiajs/react';
-import '@css/Init.css';
 import '@css/News/Index.css';
 
 export default function Index({ news }) {
@@ -60,9 +59,9 @@ export default function Index({ news }) {
 
                 {/* Page Title & Mascot */}
                 <div className="news-index-header">
-                    <img 
-                        src="/images/mascots/welcome.png" 
-                        alt="NuraLoka Mascot" 
+                    <img
+                        src="/images/mascots/welcome.png"
+                        alt="NuraLoka Mascot"
                         className="news-index-mascot"
                     />
                     <div className="news-index-title-wrapper">
@@ -80,9 +79,9 @@ export default function Index({ news }) {
                         news.data.map((item) => (
                             <article key={item.id} className="news-grid-card">
                                 <div className="news-grid-image-wrapper">
-                                    <img 
-                                        src={item.thumbnail || '/images/defaults/image.png'} 
-                                        alt={item.title} 
+                                    <img
+                                        src={item.thumbnail || '/images/defaults/image.png'}
+                                        alt={item.title}
                                         className="news-grid-thumbnail"
                                     />
                                 </div>
@@ -119,8 +118,8 @@ export default function Index({ news }) {
 
                             if (!link.url) {
                                 return (
-                                    <span 
-                                        key={index} 
+                                    <span
+                                        key={index}
                                         className="pagination-link pagination-disabled"
                                         dangerouslySetInnerHTML={{ __html: label }}
                                     />

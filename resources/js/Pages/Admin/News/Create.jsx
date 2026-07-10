@@ -1,7 +1,6 @@
 import { Link, Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { FaArrowLeft, FaUpload, FaTrash, FaSearchPlus } from 'react-icons/fa';
-import '@css/Init.css';
 import '@css/Admin/News.css';
 
 export default function Create() {
@@ -97,7 +96,7 @@ export default function Create() {
                         <div className="input-group" style={{ marginTop: '1.5rem' }}>
                             <label><b>Gambar Thumbnail</b></label>
                             <div className="thumbnail-upload-section">
-                                <div 
+                                <div
                                     className={`thumbnail-preview-box ${!previewUrl ? 'clickable-preview' : ''}`}
                                     onClick={!previewUrl ? triggerFileInput : undefined}
                                     style={{ cursor: !previewUrl ? 'pointer' : 'default' }}
@@ -106,16 +105,16 @@ export default function Create() {
                                         <div className="preview-image-wrapper">
                                             <img src={previewUrl} alt="Thumbnail Preview" />
                                             <div className="preview-overlay">
-                                                <button 
-                                                    type="button" 
+                                                <button
+                                                    type="button"
                                                     className="overlay-action-btn view-btn"
                                                     onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
                                                     title="Lihat Gambar"
                                                 >
                                                     <FaSearchPlus />
                                                 </button>
-                                                <button 
-                                                    type="button" 
+                                                <button
+                                                    type="button"
                                                     className="overlay-action-btn delete-btn"
                                                     onClick={(e) => { e.stopPropagation(); handleRemoveImage(); }}
                                                     title="Hapus Gambar"
@@ -129,14 +128,14 @@ export default function Create() {
                                     )}
                                 </div>
                                 <div className="file-input-wrapper">
-                                    <div 
-                                        className={`select-wrapper ${errors.thumbnail ? 'input-error' : ''}`} 
+                                    <div
+                                        className={`select-wrapper ${errors.thumbnail ? 'input-error' : ''}`}
                                         style={{ padding: '0', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
                                         onClick={triggerFileInput}
                                     >
-                                        <label 
-                                            htmlFor="thumbnail-file" 
-                                            className="btn-white" 
+                                        <label
+                                            htmlFor="thumbnail-file"
+                                            className="btn-white"
                                             style={{ border: 'none', margin: '0', borderRadius: '0', paddingBlock: '0.6rem', paddingInline: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--text-small)' }}
                                             onClick={(e) => e.stopPropagation()}
                                         >
@@ -178,15 +177,15 @@ export default function Create() {
 
                         {/* Actions */}
                         <div className="form-actions">
-                            <Link 
-                                href={route('admin.news.index')} 
+                            <Link
+                                href={route('admin.news.index')}
                                 className="btn-white btn-link-cancel"
                                 disabled={processing}
                             >
                                 Batal
                             </Link>
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 className="btn-success"
                                 disabled={processing}
                             >
@@ -202,9 +201,9 @@ export default function Create() {
                 <div className="image-popup-modal" onClick={() => setIsModalOpen(false)}>
                     <div className="modal-content-wrapper" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-close-btn" onClick={() => setIsModalOpen(false)}>&times;</div>
-                        <img 
-                            src={previewUrl} 
-                            alt="Preview Besar" 
+                        <img
+                            src={previewUrl}
+                            alt="Preview Besar"
                         />
                     </div>
                 </div>

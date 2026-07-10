@@ -1,12 +1,11 @@
 import { Link, Head } from '@inertiajs/react';
-import '@css/Init.css';
 import '@css/News/Show.css';
 
 export default function Show({ newsItem }) {
     // Determine the author's display name safely
-    const authorName = newsItem.user?.userDetails?.fullname 
-        || newsItem.user?.user_details?.fullname 
-        || newsItem.user?.username 
+    const authorName = newsItem.user?.userDetails?.fullname
+        || newsItem.user?.user_details?.fullname
+        || newsItem.user?.username
         || 'Admin NuraLoka';
 
     // Format absolute date
@@ -66,9 +65,9 @@ export default function Show({ newsItem }) {
 
                 {/* Main Article Image Banner */}
                 <div className="news-detail-image-wrapper">
-                    <img 
-                        src={newsItem.thumbnail || '/images/defaults/image.png'} 
-                        alt={newsItem.title} 
+                    <img
+                        src={newsItem.thumbnail || '/images/defaults/image.png'}
+                        alt={newsItem.title}
                         className="news-detail-image"
                     />
                 </div>

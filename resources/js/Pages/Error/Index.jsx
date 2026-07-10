@@ -1,19 +1,17 @@
-import { Head, Link } from "@inertiajs/react";
-import '@css/Init.css';
-import '@css/Error/Error.css';
+import { Head } from "@inertiajs/react";
 
 export default function Error({ status }) {
     const title = {
-        400: "Bad Request",
-        401: "Unauthorized",
-        403: "Forbidden",
-        404: "Page Not Found",
-        405: 'Method Not Allowed',
-        408: "Request Timeout",
-        419: "Page Expired",
-        500: "Server Error",
-        502: "Bad Gateway",
-        503: "Service Unavailable",
+        400: "Permintaan Tidak Valid",
+        401: "Belum Terautentikasi",
+        403: "Akses Ditolak",
+        404: "Halaman Tidak Ditemukan",
+        405: "Metode Tidak Diizinkan",
+        408: "Waktu Permintaan Habis",
+        419: "Sesi Berakhir",
+        500: "Kesalahan Server",
+        502: "Gateway Bermasalah",
+        503: "Layanan Tidak Tersedia",
     }[status];
 
     const description = {
@@ -33,15 +31,29 @@ export default function Error({ status }) {
         <>
             <Head title={`${status} | ${title}`} />
 
-            <div className="container error-container">
-                <img src={`/images/errors/${status}.png`} alt={status} className="error-icon" />
-                <div className='content'>
-                    <div className='error-main-content'>
-                        <h1 className="hero bold">{status}</h1>
-                        <h1 style={{ color: 'var(--secondary-85)' }}>|</h1>
-                        <h1 className="subtitle">{title}</h1>
+            <div className="container flex h-screen flex-col items-center justify-center gap-0 md:flex-row md:gap-8">
+                <img
+                    src={`/images/errors/${status}.png`}
+                    alt={status}
+                    className="w-64 sm:w-72 md:w-80"
+                />
+
+                <div className="flex flex-col items-center gap-3 md:items-start">
+                    <div className="flex items-center gap-2">
+                        <h1 className="text-hero font-bold text-primary-100">
+                            {status}
+                        </h1>
+
+                        <h1 className="text-title text-secondary-85">|</h1>
+
+                        <h1 className="text-subtitle font-heading text-primary-100">
+                            {title}
+                        </h1>
                     </div>
-                    <p className="paragraph">{description}</p>
+
+                    <p className="text-paragraph font-heading text-center md:text-left">
+                        {description}
+                    </p>
                 </div>
             </div>
         </>
