@@ -1,15 +1,18 @@
 <?php
 
+use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminNewsController;
+use App\Http\Controllers\AdminPlaceController;
 use App\Http\Controllers\Auth\ForgetPasswordController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ExploreController;
-// use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PlaceController;
+use App\Models\Category;
 use App\Models\News;
+use App\Models\Place;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -84,11 +87,15 @@ Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(fu
     Route::get('/dashboard', function () {
         $totalNews = News::count();
         $totalUsers = User::count();
+        $totalPlaces = Place::count();
+        $totalCategories = Category::count();
 
         return inertia('Admin/Dashboard', [
             'stats' => [
                 'totalNews' => $totalNews,
                 'totalUsers' => $totalUsers,
+                'totalPlaces' => $totalPlaces,
+                'totalCategories' => $totalCategories,
             ],
         ]);
     })->name('dashboard');
@@ -101,8 +108,24 @@ Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(fu
         Route::post('/{id}', [AdminNewsController::class, 'update'])->name('update');
         Route::delete('/{id}', [AdminNewsController::class, 'destroy'])->name('destroy');
     });
-});
 
-// Route::middleware('guest')->group(function () {
-//     Route::get('/places', [PlaceController::class, 'index'])->name('places.index');
-// });
+    // Admin Place Management
+    Route::prefix('/places')->name('places.')->group(function () {
+        Route::get('/', [AdminPlaceController::class, 'index'])->name('index');
+        Route::get('/create', [AdminPlaceController::class, 'create'])->name('create');
+        Route::post('/', [AdminPlaceController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [AdminPlaceController::class, 'edit'])->name('edit');
+        Route::post('/{id}', [AdminPlaceController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdminPlaceController::class, 'destroy'])->name('destroy');
+    });
+
+    // Admin Category Management
+    Route::prefix('/categories')->name('categories.')->group(function () {
+        Route::get('/', [AdminCategoryController::class, 'index'])->name('index');
+        Route::get('/create', [AdminCategoryController::class, 'create'])->name('create');
+        Route::post('/', [AdminCategoryController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [AdminCategoryController::class, 'edit'])->name('edit');
+        Route::post('/{id}', [AdminCategoryController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdminCategoryController::class, 'destroy'])->name('destroy');
+    });
+});
