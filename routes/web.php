@@ -2,20 +2,18 @@
 
 use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminNewsController;
-use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\AdminPlaceController;
+use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\Auth\ForgetPasswordController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ExploreController;
-use App\Http\Controllers\NewsController;
-use App\Http\Controllers\PlaceController;
-use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\LandingPageController;
-// use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PlaceController;
+// use App\Http\Controllers\PlaceController;
+use App\Http\Controllers\WishlistController;
 use App\Models\Category;
 use App\Models\News;
 use App\Models\Place;
