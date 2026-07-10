@@ -514,7 +514,16 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
     // ── Visit / Click handler ──
     const handleVisit = (place) => {
         if (place && place.slug) {
-            router.visit(route('places.show', place.slug));
+            if (place.id && !String(place.id).startsWith('osm-')) {
+                router.post(route('explore.track'), { place_id: place.id }, {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        router.visit(route('places.show', place.slug));
+                    }
+                });
+            } else {
+                router.visit(route('places.show', place.slug));
+            }
         }
     };
 

@@ -1,11 +1,14 @@
 import { Link, Head } from '@inertiajs/react';
-import { FaNewspaper, FaMapMarkedAlt, FaUsers, FaArrowLeft, FaSignOutAlt, FaTrophy } from 'react-icons/fa';
+import { FaNewspaper, FaMapMarkedAlt, FaUsers, FaArrowLeft, FaSignOutAlt, FaTrophy, FaTag } from 'react-icons/fa';
+import '@css/Init.css';
 import '@css/Admin/Dashboard.css';
 
 export default function Dashboard({ stats }) {
     // Fallback values if stats props are not provided
     const userCount = stats?.totalUsers ?? 0;
     const newsCount = stats?.totalNews ?? 0;
+    const placeCount = stats?.totalPlaces ?? 0;
+    const categoryCount = stats?.totalCategories ?? 0;
 
     return (
         <>
@@ -63,8 +66,18 @@ export default function Dashboard({ stats }) {
                             <FaMapMarkedAlt />
                         </div>
                         <div className="stat-info">
-                            <span className="stat-value">24</span>
+                            <span className="stat-value">{placeCount}</span>
                             <span className="stat-label">Destinasi Terdaftar</span>
+                        </div>
+                    </div>
+
+                    <div className="dashboard-stat-card">
+                        <div className="stat-icon-wrapper purple">
+                            <FaTag />
+                        </div>
+                        <div className="stat-info">
+                            <span className="stat-value">{categoryCount}</span>
+                            <span className="stat-label">Kategori Aktif</span>
                         </div>
                     </div>
                 </div>
@@ -92,37 +105,41 @@ export default function Dashboard({ stats }) {
                             </div>
                         </div>
 
-                        {/* Destinasi Wisata Card (Placeholder) */}
-                        <div className="dashboard-menu-card" style={{ opacity: 0.85 }}>
-                            <span className="menu-card-badge">Segera Hadir</span>
+                        {/* Destinasi Wisata Card */}
+                        <div className="dashboard-menu-card">
                             <div className="menu-card-body">
-                                <FaMapMarkedAlt className="menu-card-icon" style={{ color: 'var(--gray-50)' }} />
-                                <h3 className="menu-card-title" style={{ color: 'var(--gray-70)' }}>Kelola Destinasi & Rute</h3>
+                                <FaMapMarkedAlt className="menu-card-icon" />
+                                <h3 className="menu-card-title">Kelola Destinasi &amp; Rute</h3>
                                 <p className="menu-card-desc">
                                     Mengatur direktori objek wisata, tempat kuliner, pos transit, serta rute peta perjalanan antar kota di Indonesia.
                                 </p>
                             </div>
                             <div className="menu-card-action">
-                                <button className="btn-inactive btn-sm" disabled>
-                                    Nonaktif
-                                </button>
+                                <Link
+                                    href={route('admin.places.index')}
+                                    className="menu-card-link"
+                                >
+                                    Buka Manajemen &rarr;
+                                </Link>
                             </div>
                         </div>
 
-                        {/* User & Points Card (Placeholder) */}
-                        <div className="dashboard-menu-card" style={{ opacity: 0.85 }}>
-                            <span className="menu-card-badge">Segera Hadir</span>
+                        {/* Kategori Card */}
+                        <div className="dashboard-menu-card">
                             <div className="menu-card-body">
-                                <FaUsers className="menu-card-icon" style={{ color: 'var(--gray-50)' }} />
-                                <h3 className="menu-card-title" style={{ color: 'var(--gray-70)' }}>Kelola Pengguna & Poin</h3>
+                                <FaTag className="menu-card-icon" />
+                                <h3 className="menu-card-title">Kelola Kategori</h3>
                                 <p className="menu-card-desc">
-                                    Kelola akun traveler, setujui klaim reward voucher poin, atur misi mingguan, dan pantau penyalahgunaan akun.
+                                    Atur klasifikasi destinasi wisata seperti Pantai, Pegunungan, Kuliner, dan lainnya beserta icon kategorinya.
                                 </p>
                             </div>
                             <div className="menu-card-action">
-                                <button className="btn-inactive btn-sm" disabled>
-                                    Nonaktif
-                                </button>
+                                <Link
+                                    href={route('admin.categories.index')}
+                                    className="menu-card-link"
+                                >
+                                    Buka Manajemen &rarr;
+                                </Link>
                             </div>
                         </div>
                     </div>

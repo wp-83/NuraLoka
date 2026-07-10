@@ -28,7 +28,6 @@ class XullDatabaseSeeder extends Seeder
         $this->call([
             ProvinceSeeder::class,
             XullCategorySeeder::class,
-            XullUserSeeder::class,
             XullPlaceSeeder::class,
             XullTripSeeder::class,
             XullSavedPlaceSeeder::class,

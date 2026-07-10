@@ -1,0 +1,218 @@
+/* Admin Place CRUD Stylesheet */
+/* Extends the same theme as Admin/News.css */
+
+.admin-place-container {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: 2rem;
+    padding-block: 2.5rem;
+    font-family: var(--font-body);
+}
+
+/* Header Section */
+.admin-place-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    border-bottom: 2px solid var(--primary-30);
+    padding-bottom: 2.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.admin-place-mascot {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.admin-place-title-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-grow: 1;
+}
+
+.admin-place-title {
+    font-family: var(--font-heading);
+    font-size: var(--text-title);
+    font-weight: 800;
+    color: var(--primary-100);
+    margin: 0;
+}
+
+.admin-place-subtitle {
+    font-size: var(--text-paragraph);
+    color: var(--primary-70);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Coordinate row (lat + lng side-by-side) */
+.coord-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+@media screen and (max-width: 600px) {
+    .coord-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Category multi-select checkboxes */
+.category-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    padding: 1rem;
+    background-color: var(--white);
+    border: 2px solid var(--primary-85);
+    border-radius: 0.5rem;
+}
+
+.category-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.4rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.category-checkbox-item:hover {
+    background-color: var(--secondary-10);
+}
+
+.category-checkbox-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary-100);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.category-checkbox-item label {
+    font-size: var(--text-body);
+    color: var(--gray-85);
+    cursor: pointer;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.category-checkbox-item.checked {
+    background-color: var(--primary-10);
+}
+
+.category-checkbox-item.checked label {
+    color: var(--primary-100);
+    font-weight: 600;
+}
+
+/* Category badges in table */
+.category-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.category-badge-chip {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--secondary-10);
+    color: var(--secondary-100);
+    border: 1px solid var(--secondary-30);
+    border-radius: 1rem;
+    padding: 0.2rem 0.6rem;
+    font-size: var(--text-micro);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.category-badge-chip.no-category {
+    background-color: var(--gray-10);
+    color: var(--gray-50);
+    border-color: var(--gray-30);
+    font-weight: 400;
+    font-style: italic;
+}
+
+/* Coordinate display badge in table */
+.coord-display {
+    font-size: var(--text-micro);
+    color: var(--gray-70);
+    font-family: monospace;
+    white-space: nowrap;
+}
+
+/* Add Place button (same style as Add News) */
+.admin-add-place-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--primary-100) !important;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: var(--text-body);
+    transition: opacity 0.25s ease;
+}
+
+.admin-add-place-btn:hover {
+    opacity: 0.8;
+}
+
+.add-place-icon-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background-color: var(--primary-100);
+    color: var(--white);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: transform 0.25s ease;
+}
+
+.admin-add-place-btn:hover .add-place-icon-box {
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+    .admin-place-container {
+        padding-inline: 1rem;
+    }
+
+    .admin-place-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .category-checkbox-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .category-checkbox-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-place-container {
+    animation: fadeIn 0.35s ease-out;
+}
