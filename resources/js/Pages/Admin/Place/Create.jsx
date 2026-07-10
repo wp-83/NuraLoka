@@ -1,6 +1,6 @@
 import { Link, Head, useForm } from '@inertiajs/react';
 import { FaArrowLeft } from 'react-icons/fa';
-import '@css/Init.css';
+// import '@css/Init.css';
 import '@css/Admin/News.css';
 import '@css/Admin/Place.css';
 

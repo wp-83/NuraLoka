@@ -1,9 +1,9 @@
 import React from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
-import Navbar from '@/Components/Navbar';
-import Footer from '@/Components/Footer';
-import PlaceCard from '@/Components/PlaceCard';
-import Button from '@/Components/Forms/Button';
+import Navbar from '@components/Layouts/Navbar';
+import Footer from '@components/Layouts/Footer';
+import PlaceCard from '@components/Features/PlaceCard';
+import Button from '@components/Forms/Button';
 import { FiBookmark } from 'react-icons/fi';
 
 export default function WishlistIndex({ savedPlaces = [], savedPlaceIds = [], saveCounts = {} }) {

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import Navbar from '@/Components/Navbar';
-import Footer from '@/Components/Footer';
-import Button from '@/Components/Forms/Button';
+import Navbar from '@components/Layouts/Navbar';
+import Footer from '@components/Layouts/Footer';
+import Button from '@components/Forms/Button';
 import { FiChevronLeft, FiBookmark, FiMapPin, FiUsers } from 'react-icons/fi';
 import { FaBookmark, FaMoneyBillWave } from 'react-icons/fa';
 import { MdOutlinePark } from 'react-icons/md';

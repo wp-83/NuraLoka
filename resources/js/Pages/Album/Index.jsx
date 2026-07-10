@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import Navbar from '@/Components/Navbar';
-import Footer from '@/Components/Footer';
-import Button from '@/Components/Forms/Button';
+import Navbar from '@components/Layouts/Navbar';
+import Footer from '@components/Layouts/Footer';
+import Button from '@components/Forms/Button';
 import { FiSearch, FiX, FiEye, FiEdit2, FiTrash2, FiMapPin, FiCalendar, FiUsers } from 'react-icons/fi';
 import { HiOutlineEye } from 'react-icons/hi';
 
@@ -92,7 +92,7 @@ function MyAlbumCard({ album, onDelete }) {
                         <HiOutlineEye size={15} className="text-[#209B8B]" />
                         <span>Dilihat oleh {formatViews(album.view_count)} Nuravers</span>
                     </div>
-                    
+
                     <div className="flex items-center gap-4">
                         {/* Toggle */}
                         <button
