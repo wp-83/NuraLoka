@@ -38,4 +38,10 @@ class Place extends Model
             ->withPivot('id')
             ->withTimestamps();
     }
+
+    public function savedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'saved_places')
+            ->withTimestamps();
+    }
 }

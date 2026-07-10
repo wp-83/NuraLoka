@@ -3,15 +3,17 @@
 use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminNewsController;
 use App\Http\Controllers\AdminPlaceController;
+use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\Auth\ForgetPasswordController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ExploreController;
 use App\Http\Controllers\LandingPageController;
-// use App\Http\Controllers\PlaceController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PlaceController;
+// use App\Http\Controllers\PlaceController;
+use App\Http\Controllers\WishlistController;
 use App\Models\Category;
 use App\Models\News;
 use App\Models\Place;
@@ -90,6 +92,13 @@ Route::middleware('guest')->group(function () {
 
 // Detail Place
 Route::get('/places/{slug}', [PlaceController::class, 'show'])->name('places.show');
+
+// Wishlist (Impian)
+Route::middleware('auth')->prefix('/impian')->name('wishlist.')->controller(WishlistController::class)->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::post('/toggle', 'toggle')->name('toggle');
+    Route::get('/{slug}', 'show')->name('show');
+});
 // News (Wawasan Wisata)
 Route::middleware('auth')->group(function () {
     Route::controller(NewsController::class)->prefix('/wawasan-wisata')->name('news.')->group(function () {
@@ -124,7 +133,26 @@ Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(fu
         Route::post('/{id}', [AdminNewsController::class, 'update'])->name('update');
         Route::delete('/{id}', [AdminNewsController::class, 'destroy'])->name('destroy');
     });
+});
 
+// Route::middleware('guest')->group(function () {
+//     Route::get('/places', [PlaceController::class, 'index'])->name('places.index');
+// });
+
+// Album
+Route::middleware('auth')->prefix('/album')->name('album.')->controller(AlbumController::class)->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::get('/create', 'create')->name('create');
+    Route::post('/', 'store')->name('store');
+    Route::get('/semua', 'allAlbums')->name('all');
+    Route::get('/user/{userId}', 'userAlbums')->name('user.albums');
+    Route::get('/{id}', 'show')->name('show');
+    Route::get('/{id}/edit', 'edit')->name('edit');
+    Route::put('/{id}', 'update')->name('update');
+    Route::delete('/{id}', 'destroy')->name('destroy');
+    Route::post('/{id}/toggle-visibility', 'toggleVisibility')->name('toggle.visibility');
+    Route::post('/{id}/photo', 'addPhoto')->name('photo.add');
+    Route::delete('/photo/{photoId}', 'removePhoto')->name('photo.remove');
     // Admin Place Management
     Route::prefix('/places')->name('places.')->group(function () {
         Route::get('/', [AdminPlaceController::class, 'index'])->name('index');

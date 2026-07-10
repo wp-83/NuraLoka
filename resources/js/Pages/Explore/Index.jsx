@@ -379,7 +379,7 @@ function MapTooltip({ isVisible }) {
 // ─────────────────────────────────────────────
 // MAIN PAGE
 // ─────────────────────────────────────────────
-export default function ExploreIndex({ places = [], categories = [], trendingPlaces = [], recentlyVisited = [], auth }) {
+export default function ExploreIndex({ places = [], categories = [], trendingPlaces = [], recentlyVisited = [], auth, savedPlaceIds = [] }) {
     // ── Existing state ──
     const [activeTab, setActiveTab] = useState('Satu Titik');
     const [searchQuery, setSearchQuery] = useState('');
@@ -525,6 +525,15 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
                 router.visit(route('places.show', place.slug));
             }
         }
+    };
+
+    // ── Toggle Save / Wishlist ──
+    const handleToggleSave = (place) => {
+        router.post(route('wishlist.toggle'), {
+            place_id: place.id,
+        }, {
+            preserveScroll: true,
+        });
     };
 
     // ── Filtered LOCAL places ──
@@ -673,7 +682,12 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
                                 >
                                     {trendingPlaces.map((place) => (
                                         <div key={place.id} className="flex-shrink-0" style={{ width: '24rem', scrollSnapAlign: 'start' }}>
-                                            <PlaceCard place={place} onVisit={handleVisit} />
+                                            <PlaceCard
+                                                place={place}
+                                                onVisit={handleVisit}
+                                                isSaved={savedPlaceIds.includes(place.id)}
+                                                onToggleSave={handleToggleSave}
+                                            />
                                         </div>
                                     ))}
                                 </div>

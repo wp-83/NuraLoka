@@ -1,19 +1,13 @@
-<<<<<<< HEAD
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import Navbar from '@/Components/Navbar';
 import Footer from '@/Components/Footer';
-=======
-import React from 'react';
-import { Head, Link } from '@inertiajs/react';
-import Navbar from '@components/Layouts/Navbar';
-import Footer from '@components/Layouts/Footer';
->>>>>>> e5752dabef78762c9f272771de65118c58d2eed5
+import Button from '@/Components/Forms/Button';
 import { FiChevronLeft, FiBookmark, FiMapPin, FiUsers } from 'react-icons/fi';
 import { FaBookmark, FaMoneyBillWave } from 'react-icons/fa';
 import { MdOutlinePark } from 'react-icons/md';
 
-export default function Show({ place, isSaved: initialSaved = false, totalSaves = 0 }) {
+export default function WishlistShow({ place, isSaved: initialSaved = false, totalSaves = 0 }) {
     const [isSaved, setIsSaved] = useState(initialSaved);
 
     const handleToggleSave = () => {
@@ -62,13 +56,13 @@ export default function Show({ place, isSaved: initialSaved = false, totalSaves 
                 <div className="container mx-auto px-4 md:px-6 lg:px-8 relative z-10 pt-8 pb-16">
                     {/* Top Buttons */}
                     <div className="flex justify-between items-center mb-8">
-                        <Link
-                            href={route('explore.index')}
-                            className="inline-flex items-center gap-2 bg-[#7C5A41] text-white px-5 py-2.5 rounded-lg hover:bg-[#634834] transition-colors font-medium text-sm shadow-md"
+                        <Button
+                            onClick={() => router.visit(route('wishlist.index'))}
+                            variant="primary"
+                            iconLeft={<FiChevronLeft size={18} />}
                         >
-                            <FiChevronLeft size={18} />
-                            Kembali ke Jelajah
-                        </Link>
+                            Kembali ke Impian
+                        </Button>
                         <button
                             onClick={handleToggleSave}
                             className={`inline-flex items-center gap-2 font-medium transition-colors px-4 py-2 rounded-lg backdrop-blur-sm shadow-sm border ${
@@ -85,10 +79,10 @@ export default function Show({ place, isSaved: initialSaved = false, totalSaves 
                     <div className="flex flex-col lg:flex-row justify-between items-start gap-8">
                         {/* Left Info */}
                         <div className="w-full lg:w-2/3">
-                            <h1 className="text-5xl md:text-6xl font-extrabold text-[#5C3D26] mb-4 drop-shadow-sm" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            <h1 className="text-title md:text-hero font-extrabold text-primary-100 mb-4 drop-shadow-sm font-heading">
                                 {place?.name}
                             </h1>
-                            <p className="text-emerald-800 font-medium text-lg max-w-3xl mb-6 leading-relaxed">
+                            <p className="text-secondary-100 font-medium text-paragraph max-w-3xl mb-6 leading-relaxed">
                                 {place?.description || "Deskripsi wisata belum tersedia."}
                             </p>
 
@@ -133,7 +127,6 @@ export default function Show({ place, isSaved: initialSaved = false, totalSaves 
                         {/* Right Map Snippet */}
                         <div className="w-full lg:w-1/3 flex justify-end">
                             <div className="bg-white rounded-2xl p-2 shadow-lg w-full max-w-sm rotate-1 hover:rotate-0 transition-transform duration-300">
-                                {/* Using a CSS-based mock map for the snippet to resemble the screenshot */}
                                 <div className="relative w-full h-56 bg-emerald-50 rounded-xl overflow-hidden border border-gray-100">
                                     {/* Map roads mock */}
                                     <div className="absolute top-0 bottom-0 left-12 w-2 bg-amber-800/80"></div>
@@ -182,7 +175,7 @@ export default function Show({ place, isSaved: initialSaved = false, totalSaves 
                             }}
                         />
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-[#5C3D26]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    <h2 className="text-title md:text-hero font-bold text-primary-100 font-heading">
                         {place?.name} dalam Potret
                     </h2>
                 </div>
@@ -191,7 +184,6 @@ export default function Show({ place, isSaved: initialSaved = false, totalSaves 
                 <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
                     {gallery.map((item, index) => (
                         <div key={item.id} className="break-inside-avoid rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer relative">
-                            {/* In real app, we'd use actual gallery images. Using place.img as fallback for all */}
                             <div className={`w-full ${item.height} bg-gray-200`}>
                                 <img
                                     src={place?.img || `/images/placeholders/default.jpg`}

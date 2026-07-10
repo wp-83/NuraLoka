@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Place;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class PlaceController extends Controller
@@ -89,8 +90,17 @@ class PlaceController extends Controller
     {
         $place = Place::with('categories')->where('slug', $slug)->firstOrFail();
 
+        $isSaved = false;
+        if (auth()->check()) {
+            $isSaved = auth()->user()->savedPlaces()->where('place_id', $place->id)->exists();
+        }
+
+        $totalSaves = DB::table('saved_places')->where('place_id', $place->id)->count();
+
         return Inertia::render('Place/Show', [
             'place' => $place,
+            'isSaved' => $isSaved,
+            'totalSaves' => $totalSaves,
         ]);
     }
 

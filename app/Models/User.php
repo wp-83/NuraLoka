@@ -86,6 +86,17 @@ class User extends Authenticatable
         return $this->hasMany(News::class);
     }
 
+    public function savedPlaces()
+    {
+        return $this->belongsToMany(Place::class, 'saved_places')
+            ->withTimestamps();
+    }
+
+    public function albums()
+    {
+        return $this->hasManyThrough(Album::class, Trip::class);
+    }
+
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ResetPasswordNotification($token));
