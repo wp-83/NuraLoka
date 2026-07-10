@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import Navbar from '@/Components/Navbar';
-import Footer from '@/Components/Footer';
-import Button from '@/Components/Forms/Button';
+import Navbar from '@components/Layouts/Navbar';
+import Footer from '@components/Layouts/Footer';
+import Button from '@components/Forms/Button';
 import { FiChevronLeft, FiPlus, FiX } from 'react-icons/fi';
 
 export default function AlbumCreate() {
@@ -49,9 +49,9 @@ export default function AlbumCreate() {
             preview: URL.createObjectURL(file),
             filename: file.name,
         }));
-        
+
         setPreviewPhotos([...previewPhotos, ...newPreviews]);
-        
+
         // Reset input
         e.target.value = '';
     };
@@ -59,7 +59,7 @@ export default function AlbumCreate() {
     const handleRemovePhoto = (previewId, fileToRemove) => {
         // Remove from previews
         setPreviewPhotos(previewPhotos.filter(p => p.id !== previewId));
-        
+
         // Remove from form data
         setData('photos', data.photos.filter(f => f !== fileToRemove));
     };
@@ -183,7 +183,7 @@ export default function AlbumCreate() {
                                                 onChange={handleFileChange}
                                             />
                                         </div>
-                                        
+
                                         {errors.photos && <p className="text-red-500 text-xs mb-3">{errors.photos}</p>}
 
                                         {previewPhotos.length > 0 ? (

@@ -1,8 +1,8 @@
 import { Link, Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaArrowLeft, FaMapMarkerAlt } from 'react-icons/fa';
-import Flash from '@js/Components/Flash';
-import '@css/Init.css';
+import Flash from '@components/Common/Flash';
+// import '@css/Init.css';
 import '@css/Admin/News.css';
 import '@css/Admin/Place.css';
 

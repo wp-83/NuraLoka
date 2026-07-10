@@ -1,8 +1,8 @@
 import React from 'react';
 import { Head, router } from '@inertiajs/react';
-import Navbar from '@/Components/Navbar';
-import Footer from '@/Components/Footer';
-import Button from '@/Components/Forms/Button';
+import Navbar from '@components/Layouts/Navbar';
+import Footer from '@components/Layouts/Footer';
+import Button from '@components/Forms/Button';
 import { FiChevronLeft, FiMapPin, FiCalendar } from 'react-icons/fi';
 
 function formatDate(dateStr) {
@@ -14,7 +14,7 @@ function formatDate(dateStr) {
 
 function SimpleAlbumCard({ album }) {
     return (
-        <div 
+        <div
             onClick={() => router.visit(route('album.show', album.id))}
             className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer border border-gray-10 flex flex-col"
         >

@@ -1,14 +1,7 @@
-<<<<<<< HEAD
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import Navbar from '@/Components/Navbar';
-import Footer from '@/Components/Footer';
-=======
-import React from 'react';
-import { Head, Link } from '@inertiajs/react';
 import Navbar from '@components/Layouts/Navbar';
 import Footer from '@components/Layouts/Footer';
->>>>>>> e5752dabef78762c9f272771de65118c58d2eed5
 import { FiChevronLeft, FiBookmark, FiMapPin, FiUsers } from 'react-icons/fi';
 import { FaBookmark, FaMoneyBillWave } from 'react-icons/fa';
 import { MdOutlinePark } from 'react-icons/md';

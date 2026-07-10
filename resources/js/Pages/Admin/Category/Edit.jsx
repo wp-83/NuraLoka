@@ -1,7 +1,7 @@
 import { Link, Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { FaArrowLeft, FaUpload, FaTrash, FaSearchPlus } from 'react-icons/fa';
-import '@css/Init.css';
+// import '@css/Init.css';
 import '@css/Admin/News.css';
 import '@css/Admin/Category.css';
 

@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import Navbar from '@/Components/Navbar';
-import Footer from '@/Components/Footer';
-import Button from '@/Components/Forms/Button';
+import Navbar from '@components/Layouts/Navbar';
+import Footer from '@components/Layouts/Footer';
+import Button from '@components/Forms/Button';
 import { FiChevronLeft, FiPlus, FiX } from 'react-icons/fi';
 
 export default function AlbumEdit({ album, photos: initialPhotos = [] }) {

@@ -1,6 +1,6 @@
 import { Link, Head } from '@inertiajs/react';
 import { FaNewspaper, FaMapMarkedAlt, FaUsers, FaArrowLeft, FaSignOutAlt, FaTrophy, FaTag } from 'react-icons/fa';
-import '@css/Init.css';
+// import '@css/Init.css';
 import '@css/Admin/Dashboard.css';
 
 export default function Dashboard({ stats }) {
