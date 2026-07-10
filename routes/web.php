@@ -174,3 +174,4 @@ Route::middleware('auth')->prefix('/album')->name('album.')->controller(AlbumCon
         Route::delete('/{id}', [AdminCategoryController::class, 'destroy'])->name('destroy');
     });
 });
+}
