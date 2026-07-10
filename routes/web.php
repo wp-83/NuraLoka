@@ -135,6 +135,7 @@ Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(fu
         Route::post('/{id}', [AdminNewsController::class, 'update'])->name('update');
         Route::delete('/{id}', [AdminNewsController::class, 'destroy'])->name('destroy');
     });
+});
 
 // Route::middleware('guest')->group(function () {
 //     Route::get('/places', [PlaceController::class, 'index'])->name('places.index');
@@ -174,4 +175,3 @@ Route::middleware('auth')->prefix('/album')->name('album.')->controller(AlbumCon
         Route::delete('/{id}', [AdminCategoryController::class, 'destroy'])->name('destroy');
     });
 });
-}
