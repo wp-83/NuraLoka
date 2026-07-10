@@ -15,10 +15,10 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user() && $request->user()->is_admin && ($request->user()->email === 'admin@nuraloka.id' || $request->user()->username === 'admin_nuraloka')) {
+        if ($request->user() && $request->user()->is_admin) {
             return $next($request);
         }
 
-        abort(403, 'Unauthorized action.');
+        abort(403);
     }
 }

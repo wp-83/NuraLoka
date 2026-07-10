@@ -1,10 +1,10 @@
 import { Head, router } from '@inertiajs/react';
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
-import ExploreMap from '@components/ExploreMap';
-import Footer from '@components/Footer';
-import Navbar from '@components/Navbar';
-import LocationSearchInput from '@components/LocationSearchInput';
-import PlaceCard from '@components/PlaceCard';
+import ExploreMap from '@components/Features/ExploreMap';
+import Footer from '@components/Layouts/Footer';
+import Navbar from '@components/Layouts/Navbar';
+import LocationSearchInput from '@components/Features/LocationSearchInput';
+import PlaceCard from '@components/Features/PlaceCard';
 import { FiMapPin, FiSearch, FiChevronLeft, FiBookmark, FiGlobe } from 'react-icons/fi';
 import { MdRestaurant, MdBeachAccess, MdDiamond, MdMuseum, MdWaterDrop, MdSportsHandball } from 'react-icons/md';
 import { FaMountain } from 'react-icons/fa6';

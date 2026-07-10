@@ -3,7 +3,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { FaRegUserCircle } from "react-icons/fa";
 import { GiPadlock } from 'react-icons/gi';
-import Flash from '../../Components/Flash';
+import Flash from '@components/Common/Flash';
 import Input from "@components/Forms/Input";
 import Button from "@components/Forms/Button";
 import Checkbox from "@components/Forms/Checkbox";
@@ -132,6 +132,7 @@ export default function Login() {
 
                                     <div className='w-full flex flex-col gap-1.5 items-end'>
                                         <Input
+                                            autoComplete="off"
                                             label="Kata Sandi"
                                             name="password"
                                             type="password"
@@ -142,9 +143,9 @@ export default function Login() {
                                             error={errors.password}
                                         />
 
-                                        <a href="">
+                                        <Link href={route('auth.forget-password.index')}>
                                             Lupa kata sandi?
-                                        </a>
+                                        </Link>
                                     </div>
                                 </div>
 

@@ -1,7 +1,6 @@
 import { Link, Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { FaArrowLeft, FaUpload, FaTrash, FaSearchPlus } from 'react-icons/fa';
-import '@css/Init.css';
 import '@css/Admin/News.css';
 
 export default function Edit({ newsItem }) {
@@ -9,7 +8,7 @@ export default function Edit({ newsItem }) {
     const formatDateTimeLocal = (dateString) => {
         if (!dateString) return '';
         const d = new Date(dateString);
-        
+
         // Return string matching YYYY-MM-DDTHH:MM
         const pad = (num) => String(num).padStart(2, '0');
         const year = d.getFullYear();
@@ -17,7 +16,7 @@ export default function Edit({ newsItem }) {
         const day = pad(d.getDate());
         const hours = pad(d.getHours());
         const minutes = pad(d.getMinutes());
-        
+
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     };
 
@@ -123,31 +122,31 @@ export default function Edit({ newsItem }) {
                         <div className="input-group" style={{ marginTop: '1.5rem' }}>
                             <label><b>Gambar Thumbnail</b></label>
                             <div className="thumbnail-upload-section">
-                                <div 
+                                <div
                                     className={`thumbnail-preview-box ${!previewUrl ? 'clickable-preview' : ''}`}
                                     onClick={!previewUrl ? triggerFileInput : undefined}
                                     style={{ cursor: !previewUrl ? 'pointer' : 'default' }}
                                 >
                                     {previewUrl ? (
                                         <div className="preview-image-wrapper">
-                                            <img 
-                                                src={previewUrl} 
-                                                alt="Thumbnail Preview" 
+                                            <img
+                                                src={previewUrl}
+                                                alt="Thumbnail Preview"
                                                 onError={(e) => {
                                                     e.target.src = '/images/defaults/image.png';
                                                 }}
                                             />
                                             <div className="preview-overlay">
-                                                <button 
-                                                    type="button" 
+                                                <button
+                                                    type="button"
                                                     className="overlay-action-btn view-btn"
                                                     onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
                                                     title="Lihat Gambar"
                                                 >
                                                     <FaSearchPlus />
                                                 </button>
-                                                <button 
-                                                    type="button" 
+                                                <button
+                                                    type="button"
                                                     className="overlay-action-btn delete-btn"
                                                     onClick={(e) => { e.stopPropagation(); handleRemoveImage(); }}
                                                     title="Hapus Gambar"
@@ -161,14 +160,14 @@ export default function Edit({ newsItem }) {
                                     )}
                                 </div>
                                 <div className="file-input-wrapper">
-                                    <div 
-                                        className={`select-wrapper ${errors.thumbnail ? 'input-error' : ''}`} 
+                                    <div
+                                        className={`select-wrapper ${errors.thumbnail ? 'input-error' : ''}`}
                                         style={{ padding: '0', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
                                         onClick={triggerFileInput}
                                     >
-                                        <label 
-                                            htmlFor="thumbnail-file" 
-                                            className="btn-white" 
+                                        <label
+                                            htmlFor="thumbnail-file"
+                                            className="btn-white"
                                             style={{ border: 'none', margin: '0', borderRadius: '0', paddingBlock: '0.6rem', paddingInline: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--text-small)' }}
                                             onClick={(e) => e.stopPropagation()}
                                         >
@@ -210,15 +209,15 @@ export default function Edit({ newsItem }) {
 
                         {/* Actions */}
                         <div className="form-actions">
-                            <Link 
-                                href={route('admin.news.index')} 
+                            <Link
+                                href={route('admin.news.index')}
                                 className="btn-white btn-link-cancel"
                                 disabled={processing}
                             >
                                 Batal
                             </Link>
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 className="btn-success"
                                 disabled={processing}
                             >
@@ -234,9 +233,9 @@ export default function Edit({ newsItem }) {
                 <div className="image-popup-modal" onClick={() => setIsModalOpen(false)}>
                     <div className="modal-content-wrapper" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-close-btn" onClick={() => setIsModalOpen(false)}>&times;</div>
-                        <img 
-                            src={previewUrl} 
-                            alt="Preview Besar" 
+                        <img
+                            src={previewUrl}
+                            alt="Preview Besar"
                         />
                     </div>
                 </div>
