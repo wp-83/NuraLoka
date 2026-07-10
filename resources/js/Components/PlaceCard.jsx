@@ -1,7 +1,8 @@
 import React from 'react';
 import { FiMapPin, FiBookmark } from 'react-icons/fi';
+import { FaBookmark } from 'react-icons/fa';
 
-export default function PlaceCard({ place, onVisit }) {
+export default function PlaceCard({ place, onVisit, isSaved = false, onToggleSave }) {
     return (
         <div
             onClick={() => onVisit(place)}
@@ -21,11 +22,18 @@ export default function PlaceCard({ place, onVisit }) {
                     <h3 className="font-bold text-gray-900 text-base truncate flex-grow min-w-0" style={{ fontFamily: 'Poppins, sans-serif' }}>{place.name}</h3>
                     <button
                         type="button"
-                        className="flex-shrink-0 text-gray-900 hover:text-amber-600 transition-colors relative z-50 flex items-center justify-center"
+                        className={`flex-shrink-0 transition-colors relative z-50 flex items-center justify-center ${isSaved ? 'text-amber-500 hover:text-amber-600' : 'text-gray-900 hover:text-amber-600'}`}
                         style={{ width: '22px', height: '22px' }}
-                        onClick={(e) => { e.stopPropagation(); /* saved places — future feature */ }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (onToggleSave) onToggleSave(place);
+                        }}
                     >
-                        <FiBookmark size={22} style={{ minWidth: '22px', minHeight: '22px' }} />
+                        {isSaved ? (
+                            <FaBookmark size={20} style={{ minWidth: '20px', minHeight: '20px' }} />
+                        ) : (
+                            <FiBookmark size={22} style={{ minWidth: '22px', minHeight: '22px' }} />
+                        )}
                     </button>
                 </div>
                 <p className="text-xs text-gray-500 mb-3 truncate">{place.address}</p>
