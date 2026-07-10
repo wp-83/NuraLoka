@@ -1,4 +1,3 @@
-import '@css/Init.css';
 import '@css/Layouts/SignUp.css';
 
 import { Head } from '@inertiajs/react';

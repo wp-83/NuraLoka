@@ -195,9 +195,15 @@ return [
 
     'attributes' => [
         'identity' => 'Email atau username',
-        'name' => 'nama',
+        'name' => 'Nama',
+        'email' => 'Alamat email',
+        'dob' => 'Tanggal lahir',
+        'gender' => 'Jenis kelamin',
+        'province' => 'Provinsi',
+        'fullname' => 'Nama lengkap',
         'password' => 'Kata sandi',
         'confirmPassword' => 'Konfirmasi kata sandi',
+        'password_confirmation' => 'Konfirmasi kata sandi',
     ],
 
 ];

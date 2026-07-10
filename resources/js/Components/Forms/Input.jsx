@@ -168,7 +168,7 @@ export default function Input({
             )}
 
             {error && (
-                <p className="text-error-dark text-micro italic">
+                <p className="text-error-dark text-small italic">
                     {error}
                 </p>
             )}

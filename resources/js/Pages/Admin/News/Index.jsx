@@ -1,8 +1,7 @@
 import { Link, Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaArrowLeft } from 'react-icons/fa';
-import Flash from '@js/Components/Flash';
-import '@css/Init.css';
+import Flash from '@components/Common/Flash';
 import '@css/Admin/News.css';
 
 export default function Index({ news, filters }) {
@@ -66,9 +65,9 @@ export default function Index({ news, filters }) {
 
                 {/* Header */}
                 <div className="admin-news-header">
-                    <img 
-                        src="/images/mascots/welcome.png" 
-                        alt="NuraLoka Mascot" 
+                    <img
+                        src="/images/mascots/welcome.png"
+                        alt="NuraLoka Mascot"
                         className="admin-news-mascot"
                     />
                     <div className="admin-news-title-wrapper">
@@ -120,9 +119,9 @@ export default function Index({ news, filters }) {
                                     return (
                                         <tr key={item.id}>
                                             <td>
-                                                <img 
-                                                    src={item.thumbnail || '/images/defaults/image.png'} 
-                                                    alt={item.title} 
+                                                <img
+                                                    src={item.thumbnail || '/images/defaults/image.png'}
+                                                    alt={item.title}
                                                     className="admin-table-thumbnail"
                                                     onError={(e) => {
                                                         e.target.src = '/images/defaults/image.png';
@@ -136,15 +135,15 @@ export default function Index({ news, filters }) {
                                             <td>{formatDate(item.publish_date)}</td>
                                             <td>
                                                 <div className="admin-actions" style={{ justifyContent: 'center' }}>
-                                                    <Link 
-                                                        href={route('admin.news.edit', item.id)} 
+                                                    <Link
+                                                        href={route('admin.news.edit', item.id)}
                                                         className="btn-info btn-sm admin-action-btn edit-btn-icon-only"
                                                         title="Edit Artikel"
                                                     >
                                                         <FaEdit />
                                                     </Link>
-                                                    <button 
-                                                        onClick={() => handleDelete(item.id, item.title)} 
+                                                    <button
+                                                        onClick={() => handleDelete(item.id, item.title)}
                                                         className="btn-error btn-sm admin-action-btn"
                                                         title="Hapus Artikel"
                                                         type="button"
@@ -181,8 +180,8 @@ export default function Index({ news, filters }) {
 
                                 if (!link.url) {
                                     return (
-                                        <span 
-                                            key={index} 
+                                        <span
+                                            key={index}
                                             className="pagination-link pagination-disabled"
                                             dangerouslySetInnerHTML={{ __html: label }}
                                         />
