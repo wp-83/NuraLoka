@@ -26,7 +26,7 @@ Route::get('/home', function () {
 })->name('home')->middleware('auth');
 
 // Landing Page
-Route::prefix('/')->name('landing-page.')->controller(LandingPageController::class)->group(function(){
+Route::prefix('/')->name('landing-page.')->controller(LandingPageController::class)->group(function () {
     Route::get('/', 'index')->name('index');
 });
 
@@ -49,8 +49,8 @@ Route::prefix('/auth')->name('auth.')->group(function () {
         });
 
         // Forget Password
-        Route::controller(ForgetPasswordController::class)->group(function(){
-            Route::prefix('/forget-password')->name('forget-password.')->group(function(){
+        Route::controller(ForgetPasswordController::class)->group(function () {
+            Route::prefix('/forget-password')->name('forget-password.')->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::post('/', 'send')->name('send');
                 Route::get('/success', 'sendSuccess')->name('success');

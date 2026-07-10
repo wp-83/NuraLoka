@@ -5,16 +5,16 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ForgetPasswordController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->session()->get('password_reset_sent')){
+        if ($request->session()->get('password_reset_sent')) {
             return redirect()->route('auth.forget-password.success');
         }
 
@@ -31,6 +31,7 @@ class ForgetPasswordController extends Controller
 
         if ($status === Password::RESET_LINK_SENT) {
             $request->session()->put('password_reset_sent', true);
+
             return redirect()->route('auth.forget-password.success');
         }
     }
@@ -52,10 +53,10 @@ class ForgetPasswordController extends Controller
             ->where('email', $request->email)
             ->first();
 
-        if (!$record || !Hash::check($token, $record->token)) {
+        if (! $record || ! Hash::check($token, $record->token)) {
             return redirect()->route('auth.login.index')->with([
                 'flash.type' => 'warning',
-                'flash.message' => 'Token reset kata sandi sudah tidak valid.', 
+                'flash.message' => 'Token reset kata sandi sudah tidak valid.',
             ]);
         }
 
