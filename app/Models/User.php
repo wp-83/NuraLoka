@@ -96,7 +96,7 @@ class User extends Authenticatable
     {
         return $this->hasManyThrough(Album::class, Trip::class);
     }
-    
+
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ResetPasswordNotification($token));
