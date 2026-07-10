@@ -33,19 +33,12 @@ Route::get('/home', function () {
     ]);
 })->name('home')->middleware('auth');
 
-<<<<<<< HEAD
-Route::get('/login', function () {
-    return redirect(route('auth.login.index'));
-})->name('login');
-
-=======
 // Landing Page
 Route::prefix('/')->name('landing-page.')->controller(LandingPageController::class)->group(function () {
     Route::get('/', 'index')->name('index');
 });
 
 // Authentication
->>>>>>> e5752dabef78762c9f272771de65118c58d2eed5
 Route::prefix('/auth')->name('auth.')->group(function () {
     Route::middleware('guest')->group(function () {
         // Login
