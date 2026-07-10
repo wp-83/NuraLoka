@@ -80,9 +80,6 @@ Route::prefix('/jelajah')->name('explore.')->controller(ExploreController::class
     Route::post('/track', 'trackVisit')->name('track');
 });
 
-// Logout
-Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->middleware('auth');
-
 Route::middleware('guest')->group(function () {
     Route::get('/places', [PlaceController::class, 'index'])->name('places.index');
 });
