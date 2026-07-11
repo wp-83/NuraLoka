@@ -1,12 +1,50 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@inertiajs/react";
 import { NAV_ITEMS } from "@js/Data/Navigation";
+import { FiUser, FiSettings, FiLogOut, FiChevronDown } from "react-icons/fi";
 
 export default function Navbar() {
     const [active, setActive] = useState("Beranda");
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+    const profileRef = useRef(null);
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (
+                profileRef.current &&
+                !profileRef.current.contains(event.target)
+            ) {
+                setIsProfileOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     return (
         <>
+            {/* ===================== DESKTOP OVERLAY ===================== */}
+
+            <div
+                onClick={() => setIsProfileOpen(false)}
+                className={`
+                    hidden md:block
+                    fixed inset-0 z-40
+                    bg-black/30
+                    transition-opacity duration-300 ease-out
+                    ${
+                        isProfileOpen
+                            ? "visible opacity-100 pointer-events-auto"
+                            : "invisible opacity-0 pointer-events-none"
+                    }
+                `}
+            />
+
             {/* ===================== DESKTOP ===================== */}
 
             <nav className="hidden md:block sticky top-0 z-50 bg-white shadow-md">
@@ -17,7 +55,7 @@ export default function Navbar() {
                         <Link href="#">
                             <img
                                 src="/images/logo/with-tagline.png"
-                                alt="logo"
+                                alt="Logo NuraLoka"
                                 className="w-26 object-contain"
                             />
                         </Link>
@@ -32,7 +70,9 @@ export default function Navbar() {
                                     <li key={item.label}>
                                         <Link
                                             href={item.href}
-                                            onClick={() => setActive(item.label)}
+                                            onClick={() =>
+                                                setActive(item.label)
+                                            }
                                             className={`
                                                 group relative flex items-center gap-1.5
                                                 pb-1.5
@@ -81,23 +121,142 @@ export default function Navbar() {
                             })}
                         </ul>
 
-                        {/* Right */}
-                        <div className="flex items-center gap-2 w-max">
-                            <div className="text-right">
-                                <h5 className="font-body font-bold text-small text-primary">
-                                    Jayadi Christopher
-                                </h5>
+                        {/* Profile */}
+                        <div
+                            ref={profileRef}
+                            className="relative"
+                        >
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setIsProfileOpen((prev) => !prev)
+                                }
+                                className="group flex items-center gap-2 rounded-xl p-1.5 transition-colors hover:bg-gray-10"
+                            >
+                                <div className="text-right">
+                                    <h5 className="font-body font-bold text-small text-primary">
+                                        Jayadi Christopher
+                                    </h5>
 
-                                <p className="font-body text-micro italic text-secondary">
-                                    Pemula
-                                </p>
+                                    <p className="font-body text-micro italic text-secondary">
+                                        Pemula
+                                    </p>
+                                </div>
+
+                                <img
+                                    src="/images/background-auth/login/1.jpg"
+                                    className="w-12 h-12 rounded-full p-px border-2 border-secondary-70 object-cover"
+                                    alt="Profile"
+                                />
+
+                                <FiChevronDown
+                                    size={16}
+                                    className={`
+                                        text-primary
+                                        transition-transform duration-300
+                                        ${
+                                            isProfileOpen
+                                                ? "rotate-180"
+                                                : "rotate-0"
+                                        }
+                                    `}
+                                />
+                            </button>
+
+                            {/* Profile Popup */}
+                            <div
+                                className={`
+                                    absolute right-0 top-full mt-3
+                                    w-64
+                                    rounded-2xl
+                                    border border-gray-20
+                                    bg-white
+                                    p-2
+                                    shadow-xl
+                                    transition-all duration-200
+                                    ${
+                                        isProfileOpen
+                                            ? "visible translate-y-0 opacity-100"
+                                            : "invisible -translate-y-2 opacity-0"
+                                    }
+                                `}
+                            >
+                                {/* User Information */}
+                                <div className="flex items-center gap-3 border-b border-gray-20 p-3">
+                                    <img
+                                        src="/images/background-auth/login/1.jpg"
+                                        className="w-12 h-12 rounded-full object-cover"
+                                        alt="Profile"
+                                    />
+
+                                    <div className="min-w-0">
+                                        <h5 className="truncate font-body font-bold text-small text-primary">
+                                            Jayadi Christopher
+                                        </h5>
+
+                                        <p className="font-body text-micro text-secondary">
+                                            Pemula
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Menu */}
+                                <div className="py-2">
+                                    <Link
+                                        href="/profile"
+                                        onClick={() =>
+                                            setIsProfileOpen(false)
+                                        }
+                                        className="
+                                            flex items-center gap-3
+                                            rounded-xl px-3 py-2.5
+                                            font-body text-small text-primary
+                                            transition-colors
+                                            hover:bg-gray-10 hover:text-secondary
+                                        "
+                                    >
+                                        <FiUser size={19} />
+                                        Profil Saya
+                                    </Link>
+
+                                    <Link
+                                        href="/settings"
+                                        onClick={() =>
+                                            setIsProfileOpen(false)
+                                        }
+                                        className="
+                                            flex items-center gap-3
+                                            rounded-xl px-3 py-2.5
+                                            font-body text-small text-primary
+                                            transition-colors
+                                            hover:bg-gray-10 hover:text-secondary
+                                        "
+                                    >
+                                        <FiSettings size={19} />
+                                        Pengaturan
+                                    </Link>
+                                </div>
+
+                                {/* Logout */}
+                                <div className="border-t border-gray-20 pt-2">
+                                    <Link
+                                        href="/logout"
+                                        method="post"
+                                        as="button"
+                                        className="
+                                            flex w-full items-center gap-3
+                                            rounded-xl px-3 py-2.5
+                                            font-body text-small
+                                            text-red-500
+                                            transition-colors
+                                            hover:bg-red-50
+                                        "
+                                    >
+                                        <FiLogOut size={19} />
+                                        Keluar
+                                    </Link>
+                                </div>
                             </div>
-
-                            <img
-                                src="/images/background-auth/login/1.jpg"
-                                className="w-12 h-12 rounded-full p-px border-2 border-secondary-70 object-cover"
-                                alt="picture"
-                            />
                         </div>
 
                     </div>
@@ -112,12 +271,17 @@ export default function Navbar() {
                     <Link href="#">
                         <img
                             src="/images/logo/with-tagline.png"
-                            alt="logo"
+                            alt="Logo NuraLoka"
                             className="w-26 object-contain"
                         />
                     </Link>
 
-                    <div className="flex items-center gap-2 w-max">
+                    {/* Mobile Profile */}
+                    <button
+                        type="button"
+                        onClick={() => setIsProfileOpen(true)}
+                        className="flex items-center gap-2 w-max"
+                    >
                         <div className="text-right">
                             <h5 className="font-body font-bold text-small text-primary">
                                 Jayadi Christopher
@@ -131,13 +295,131 @@ export default function Navbar() {
                         <img
                             src="/images/background-auth/login/1.jpg"
                             className="w-12 h-12 rounded-full p-px border-2 border-secondary-70 object-cover"
-                            alt="picture"
+                            alt="Profile"
                         />
+                    </button>
+                </div>
+            </nav>
+
+            {/* ===================== MOBILE PROFILE POPUP ===================== */}
+
+            <div
+                className={`
+                    md:hidden fixed inset-0 z-[60]
+                    transition-all duration-300 ease-out
+                    ${
+                        isProfileOpen
+                            ? "visible pointer-events-auto"
+                            : "invisible pointer-events-none"
+                    }
+                `}
+            >
+                {/* Dark Overlay */}
+                <button
+                    type="button"
+                    aria-label="Tutup menu profil"
+                    onClick={() => setIsProfileOpen(false)}
+                    className={`
+                        absolute inset-0
+                        bg-black/30
+                        transition-opacity duration-300 ease-out
+                        ${
+                            isProfileOpen
+                                ? "opacity-100"
+                                : "opacity-0"
+                        }
+                    `}
+                />
+
+                {/* Bottom Sheet */}
+                <div
+                    className={`
+                        absolute bottom-0 left-0 right-0
+                        rounded-t-3xl
+                        bg-white
+                        p-4
+                        shadow-2xl
+                        transition-all duration-500
+                        ease-[cubic-bezier(0.22,1,0.36,1)]
+                        ${
+                            isProfileOpen
+                                ? "translate-y-0 opacity-100"
+                                : "translate-y-full opacity-0"
+                        }
+                    `}
+                >
+                    {/* Indicator */}
+                    <div className="mx-auto mb-4 h-1 w-12 rounded-full bg-gray-30" />
+
+                    {/* Profile */}
+                    <div className="flex items-center gap-3 border-b border-gray-20 pb-4">
+                        <img
+                            src="/images/background-auth/login/1.jpg"
+                            className="w-14 h-14 rounded-full border-2 border-secondary-70 object-cover"
+                            alt="Profile"
+                        />
+
+                        <div>
+                            <h5 className="font-body font-bold text-body text-primary">
+                                Jayadi Christopher
+                            </h5>
+
+                            <p className="font-body text-small text-secondary">
+                                Pemula
+                            </p>
+                        </div>
                     </div>
 
-                </div>
+                    {/* Menu */}
+                    <div className="py-3">
+                        <Link
+                            href="/profile"
+                            onClick={() => setIsProfileOpen(false)}
+                            className="
+                                flex items-center gap-3
+                                rounded-xl px-3 py-3
+                                font-body text-small text-primary
+                                transition-colors duration-200
+                                hover:bg-gray-10
+                            "
+                        >
+                            <FiUser size={21} />
+                            Profil Saya
+                        </Link>
 
-            </nav>
+                        <Link
+                            href="/settings"
+                            onClick={() => setIsProfileOpen(false)}
+                            className="
+                                flex items-center gap-3
+                                rounded-xl px-3 py-3
+                                font-body text-small text-primary
+                                transition-colors duration-200
+                                hover:bg-gray-10
+                            "
+                        >
+                            <FiSettings size={21} />
+                            Pengaturan
+                        </Link>
+
+                        <Link
+                            href="/logout"
+                            method="post"
+                            as="button"
+                            className="
+                                flex w-full items-center gap-3
+                                rounded-xl px-3 py-3
+                                font-body text-small text-red-500
+                                transition-colors duration-200
+                                hover:bg-red-50
+                            "
+                        >
+                            <FiLogOut size={21} />
+                            Keluar
+                        </Link>
+                    </div>
+                </div>
+            </div>
 
             {/* ===================== MOBILE BOTTOM NAV ===================== */}
 

@@ -124,7 +124,7 @@ class GoogleController extends Controller
         auth()->login($user);
         request()->session()->regenerate();
 
-        return redirect()->intended()->route('home');
+        return redirect()->route('home');
     }
 
     /**
