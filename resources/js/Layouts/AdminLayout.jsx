@@ -4,7 +4,7 @@ import AdminHeader from "@components/Layouts/Admin/Header";
 import AdminFooter from "@components/Layouts/Admin/Footer";
 import { Head } from "@inertiajs/react";
 
-export default function AdminLayout({ title = '', content }) {
+export default function AdminLayout({ pageTitle = '', content }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const currentYear = new Date().getFullYear();
