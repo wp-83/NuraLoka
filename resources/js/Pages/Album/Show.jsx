@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
-import Navbar from '@components/Layouts/Navbar';
-import Footer from '@components/Layouts/Footer';
+import Navbar from '@components/Layouts/User/Navbar';
+import Footer from '@components/Layouts/User/Footer';
 import Button from '@components/Forms/Button';
 import { FiChevronLeft, FiMapPin, FiCalendar, FiEdit2, FiTrash2, FiX, FiChevronRight } from 'react-icons/fi';
 import { HiOutlineEye } from 'react-icons/hi';

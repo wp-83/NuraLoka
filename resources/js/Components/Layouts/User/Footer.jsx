@@ -37,7 +37,7 @@ export default function Footer() {
                 {/* Content */}
                 <div className="mt-10 grid grid-cols-1 gap-10 md:grid-cols-3">
                     {/* Contact */}
-                    <div>
+                    <div className="-mb-5 md:mb-0">
                         <h3 className="mb-1 font-heading text-paragraph font-bold text-primary">
                             Kontak Kami
                         </h3>
@@ -89,7 +89,7 @@ export default function Footer() {
                             className="w-32 object-contain"
                         />
 
-                        <span className="font-heading text-small nuraloka-text">
+                        <span className="font-heading text-small nuraloka-text -mt-4">
                             <span className="nura">Mantapkan </span>
                             <span className="loka">Langkahmu!</span>
                         </span>

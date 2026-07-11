@@ -5,6 +5,7 @@ import Flash from '@components/Common/Flash';
 // import '@css/Init.css';
 import '@css/Admin/News.css';
 import '@css/Admin/Place.css';
+import AdminLayout from '../../../Layouts/AdminLayout';
 
 export default function Index({ places, filters }) {
     const { flash } = usePage().props;
@@ -186,3 +187,5 @@ export default function Index({ places, filters }) {
         </>
     );
 }
+
+Index.layout = (page) => <AdminLayout children={page}></AdminLayout>

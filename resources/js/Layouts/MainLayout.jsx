@@ -1,5 +1,5 @@
-import Navbar from '@components/Layouts/Navbar';
-import Footer from '@components/Layouts/Footer';
+import Navbar from '@components/Layouts/User/Navbar';
+import Footer from '@components/Layouts/User/Footer';
 import { Head } from '@inertiajs/react';
 
 export default function MainLayout({ pageTitle = "", content, pageDescription = '', pageImage = '', pageUrl = '' }) {
