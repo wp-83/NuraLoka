@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
-import Navbar from '@components/Layouts/Navbar';
-import Footer from '@components/Layouts/Footer';
+import Navbar from '@components/Layouts/User/Navbar';
+import Footer from '@components/Layouts/User/Footer';
 import Button from '@components/Forms/Button';
 import { FiChevronLeft, FiPlus, FiX } from 'react-icons/fi';
 

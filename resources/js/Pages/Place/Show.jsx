@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import Navbar from '@components/Layouts/Navbar';
-import Footer from '@components/Layouts/Footer';
+import Navbar from '@components/Layouts/User/Navbar';
+import Footer from '@components/Layouts/User/Footer';
 import { FiChevronLeft, FiBookmark, FiMapPin, FiUsers } from 'react-icons/fi';
 import { FaBookmark, FaMoneyBillWave } from 'react-icons/fa';
 import { MdOutlinePark } from 'react-icons/md';

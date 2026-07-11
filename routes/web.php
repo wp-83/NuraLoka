@@ -153,23 +153,24 @@ Route::middleware('auth')->prefix('/album')->name('album.')->controller(AlbumCon
     Route::post('/{id}/toggle-visibility', 'toggleVisibility')->name('toggle.visibility');
     Route::post('/{id}/photo', 'addPhoto')->name('photo.add');
     Route::delete('/photo/{photoId}', 'removePhoto')->name('photo.remove');
-    // Admin Place Management
-    Route::prefix('/places')->name('places.')->group(function () {
-        Route::get('/', [AdminPlaceController::class, 'index'])->name('index');
-        Route::get('/create', [AdminPlaceController::class, 'create'])->name('create');
-        Route::post('/', [AdminPlaceController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [AdminPlaceController::class, 'edit'])->name('edit');
-        Route::post('/{id}', [AdminPlaceController::class, 'update'])->name('update');
-        Route::delete('/{id}', [AdminPlaceController::class, 'destroy'])->name('destroy');
-    });
+});
 
-    // Admin Category Management
-    Route::prefix('/categories')->name('categories.')->group(function () {
-        Route::get('/', [AdminCategoryController::class, 'index'])->name('index');
-        Route::get('/create', [AdminCategoryController::class, 'create'])->name('create');
-        Route::post('/', [AdminCategoryController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [AdminCategoryController::class, 'edit'])->name('edit');
-        Route::post('/{id}', [AdminCategoryController::class, 'update'])->name('update');
-        Route::delete('/{id}', [AdminCategoryController::class, 'destroy'])->name('destroy');
-    });
+// Admin Place Management
+Route::prefix('/places')->name('admin.places.')->group(function () {
+    Route::get('/', [AdminPlaceController::class, 'index'])->name('index');
+    Route::get('/create', [AdminPlaceController::class, 'create'])->name('create');
+    Route::post('/', [AdminPlaceController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [AdminPlaceController::class, 'edit'])->name('edit');
+    Route::post('/{id}', [AdminPlaceController::class, 'update'])->name('update');
+    Route::delete('/{id}', [AdminPlaceController::class, 'destroy'])->name('destroy');
+});
+
+// Admin Category Management
+Route::prefix('/categories')->name('categories.')->group(function () {
+    Route::get('/', [AdminCategoryController::class, 'index'])->name('index');
+    Route::get('/create', [AdminCategoryController::class, 'create'])->name('create');
+    Route::post('/', [AdminCategoryController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [AdminCategoryController::class, 'edit'])->name('edit');
+    Route::post('/{id}', [AdminCategoryController::class, 'update'])->name('update');
+    Route::delete('/{id}', [AdminCategoryController::class, 'destroy'])->name('destroy');
 });

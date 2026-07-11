@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, usePage } from "@inertiajs/react";
-import { NAV_ITEMS } from "@js/Data/Navigation";
+import { NAV_ITEMS } from "@js/Data/UserNavigation";
 import { FiUser, FiSettings, FiLogOut, FiChevronDown } from "react-icons/fi";
 import { PiUser } from "react-icons/pi";
 import { RiAdminLine } from "react-icons/ri";
 import { HiOutlineLogout } from "react-icons/hi";
 
 export default function Navbar() {
-    const { user } = usePage().props;
+    const { user } = usePage().props.auth;
     const [active, setActive] = useState("Beranda");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -320,7 +320,7 @@ export default function Navbar() {
                     `}
                 >
                     {/* Indicator */}
-                    <div className="mx-auto my-3 h-1 w-12 rounded-full bg-gray-30" />
+                    <div className="mx-auto my-3 h-1 w-12 rounded-full bg-primary-70" />
 
                     {/* Menu */}
                     <div className="my-2">

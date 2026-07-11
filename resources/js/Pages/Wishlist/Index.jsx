@@ -1,7 +1,7 @@
 import React from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
-import Navbar from '@components/Layouts/Navbar';
-import Footer from '@components/Layouts/Footer';
+import Navbar from '@components/Layouts/User/Navbar';
+import Footer from '@components/Layouts/User/Footer';
 import PlaceCard from '@components/Features/PlaceCard';
 import Button from '@components/Forms/Button';
 import { FiBookmark } from 'react-icons/fi';
