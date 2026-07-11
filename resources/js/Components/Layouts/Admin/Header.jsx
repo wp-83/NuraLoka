@@ -26,14 +26,14 @@ export default function AdminHeader({ onOpenMobile }) {
 
                 <div className="group flex items-center gap-2 rounded-xl p-1.5 transition-colors">
                     <div className="text-right">
-                        <h5 className="font-body font-bold text-small text-primary">
+                        <h5 className="font-body font-bold text-body text-secondary">
                             Jayadi Christopher
                         </h5>
                     </div>
 
                     <img
                         src="/images/background-auth/login/1.jpg"
-                        className="w-12 h-12 rounded-full p-px border-2 border-secondary-70 object-cover"
+                        className="w-12 h-12 rounded-full p-px border-2 border-error-dark object-cover"
                         alt="Profile"
                     />
                 </div>
