@@ -3,6 +3,10 @@
 module.exports = {
     theme: {
         extend: {
+            screens: {
+                xs: "480px",
+            },
+            
             colors: {
                 primary: {
                     DEFAULT: "#5A3812",
@@ -87,7 +91,7 @@ module.exports = {
 
                 "btn-lg": ["1.5rem", { lineHeight: "1.2" }],
                 "btn-md": ["1.125rem", { lineHeight: "1.2" }],
-                "btn-sm": ["1rem", { lineHeight: "1.2" }], 
+                "btn-sm": ["1rem", { lineHeight: "1.2" }],
             },
         },
     },
