@@ -1,112 +1,173 @@
-import { FiInstagram } from 'react-icons/fi';
-import { FaTiktok, FaYoutube, FaFacebook, FaXTwitter } from 'react-icons/fa6';
-import { HiLocationMarker } from 'react-icons/hi';
+import { FiMapPin, FiMail, FiPhone } from "react-icons/fi";
+import { FaInstagram, FaYoutube, FaTiktok, FaXTwitter, FaFacebook} from "react-icons/fa6";
 
-/*
-  Grid System (Figma spec):
-  - Type    : Stretch
-  - Width   : Auto
-  - Margin  : 120px  → px-[120px] (dalam CSS, margin grid Figma setara dengan padding container)
-  - Gutter  : 20px   → gap-5
-  - Columns : 12
-*/
 export default function Footer() {
+    const year = new Date().getFullYear();
+
     return (
-        <footer className="relative w-full bg-amber-50 border-t border-amber-200 pt-12 pb-6 overflow-hidden">
-            {/* ── Background pattern — clipPath menggantikan overflow-hidden ── */}
-            <img
-                src="/images/patterns/object.png"
-                alt=""
-                aria-hidden="true"
-                className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none opacity-[0.08]"
-                style={{ clipPath: 'inset(0)' }}
-            />
+        <footer
+            className="relative overflow-hidden"
+            style={{
+                backgroundImage: "url('/images/patterns/object.png')",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+            }}
+        >
+            <div className="absolute inset-0 bg-white/90" />
 
-            {/* ── Content wrapper with responsive padding ── */}
-            <div className="relative container mx-auto px-4 md:px-6 lg:px-8">
+            <div className="relative container mx-auto px-6 py-10">
+                {/* Logo */}
+                <div className="flex flex-col items-center text-center">
+                    <img
+                        src="/images/logo/with-tagline.png"
+                        alt="NuraLoka"
+                        className="h-24 object-contain"
+                    />
 
-                {/* ── Row 1: Branding (col 4–10, center) ── */}
-                <div className="grid grid-cols-12 gap-5 mb-8">
-                    <div className="col-start-4 col-end-10 flex flex-col items-center">
-                        <div className="w-[234px] mb-2">
-                            <img
-                                src="/images/logo/with-tagline.png"
-                                alt="NuraLoka"
-                                className="w-full object-contain"
-                                onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                        </div>
-                        <p className="text-sm text-gray-600 text-center max-w-[22rem] leading-relaxed">
-                            <span className="font-bold text-orange-600">Nura</span>
-                            <span className="font-bold text-green-800">Loka</span>
-                            {' '}hadir menjadi teman perjalanan Anda dalam eksplorasi di seluruh wilayah Nusantara.
-                        </p>
-                    </div>
+                    <p className="mt-3 max-w-sm font-body text-body text-primary-100">
+                        <span className="font-bold nuraloka-text">
+                            <span className="nura">Nura</span><span className="loka">Loka</span>
+                        </span>{" "}
+                        hadir menjadi teman perjalanan Anda dalam eksplorasi di
+                        seluruh wilayah Nusantara.
+                    </p>
+
                 </div>
 
-                {/* ── Row 2: Kontak | Mascot | Sosmed ── */}
-                <div className="grid grid-cols-12 gap-5 mb-8 items-start">
-
-                    {/* Kontak Kami: col 1–4 */}
-                    <div className="col-start-1 col-end-5">
-                        <h4 className="font-bold text-gray-800 mb-3 text-sm" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                {/* Content */}
+                <div className="mt-10 grid grid-cols-1 gap-10 md:grid-cols-3">
+                    {/* Contact */}
+                    <div>
+                        <h3 className="mb-1 font-heading text-paragraph font-bold text-primary">
                             Kontak Kami
-                        </h4>
-                        <ul className="flex flex-col gap-2 text-xs text-gray-600 list-none p-0 m-0">
-                            <li className="flex items-start gap-2">
-                                <HiLocationMarker size={14} className="text-amber-800 flex-shrink-0 mt-0.5" />
-                                <span>Jl. Pakuan No. 3, Sumur Batu, Kec. Babakan Madang, Kabupaten Bogor, Jawa Barat 16810, Indonesia</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <span className="text-amber-800 text-xs">✉</span>
-                                <span>nuraloka.team@gmail.com</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <span className="text-amber-800 text-xs">📞</span>
-                                <span>345 333 55</span>
-                            </li>
-                        </ul>
-                    </div>
+                        </h3>
 
-                    {/* Mascot: col 5–9, center */}
-                    <div className="col-start-5 col-end-9 flex flex-col items-center justify-center">
-                        <div className="w-28">
-                            <img
-                                src="/images/mascots/car.png"
-                                alt="mascot"
-                                className="w-full object-contain"
-                                onError={(e) => { e.target.style.display = 'none'; }}
-                            />
+                        <div className="space-y-2 font-body text-small text-primary-85">
+
+                            <div className="flex items-center gap-3">
+                                <FiMapPin
+                                    className="text-primary"
+                                    size={22}
+                                />
+                                <p className="text-small">
+                                    Jl. Pakuan No. 3, Sumur Batu, Kec. Babakan Madang,
+                                    <br />
+                                    Kabupaten Bogor, Jawa Barat 16810, Indonesia
+                                </p>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <a href="mailto:nuraloka.team@gmail.com?subject=Pertanyaan%20tentang%20NuraLoka" target="_blank" className="text-primary flex gap-3">
+                                    <FiMail
+                                        size={22}
+                                        className="text-primary"
+                                    />
+
+                                    <span className="text-small">
+                                        nuraloka.team@gmail.com
+                                    </span>
+                                </a>
+                            </div>
+
+
+                            <div className="flex items-center gap-3">
+                                <FiPhone
+                                    size={22}
+                                    className="text-primary"
+                                />
+
+                                <span className="text-small">345 333 55</span>
+                            </div>
                         </div>
-                        <p className="text-sm mt-1">
-                            <span className="text-orange-600">Mantapkan </span>
-                            <span className="text-green-800">Langkahmu!</span>
-                        </p>
                     </div>
 
-                    {/* Sosial Media: col 9–13 */}
-                    <div className="col-start-9 col-end-13">
-                        <h4 className="font-bold text-gray-800 mb-3 text-sm" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    {/* Center */}
+                    <div className="flex flex-col items-center justify-center">
+                        <img
+                            src="/images/mascots/car.png"
+                            alt="Mascot"
+                            className="w-32 object-contain"
+                        />
+
+                        <span className="font-heading text-small nuraloka-text">
+                            <span className="nura">Mantapkan </span>
+                            <span className="loka">Langkahmu!</span>
+                        </span>
+
+                    </div>
+
+                    {/* Social */}
+                    <div>
+                        <h3 className="mb-1 font-heading text-paragraph font-bold text-primary">
                             Sosial Media Kami
-                        </h4>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-gray-600">
-                            <div className="flex items-center gap-2"><FiInstagram size={13} /><span>nuraloka.id</span></div>
-                            <div className="flex items-center gap-2"><FaFacebook size={13} /><span>NuraLoka Indonesia</span></div>
-                            <div className="flex items-center gap-2"><FaTiktok size={13} /><span>nuraloka_id</span></div>
-                            <div className="flex items-center gap-2"><FaYoutube size={13} /><span>NuraLoka Indonesia</span></div>
-                            <div className="flex items-center gap-2"><FaXTwitter size={13} /><span>nuravers</span></div>
+                        </h3>
+
+                        <div className="grid grid-cols-2 gap-x-8 gap-y-3 font-body text-small">
+                            <a
+                                href="https://instagram.com"
+                                target="_blank"
+                                className="flex items-center gap-2 text-primary hover:text-secondary transition"
+                            >
+                                <FaInstagram size={20} />
+                                <span>nuraloka.id</span>
+                            </a>
+
+                            <a
+                                href="https://facebook.com"
+                                target="_blank"
+                                className="flex items-center gap-2 text-primary hover:text-secondary transition"
+                            >
+                                <FaFacebook size={20} />
+                                <span>NuraLoka Indonesia</span>
+                            </a>
+
+                            <a
+                                href="https://tiktok.com"
+                                target="_blank"
+                                className="flex items-center gap-2 text-primary hover:text-secondary transition"
+                            >
+                                <FaTiktok size={20} />
+                                <span>nuraloka_id</span>
+                            </a>
+
+                            <a
+                                href="https://youtube.com/"
+                                target="_blank"
+                                className="flex items-center gap-2 text-primary hover:text-secondary transition"
+                            >
+                                <FaYoutube size={20} />
+                                <span>NuraLoka Indonesia</span>
+                            </a>
+
+                            <a
+                                href="https://x.com/"
+                                target="_blank"
+                                className="flex items-center gap-2 text-primary hover:text-secondary transition"
+                            >
+                                <FaXTwitter size={20} />
+                                <span>nuravers</span>
+                            </a>
+
                         </div>
+
                     </div>
 
                 </div>
 
-                {/* ── Row 3: Copyright ── */}
-                <div className="border-t border-amber-200 pt-4 text-center text-xs text-gray-500">
-                    © 2026{' '}
-                    <span className="font-bold text-orange-600">Nura</span>
-                    <span className="font-bold text-green-800">Loka</span>
-                    . Seluruh Hak Cipta Dilindungi.
+                {/* Copyright */}
+                <div className="pb-16 md:pb-0 pt-8 text-center">
+
+                    <p className="font-body font-bold text-small text-primary-100">
+                        © {year} {" "}
+                        <span className="nuraloka-text">
+                            <span className="nura">Nura</span>
+                            <span className="loka">Loka</span>
+                        </span>
+                        . Seluruh Hak Cipta Dilindungi.
+                    </p>
+
                 </div>
+
             </div>
         </footer>
     );

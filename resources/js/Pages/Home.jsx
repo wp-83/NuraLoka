@@ -1,6 +1,7 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import Button from '@components/Forms/Button';
 import NewsSection from '@components/Features/NewsSection';
+import MainLayout from '../Layouts/MainLayout';
 
 export default function Home({ latestNews }){
     return (
@@ -11,17 +12,19 @@ export default function Home({ latestNews }){
                     <p className="text-sm text-gray-70">Tombol kini memakai komponen reusable dengan kelas Tailwind dan tetap mempertahankan desain sebelumnya.</p>
                 </div>
 
-                <Link
-                    href={route("auth.logout")}
-                    method="POST"
+                <Button
+                    type="button"
+                    variant="primary"
+                    size="btn-md"
+                    onClick={() => router.post(route('auth.logout'))}
                 >
-                    <Button variant="primary" size="btn-md">
-                        Logout
-                    </Button>
-                </Link>
+                    Logout
+                </Button>
             </section>
 
             <NewsSection latestNews={latestNews} />
         </div>
     );
 };
+
+Home.layout = (page) => <MainLayout content={page}></MainLayout>
