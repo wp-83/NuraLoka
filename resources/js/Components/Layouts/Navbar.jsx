@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import { NAV_ITEMS } from "@js/Data/Navigation";
 import { FiUser, FiSettings, FiLogOut, FiChevronDown } from "react-icons/fi";
+import { PiUser } from "react-icons/pi";
+import { RiAdminLine } from "react-icons/ri";
+import { HiOutlineLogout } from "react-icons/hi";
 
 export default function Navbar() {
+    const { user } = usePage().props;
     const [active, setActive] = useState("Beranda");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -131,7 +135,7 @@ export default function Navbar() {
                                 onClick={() =>
                                     setIsProfileOpen((prev) => !prev)
                                 }
-                                className="group flex items-center gap-2 rounded-xl p-1.5 transition-colors hover:bg-gray-10"
+                                className="group flex items-center gap-2 rounded-xl p-1.5 transition-colors hover:cursor-pointer"
                             >
                                 <div className="text-right">
                                     <h5 className="font-body font-bold text-small text-primary">
@@ -148,30 +152,17 @@ export default function Navbar() {
                                     className="w-12 h-12 rounded-full p-px border-2 border-secondary-70 object-cover"
                                     alt="Profile"
                                 />
-
-                                <FiChevronDown
-                                    size={16}
-                                    className={`
-                                        text-primary
-                                        transition-transform duration-300
-                                        ${
-                                            isProfileOpen
-                                                ? "rotate-180"
-                                                : "rotate-0"
-                                        }
-                                    `}
-                                />
                             </button>
 
                             {/* Profile Popup */}
                             <div
                                 className={`
-                                    absolute right-0 top-full mt-3
-                                    w-64
+                                    absolute right-0 top-full mt-4
+                                    w-54
                                     rounded-2xl
-                                    border border-gray-20
                                     bg-white
-                                    p-2
+                                    px-4
+                                    py-2
                                     shadow-xl
                                     transition-all duration-200
                                     ${
@@ -181,27 +172,8 @@ export default function Navbar() {
                                     }
                                 `}
                             >
-                                {/* User Information */}
-                                <div className="flex items-center gap-3 border-b border-gray-20 p-3">
-                                    <img
-                                        src="/images/background-auth/login/1.jpg"
-                                        className="w-12 h-12 rounded-full object-cover"
-                                        alt="Profile"
-                                    />
-
-                                    <div className="min-w-0">
-                                        <h5 className="truncate font-body font-bold text-small text-primary">
-                                            Jayadi Christopher
-                                        </h5>
-
-                                        <p className="font-body text-micro text-secondary">
-                                            Pemula
-                                        </p>
-                                    </div>
-                                </div>
-
                                 {/* Menu */}
-                                <div className="py-2">
+                                <div className="my-2">
                                     <Link
                                         href="/profile"
                                         onClick={() =>
@@ -209,50 +181,53 @@ export default function Navbar() {
                                         }
                                         className="
                                             flex items-center gap-3
-                                            rounded-xl px-3 py-2.5
-                                            font-body text-small text-primary
+                                            rounded-xl w-full px-3 py-2
+                                            font-body text-btn-sm text-primary
                                             transition-colors
-                                            hover:bg-gray-10 hover:text-secondary
+                                            hover:bg-primary-10 hover:text-secondary
                                         "
                                     >
-                                        <FiUser size={19} />
+                                        <PiUser size={24} />
                                         Profil Saya
-                                    </Link>
-
-                                    <Link
-                                        href="/settings"
-                                        onClick={() =>
-                                            setIsProfileOpen(false)
-                                        }
-                                        className="
-                                            flex items-center gap-3
-                                            rounded-xl px-3 py-2.5
-                                            font-body text-small text-primary
-                                            transition-colors
-                                            hover:bg-gray-10 hover:text-secondary
-                                        "
-                                    >
-                                        <FiSettings size={19} />
-                                        Pengaturan
                                     </Link>
                                 </div>
 
-                                {/* Logout */}
-                                <div className="border-t border-gray-20 pt-2">
+                                {user?.is_admin == 1 && (
+                                    <div className="my-2">
+                                        <Link
+                                            href="/profile"
+                                            onClick={() =>
+                                                setIsProfileOpen(false)
+                                            }
+                                            className="
+                                                flex items-center gap-3
+                                                rounded-xl w-full px-3 py-2
+                                                font-body text-btn-sm text-primary
+                                                transition-colors
+                                                hover:bg-primary-10 hover:text-secondary
+                                            "
+                                        >
+                                            <RiAdminLine size={24} />
+                                            Panel Admin
+                                        </Link>
+                                    </div>
+                                )}
+
+                                <div className="my-2">
                                     <Link
-                                        href="/logout"
+                                        href={route("auth.logout")}
                                         method="post"
                                         as="button"
+                                        onClick={() => setIsProfileOpen(false)}
                                         className="
-                                            flex w-full items-center gap-3
-                                            rounded-xl px-3 py-2.5
-                                            font-body text-small
-                                            text-red-500
+                                            flex items-center gap-3
+                                            rounded-xl w-full px-3 py-2
+                                            font-body text-btn-sm text-error-dark
                                             transition-colors
-                                            hover:bg-red-50
+                                            hover:bg-error-light
                                         "
                                     >
-                                        <FiLogOut size={19} />
+                                        <HiOutlineLogout size={24} />
                                         Keluar
                                     </Link>
                                 </div>
@@ -323,11 +298,7 @@ export default function Navbar() {
                         absolute inset-0
                         bg-black/30
                         transition-opacity duration-300 ease-out
-                        ${
-                            isProfileOpen
-                                ? "opacity-100"
-                                : "opacity-0"
-                        }
+                        ${isProfileOpen ? "opacity-100" : "opacity-0"}
                     `}
                 />
 
@@ -337,7 +308,7 @@ export default function Navbar() {
                         absolute bottom-0 left-0 right-0
                         rounded-t-3xl
                         bg-white
-                        p-4
+                        px-4 py-2
                         shadow-2xl
                         transition-all duration-500
                         ease-[cubic-bezier(0.22,1,0.36,1)]
@@ -349,77 +320,67 @@ export default function Navbar() {
                     `}
                 >
                     {/* Indicator */}
-                    <div className="mx-auto mb-4 h-1 w-12 rounded-full bg-gray-30" />
-
-                    {/* Profile */}
-                    <div className="flex items-center gap-3 border-b border-gray-20 pb-4">
-                        <img
-                            src="/images/background-auth/login/1.jpg"
-                            className="w-14 h-14 rounded-full border-2 border-secondary-70 object-cover"
-                            alt="Profile"
-                        />
-
-                        <div>
-                            <h5 className="font-body font-bold text-body text-primary">
-                                Jayadi Christopher
-                            </h5>
-
-                            <p className="font-body text-small text-secondary">
-                                Pemula
-                            </p>
-                        </div>
-                    </div>
+                    <div className="mx-auto my-3 h-1 w-12 rounded-full bg-gray-30" />
 
                     {/* Menu */}
-                    <div className="py-3">
+                    <div className="my-2">
                         <Link
                             href="/profile"
                             onClick={() => setIsProfileOpen(false)}
                             className="
                                 flex items-center gap-3
-                                rounded-xl px-3 py-3
-                                font-body text-small text-primary
-                                transition-colors duration-200
-                                hover:bg-gray-10
+                                rounded-xl w-full px-3 py-2
+                                font-body text-btn-sm text-primary
+                                transition-colors
+                                hover:bg-primary-10 hover:text-secondary
                             "
                         >
-                            <FiUser size={21} />
+                            <PiUser size={24} />
                             Profil Saya
                         </Link>
-
-                        <Link
-                            href="/settings"
-                            onClick={() => setIsProfileOpen(false)}
-                            className="
-                                flex items-center gap-3
-                                rounded-xl px-3 py-3
-                                font-body text-small text-primary
-                                transition-colors duration-200
-                                hover:bg-gray-10
-                            "
-                        >
-                            <FiSettings size={21} />
-                            Pengaturan
-                        </Link>
-
-                        <Link
-                            href="/logout"
-                            method="post"
-                            as="button"
-                            className="
-                                flex w-full items-center gap-3
-                                rounded-xl px-3 py-3
-                                font-body text-small text-red-500
-                                transition-colors duration-200
-                                hover:bg-red-50
-                            "
-                        >
-                            <FiLogOut size={21} />
-                            Keluar
-                        </Link>
                     </div>
-                </div>
+
+        {/* Admin Menu */}
+        {user?.is_admin == 1 && (
+            <div className="my-2">
+                <Link
+                    href="/profile"
+                    onClick={() => setIsProfileOpen(false)}
+                    className="
+                        flex items-center gap-3
+                        rounded-xl w-full px-3 py-2
+                        font-body text-btn-sm text-primary
+                        transition-colors
+                        hover:bg-primary-10 hover:text-secondary
+                    "
+                >
+                    <RiAdminLine size={24} />
+                    Panel Admin
+                </Link>
             </div>
+        )}
+
+        {/* Logout */}
+        <div className="my-2">
+            <Link
+                href={route("auth.logout")}
+                method="post"
+                as="button"
+                onClick={() => setIsProfileOpen(false)}
+                className="
+                    flex items-center gap-3
+                    rounded-xl w-full px-3 py-2
+                    font-body text-btn-sm text-error-dark
+                    transition-colors
+                    hover:bg-error-light
+                "
+            >
+                <HiOutlineLogout size={24} />
+                Keluar
+            </Link>
+        </div>
+    </div>
+</div>
 
             {/* ===================== MOBILE BOTTOM NAV ===================== */}
 
