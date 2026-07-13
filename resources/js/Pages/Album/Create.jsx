@@ -1,30 +1,65 @@
-import React, { useState, useRef } from 'react';
-import { Head, router, useForm } from '@inertiajs/react';
-import Navbar from '@components/Layouts/User/Navbar';
-import Footer from '@components/Layouts/User/Footer';
-import Button from '@components/Forms/Button';
-import { FiChevronLeft, FiPlus, FiX } from 'react-icons/fi';
+import { useEffect, useRef, useState } from 'react';
+import { router, useForm } from '@inertiajs/react';
 
+import MainLayout from '@js/Layouts/MainLayout';
+import Button from '@components/Forms/Button';
+
+import {
+    FiChevronLeft,
+    FiPlus,
+    FiX,
+} from 'react-icons/fi';
+
+// ============================================================
+// MAIN PAGE
+// ============================================================
 export default function AlbumCreate() {
     const [previewPhotos, setPreviewPhotos] = useState([]);
     const fileInputRef = useRef(null);
 
-    const { data, setData, post, processing, errors } = useForm({
+    const {
+        data,
+        setData,
+        post,
+        processing,
+        errors,
+    } = useForm({
         title: '',
         location: '',
         date: '',
         is_public: true,
-        photos: [], // Array of File objects
+        photos: [],
     });
 
-    const maxDate = new Date().toISOString().split("T")[0];
+    const maxDate = new Date()
+        .toISOString()
+        .split('T')[0];
+
+    // ============================================================
+    // CLEANUP PREVIEW URLS
+    // ============================================================
+    useEffect(() => {
+        return () => {
+            previewPhotos.forEach((photo) => {
+                URL.revokeObjectURL(photo.preview);
+            });
+        };
+    }, [previewPhotos]);
+
+    // ============================================================
+    // HANDLERS
+    // ============================================================
+    const handleBack = () => {
+        router.visit(route('album.index'));
+    };
 
     const handleToggleVisibility = () => {
         setData('is_public', !data.is_public);
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const handleSubmit = (event) => {
+        event.preventDefault();
+
         post(route('album.store'), {
             forceFormData: true,
         });
@@ -34,213 +69,689 @@ export default function AlbumCreate() {
         fileInputRef.current?.click();
     };
 
-    const handleFileChange = (e) => {
-        const files = Array.from(e.target.files);
+    const handleFileChange = (event) => {
+        const files = Array.from(
+            event.target.files || []
+        );
+
         if (files.length === 0) return;
 
-        // Update form data with new files (append)
-        const updatedFiles = [...data.photos, ...files];
-        setData('photos', updatedFiles);
-
-        // Generate previews
         const newPreviews = files.map((file) => ({
-            id: Math.random().toString(36).substring(7),
-            file: file,
+            id: crypto.randomUUID(),
+            file,
             preview: URL.createObjectURL(file),
             filename: file.name,
         }));
 
-        setPreviewPhotos([...previewPhotos, ...newPreviews]);
+        setData(
+            'photos',
+            [
+                ...data.photos,
+                ...files,
+            ]
+        );
 
-        // Reset input
-        e.target.value = '';
+        setPreviewPhotos((previous) => [
+            ...previous,
+            ...newPreviews,
+        ]);
+
+        event.target.value = '';
     };
 
-    const handleRemovePhoto = (previewId, fileToRemove) => {
-        // Remove from previews
-        setPreviewPhotos(previewPhotos.filter(p => p.id !== previewId));
+    const handleRemovePhoto = (
+        previewId,
+        fileToRemove
+    ) => {
+        const photoToRemove =
+            previewPhotos.find(
+                (photo) =>
+                    photo.id === previewId
+            );
 
-        // Remove from form data
-        setData('photos', data.photos.filter(f => f !== fileToRemove));
+        if (photoToRemove) {
+            URL.revokeObjectURL(
+                photoToRemove.preview
+            );
+        }
+
+        setPreviewPhotos((previous) =>
+            previous.filter(
+                (photo) =>
+                    photo.id !== previewId
+            )
+        );
+
+        setData(
+            'photos',
+            data.photos.filter(
+                (file) =>
+                    file !== fileToRemove
+            )
+        );
     };
 
     return (
-        <>
-            <Head title={`NuraLoka | Buat Album Baru`}>
-                <meta name="description" content="Buat album perjalanan wisata barumu." />
-            </Head>
+        <section className="py-8 pb-12">
+            {/* ========================================================
+                TOP BAR
+            ======================================================== */}
+            <div
+                className="
+                    mb-8 flex
+                    flex-col gap-5
 
-            <div className="min-h-screen flex flex-col bg-[#FDFBF7] font-sans">
-                <Navbar />
+                    sm:flex-row
+                    sm:items-center
+                    sm:justify-between
+                "
+            >
+                {/* Back */}
+                <Button
+                    variant="primary"
+                    size="btn-sm"
+                    onClick={handleBack}
+                    iconLeft={
+                        <FiChevronLeft size={16} />
+                    }
+                >
+                    Batal & Kembali
+                </Button>
 
-                <main className="flex-1">
-                    <div className="container mx-auto px-4 md:px-6 lg:px-8 pt-8 pb-12">
-                        <div className="grid grid-cols-12 gap-5">
-                            <div className="col-start-2 col-end-12">
-                                {/* Top bar */}
-                                <div className="flex items-center justify-between mb-8">
-                                    <Button
-                                        variant="primary"
-                                        size="btn-sm"
-                                        onClick={() => router.visit(route('album.index'))}
-                                        iconLeft={<FiChevronLeft size={16} />}
-                                    >
-                                        Batal & Kembali
-                                    </Button>
+                {/* Visibility */}
+                <div
+                    className="
+                        flex flex-col
+                        items-start gap-1
 
-                                    <div className="flex flex-col items-end gap-1">
-                                        <span className="text-sm font-semibold text-gray-70">Visibilitas</span>
-                                        <button
-                                            type="button"
-                                            onClick={handleToggleVisibility}
-                                            className="flex items-center gap-2"
-                                        >
-                                            <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${data.is_public ? 'bg-primary-100' : 'bg-gray-30'}`}>
-                                                <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${data.is_public ? 'translate-x-5.5' : 'translate-x-0.5'}`} />
-                                            </div>
-                                            <span className="text-sm font-medium text-gray-70">
-                                                {data.is_public ? 'Publik' : 'Privat'}
-                                            </span>
-                                        </button>
-                                    </div>
-                                </div>
+                        sm:items-end
+                    "
+                >
+                    <span
+                        className="
+                            font-body text-small
+                            font-semibold text-gray-70
+                        "
+                    >
+                        Visibilitas
+                    </span>
 
-                                <h1 className="text-title md:text-hero font-extrabold text-primary-100 font-heading mb-8">
-                                    Buat Album Baru
-                                </h1>
+                    <button
+                        type="button"
+                        onClick={handleToggleVisibility}
+                        className="
+                            flex items-center gap-2
+                            rounded-lg
+                        "
+                    >
+                        {/* Toggle */}
+                        <span
+                            className={`
+                                relative
+                                h-6 w-11
+                                rounded-full
+                                transition-colors
+                                duration-200
 
-                                {/* Form */}
-                                <form onSubmit={handleSubmit}>
-                                    {/* Judul Album */}
-                                    <div className="mb-5">
-                                        <label className="block text-sm font-semibold text-gray-85 mb-1.5 font-heading">
-                                            Judul Album <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={data.title}
-                                            onChange={(e) => setData('title', e.target.value)}
-                                            required
-                                            className="w-full px-4 py-2.5 rounded-lg border border-gray-30 bg-white text-sm text-gray-85 focus:outline-none focus:ring-2 focus:ring-primary-30 focus:border-primary-85 transition-colors"
-                                            placeholder="Masukkan judul album..."
-                                        />
-                                        {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
-                                    </div>
+                                ${
+                                    data.is_public
+                                        ? 'bg-primary-100'
+                                        : 'bg-gray-30'
+                                }
+                            `}
+                        >
+                            <span
+                                className={`
+                                    absolute top-0.5
+                                    h-5 w-5
+                                    rounded-full
+                                    bg-white
+                                    shadow
+                                    transition-transform
+                                    duration-200
 
-                                    {/* Lokasi & Tanggal */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-                                        <div>
-                                            <label className="block text-sm font-semibold text-gray-85 mb-1.5 font-heading">
-                                                Lokasi <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={data.location}
-                                                onChange={(e) => setData('location', e.target.value)}
-                                                required
-                                                className="w-full px-4 py-2.5 rounded-lg border border-gray-30 bg-white text-sm text-gray-85 focus:outline-none focus:ring-2 focus:ring-primary-30 focus:border-primary-85 transition-colors"
-                                                placeholder="Contoh: Yogyakarta..."
-                                            />
-                                            {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-semibold text-gray-85 mb-1.5 font-heading">
-                                                Tanggal <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="date"
-                                                max={maxDate}
-                                                value={data.date}
-                                                onChange={(e) => setData('date', e.target.value)}
-                                                required
-                                                className="w-full px-4 py-2.5 rounded-lg border border-gray-30 bg-white text-sm text-gray-85 focus:outline-none focus:ring-2 focus:ring-primary-30 focus:border-primary-85 transition-colors"
-                                            />
-                                            {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date}</p>}
-                                        </div>
-                                    </div>
+                                    ${
+                                        data.is_public
+                                            ? 'translate-x-[22px]'
+                                            : 'translate-x-0.5'
+                                    }
+                                `}
+                            />
+                        </span>
 
-                                    {/* Daftar Foto */}
-                                    <div className="mb-8">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h2 className="text-paragraph font-semibold text-gray-85 font-heading">
-                                                Unggah Foto
-                                            </h2>
-                                            <Button
-                                                type="button"
-                                                variant="secondary"
-                                                size="btn-sm"
-                                                iconLeft={<FiPlus size={15} />}
-                                                onClick={handleAddPhotos}
-                                            >
-                                                Pilih Foto
-                                            </Button>
-                                            <input
-                                                ref={fileInputRef}
-                                                type="file"
-                                                multiple
-                                                accept="image/jpeg,image/png,image/jpg,image/webp"
-                                                className="hidden"
-                                                onChange={handleFileChange}
-                                            />
-                                        </div>
+                        <span
+                            className="
+                                font-body text-small
+                                font-medium text-gray-70
+                            "
+                        >
+                            {data.is_public
+                                ? 'Publik'
+                                : 'Privat'}
+                        </span>
+                    </button>
+                </div>
+            </div>
 
-                                        {errors.photos && <p className="text-red-500 text-xs mb-3">{errors.photos}</p>}
+            {/* ========================================================
+                PAGE HEADER
+            ======================================================== */}
+            <div className="mb-8">
+                <h1
+                    className="
+                        font-heading text-title
+                        font-extrabold
+                        text-primary-100
 
-                                        {previewPhotos.length > 0 ? (
-                                            <div className="flex flex-col gap-4">
-                                                {previewPhotos.map((photo) => (
-                                                    <div
-                                                        key={photo.id}
-                                                        className="flex items-center gap-4 bg-white rounded-xl p-3 border border-gray-10 shadow-sm hover:shadow-md transition-shadow"
-                                                    >
-                                                        <div className="w-28 h-20 rounded-lg overflow-hidden bg-gray-10 flex-shrink-0">
-                                                            <img
-                                                                src={photo.preview}
-                                                                alt={photo.filename}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-sm text-gray-85 truncate">{photo.filename}</p>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleRemovePhoto(photo.id, photo.file)}
-                                                            className="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition-colors flex-shrink-0"
-                                                            title="Batal unggah"
-                                                        >
-                                                            <FiX size={16} />
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-30">
-                                                <p className="text-gray-50 text-sm">Belum ada foto yang dipilih. Silakan tambah foto terlebih dahulu.</p>
-                                            </div>
-                                        )}
-                                    </div>
+                        md:text-hero
+                    "
+                >
+                    Buat Album Baru
+                </h1>
 
-                                    {/* Submit */}
-                                    <div className="flex justify-end">
-                                        <Button
-                                            type="submit"
-                                            variant="primary"
-                                            size="btn-md"
-                                            loading={processing}
-                                            disabled={processing}
-                                        >
-                                            Simpan Album Baru
-                                        </Button>
-                                    </div>
-                                </form>
-                            </div>
+                <p
+                    className="
+                        mt-2 max-w-2xl
+                        font-body text-body
+                        text-gray-50
+                    "
+                >
+                    Dokumentasikan perjalanan dan momen
+                    berkesanmu dalam sebuah album untuk
+                    disimpan atau dibagikan kepada Nuravers
+                    lainnya.
+                </p>
+            </div>
+
+            {/* ========================================================
+                FORM
+            ======================================================== */}
+            <form
+                onSubmit={handleSubmit}
+                className="
+                    rounded-2xl
+                    border border-gray-10
+                    bg-white
+                    p-5 shadow-sm
+
+                    sm:p-6
+                    lg:p-8
+                "
+            >
+                {/* ====================================================
+                    ALBUM INFORMATION
+                ==================================================== */}
+                <div className="mb-8">
+                    <h2
+                        className="
+                            mb-5
+                            font-heading text-paragraph
+                            font-semibold text-primary-100
+                        "
+                    >
+                        Informasi Album
+                    </h2>
+
+                    {/* Title */}
+                    <div className="mb-5">
+                        <label
+                            htmlFor="title"
+                            className="
+                                mb-1.5 block
+                                font-heading text-small
+                                font-semibold text-gray-85
+                            "
+                        >
+                            Judul Album
+
+                            <span className="ml-1 text-error-dark">
+                                *
+                            </span>
+                        </label>
+
+                        <input
+                            id="title"
+                            type="text"
+                            value={data.title}
+                            onChange={(event) =>
+                                setData(
+                                    'title',
+                                    event.target.value
+                                )
+                            }
+                            required
+                            placeholder="Masukkan judul album..."
+                            className="
+                                w-full
+                                rounded-lg
+                                border border-gray-30
+                                bg-white
+                                px-4 py-2.5
+                                font-body text-small
+                                text-gray-85
+                                outline-none
+                                transition-all
+
+                                placeholder:text-gray-30
+
+                                focus:border-primary-85
+                                focus:ring-2
+                                focus:ring-primary-30
+                            "
+                        />
+
+                        {errors.title && (
+                            <p
+                                className="
+                                    mt-1
+                                    font-body text-micro
+                                    text-error-dark
+                                "
+                            >
+                                {errors.title}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Location & Date */}
+                    <div
+                        className="
+                            grid grid-cols-1
+                            gap-5
+
+                            md:grid-cols-2
+                        "
+                    >
+                        {/* Location */}
+                        <div>
+                            <label
+                                htmlFor="location"
+                                className="
+                                    mb-1.5 block
+                                    font-heading text-small
+                                    font-semibold text-gray-85
+                                "
+                            >
+                                Lokasi
+
+                                <span className="ml-1 text-error-dark">
+                                    *
+                                </span>
+                            </label>
+
+                            <input
+                                id="location"
+                                type="text"
+                                value={data.location}
+                                onChange={(event) =>
+                                    setData(
+                                        'location',
+                                        event.target.value
+                                    )
+                                }
+                                required
+                                placeholder="Contoh: Yogyakarta..."
+                                className="
+                                    w-full
+                                    rounded-lg
+                                    border border-gray-30
+                                    bg-white
+                                    px-4 py-2.5
+                                    font-body text-small
+                                    text-gray-85
+                                    outline-none
+                                    transition-all
+
+                                    placeholder:text-gray-30
+
+                                    focus:border-primary-85
+                                    focus:ring-2
+                                    focus:ring-primary-30
+                                "
+                            />
+
+                            {errors.location && (
+                                <p
+                                    className="
+                                        mt-1
+                                        font-body text-micro
+                                        text-error-dark
+                                    "
+                                >
+                                    {errors.location}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Date */}
+                        <div>
+                            <label
+                                htmlFor="date"
+                                className="
+                                    mb-1.5 block
+                                    font-heading text-small
+                                    font-semibold text-gray-85
+                                "
+                            >
+                                Tanggal
+
+                                <span className="ml-1 text-error-dark">
+                                    *
+                                </span>
+                            </label>
+
+                            <input
+                                id="date"
+                                type="date"
+                                max={maxDate}
+                                value={data.date}
+                                onChange={(event) =>
+                                    setData(
+                                        'date',
+                                        event.target.value
+                                    )
+                                }
+                                required
+                                className="
+                                    w-full
+                                    rounded-lg
+                                    border border-gray-30
+                                    bg-white
+                                    px-4 py-2.5
+                                    font-body text-small
+                                    text-gray-85
+                                    outline-none
+                                    transition-all
+
+                                    focus:border-primary-85
+                                    focus:ring-2
+                                    focus:ring-primary-30
+                                "
+                            />
+
+                            {errors.date && (
+                                <p
+                                    className="
+                                        mt-1
+                                        font-body text-micro
+                                        text-error-dark
+                                    "
+                                >
+                                    {errors.date}
+                                </p>
+                            )}
                         </div>
                     </div>
-                </main>
+                </div>
 
-                <Footer />
-            </div>
-        </>
+                {/* ====================================================
+                    PHOTOS
+                ==================================================== */}
+                <div className="mb-8">
+                    {/* Photo Header */}
+                    <div
+                        className="
+                            mb-4 flex
+                            flex-col gap-3
+
+                            sm:flex-row
+                            sm:items-center
+                            sm:justify-between
+                        "
+                    >
+                        <div>
+                            <h2
+                                className="
+                                    font-heading text-paragraph
+                                    font-semibold text-primary-100
+                                "
+                            >
+                                Unggah Foto
+                            </h2>
+
+                            <p
+                                className="
+                                    mt-1
+                                    font-body text-micro
+                                    text-gray-50
+                                "
+                            >
+                                Pilih satu atau beberapa foto
+                                perjalanan untuk dimasukkan ke
+                                dalam album.
+                            </p>
+                        </div>
+
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            size="btn-sm"
+                            iconLeft={
+                                <FiPlus size={15} />
+                            }
+                            onClick={handleAddPhotos}
+                        >
+                            Pilih Foto
+                        </Button>
+
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            multiple
+                            accept="
+                                image/jpeg,
+                                image/png,
+                                image/jpg,
+                                image/webp
+                            "
+                            className="hidden"
+                            onChange={handleFileChange}
+                        />
+                    </div>
+
+                    {/* Photo Error */}
+                    {errors.photos && (
+                        <p
+                            className="
+                                mb-3
+                                font-body text-micro
+                                text-error-dark
+                            "
+                        >
+                            {errors.photos}
+                        </p>
+                    )}
+
+                    {/* Photo Previews */}
+                    {previewPhotos.length > 0 ? (
+                        <div className="flex flex-col gap-3">
+                            {previewPhotos.map((photo) => (
+                                <div
+                                    key={photo.id}
+                                    className="
+                                        flex items-center
+                                        gap-4
+                                        rounded-xl
+                                        border border-gray-10
+                                        bg-white
+                                        p-3
+                                        shadow-sm
+                                        transition-shadow
+
+                                        hover:shadow-md
+                                    "
+                                >
+                                    {/* Preview */}
+                                    <div
+                                        className="
+                                            h-20 w-28
+                                            shrink-0
+                                            overflow-hidden
+                                            rounded-lg
+                                            bg-gray-10
+                                        "
+                                    >
+                                        <img
+                                            src={photo.preview}
+                                            alt={photo.filename}
+                                            className="
+                                                h-full w-full
+                                                object-cover
+                                            "
+                                        />
+                                    </div>
+
+                                    {/* File Information */}
+                                    <div className="min-w-0 flex-1">
+                                        <p
+                                            className="
+                                                truncate
+                                                font-body text-small
+                                                font-medium
+                                                text-gray-85
+                                            "
+                                        >
+                                            {photo.filename}
+                                        </p>
+
+                                        <p
+                                            className="
+                                                mt-1
+                                                font-body text-micro
+                                                text-gray-50
+                                            "
+                                        >
+                                            {(
+                                                photo.file.size /
+                                                1024 /
+                                                1024
+                                            ).toFixed(2)}{' '}
+                                            MB
+                                        </p>
+                                    </div>
+
+                                    {/* Remove */}
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            handleRemovePhoto(
+                                                photo.id,
+                                                photo.file
+                                            )
+                                        }
+                                        className="
+                                            flex h-9 w-9
+                                            shrink-0
+                                            items-center
+                                            justify-center
+                                            rounded-full
+                                            bg-error-light
+                                            text-error
+                                            transition-colors
+
+                                            hover:bg-error
+                                            hover:text-white
+                                        "
+                                        title="Batal unggah"
+                                        aria-label={`Hapus ${photo.filename}`}
+                                    >
+                                        <FiX size={17} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={handleAddPhotos}
+                            className="
+                                flex w-full
+                                flex-col
+                                items-center
+                                justify-center
+                                rounded-2xl
+                                border-2
+                                border-dashed
+                                border-gray-30
+                                bg-gray-10/50
+                                px-6 py-12
+                                text-center
+                                transition-colors
+
+                                hover:border-primary-50
+                                hover:bg-primary-10/30
+                            "
+                        >
+                            <div
+                                className="
+                                    mb-3 flex
+                                    h-12 w-12
+                                    items-center
+                                    justify-center
+                                    rounded-full
+                                    bg-primary-10
+                                    text-primary
+                                "
+                            >
+                                <FiPlus size={24} />
+                            </div>
+
+                            <p
+                                className="
+                                    font-body text-small
+                                    font-semibold
+                                    text-gray-70
+                                "
+                            >
+                                Belum ada foto yang dipilih
+                            </p>
+
+                            <p
+                                className="
+                                    mt-1
+                                    font-body text-micro
+                                    text-gray-50
+                                "
+                            >
+                                Klik untuk memilih foto
+                                perjalananmu.
+                            </p>
+                        </button>
+                    )}
+                </div>
+
+                {/* ====================================================
+                    SUBMIT
+                ==================================================== */}
+                <div
+                    className="
+                        flex justify-end
+                        border-t border-gray-10
+                        pt-6
+                    "
+                >
+                    <Button
+                        type="submit"
+                        variant="primary"
+                        size="btn-md"
+                        loading={processing}
+                        disabled={processing}
+                    >
+                        Simpan Album Baru
+                    </Button>
+                </div>
+            </form>
+        </section>
     );
 }
+
+// ============================================================
+// LAYOUT
+// ============================================================
+AlbumCreate.layout = (page) => (
+    <MainLayout
+        pageTitle="Buat Album Baru"
+        pageDescription="Buat album perjalanan baru di NuraLoka untuk mendokumentasikan destinasi, momen, dan pengalaman wisata berkesanmu serta membagikannya kepada komunitas Nuravers."
+        content={page}
+    />
+);

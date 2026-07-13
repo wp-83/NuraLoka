@@ -129,7 +129,7 @@ export default function ExploreMap({
     } else if (selectedPlace?.latitude && selectedPlace?.longitude) {
       setCenter([selectedPlace.latitude, selectedPlace.longitude]);
     } else if (places.length > 0) {
-      const lat = places.reduce((sum, p) => sum + parseFloat(p.latitude || 0), 0) / places.length;
+      const lat = places.reduce((sum, p) => sum + parseFloat(p.latitude || 0), 0) / w.length;
       const lng = places.reduce((sum, p) => sum + parseFloat(p.longitude || 0), 0) / places.length;
       setCenter([lat, lng]);
     }

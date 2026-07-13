@@ -10,26 +10,26 @@ export const NAV_ITEMS = [
     {
         label: "Beranda",
         icon: TiHomeOutline,
-        href: "/",
+        route: "home",
     },
     {
         label: "Jelajah",
         icon: TbRoute,
-        href: "/explore",
+        route: "explore",
     },
     {
         label: "Tantangan",
         icon: TbTargetArrow,
-        href: "/challenge",
+        route: "challenge",
     },
     {
         label: "Impian",
         icon: HiOutlineBookmark,
-        href: "/dream",
+        route: "wishlist",
     },
     {
         label: "Album",
         icon: MdOutlinePhotoLibrary,
-        href: "/album",
+        route: "album",
     },
 ];

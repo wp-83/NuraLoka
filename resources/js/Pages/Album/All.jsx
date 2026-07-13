@@ -1,111 +1,332 @@
-import React from 'react';
-import { Head, router } from '@inertiajs/react';
-import Navbar from '@components/Layouts/User/Navbar';
-import Footer from '@components/Layouts/User/Footer';
-import Button from '@components/Forms/Button';
-import { FiChevronLeft, FiMapPin, FiCalendar } from 'react-icons/fi';
+import { router } from '@inertiajs/react';
 
-function formatDate(dateStr) {
-    if (!dateStr) return '-';
-    const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    const d = new Date(dateStr);
-    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+import MainLayout from '@js/Layouts/MainLayout';
+import Button from '@components/Forms/Button';
+
+import {
+    FiCalendar,
+    FiChevronLeft,
+    FiMapPin,
+} from 'react-icons/fi';
+
+// ============================================================
+// HELPERS
+// ============================================================
+function formatDate(dateString) {
+    if (!dateString) return '-';
+
+    return new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    }).format(new Date(dateString));
 }
 
+function getAlbumThumbnail(thumbnail) {
+    return thumbnail
+        ? `/storage/${thumbnail}`
+        : '/images/defaults/avatar.png';
+}
+
+// ============================================================
+// SIMPLE ALBUM CARD
+// ============================================================
 function SimpleAlbumCard({ album }) {
+    const handleVisit = () => {
+        router.visit(route('album.show', album.id));
+    };
+
     return (
-        <div
-            onClick={() => router.visit(route('album.show', album.id))}
-            className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer border border-gray-10 flex flex-col"
+        <article
+            onClick={handleVisit}
+            className="
+                group flex cursor-pointer flex-col
+                overflow-hidden rounded-2xl
+                border border-gray-10
+                bg-white shadow-sm
+                transition-all duration-300
+
+                hover:-translate-y-1
+                hover:shadow-md
+            "
         >
-            <div className="relative h-44 overflow-hidden bg-gray-10">
+            {/* Thumbnail */}
+            <div
+                className="
+                    relative h-44
+                    overflow-hidden
+                    bg-gray-10
+                "
+            >
                 <img
-                    src={album.thumbnail ? `/storage/${album.thumbnail}` : '/images/defaults/avatar.png'}
+                    src={getAlbumThumbnail(album.thumbnail)}
                     alt={album.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => { e.target.src = '/images/defaults/avatar.png'; }}
+                    className="
+                        h-full w-full
+                        object-cover
+                        transition-transform duration-500
+
+                        group-hover:scale-105
+                    "
+                    onError={(event) => {
+                        event.currentTarget.src =
+                            '/images/defaults/avatar.png';
+                    }}
                 />
             </div>
-            <div className="p-4 flex flex-col flex-1">
-                <h3 className="font-heading font-bold text-sm text-gray-85 mb-3 line-clamp-2 leading-snug group-hover:text-primary-100 transition-colors">
+
+            {/* Content */}
+            <div className="flex flex-1 flex-col p-4">
+                {/* Title */}
+                <h3
+                    className="
+                        mb-3 line-clamp-2
+                        font-heading text-small
+                        font-bold leading-snug
+                        text-gray-85
+                        transition-colors
+
+                        group-hover:text-primary-100
+                    "
+                >
                     {album.title}
                 </h3>
+
+                {/* Location */}
                 {album.location && (
-                    <div className="flex items-center gap-1.5 text-xs text-gray-50 mb-1.5">
-                        <FiMapPin size={13} className="flex-shrink-0" />
-                        <span className="truncate">{album.location}</span>
+                    <div
+                        className="
+                            mb-1.5 flex
+                            items-center gap-1.5
+                            font-body text-micro
+                            text-gray-50
+                        "
+                    >
+                        <FiMapPin
+                            size={14}
+                            className="shrink-0"
+                        />
+
+                        <span className="truncate">
+                            {album.location}
+                        </span>
                     </div>
                 )}
-                <div className="flex items-center justify-between mt-auto pt-2">
-                    <div className="flex items-center gap-1.5 text-xs text-gray-50">
-                        <FiCalendar size={13} className="flex-shrink-0" />
-                        <span>{formatDate(album.date)}</span>
+
+                {/* Bottom Information */}
+                <div
+                    className="
+                        mt-auto flex
+                        items-center justify-between
+                        gap-3 pt-2
+                    "
+                >
+                    {/* Date */}
+                    <div
+                        className="
+                            flex min-w-0
+                            items-center gap-1.5
+                            font-body text-micro
+                            text-gray-50
+                        "
+                    >
+                        <FiCalendar
+                            size={14}
+                            className="shrink-0"
+                        />
+
+                        <span className="truncate">
+                            {formatDate(album.date)}
+                        </span>
                     </div>
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${album.is_public ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${album.is_public ? 'bg-green-500' : 'bg-amber-500'}`} />
-                        {album.is_public ? 'Publik' : 'Privat'}
+
+                    {/* Visibility */}
+                    <span
+                        className={`
+                            inline-flex shrink-0
+                            items-center gap-1.5
+                            rounded-full
+                            px-2 py-1
+                            font-body text-micro
+                            font-semibold
+
+                            ${
+                                album.is_public
+                                    ? 'bg-success-light text-success-dark'
+                                    : 'bg-warning-light text-warning-dark'
+                            }
+                        `}
+                    >
+                        <span
+                            className={`
+                                h-1.5 w-1.5
+                                rounded-full
+
+                                ${
+                                    album.is_public
+                                        ? 'bg-success'
+                                        : 'bg-warning'
+                                }
+                            `}
+                        />
+
+                        {album.is_public
+                            ? 'Publik'
+                            : 'Privat'}
                     </span>
                 </div>
             </div>
+        </article>
+    );
+}
+
+// ============================================================
+// EMPTY STATE
+// ============================================================
+function EmptyState({ ownerName }) {
+    const message = ownerName
+        ? `${ownerName} belum memiliki album publik.`
+        : 'Kamu belum memiliki album.';
+
+    return (
+        <div
+            className="
+                flex flex-col
+                items-center justify-center
+                rounded-3xl
+                border border-gray-10
+                bg-white
+                px-6 py-20
+                text-center
+                shadow-sm
+            "
+        >
+            <img
+                src="/images/mascots/wait.png"
+                alt="Maskot NuraLoka"
+                className="
+                    mb-4 h-24 w-24
+                    object-contain
+                    opacity-50
+                "
+            />
+
+            <p
+                className="
+                    font-body text-small
+                    text-gray-50
+                "
+            >
+                {message}
+            </p>
         </div>
     );
 }
 
-export default function AlbumAll({ albums = [], pageTitle = 'Semua Album Kamu', ownerName = null }) {
+// ============================================================
+// MAIN PAGE
+// ============================================================
+export default function AlbumAll({
+    albums = [],
+    pageTitle = 'Semua Album Kamu',
+    ownerName = null,
+}) {
+    const handleBack = () => {
+        router.visit(route('album.index'));
+    };
+
     return (
-        <>
-            <Head title={`NuraLoka | ${pageTitle}`}>
-                <meta name="description" content={pageTitle} />
-            </Head>
-
-            <div className="min-h-screen flex flex-col bg-[#FDFBF7] font-sans">
-                <Navbar />
-
-                <main className="flex-1">
-                    <div className="container mx-auto px-4 md:px-6 lg:px-8 pt-8 pb-12">
-                        <div className="grid grid-cols-12 gap-5">
-                            <div className="col-start-2 col-end-12">
-                                {/* Top bar */}
-                                <div className="mb-6">
-                                    <Button
-                                        variant="primary"
-                                        size="btn-sm"
-                                        onClick={() => router.visit(route('album.index'))}
-                                        iconLeft={<FiChevronLeft size={16} />}
-                                    >
-                                        Kembali
-                                    </Button>
-                                </div>
-
-                                {/* Title */}
-                                <h1 className="text-title md:text-hero font-extrabold text-primary-100 font-heading mb-8">
-                                    {pageTitle}
-                                </h1>
-
-                                {/* Grid */}
-                                {albums.length > 0 ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-                                        {albums.map((album) => (
-                                            <SimpleAlbumCard key={album.id} album={album} />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-20 bg-white rounded-3xl border border-gray-10 shadow-sm">
-                                        <div className="w-24 h-24 mx-auto mb-4 opacity-50">
-                                            <img src="/images/mascots/wait.png" alt="Empty" className="w-full h-full object-contain" />
-                                        </div>
-                                        <p className="text-gray-50 text-sm">
-                                            {ownerName ? `${ownerName} belum memiliki album publik.` : 'Kamu belum memiliki album.'}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </main>
-
-                <Footer />
+        <section className="py-8 pb-12">
+            {/* ========================================================
+                TOP NAVIGATION
+            ======================================================== */}
+            <div className="mb-6">
+                <Button
+                    variant="primary"
+                    size="btn-sm"
+                    onClick={handleBack}
+                    iconLeft={
+                        <FiChevronLeft size={16} />
+                    }
+                >
+                    Kembali
+                </Button>
             </div>
-        </>
+
+            {/* ========================================================
+                PAGE HEADER
+            ======================================================== */}
+            <div className="mb-8">
+                <h1
+                    className="
+                        font-heading text-title
+                        font-extrabold
+                        text-primary-100
+
+                        md:text-hero
+                    "
+                >
+                    {pageTitle}
+                </h1>
+
+                {ownerName && (
+                    <p
+                        className="
+                            mt-2
+                            font-body text-body
+                            text-primary-70
+                        "
+                    >
+                        Jelajahi koleksi album perjalanan dari{' '}
+                        <span className="font-bold">
+                            {ownerName}
+                        </span>
+                    </p>
+                )}
+            </div>
+
+            {/* ========================================================
+                ALBUM GRID
+            ======================================================== */}
+            {albums.length > 0 ? (
+                <div
+                    className="
+                        grid grid-cols-1
+                        gap-5
+
+                        sm:grid-cols-2
+                        md:grid-cols-3
+                        lg:grid-cols-4
+                    "
+                >
+                    {albums.map((album) => (
+                        <SimpleAlbumCard
+                            key={album.id}
+                            album={album}
+                        />
+                    ))}
+                </div>
+            ) : (
+                <EmptyState ownerName={ownerName} />
+            )}
+        </section>
     );
 }
+
+// ============================================================
+// LAYOUT
+// ============================================================
+AlbumAll.layout = (page) => (
+    <MainLayout
+        pageTitle={
+            page.props.pageTitle ||
+            'Semua Album'
+        }
+        pageDescription={
+            page.props.ownerName
+                ? `Jelajahi koleksi album perjalanan publik milik ${page.props.ownerName} dan temukan berbagai cerita serta pengalaman wisata bersama komunitas Nuravers di NuraLoka.`
+                : 'Lihat dan kelola seluruh koleksi album perjalananmu di NuraLoka. Dokumentasikan setiap momen, destinasi, dan pengalaman wisata berkesan dalam satu tempat.'
+        }
+        content={page}
+    />
+);
