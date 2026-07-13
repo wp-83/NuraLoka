@@ -36,13 +36,13 @@ function formatViews(count = 0) {
 function getAlbumThumbnail(thumbnail) {
     return thumbnail
         ? `/storage/${thumbnail}`
-        : '/images/defaults/avatar.png';
+        : '/images/defaults/image.png';
 }
 
 function getProfileImage(profilePath) {
     return profilePath
         ? `/storage/${profilePath}`
-        : '/images/defaults/avatar.png';
+        : '/images/defaults/profile-general.png';
 }
 
 // ============================================================
@@ -50,7 +50,7 @@ function getProfileImage(profilePath) {
 // ============================================================
 function PopularAlbumCard({ album }) {
     const handleVisit = () => {
-        router.visit(route('album.show', album.id));
+        router.visit(route('album.show', album.slug));
     };
 
     return (
@@ -76,7 +76,7 @@ function PopularAlbumCard({ album }) {
                     "
                     onError={(event) => {
                         event.currentTarget.src =
-                            '/images/defaults/avatar.png';
+                            '/images/defaults/image.png';
                     }}
                 />
             </div>
@@ -142,7 +142,7 @@ function PopularAlbumCard({ album }) {
 function MyAlbumCard({ album, onDelete }) {
     const handleToggleVisibility = () => {
         router.post(
-            route('album.toggle.visibility', album.id),
+            route('album.toggle.visibility', album.slug),
             {},
             {
                 preserveScroll: true,
@@ -151,11 +151,11 @@ function MyAlbumCard({ album, onDelete }) {
     };
 
     const handleVisit = () => {
-        router.visit(route('album.show', album.id));
+        router.visit(route('album.show', album.slug));
     };
 
     const handleEdit = () => {
-        router.visit(route('album.edit', album.id));
+        router.visit(route('album.edit', album.slug));
     };
 
     return (
@@ -181,7 +181,7 @@ function MyAlbumCard({ album, onDelete }) {
                     "
                     onError={(event) => {
                         event.currentTarget.src =
-                            '/images/defaults/avatar.png';
+                            '/images/defaults/image.png';
                     }}
                 />
             </div>
@@ -284,7 +284,7 @@ function MyAlbumCard({ album, onDelete }) {
 
                                     ${
                                         album.is_public
-                                            ? 'bg-primary'
+                                            ? 'bg-primary-100'
                                             : 'bg-gray-30'
                                     }
                                 `}
@@ -358,7 +358,7 @@ function MyAlbumCard({ album, onDelete }) {
 
                             <button
                                 type="button"
-                                onClick={() => onDelete(album.id)}
+                                onClick={() => onDelete(album.slug)}
                                 className="
                                     flex h-8 w-8
                                     items-center justify-center
@@ -418,7 +418,7 @@ function UserSearchResult({ user }) {
                     className="h-full w-full object-cover"
                     onError={(event) => {
                         event.currentTarget.src =
-                            '/images/defaults/avatar.png';
+                            '/images/defaults/profile-general.png';
                     }}
                 />
             </div>
@@ -550,7 +550,7 @@ export default function Index({
         );
     };
 
-    const handleDelete = (albumId) => {
+    const handleDelete = (albumSlug) => {
         const isConfirmed = window.confirm(
             'Yakin ingin menghapus album ini?'
         );
@@ -558,7 +558,7 @@ export default function Index({
         if (!isConfirmed) return;
 
         router.delete(
-            route('album.destroy', albumId),
+            route('album.destroy', albumSlug),
             {
                 preserveScroll: true,
             }

@@ -45,11 +45,12 @@ class AlbumController extends Controller
                 });
         }
 
-        // Album populer minggu ini (publik, dari semua user, sorted by view_count)
+        // Album populer minggu ini (publik, dari semua user, sorted by view_count, constraint seminggu)
         $popularAlbums = Album::with(['trip.user.userDetails', 'tripPhotos'])
             ->whereHas('trip', function ($q) {
                 $q->where('is_public', true);
             })
+            ->where('created_at', '>=', now()->startOfWeek())
             ->orderByDesc('view_count')
             ->take(3)
             ->get()
@@ -86,16 +87,17 @@ class AlbumController extends Controller
     /**
      * Detail album (Gambar 2)
      */
-    public function show($id)
+    public function show(Album $album)
     {
-        $album = Album::with(['trip.user.userDetails', 'tripPhotos'])
-            ->findOrFail($id);
-
-        // Increment view count
-        $album->increment('view_count');
+        $album->load(['trip.user.userDetails', 'tripPhotos']);
 
         $user = Auth::user();
         $isOwner = $album->trip->user_id === $user->id;
+
+        // Increment view count hanya jika bukan pemilik
+        if (! $isOwner) {
+            $album->increment('view_count');
+        }
 
         return inertia('Album/Show', [
             'album' => $this->formatAlbumData($album),
@@ -178,17 +180,16 @@ class AlbumController extends Controller
             }
         }
 
-        return redirect()->route('album.show', $album->id)->with('success', 'Album berhasil dibuat!');
+        return redirect()->route('album.index')->with('success', 'Album berhasil dibuat!');
     }
 
     /**
      * Halaman edit album (Gambar 3)
      */
-    public function edit($id)
+    public function edit(Album $album)
     {
         $user = Auth::user();
-        $album = Album::with(['trip', 'tripPhotos'])
-            ->findOrFail($id);
+        $album->load(['trip', 'tripPhotos']);
 
         // Pastikan hanya pemilik yang bisa edit
         if ($album->trip->user_id !== $user->id) {
@@ -210,10 +211,10 @@ class AlbumController extends Controller
     /**
      * Update data album (dari Gambar 3)
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Album $album)
     {
         $user = Auth::user();
-        $album = Album::with('trip')->findOrFail($id);
+        $album->load('trip');
 
         if ($album->trip->user_id !== $user->id) {
             abort(403);
@@ -234,16 +235,16 @@ class AlbumController extends Controller
             'is_public' => $request->is_public ?? $album->trip->is_public,
         ]);
 
-        return redirect()->route('album.show', $album->id)->with('success', 'Album berhasil diperbarui!');
+        return redirect()->route('album.index')->with('success', 'Album berhasil diperbarui!');
     }
 
     /**
      * Hapus album
      */
-    public function destroy($id)
+    public function destroy(Album $album)
     {
         $user = Auth::user();
-        $album = Album::with(['trip', 'tripPhotos'])->findOrFail($id);
+        $album->load(['trip', 'tripPhotos']);
 
         if ($album->trip->user_id !== $user->id) {
             abort(403);
@@ -316,10 +317,10 @@ class AlbumController extends Controller
     /**
      * Toggle visibilitas album (publik/privat)
      */
-    public function toggleVisibility($id)
+    public function toggleVisibility(Album $album)
     {
         $user = Auth::user();
-        $album = Album::with('trip')->findOrFail($id);
+        $album->load('trip');
 
         if ($album->trip->user_id !== $user->id) {
             abort(403);
@@ -335,10 +336,10 @@ class AlbumController extends Controller
     /**
      * Tambah foto ke album
      */
-    public function addPhoto(Request $request, $id)
+    public function addPhoto(Request $request, Album $album)
     {
         $user = Auth::user();
-        $album = Album::with('trip')->findOrFail($id);
+        $album->load('trip');
 
         if ($album->trip->user_id !== $user->id) {
             abort(403);
@@ -409,6 +410,7 @@ class AlbumController extends Controller
 
         return [
             'id' => $album->id,
+            'slug' => $album->slug,
             'title' => $trip->title,
             'location' => $trip->destination_name,
             'date' => $trip->trip_date,

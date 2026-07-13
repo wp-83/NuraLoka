@@ -36,13 +36,13 @@ function formatViews(count = 0) {
 function getProfileImage(profilePath) {
     return profilePath
         ? `/storage/${profilePath}`
-        : '/images/defaults/avatar.png';
+        : '/images/defaults/profile-general.png';
 }
 
 function getPhotoPath(photoPath) {
     return photoPath
         ? `/storage/${photoPath}`
-        : '/images/defaults/avatar.png';
+        : '/images/defaults/image.png';
 }
 
 // ============================================================
@@ -144,7 +144,7 @@ export default function AlbumShow({
 
     const handleEdit = () => {
         router.visit(
-            route('album.edit', album.id)
+            route('album.edit', album.slug)
         );
     };
 
@@ -156,7 +156,7 @@ export default function AlbumShow({
         if (!isConfirmed) return;
 
         router.delete(
-            route('album.destroy', album.id)
+            route('album.destroy', album.slug)
         );
     };
 
@@ -164,7 +164,7 @@ export default function AlbumShow({
         router.post(
             route(
                 'album.toggle.visibility',
-                album.id
+                album.slug
             ),
             {},
             {
@@ -302,7 +302,7 @@ export default function AlbumShow({
                                     "
                                     onError={(event) => {
                                         event.currentTarget.src =
-                                            '/images/defaults/avatar.png';
+                                            '/images/defaults/profile-general.png';
                                     }}
                                 />
                             </div>
@@ -525,7 +525,7 @@ export default function AlbumShow({
                                                     event
                                                 ) => {
                                                     event.currentTarget.src =
-                                                        '/images/defaults/avatar.png';
+                                                        '/images/defaults/image.png';
                                                 }}
                                             />
                                         </div>
@@ -679,7 +679,7 @@ export default function AlbumShow({
                             "
                             onError={(event) => {
                                 event.currentTarget.src =
-                                    '/images/defaults/avatar.png';
+                                    '/images/defaults/image.png';
                             }}
                         />
                     </div>

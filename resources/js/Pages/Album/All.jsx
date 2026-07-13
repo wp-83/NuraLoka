@@ -25,7 +25,7 @@ function formatDate(dateString) {
 function getAlbumThumbnail(thumbnail) {
     return thumbnail
         ? `/storage/${thumbnail}`
-        : '/images/defaults/avatar.png';
+        : '/images/defaults/image.png';
 }
 
 // ============================================================
@@ -33,7 +33,7 @@ function getAlbumThumbnail(thumbnail) {
 // ============================================================
 function SimpleAlbumCard({ album }) {
     const handleVisit = () => {
-        router.visit(route('album.show', album.id));
+        router.visit(route('album.show', album.slug));
     };
 
     return (
@@ -70,7 +70,7 @@ function SimpleAlbumCard({ album }) {
                     "
                     onError={(event) => {
                         event.currentTarget.src =
-                            '/images/defaults/avatar.png';
+                            '/images/defaults/image.png';
                     }}
                 />
             </div>

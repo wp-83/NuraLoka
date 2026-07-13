@@ -42,7 +42,7 @@ export default function AlbumEdit({
     // ============================================================
     const handleBack = () => {
         router.visit(
-            route('album.show', album.id)
+            route('album.show', album.slug)
         );
     };
 
@@ -50,7 +50,7 @@ export default function AlbumEdit({
         router.post(
             route(
                 'album.toggle.visibility',
-                album.id
+                album.slug
             ),
             {},
             {
@@ -72,7 +72,7 @@ export default function AlbumEdit({
         put(
             route(
                 'album.update',
-                album.id
+                album.slug
             ),
             {
                 preserveScroll: true,
@@ -103,12 +103,15 @@ export default function AlbumEdit({
         router.post(
             route(
                 'album.photo.add',
-                album.id
+                album.slug
             ),
             formData,
             {
                 preserveScroll: true,
                 forceFormData: true,
+                onSuccess: (page) => {
+                    setPhotos(page.props.photos);
+                },
             }
         );
 
@@ -611,7 +614,7 @@ export default function AlbumEdit({
                                             "
                                             onError={(event) => {
                                                 event.currentTarget.src =
-                                                    '/images/defaults/avatar.png';
+                                                    '/images/defaults/image.png';
                                             }}
                                         />
                                     </div>

@@ -96,17 +96,17 @@ Route::middleware('auth')->group(function () {
     // Album
     Route::prefix('/album')->name('album.')->controller(AlbumController::class)->group(function () {
         Route::get('/', 'index')->name('index');
-        Route::get('/create', 'create')->name('create');
+        Route::get('/buat', 'create')->name('create');
         Route::post('/', 'store')->name('store');
         Route::get('/semua', 'allAlbums')->name('all');
-        Route::get('/user/{userId}', 'userAlbums')->name('user.albums');
-        Route::get('/{id}', 'show')->name('show');
-        Route::get('/{id}/edit', 'edit')->name('edit');
-        Route::put('/{id}', 'update')->name('update');
-        Route::delete('/{id}', 'destroy')->name('destroy');
-        Route::post('/{id}/toggle-visibility', 'toggleVisibility')->name('toggle.visibility');
-        Route::post('/{id}/photo', 'addPhoto')->name('photo.add');
-        Route::delete('/photo/{photoId}', 'removePhoto')->name('photo.remove');
+        Route::get('/pengguna/{userId}', 'userAlbums')->name('user.albums');
+        Route::get('/{album:slug}', 'show')->name('show');
+        Route::get('/{album:slug}/ubah', 'edit')->name('edit');
+        Route::put('/{album:slug}', 'update')->name('update');
+        Route::delete('/{album:slug}/hapus', 'destroy')->name('destroy');
+        Route::post('/{album:slug}/visibilitas', 'toggleVisibility')->name('toggle.visibility');
+        Route::post('/{album:slug}/foto', 'addPhoto')->name('photo.add');
+        Route::delete('/foto/{photoId}/hapus', 'removePhoto')->name('photo.remove');
     });
 
     // News
