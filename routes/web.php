@@ -124,7 +124,7 @@ Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(fu
     });
 
     // Place Management
-    Route::prefix('/places')->name('admin.places.')->group(function () {
+    Route::prefix('/places')->name('places.')->group(function () {
         Route::get('/', [AdminPlaceController::class, 'index'])->name('index');
         Route::get('/create', [AdminPlaceController::class, 'create'])->name('create');
         Route::post('/', [AdminPlaceController::class, 'store'])->name('store');
