@@ -1,240 +1,734 @@
-import React, { useState, useEffect } from 'react';
-import { Head, router } from '@inertiajs/react';
-import Navbar from '@components/Layouts/User/Navbar';
-import Footer from '@components/Layouts/User/Footer';
+import { useEffect, useState } from 'react';
+import { router } from '@inertiajs/react';
+
+import MainLayout from '@js/Layouts/MainLayout';
 import Button from '@components/Forms/Button';
-import { FiChevronLeft, FiMapPin, FiCalendar, FiEdit2, FiTrash2, FiX, FiChevronRight } from 'react-icons/fi';
+
+import {
+    FiCalendar,
+    FiChevronLeft,
+    FiChevronRight,
+    FiEdit2,
+    FiMapPin,
+    FiTrash2,
+    FiX,
+} from 'react-icons/fi';
+
 import { HiOutlineEye } from 'react-icons/hi';
 
-function formatDate(dateStr) {
-    if (!dateStr) return '-';
-    const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    const d = new Date(dateStr);
-    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+// ============================================================
+// HELPERS
+// ============================================================
+function formatDate(dateString) {
+    if (!dateString) return '-';
+
+    return new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    }).format(new Date(dateString));
 }
 
-function formatViews(count) {
-    if (!count) return '0';
-    return count.toLocaleString('id-ID');
+function formatViews(count = 0) {
+    return Number(count).toLocaleString('id-ID');
 }
 
-export default function AlbumShow({ album, photos = [], isOwner = false, author = {} }) {
+function getProfileImage(profilePath) {
+    return profilePath
+        ? `/storage/${profilePath}`
+        : '/images/defaults/avatar.png';
+}
+
+function getPhotoPath(photoPath) {
+    return photoPath
+        ? `/storage/${photoPath}`
+        : '/images/defaults/avatar.png';
+}
+
+// ============================================================
+// MAIN PAGE
+// ============================================================
+export default function AlbumShow({
+    album,
+    photos = [],
+    isOwner = false,
+    author = {},
+}) {
     const [lightboxIndex, setLightboxIndex] = useState(null);
 
-    const openLightbox = (index) => setLightboxIndex(index);
-    const closeLightbox = () => setLightboxIndex(null);
-    const prevPhoto = () => setLightboxIndex((prev) => (prev > 0 ? prev - 1 : photos.length - 1));
-    const nextPhoto = () => setLightboxIndex((prev) => (prev < photos.length - 1 ? prev + 1 : 0));
+    const isLightboxOpen = lightboxIndex !== null;
+    const hasMultiplePhotos = photos.length > 1;
 
-    // Lock body scroll saat lightbox terbuka
+    // ============================================================
+    // LIGHTBOX HANDLERS
+    // ============================================================
+    const openLightbox = (index) => {
+        setLightboxIndex(index);
+    };
+
+    const closeLightbox = () => {
+        setLightboxIndex(null);
+    };
+
+    const showPreviousPhoto = () => {
+        setLightboxIndex((previous) => {
+            if (previous === null) return null;
+
+            return previous > 0
+                ? previous - 1
+                : photos.length - 1;
+        });
+    };
+
+    const showNextPhoto = () => {
+        setLightboxIndex((previous) => {
+            if (previous === null) return null;
+
+            return previous < photos.length - 1
+                ? previous + 1
+                : 0;
+        });
+    };
+
+    // ============================================================
+    // LIGHTBOX EFFECT
+    // ============================================================
     useEffect(() => {
-        if (lightboxIndex !== null) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
+        if (!isLightboxOpen) return;
+
+        const handleKeyDown = (event) => {
+            switch (event.key) {
+                case 'Escape':
+                    closeLightbox();
+                    break;
+
+                case 'ArrowLeft':
+                    if (hasMultiplePhotos) {
+                        showPreviousPhoto();
+                    }
+                    break;
+
+                case 'ArrowRight':
+                    if (hasMultiplePhotos) {
+                        showNextPhoto();
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        };
+
+        document.body.style.overflow = 'hidden';
+        window.addEventListener('keydown', handleKeyDown);
+
         return () => {
             document.body.style.overflow = '';
+            window.removeEventListener(
+                'keydown',
+                handleKeyDown
+            );
         };
-    }, [lightboxIndex]);
+    }, [
+        isLightboxOpen,
+        hasMultiplePhotos,
+        photos.length,
+    ]);
+
+    // ============================================================
+    // ALBUM HANDLERS
+    // ============================================================
+    const handleBack = () => {
+        router.visit(route('album.index'));
+    };
+
+    const handleEdit = () => {
+        router.visit(
+            route('album.edit', album.id)
+        );
+    };
 
     const handleDelete = () => {
-        if (confirm('Yakin ingin menghapus album ini? Semua foto akan ikut terhapus.')) {
-            router.delete(route('album.destroy', album.id));
-        }
+        const isConfirmed = window.confirm(
+            'Yakin ingin menghapus album ini? Semua foto akan ikut terhapus.'
+        );
+
+        if (!isConfirmed) return;
+
+        router.delete(
+            route('album.destroy', album.id)
+        );
     };
 
     const handleToggleVisibility = () => {
-        router.post(route('album.toggle.visibility', album.id), {}, { preserveScroll: true });
+        router.post(
+            route(
+                'album.toggle.visibility',
+                album.id
+            ),
+            {},
+            {
+                preserveScroll: true,
+            }
+        );
     };
 
     return (
         <>
-            <Head title={`NuraLoka | ${album.title}`}>
-                <meta name="description" content={`Album perjalanan: ${album.title}`} />
-            </Head>
+            <section className="py-8 pb-12">
+                {/* ====================================================
+                    TOP BAR
+                ==================================================== */}
+                <div
+                    className="
+                        mb-8 flex
+                        flex-col gap-5
 
-            <div className="min-h-screen flex flex-col bg-[#FDFBF7] font-sans">
-                <Navbar />
+                        sm:flex-row
+                        sm:items-center
+                        sm:justify-between
+                    "
+                >
+                    {/* Back */}
+                    <Button
+                        variant="primary"
+                        size="btn-sm"
+                        onClick={handleBack}
+                        iconLeft={
+                            <FiChevronLeft size={16} />
+                        }
+                    >
+                        Kembali
+                    </Button>
 
-                <main className="flex-1">
-                    <div className="container mx-auto px-4 md:px-6 lg:px-8 pt-8 pb-12">
-                        <div className="grid grid-cols-12 gap-5">
-                            <div className="col-start-2 col-end-12">
-                                {/* Top bar: Kembali + Visibilitas / Author */}
-                                <div className="flex items-center justify-between mb-8">
-                                    <Button
-                                        variant="primary"
-                                        size="btn-sm"
-                                        onClick={() => router.visit(route('album.index'))}
-                                        iconLeft={<FiChevronLeft size={16} />}
-                                    >
-                                        Kembali
-                                    </Button>
+                    {/* Owner Visibility */}
+                    {isOwner ? (
+                        <div
+                            className="
+                                flex flex-col
+                                items-start gap-1
 
-                                    {isOwner ? (
-                                        <div className="flex flex-col items-end gap-1">
-                                            <span className="text-sm font-semibold text-gray-70">Visibilitas</span>
-                                            <button
-                                                onClick={handleToggleVisibility}
-                                                className="flex items-center gap-2"
-                                            >
-                                                <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${album.is_public ? 'bg-primary-100' : 'bg-gray-30'}`}>
-                                                    <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${album.is_public ? 'translate-x-5.5' : 'translate-x-0.5'}`} />
-                                                </div>
-                                                <span className="text-sm font-medium text-gray-70">
-                                                    {album.is_public ? 'Publik' : 'Privat'}
-                                                </span>
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-amber-100 overflow-hidden border-2 border-amber-200">
-                                                <img
-                                                    src={author.profile_path ? `/storage/${author.profile_path}` : '/images/defaults/avatar.png'}
-                                                    alt={author.fullname}
-                                                    className="w-full h-full object-cover"
-                                                    onError={(e) => { e.target.src = '/images/defaults/avatar.png'; }}
-                                                />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-bold text-primary-100">{author.fullname}</p>
-                                                <p className="text-xs text-gray-50">Pembuat Album</p>
-                                            </div>
-                                        </div>
+                                sm:items-end
+                            "
+                        >
+                            <span
+                                className="
+                                    font-body text-small
+                                    font-semibold text-gray-70
+                                "
+                            >
+                                Visibilitas
+                            </span>
+
+                            <button
+                                type="button"
+                                onClick={handleToggleVisibility}
+                                className="
+                                    flex items-center gap-2
+                                    rounded-lg
+                                "
+                            >
+                                {/* Toggle */}
+                                <span
+                                    className={`
+                                        relative
+                                        h-6 w-11
+                                        rounded-full
+                                        transition-colors
+                                        duration-200
+
+                                        ${
+                                            album.is_public
+                                                ? 'bg-primary-100'
+                                                : 'bg-gray-30'
+                                        }
+                                    `}
+                                >
+                                    <span
+                                        className={`
+                                            absolute top-0.5
+                                            h-5 w-5
+                                            rounded-full
+                                            bg-white
+                                            shadow
+                                            transition-transform
+                                            duration-200
+
+                                            ${
+                                                album.is_public
+                                                    ? 'translate-x-[22px]'
+                                                    : 'translate-x-0.5'
+                                            }
+                                        `}
+                                    />
+                                </span>
+
+                                <span
+                                    className="
+                                        font-body text-small
+                                        font-medium text-gray-70
+                                    "
+                                >
+                                    {album.is_public
+                                        ? 'Publik'
+                                        : 'Privat'}
+                                </span>
+                            </button>
+                        </div>
+                    ) : (
+                        /* Author Information */
+                        <div className="flex items-center gap-3">
+                            <div
+                                className="
+                                    h-10 w-10
+                                    shrink-0
+                                    overflow-hidden
+                                    rounded-full
+                                    border-2 border-primary-30
+                                    bg-primary-10
+                                "
+                            >
+                                <img
+                                    src={getProfileImage(
+                                        author.profile_path
                                     )}
-                                </div>
+                                    alt={
+                                        author.fullname ||
+                                        'Pembuat album'
+                                    }
+                                    className="
+                                        h-full w-full
+                                        object-cover
+                                    "
+                                    onError={(event) => {
+                                        event.currentTarget.src =
+                                            '/images/defaults/avatar.png';
+                                    }}
+                                />
+                            </div>
 
-                                {/* Album Info */}
-                                <h1 className="text-title md:text-hero font-extrabold text-primary-100 font-heading mb-4">
-                                    {album.title}
-                                </h1>
+                            <div className="min-w-0">
+                                <p
+                                    className="
+                                        truncate
+                                        font-heading text-small
+                                        font-bold text-primary-100
+                                    "
+                                >
+                                    {author.fullname ||
+                                        'Nuravers'}
+                                </p>
 
-                                <div className="flex flex-wrap items-center gap-5 text-sm text-gray-70 mb-6">
-                                    <span className="flex items-center gap-1.5">
-                                        <FiMapPin size={15} className="text-primary-85" />
-                                        {album.location}
-                                    </span>
-                                    <span className="flex items-center gap-1.5">
-                                        <FiCalendar size={15} className="text-primary-85" />
-                                        {formatDate(album.date)}
-                                    </span>
-                                    <span className="flex items-center gap-1.5">
-                                        <HiOutlineEye size={15} className="text-primary-85" />
-                                        Dilihat oleh {formatViews(album.view_count)} Nuravers
-                                    </span>
-                                </div>
-
-                                {/* Action Buttons */}
-                                {isOwner && (
-                                    <div className="flex items-center gap-3 mb-8 justify-end">
-                                        <Button
-                                            variant="secondary"
-                                            size="btn-sm"
-                                            iconLeft={<FiEdit2 size={15} />}
-                                            onClick={() => router.visit(route('album.edit', album.id))}
-                                        >
-                                            Ubah Data
-                                        </Button>
-                                        <Button
-                                            variant="error"
-                                            size="btn-sm"
-                                            iconLeft={<FiTrash2 size={15} />}
-                                            onClick={handleDelete}
-                                        >
-                                            Hapus Album
-                                        </Button>
-                                    </div>
-                                )}
-
-                                {/* Photo Gallery */}
-                                {photos.length > 0 ? (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {photos.map((photo, index) => (
-                                            <div
-                                                key={photo.id}
-                                                onClick={() => openLightbox(index)}
-                                                className={`rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer ${
-                                                    index === photos.length - 1 && photos.length % 2 !== 0 ? 'md:col-span-2' : ''
-                                                }`}
-                                            >
-                                                <div className={`w-full ${index < 2 ? 'h-72' : 'h-56'} bg-gray-10 overflow-hidden`}>
-                                                    <img
-                                                        src={`/storage/${photo.photo_path}`}
-                                                        alt={photo.filename}
-                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                        onError={(e) => { e.target.src = '/images/defaults/avatar.png'; }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-16 bg-white rounded-2xl border border-gray-10">
-                                        <div className="w-24 h-24 mx-auto mb-4 opacity-50">
-                                            <img src="/images/mascots/camera.png" alt="No photos" className="w-full h-full object-contain" />
-                                        </div>
-                                        <p className="text-gray-50 text-sm">Belum ada foto dalam album ini.</p>
-                                    </div>
-                                )}
+                                <p
+                                    className="
+                                        font-body text-micro
+                                        text-gray-50
+                                    "
+                                >
+                                    Pembuat Album
+                                </p>
                             </div>
                         </div>
+                    )}
+                </div>
+
+                {/* ====================================================
+                    ALBUM INFORMATION
+                ==================================================== */}
+                <div className="mb-8">
+                    {/* Title */}
+                    <h1
+                        className="
+                            mb-4
+                            font-heading text-title
+                            font-extrabold
+                            text-primary-100
+
+                            md:text-hero
+                        "
+                    >
+                        {album.title}
+                    </h1>
+
+                    {/* Metadata */}
+                    <div
+                        className="
+                            flex flex-wrap
+                            items-center
+                            gap-x-5 gap-y-3
+                            font-body text-small
+                            text-gray-70
+                        "
+                    >
+                        {/* Location */}
+                        <span className="flex items-center gap-1.5">
+                            <FiMapPin
+                                size={16}
+                                className="
+                                    shrink-0
+                                    text-primary-85
+                                "
+                            />
+
+                            {album.location || '-'}
+                        </span>
+
+                        {/* Date */}
+                        <span className="flex items-center gap-1.5">
+                            <FiCalendar
+                                size={16}
+                                className="
+                                    shrink-0
+                                    text-primary-85
+                                "
+                            />
+
+                            {formatDate(album.date)}
+                        </span>
+
+                        {/* Views */}
+                        <span className="flex items-center gap-1.5">
+                            <HiOutlineEye
+                                size={17}
+                                className="
+                                    shrink-0
+                                    text-primary-85
+                                "
+                            />
+
+                            Dilihat oleh{' '}
+                            {formatViews(
+                                album.view_count
+                            )}{' '}
+                            Nuravers
+                        </span>
                     </div>
-                </main>
+                </div>
 
-                <Footer />
-            </div>
+                {/* ====================================================
+                    OWNER ACTIONS
+                ==================================================== */}
+                {isOwner && (
+                    <div
+                        className="
+                            mb-8 flex
+                            flex-wrap
+                            items-center
+                            justify-end
+                            gap-3
+                        "
+                    >
+                        <Button
+                            variant="secondary"
+                            size="btn-sm"
+                            iconLeft={
+                                <FiEdit2 size={15} />
+                            }
+                            onClick={handleEdit}
+                        >
+                            Ubah Data
+                        </Button>
 
-            {/* Lightbox Popup */}
-            {lightboxIndex !== null && (
+                        <Button
+                            variant="error"
+                            size="btn-sm"
+                            iconLeft={
+                                <FiTrash2 size={15} />
+                            }
+                            onClick={handleDelete}
+                        >
+                            Hapus Album
+                        </Button>
+                    </div>
+                )}
+
+                {/* ====================================================
+                    PHOTO GALLERY
+                ==================================================== */}
+                {photos.length > 0 ? (
+                    <div
+                        className="
+                            grid grid-cols-1
+                            gap-4
+
+                            md:grid-cols-2
+                        "
+                    >
+                        {photos.map(
+                            (photo, index) => {
+                                const isLastOddPhoto =
+                                    index ===
+                                        photos.length - 1 &&
+                                    photos.length % 2 !== 0;
+
+                                return (
+                                    <button
+                                        key={photo.id}
+                                        type="button"
+                                        onClick={() =>
+                                            openLightbox(
+                                                index
+                                            )
+                                        }
+                                        className={`
+                                            group
+                                            overflow-hidden
+                                            rounded-2xl
+                                            bg-gray-10
+                                            text-left
+                                            shadow-md
+                                            transition-all
+                                            duration-300
+
+                                            hover:-translate-y-1
+                                            hover:shadow-xl
+
+                                            ${
+                                                isLastOddPhoto
+                                                    ? 'md:col-span-2'
+                                                    : ''
+                                            }
+                                        `}
+                                    >
+                                        <div
+                                            className={`
+                                                w-full
+                                                overflow-hidden
+                                                bg-gray-10
+
+                                                ${
+                                                    index < 2
+                                                        ? 'h-72'
+                                                        : 'h-56'
+                                                }
+                                            `}
+                                        >
+                                            <img
+                                                src={getPhotoPath(
+                                                    photo.photo_path
+                                                )}
+                                                alt={
+                                                    photo.filename ||
+                                                    `${album.title} - Foto ${
+                                                        index + 1
+                                                    }`
+                                                }
+                                                className="
+                                                    h-full w-full
+                                                    object-cover
+                                                    transition-transform
+                                                    duration-500
+
+                                                    group-hover:scale-105
+                                                "
+                                                onError={(
+                                                    event
+                                                ) => {
+                                                    event.currentTarget.src =
+                                                        '/images/defaults/avatar.png';
+                                                }}
+                                            />
+                                        </div>
+                                    </button>
+                                );
+                            }
+                        )}
+                    </div>
+                ) : (
+                    /* Empty State */
+                    <div
+                        className="
+                            flex flex-col
+                            items-center
+                            justify-center
+                            rounded-2xl
+                            border border-gray-10
+                            bg-white
+                            px-6 py-16
+                            text-center
+                        "
+                    >
+                        <img
+                            src="/images/mascots/camera.png"
+                            alt="Maskot NuraLoka dengan kamera"
+                            className="
+                                mb-4 h-24 w-24
+                                object-contain
+                                opacity-50
+                            "
+                        />
+
+                        <p
+                            className="
+                                font-body text-small
+                                text-gray-50
+                            "
+                        >
+                            Belum ada foto dalam album ini.
+                        </p>
+                    </div>
+                )}
+            </section>
+
+            {/* ========================================================
+                LIGHTBOX
+            ======================================================== */}
+            {isLightboxOpen && photos[lightboxIndex] && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Pratinjau foto"
+                    className="
+                        fixed inset-0
+                        z-[100]
+                        flex items-center
+                        justify-center
+                        bg-black/80
+                        p-4
+                        backdrop-blur-sm
+                    "
                     onClick={closeLightbox}
                 >
-                    {/* Close button */}
+                    {/* Close */}
                     <button
-                        onClick={closeLightbox}
-                        className="fixed top-6 right-6 md:top-8 md:right-8 text-white hover:text-gray-300 transition-colors z-[100] cursor-pointer"
-                        title="Tutup (Esc)"
+                        type="button"
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            closeLightbox();
+                        }}
+                        className="
+                            fixed right-5 top-5
+                            z-[110]
+                            flex h-11 w-11
+                            items-center
+                            justify-center
+                            rounded-full
+                            bg-white/10
+                            text-white
+                            transition-colors
+
+                            hover:bg-white/20
+                        "
+                        title="Tutup"
+                        aria-label="Tutup pratinjau foto"
                     >
-                        <FiX size={32} />
+                        <FiX size={26} />
                     </button>
 
-                    {/* Prev button */}
-                    {photos.length > 1 && (
+                    {/* Previous */}
+                    {hasMultiplePhotos && (
                         <button
-                            onClick={(e) => { e.stopPropagation(); prevPhoto(); }}
-                            className="absolute left-4 md:left-8 w-10 h-10 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
+                            type="button"
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                showPreviousPhoto();
+                            }}
+                            className="
+                                absolute left-3
+                                z-10
+                                flex h-10 w-10
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-white/20
+                                text-white
+                                transition-colors
+
+                                hover:bg-white/30
+
+                                md:left-8
+                                md:h-12
+                                md:w-12
+                            "
+                            aria-label="Foto sebelumnya"
                         >
-                            <FiChevronLeft size={22} />
+                            <FiChevronLeft size={24} />
                         </button>
                     )}
 
                     {/* Image */}
                     <div
-                        className="max-w-[90vw] max-h-[85vh] flex items-center justify-center"
-                        onClick={(e) => e.stopPropagation()}
+                        className="
+                            flex max-h-[85vh]
+                            max-w-[90vw]
+                            items-center
+                            justify-center
+                        "
+                        onClick={(event) =>
+                            event.stopPropagation()
+                        }
                     >
                         <img
-                            src={`/storage/${photos[lightboxIndex].photo_path}`}
-                            alt={photos[lightboxIndex].filename}
-                            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-                            onError={(e) => { e.target.src = '/images/defaults/avatar.png'; }}
+                            src={getPhotoPath(
+                                photos[lightboxIndex]
+                                    .photo_path
+                            )}
+                            alt={
+                                photos[lightboxIndex]
+                                    .filename ||
+                                `${album.title} - Foto ${
+                                    lightboxIndex + 1
+                                }`
+                            }
+                            className="
+                                max-h-[85vh]
+                                max-w-full
+                                rounded-lg
+                                object-contain
+                                shadow-2xl
+                            "
+                            onError={(event) => {
+                                event.currentTarget.src =
+                                    '/images/defaults/avatar.png';
+                            }}
                         />
                     </div>
 
-                    {/* Next button */}
-                    {photos.length > 1 && (
+                    {/* Next */}
+                    {hasMultiplePhotos && (
                         <button
-                            onClick={(e) => { e.stopPropagation(); nextPhoto(); }}
-                            className="absolute right-4 md:right-8 w-10 h-10 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
+                            type="button"
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                showNextPhoto();
+                            }}
+                            className="
+                                absolute right-3
+                                z-10
+                                flex h-10 w-10
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-white/20
+                                text-white
+                                transition-colors
+
+                                hover:bg-white/30
+
+                                md:right-8
+                                md:h-12
+                                md:w-12
+                            "
+                            aria-label="Foto berikutnya"
                         >
-                            <FiChevronRight size={22} />
+                            <FiChevronRight size={24} />
                         </button>
                     )}
 
                     {/* Counter */}
-                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/80 text-sm font-medium bg-black/40 px-4 py-1.5 rounded-full">
+                    <div
+                        className="
+                            absolute bottom-6
+                            left-1/2
+                            -translate-x-1/2
+                            rounded-full
+                            bg-black/40
+                            px-4 py-1.5
+                            font-body text-small
+                            font-medium
+                            text-white/80
+                        "
+                    >
                         {lightboxIndex + 1} / {photos.length}
                     </div>
                 </div>
@@ -242,3 +736,21 @@ export default function AlbumShow({ album, photos = [], isOwner = false, author 
         </>
     );
 }
+
+// ============================================================
+// LAYOUT
+// ============================================================
+AlbumShow.layout = (page) => (
+    <MainLayout
+        pageTitle={
+            page.props.album?.title ||
+            'Detail Album'
+        }
+        pageDescription={
+            page.props.album?.title
+                ? `Jelajahi album perjalanan "${page.props.album.title}" dan lihat berbagai momen serta pengalaman wisata yang dibagikan di NuraLoka.`
+                : 'Jelajahi album perjalanan dan berbagai momen wisata yang dibagikan oleh komunitas Nuravers di NuraLoka.'
+        }
+        content={page}
+    />
+);

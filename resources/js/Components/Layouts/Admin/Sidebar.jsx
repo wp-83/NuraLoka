@@ -46,7 +46,7 @@ export default function AdminSidebar({ isCollapsed, isMobileOpen, onToggleCollap
                         items-center
                         justify-between
                         px-4
-                        ${isCollapsed ? 'md:flex-col md:justify-center md:px-2' : 'md:flex-row md:items-center md:justify-between md:px-4'}
+                        ${isCollapsed ? 'md:flex-col md:justify-center gap-4 md:px-2' : 'md:flex-row md:items-center md:justify-between md:px-4'}
                     `}
                 >
                     <div
@@ -56,6 +56,9 @@ export default function AdminSidebar({ isCollapsed, isMobileOpen, onToggleCollap
                         `}
                     >
 
+                        <div className={`${isCollapsed ? 'inline' : 'hidden'}`}>
+                            <img src="/images/logo/no-text.png" alt="logo" className='w-12' />
+                        </div>
                         <div
                             className={`
                                 min-w-0 w-32 whitespace-nowrap transition-all duration-300
@@ -89,25 +92,36 @@ export default function AdminSidebar({ isCollapsed, isMobileOpen, onToggleCollap
                     <div className="flex flex-col gap-2">
                         {adminMenuItems.map((item) => {
                             const Icon = item.icon;
-                            const isActive = item.href === '/admin' ? url === item.href : url.startsWith(item.href);
+
+                            const routeName = `admin.${item.route}.index`;
+                            const isActive = route().current(`admin.${item.route}.*`);
 
                             return (
                                 <Link
-                                    key={item.label}
-                                    href={item.href}
+                                    key={item.route}
+                                    href={route(routeName)}
                                     onClick={onCloseMobile}
                                     title={isCollapsed ? item.label : undefined}
                                     className={`
                                         group flex h-12 items-center rounded-xl transition-all duration-200
                                         ${isCollapsed ? 'md:justify-center md:px-0' : 'gap-4 px-4'}
-                                        ${isActive ? 'bg-accent-10 text-accent font-bold' : 'text-primary-100 hover:bg-primary-10 hover:text-secondary'}
+                                        ${
+                                            isActive
+                                                ? 'bg-accent-10 text-accent font-bold'
+                                                : 'text-primary-100 hover:bg-primary-10 hover:text-secondary'
+                                        }
                                     `}
                                 >
                                     <Icon size={24} className="shrink-0" />
+
                                     <span
                                         className={`
                                             whitespace-nowrap text-btn-sm font-body transition-all duration-300
-                                            ${isCollapsed ? 'md:w-0 md:overflow-hidden md:opacity-0' : 'opacity-100'}
+                                            ${
+                                                isCollapsed
+                                                    ? 'md:w-0 md:overflow-hidden md:opacity-0'
+                                                    : 'opacity-100'
+                                            }
                                         `}
                                     >
                                         {item.label}
@@ -120,7 +134,7 @@ export default function AdminSidebar({ isCollapsed, isMobileOpen, onToggleCollap
 
                 <div className="shrink-0 border-t-2 border-gray-30 px-4 py-2 flex flex-col gap-2">
                     <Link
-                        href="#"
+                        href={route('home.index')}
                         className={`
                             flex h-12 w-full items-center rounded-xl text-primary transition-colors hover:bg-primary-10
                             ${isCollapsed ? 'md:justify-center md:px-0' : 'gap-3 px-4'}
@@ -138,7 +152,7 @@ export default function AdminSidebar({ isCollapsed, isMobileOpen, onToggleCollap
                     </Link>
 
                     <Link
-                        href="/logout"
+                        href={route('auth.logout')}
                         method="post"
                         as="button"
                         className={`

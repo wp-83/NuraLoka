@@ -44,7 +44,7 @@ class GoogleController extends Controller
         |
         | In this controller, both flows are allowed to create or login the user.
         */
-        $mode = session()->pull('google_auth_mode', 'login');
+        $googleUser = Socialite::driver('google')->user();
 
         /*
         |--------------------------------------------------------------------------
@@ -52,7 +52,7 @@ class GoogleController extends Controller
         |--------------------------------------------------------------------------
         | This retrieves the authenticated Google account information.
         */
-        $googleUser = Socialite::driver('google')->user();
+        $mode = session()->pull('google_auth_mode', 'login');
 
         $email = $googleUser->getEmail();
         $googleId = $googleUser->getId();
@@ -124,7 +124,7 @@ class GoogleController extends Controller
         auth()->login($user);
         request()->session()->regenerate();
 
-        return redirect()->route('home');
+        return redirect()->route('home.index');
     }
 
     /**

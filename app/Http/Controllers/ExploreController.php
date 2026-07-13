@@ -64,6 +64,24 @@ class ExploreController extends Controller
         ]);
     }
 
+    public function show(string $slug)
+    {
+        $place = Place::with('categories')->where('slug', $slug)->firstOrFail();
+
+        $isSaved = false;
+        if (auth()->check()) {
+            $isSaved = auth()->user()->savedPlaces()->where('place_id', $place->id)->exists();
+        }
+
+        $totalSaves = DB::table('saved_places')->where('place_id', $place->id)->count();
+
+        return inertia('Explore/Show', [
+            'place' => $place,
+            'isSaved' => $isSaved,
+            'totalSaves' => $totalSaves,
+        ]);
+    }
+
     public function trackVisit(Request $request)
     {
         $request->validate([

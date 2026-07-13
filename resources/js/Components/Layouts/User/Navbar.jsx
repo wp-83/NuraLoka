@@ -1,62 +1,169 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, usePage } from "@inertiajs/react";
-import { NAV_ITEMS } from "@js/Data/UserNavigation";
-import { FiUser, FiSettings, FiLogOut, FiChevronDown } from "react-icons/fi";
-import { PiUser } from "react-icons/pi";
-import { RiAdminLine } from "react-icons/ri";
-import { HiOutlineLogout } from "react-icons/hi";
+import { useState } from 'react';
+import { Link, usePage } from '@inertiajs/react';
+import { NAV_ITEMS } from '@js/Data/UserNavigation';
+import { PiUser } from 'react-icons/pi';
+import { RiAdminLine } from 'react-icons/ri';
+import { HiOutlineLogout } from 'react-icons/hi';
 
+// ============================================================
+// KOMPONEN UTAMA
+// ============================================================
 export default function Navbar() {
     const { user } = usePage().props.auth;
-    const [active, setActive] = useState("Beranda");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-    const profileRef = useRef(null);
+    // ============================================================
+    // RENDER HELPERS
+    // ============================================================
+    const renderProfileMenu = () => (
+        <>
+            {/* Profil Saya */}
+            <div className="my-2">
+                <Link
+                    href="/profile"
+                    className="
+                        flex w-full items-center gap-3
+                        rounded-xl px-3 py-2
+                        font-body text-btn-sm text-primary
+                        transition-colors
+                        hover:bg-primary-10
+                        hover:text-secondary
+                    "
+                >
+                    <PiUser size={24} className="shrink-0" />
+                    <span>Profil Saya</span>
+                </Link>
+            </div>
 
-    useEffect(() => {
-        function handleClickOutside(event) {
-            if (
-                profileRef.current &&
-                !profileRef.current.contains(event.target)
-            ) {
-                setIsProfileOpen(false);
-            }
-        }
+            {/* Panel Admin */}
+            {user?.is_admin === 1 && (
+                <div className="my-2">
+                    <Link
+                        href={route('admin.dashboard.index')}
+                        className="
+                            flex w-full items-center gap-3
+                            rounded-xl px-3 py-2
+                            font-body text-btn-sm text-primary
+                            transition-colors
+                            hover:bg-primary-10
+                            hover:text-secondary
+                        "
+                    >
+                        <RiAdminLine size={24} className="shrink-0" />
+                        <span>Panel Admin</span>
+                    </Link>
+                </div>
+            )}
 
-        document.addEventListener("mousedown", handleClickOutside);
+            {/* Logout */}
+            <div className="my-2">
+                <Link
+                    href={route('auth.logout')}
+                    method="post"
+                    as="button"
+                    className="
+                        flex w-full items-center gap-3
+                        rounded-xl px-3 py-2
+                        font-body text-btn-sm text-error-dark
+                        transition-colors
+                        hover:bg-error-light
+                    "
+                >
+                    <HiOutlineLogout size={24} className="shrink-0" />
+                    <span>Keluar</span>
+                </Link>
+            </div>
+        </>
+    );
 
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
+    const renderNavItems = () => (
+        <ul className="flex items-center gap-12">
+            {NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = route().current(`${item.route}.*`);
 
+                return (
+                    <li key={item.label}>
+                        <Link
+                            href={route(`${item.route}.index`)}
+                            className={`
+                                group relative flex items-center gap-1.5 pb-1.5
+                                transition-colors duration-200
+
+                                ${
+                                    isActive
+                                        ? 'cursor-default text-accent'
+                                        : 'text-primary hover:text-secondary'
+                                }
+                            `}
+                        >
+                            <Icon size={22} className="shrink-0" />
+
+                            <span
+                                className={`
+                                    font-body text-btn-sm
+                                    ${
+                                        isActive
+                                            ? 'font-bold'
+                                            : 'font-normal'
+                                    }
+                                `}
+                            >
+                                {item.label}
+                            </span>
+
+                            <span
+                                className={`
+                                    absolute bottom-0 left-0
+                                    h-0.5 rounded-full
+                                    transition-all duration-300 ease-out
+
+                                    ${
+                                        isActive
+                                            ? 'w-2/5 bg-accent'
+                                            : 'w-0 bg-secondary group-hover:w-2/5'
+                                    }
+                                `}
+                            />
+                        </Link>
+                    </li>
+                );
+            })}
+        </ul>
+    );
+
+    // ============================================================
+    // RENDER
+    // ============================================================
     return (
         <>
-            {/* ===================== DESKTOP OVERLAY ===================== */}
-
+            {/* ========================================================
+                DESKTOP OVERLAY
+            ======================================================== */}
             <div
                 onClick={() => setIsProfileOpen(false)}
                 className={`
-                    hidden md:block
                     fixed inset-0 z-40
-                    bg-black/30
+                    hidden bg-black/30
                     transition-opacity duration-300 ease-out
+                    md:block
+
                     ${
                         isProfileOpen
-                            ? "visible opacity-100 pointer-events-auto"
-                            : "invisible opacity-0 pointer-events-none"
+                            ? 'visible pointer-events-auto opacity-100'
+                            : 'invisible pointer-events-none opacity-0'
                     }
                 `}
             />
 
-            {/* ===================== DESKTOP ===================== */}
-
-            <nav className="hidden md:block sticky top-0 z-50 bg-white shadow-md">
+            {/* ========================================================
+                DESKTOP NAVBAR
+            ======================================================== */}
+            <nav className="sticky top-0 z-50 hidden bg-white shadow-md md:block">
                 <div className="container w-full">
-                    <div className="flex py-1 items-center justify-between">
-
+                    <div className="flex items-center justify-between py-1">
                         {/* Logo */}
-                        <Link href="#">
+                        <Link href={route('home.index')}>
                             <img
                                 src="/images/logo/with-tagline.png"
                                 alt="Logo NuraLoka"
@@ -64,81 +171,25 @@ export default function Navbar() {
                             />
                         </Link>
 
-                        {/* Menu */}
-                        <ul className="flex items-center gap-12">
-                            {NAV_ITEMS.map((item) => {
-                                const Icon = item.icon;
-                                const isActive = active === item.label;
-
-                                return (
-                                    <li key={item.label}>
-                                        <Link
-                                            href={item.href}
-                                            onClick={() =>
-                                                setActive(item.label)
-                                            }
-                                            className={`
-                                                group relative flex items-center gap-1.5
-                                                pb-1.5
-                                                transition-colors duration-200
-                                                ${
-                                                    isActive
-                                                        ? "text-accent cursor-default"
-                                                        : "text-primary hover:text-secondary"
-                                                }
-                                            `}
-                                        >
-                                            <Icon
-                                                size={22}
-                                                className="shrink-0"
-                                            />
-
-                                            <span
-                                                className={`
-                                                    font-body text-btn-sm
-                                                    ${
-                                                        isActive
-                                                            ? "font-bold"
-                                                            : "font-normal"
-                                                    }
-                                                `}
-                                            >
-                                                {item.label}
-                                            </span>
-
-                                            {/* Underline */}
-                                            <span
-                                                className={`
-                                                    absolute bottom-0 left-0
-                                                    h-0.5 rounded-full
-                                                    transition-all duration-300 ease-out
-                                                    ${
-                                                        isActive
-                                                            ? "w-2/5 bg-accent"
-                                                            : "w-0 bg-secondary group-hover:w-2/5"
-                                                    }
-                                                `}
-                                            />
-                                        </Link>
-                                    </li>
-                                );
-                            })}
-                        </ul>
+                        {/* Navigation */}
+                        {renderNavItems()}
 
                         {/* Profile */}
-                        <div
-                            ref={profileRef}
-                            className="relative"
-                        >
+                        <div className="relative">
                             <button
                                 type="button"
                                 onClick={() =>
                                     setIsProfileOpen((prev) => !prev)
                                 }
-                                className="group flex items-center gap-2 rounded-xl p-1.5 transition-colors hover:cursor-pointer"
+                                className="
+                                    group flex items-center gap-2
+                                    rounded-xl p-1.5
+                                    transition-colors
+                                    hover:cursor-pointer
+                                "
                             >
                                 <div className="text-right">
-                                    <h5 className="font-body font-bold text-small text-primary">
+                                    <h5 className="font-body text-small font-bold text-primary">
                                         Jayadi Christopher
                                     </h5>
 
@@ -149,101 +200,46 @@ export default function Navbar() {
 
                                 <img
                                     src="/images/background-auth/login/1.jpg"
-                                    className="w-12 h-12 rounded-full p-px border-2 border-secondary-70 object-cover"
                                     alt="Profile"
+                                    className="
+                                        h-12 w-12 rounded-full
+                                        border-2 border-secondary-70
+                                        object-cover p-px
+                                    "
                                 />
                             </button>
 
-                            {/* Profile Popup */}
+                            {/* Desktop Profile Popup */}
                             <div
                                 className={`
-                                    absolute right-0 top-full mt-4
-                                    w-54
-                                    rounded-2xl
-                                    bg-white
-                                    px-4
-                                    py-2
+                                    absolute right-0 top-full z-50
+                                    mt-4 w-54
+                                    rounded-2xl bg-white
+                                    px-4 py-2
                                     shadow-xl
                                     transition-all duration-200
+
                                     ${
                                         isProfileOpen
-                                            ? "visible translate-y-0 opacity-100"
-                                            : "invisible -translate-y-2 opacity-0"
+                                            ? 'visible translate-y-0 opacity-100'
+                                            : 'invisible -translate-y-2 opacity-0'
                                     }
                                 `}
                             >
-                                {/* Menu */}
-                                <div className="my-2">
-                                    <Link
-                                        href="/profile"
-                                        onClick={() =>
-                                            setIsProfileOpen(false)
-                                        }
-                                        className="
-                                            flex items-center gap-3
-                                            rounded-xl w-full px-3 py-2
-                                            font-body text-btn-sm text-primary
-                                            transition-colors
-                                            hover:bg-primary-10 hover:text-secondary
-                                        "
-                                    >
-                                        <PiUser size={24} />
-                                        Profil Saya
-                                    </Link>
-                                </div>
-
-                                {user?.is_admin == 1 && (
-                                    <div className="my-2">
-                                        <Link
-                                            href="/profile"
-                                            onClick={() =>
-                                                setIsProfileOpen(false)
-                                            }
-                                            className="
-                                                flex items-center gap-3
-                                                rounded-xl w-full px-3 py-2
-                                                font-body text-btn-sm text-primary
-                                                transition-colors
-                                                hover:bg-primary-10 hover:text-secondary
-                                            "
-                                        >
-                                            <RiAdminLine size={24} />
-                                            Panel Admin
-                                        </Link>
-                                    </div>
-                                )}
-
-                                <div className="my-2">
-                                    <Link
-                                        href={route("auth.logout")}
-                                        method="post"
-                                        as="button"
-                                        onClick={() => setIsProfileOpen(false)}
-                                        className="
-                                            flex items-center gap-3
-                                            rounded-xl w-full px-3 py-2
-                                            font-body text-btn-sm text-error-dark
-                                            transition-colors
-                                            hover:bg-error-light
-                                        "
-                                    >
-                                        <HiOutlineLogout size={24} />
-                                        Keluar
-                                    </Link>
-                                </div>
+                                {renderProfileMenu()}
                             </div>
                         </div>
-
                     </div>
                 </div>
             </nav>
 
-            {/* ===================== MOBILE HEADER ===================== */}
-
-            <nav className="md:hidden sticky top-0 z-50 bg-white shadow-md">
-                <div className="flex py-1 items-center justify-between container w-full">
+            {/* ========================================================
+                MOBILE HEADER
+            ======================================================== */}
+            <nav className="sticky top-0 z-50 bg-white shadow-md md:hidden">
+                <div className="container flex w-full items-center justify-between py-1">
                     {/* Logo */}
-                    <Link href="#">
+                    <Link href={route('home.index')}>
                         <img
                             src="/images/logo/with-tagline.png"
                             alt="Logo NuraLoka"
@@ -251,14 +247,14 @@ export default function Navbar() {
                         />
                     </Link>
 
-                    {/* Mobile Profile */}
+                    {/* Mobile Profile Button */}
                     <button
                         type="button"
                         onClick={() => setIsProfileOpen(true)}
-                        className="flex items-center gap-2 w-max"
+                        className="flex w-max items-center gap-2"
                     >
                         <div className="text-right">
-                            <h5 className="font-body font-bold text-small text-primary">
+                            <h5 className="font-body text-small font-bold text-primary">
                                 Jayadi Christopher
                             </h5>
 
@@ -269,155 +265,134 @@ export default function Navbar() {
 
                         <img
                             src="/images/background-auth/login/1.jpg"
-                            className="w-12 h-12 rounded-full p-px border-2 border-secondary-70 object-cover"
                             alt="Profile"
+                            className="
+                                h-12 w-12 rounded-full
+                                border-2 border-secondary-70
+                                object-cover p-px
+                            "
                         />
                     </button>
                 </div>
             </nav>
 
-            {/* ===================== MOBILE PROFILE POPUP ===================== */}
-
+            {/* ========================================================
+                MOBILE PROFILE POPUP
+            ======================================================== */}
             <div
                 className={`
-                    md:hidden fixed inset-0 z-[60]
-                    transition-all duration-300 ease-out
+                    fixed inset-0 z-[9999]
+                    md:hidden
+
                     ${
                         isProfileOpen
-                            ? "visible pointer-events-auto"
-                            : "invisible pointer-events-none"
+                            ? 'visible pointer-events-auto'
+                            : 'invisible pointer-events-none'
                     }
                 `}
             >
-                {/* Dark Overlay */}
-                <button
-                    type="button"
-                    aria-label="Tutup menu profil"
+                {/* Overlay */}
+                <div
                     onClick={() => setIsProfileOpen(false)}
                     className={`
-                        absolute inset-0
+                        absolute inset-0 z-0
                         bg-black/30
                         transition-opacity duration-300 ease-out
-                        ${isProfileOpen ? "opacity-100" : "opacity-0"}
+
+                        ${
+                            isProfileOpen
+                                ? 'opacity-100'
+                                : 'opacity-0'
+                        }
                     `}
                 />
 
                 {/* Bottom Sheet */}
                 <div
                     className={`
-                        absolute bottom-0 left-0 right-0
-                        rounded-t-3xl
-                        bg-white
-                        px-4 py-2
+                        absolute bottom-0 left-0 right-0 z-10
+                        rounded-t-3xl bg-white
+                        px-4 pb-6 pt-2
                         shadow-2xl
                         transition-all duration-500
                         ease-[cubic-bezier(0.22,1,0.36,1)]
+
                         ${
                             isProfileOpen
-                                ? "translate-y-0 opacity-100"
-                                : "translate-y-full opacity-0"
+                                ? 'translate-y-0 opacity-100'
+                                : 'translate-y-full opacity-0'
                         }
                     `}
                 >
                     {/* Indicator */}
                     <div className="mx-auto my-3 h-1 w-12 rounded-full bg-primary-70" />
 
-                    {/* Menu */}
-                    <div className="my-2">
-                        <Link
-                            href="/profile"
-                            onClick={() => setIsProfileOpen(false)}
-                            className="
-                                flex items-center gap-3
-                                rounded-xl w-full px-3 py-2
-                                font-body text-btn-sm text-primary
-                                transition-colors
-                                hover:bg-primary-10 hover:text-secondary
-                            "
-                        >
-                            <PiUser size={24} />
-                            Profil Saya
-                        </Link>
-                    </div>
-
-        {/* Admin Menu */}
-        {user?.is_admin == 1 && (
-            <div className="my-2">
-                <Link
-                    href="/profile"
-                    onClick={() => setIsProfileOpen(false)}
-                    className="
-                        flex items-center gap-3
-                        rounded-xl w-full px-3 py-2
-                        font-body text-btn-sm text-primary
-                        transition-colors
-                        hover:bg-primary-10 hover:text-secondary
-                    "
-                >
-                    <RiAdminLine size={24} />
-                    Panel Admin
-                </Link>
+                    {/* Profile Menu */}
+                    {renderProfileMenu()}
+                </div>
             </div>
-        )}
 
-        {/* Logout */}
-        <div className="my-2">
-            <Link
-                href={route("auth.logout")}
-                method="post"
-                as="button"
-                onClick={() => setIsProfileOpen(false)}
+            {/* ========================================================
+                MOBILE BOTTOM NAVIGATION
+            ======================================================== */}
+            <nav
                 className="
-                    flex items-center gap-3
-                    rounded-xl w-full px-3 py-2
-                    font-body text-btn-sm text-error-dark
-                    transition-colors
-                    hover:bg-error-light
+                    fixed bottom-0 left-0 right-0 z-50
+                    bg-white
+                    shadow-[0_-4px_6px_-1px_rgb(0_0_0/0.1),0_-2px_4px_-2px_rgb(0_0_0/0.1)]
+                    md:hidden
                 "
             >
-                <HiOutlineLogout size={24} />
-                Keluar
-            </Link>
-        </div>
-    </div>
-</div>
-
-            {/* ===================== MOBILE BOTTOM NAV ===================== */}
-
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_6px_-1px_rgb(0_0_0/0.1),0_-2px_4px_-2px_rgb(0_0_0/0.1)] z-50">
-                <div className="grid grid-cols-5 h-16">
+                <div className="grid h-16 grid-cols-5">
                     {NAV_ITEMS.map((item) => {
                         const Icon = item.icon;
-                        const isActive = active === item.label;
+                        const isActive = route().current(
+                            `${item.route}.*`
+                        );
 
                         return (
                             <Link
                                 key={item.label}
-                                href={item.href}
-                                onClick={() => setActive(item.label)}
-                                className="relative flex flex-col items-center group justify-center gap-1"
+                                href={route(`${item.route}.index`)}
+                                className="
+                                    group relative
+                                    flex flex-col
+                                    items-center justify-center
+                                    gap-1
+                                "
                             >
                                 <Icon
                                     size={22}
                                     className={
                                         isActive
-                                            ? "text-accent"
-                                            : "text-primary group-hover:text-secondary"
+                                            ? 'text-accent'
+                                            : 'text-primary group-hover:text-secondary'
                                     }
                                 />
 
                                 <span
-                                    className={`font-body text-small ${
-                                        isActive
-                                            ? "text-accent font-bold"
-                                            : "text-primary group-hover:text-secondary"
-                                    }`}
+                                    className={`
+                                        font-body text-small
+
+                                        ${
+                                            isActive
+                                                ? 'font-bold text-accent'
+                                                : 'text-primary group-hover:text-secondary'
+                                        }
+                                    `}
                                 >
                                     {item.label}
                                 </span>
 
                                 {isActive && (
-                                    <span className="absolute top-0 h-1 w-10 rounded-b-full bg-accent" />
+                                    <span
+                                        className="
+                                            absolute top-0
+                                            h-1 w-10
+                                            rounded-b-full
+                                            bg-accent
+                                        "
+                                    />
                                 )}
                             </Link>
                         );

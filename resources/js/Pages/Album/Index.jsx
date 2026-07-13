@@ -1,345 +1,857 @@
-import React, { useState } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import Navbar from '@components/Layouts/User/Navbar';
-import Footer from '@components/Layouts/User/Footer';
+import { useState } from 'react';
+import { router } from '@inertiajs/react';
+
+import MainLayout from '@js/Layouts/MainLayout';
 import Button from '@components/Forms/Button';
-import { FiSearch, FiX, FiEye, FiEdit2, FiTrash2, FiMapPin, FiCalendar, FiUsers } from 'react-icons/fi';
+
+import {
+    FiCalendar,
+    FiEdit2,
+    FiMapPin,
+    FiSearch,
+    FiTrash2,
+    FiUsers,
+    FiX,
+} from 'react-icons/fi';
+
 import { HiOutlineEye } from 'react-icons/hi';
 
-function formatDate(dateStr) {
-    if (!dateStr) return '-';
-    const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    const d = new Date(dateStr);
-    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+// ============================================================
+// HELPERS
+// ============================================================
+function formatDate(dateString) {
+    if (!dateString) return '-';
+
+    return new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    }).format(new Date(dateString));
 }
 
-function formatViews(count) {
-    if (!count) return '0';
-    return count.toLocaleString('id-ID');
+function formatViews(count = 0) {
+    return Number(count).toLocaleString('id-ID');
 }
 
-// Kartu album populer
+function getAlbumThumbnail(thumbnail) {
+    return thumbnail
+        ? `/storage/${thumbnail}`
+        : '/images/defaults/avatar.png';
+}
+
+function getProfileImage(profilePath) {
+    return profilePath
+        ? `/storage/${profilePath}`
+        : '/images/defaults/avatar.png';
+}
+
+// ============================================================
+// POPULAR ALBUM CARD
+// ============================================================
 function PopularAlbumCard({ album }) {
+    const handleVisit = () => {
+        router.visit(route('album.show', album.id));
+    };
+
     return (
-        <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group flex flex-col">
+        <article
+            className="
+                group flex flex-col
+                overflow-hidden rounded-2xl
+                bg-white shadow-md
+                transition-all duration-300
+                hover:-translate-y-1
+                hover:shadow-xl
+            "
+        >
+            {/* Thumbnail */}
             <div className="relative h-44 overflow-hidden">
                 <img
-                    src={album.thumbnail ? `/storage/${album.thumbnail}` : '/images/defaults/avatar.png'}
+                    src={getAlbumThumbnail(album.thumbnail)}
                     alt={album.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => { e.target.src = '/images/defaults/avatar.png'; }}
+                    className="
+                        h-full w-full object-cover
+                        transition-transform duration-500
+                        group-hover:scale-105
+                    "
+                    onError={(event) => {
+                        event.currentTarget.src =
+                            '/images/defaults/avatar.png';
+                    }}
                 />
             </div>
-            <div className="p-4 flex flex-col flex-1">
-                <h3 className="font-heading font-bold text-sm text-gray-85 mb-2 line-clamp-2 leading-snug">
+
+            {/* Content */}
+            <div className="flex flex-1 flex-col p-4">
+                <h3
+                    className="
+                        mb-2 line-clamp-2
+                        font-heading text-small
+                        font-bold leading-snug
+                        text-gray-85
+                    "
+                >
                     {album.title}
                 </h3>
-                <div className="flex items-center gap-1.5 text-xs text-gray-50 mb-1">
-                    <FiUsers size={12} />
-                    <span>{album.author_name}</span>
+
+                <div
+                    className="
+                        mb-1 flex items-center gap-1.5
+                        font-body text-micro
+                        text-gray-50
+                    "
+                >
+                    <FiUsers size={14} className="shrink-0" />
+
+                    <span className="truncate">
+                        {album.author_name}
+                    </span>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-gray-50 mb-3">
-                    <HiOutlineEye size={12} />
-                    <span>{formatViews(album.view_count)} dilihat</span>
+
+                <div
+                    className="
+                        mb-4 flex items-center gap-1.5
+                        font-body text-micro
+                        text-gray-50
+                    "
+                >
+                    <HiOutlineEye size={14} className="shrink-0" />
+
+                    <span>
+                        {formatViews(album.view_count)} dilihat
+                    </span>
                 </div>
+
                 <div className="mt-auto">
                     <Button
                         variant="primary"
                         size="btn-sm"
-                        onClick={() => router.visit(route('album.show', album.id))}
+                        onClick={handleVisit}
                     >
                         Lihat Album
                     </Button>
                 </div>
             </div>
-        </div>
+        </article>
     );
 }
 
-// Kartu album milik user
+// ============================================================
+// MY ALBUM CARD
+// ============================================================
 function MyAlbumCard({ album, onDelete }) {
-    const handleToggleVisibility = (e) => {
-        e.stopPropagation();
-        router.post(route('album.toggle.visibility', album.id), {}, { preserveScroll: true });
+    const handleToggleVisibility = () => {
+        router.post(
+            route('album.toggle.visibility', album.id),
+            {},
+            {
+                preserveScroll: true,
+            }
+        );
+    };
+
+    const handleVisit = () => {
+        router.visit(route('album.show', album.id));
+    };
+
+    const handleEdit = () => {
+        router.visit(route('album.edit', album.id));
     };
 
     return (
-        <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group">
+        <article
+            className="
+                group overflow-hidden
+                rounded-2xl bg-white
+                shadow-md
+                transition-all duration-300
+                hover:-translate-y-1
+                hover:shadow-xl
+            "
+        >
+            {/* Thumbnail */}
             <div className="relative h-48 overflow-hidden">
                 <img
-                    src={album.thumbnail ? `/storage/${album.thumbnail}` : '/images/defaults/avatar.png'}
+                    src={getAlbumThumbnail(album.thumbnail)}
                     alt={album.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => { e.target.src = '/images/defaults/avatar.png'; }}
+                    className="
+                        h-full w-full object-cover
+                        transition-transform duration-500
+                        group-hover:scale-105
+                    "
+                    onError={(event) => {
+                        event.currentTarget.src =
+                            '/images/defaults/avatar.png';
+                    }}
                 />
             </div>
+
+            {/* Content */}
             <div className="p-4">
-                <h3 className="font-heading font-bold text-sm text-gray-85 mb-2 line-clamp-2 leading-snug">
+                {/* Title */}
+                <h3
+                    className="
+                        mb-2 line-clamp-2
+                        font-heading text-small
+                        font-bold leading-snug
+                        text-gray-85
+                    "
+                >
                     {album.title}
                 </h3>
-                <div className="flex items-center gap-4 text-xs text-gray-50 mb-2">
-                    <span className="flex items-center gap-1">
-                        <FiMapPin size={11} />
-                        {album.location}
+
+                {/* Meta */}
+                <div
+                    className="
+                        mb-2 flex flex-wrap
+                        items-center gap-x-4 gap-y-2
+                        font-body text-micro
+                        text-gray-50
+                    "
+                >
+                    <span className="flex min-w-0 items-center gap-1">
+                        <FiMapPin size={13} className="shrink-0" />
+
+                        <span className="truncate">
+                            {album.location || '-'}
+                        </span>
                     </span>
+
                     <span className="flex items-center gap-1">
-                        <FiCalendar size={11} />
+                        <FiCalendar size={13} className="shrink-0" />
+
                         {formatDate(album.date)}
                     </span>
                 </div>
-                <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-1.5 text-xs text-gray-85 font-medium">
-                        <HiOutlineEye size={15} className="text-[#209B8B]" />
-                        <span>Dilihat oleh {formatViews(album.view_count)} Nuravers</span>
+
+                {/* Bottom Information */}
+                <div
+                    className="
+                        mt-4 flex flex-col
+                        gap-4
+
+                        xl:flex-row
+                        xl:items-center
+                        xl:justify-between
+                    "
+                >
+                    {/* Views */}
+                    <div
+                        className="
+                            flex items-center gap-1.5
+                            font-body text-micro
+                            font-medium text-gray-85
+                        "
+                    >
+                        <HiOutlineEye
+                            size={17}
+                            className="shrink-0 text-accent"
+                        />
+
+                        <span>
+                            Dilihat oleh{' '}
+                            {formatViews(album.view_count)} Nuravers
+                        </span>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        {/* Toggle */}
+                    <div
+                        className="
+                            flex flex-wrap
+                            items-center justify-between
+                            gap-3
+
+                            xl:justify-end
+                        "
+                    >
+                        {/* Visibility Toggle */}
                         <button
+                            type="button"
                             onClick={handleToggleVisibility}
-                            className="flex items-center gap-2"
-                            title="Klik untuk ganti visibilitas"
+                            className="
+                                flex items-center gap-2
+                                rounded-lg
+                                transition-opacity
+                                hover:opacity-80
+                            "
+                            title="Klik untuk mengganti visibilitas"
                         >
-                            <div className={`relative w-10 h-5 rounded-full transition-colors duration-200 ${album.is_public ? 'bg-[#8B5E3C]' : 'bg-gray-30'}`}>
-                                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${album.is_public ? 'translate-x-5.5' : 'translate-x-0.5'}`} />
-                            </div>
-                            <span className="text-xs font-bold text-[#1F1F1F]">
-                                {album.is_public ? 'Publik' : 'Privat'}
+                            <span
+                                className={`
+                                    relative
+                                    h-5 w-10
+                                    rounded-full
+                                    transition-colors duration-200
+
+                                    ${
+                                        album.is_public
+                                            ? 'bg-primary'
+                                            : 'bg-gray-30'
+                                    }
+                                `}
+                            >
+                                <span
+                                    className={`
+                                        absolute top-0.5
+                                        h-4 w-4
+                                        rounded-full
+                                        bg-white shadow
+                                        transition-transform duration-200
+
+                                        ${
+                                            album.is_public
+                                                ? 'translate-x-[22px]'
+                                                : 'translate-x-0.5'
+                                        }
+                                    `}
+                                />
+                            </span>
+
+                            <span
+                                className="
+                                    font-body text-micro
+                                    font-bold text-gray-85
+                                "
+                            >
+                                {album.is_public
+                                    ? 'Publik'
+                                    : 'Privat'}
                             </span>
                         </button>
 
-                        {/* Action Buttons */}
+                        {/* Actions */}
                         <div className="flex items-center gap-1.5">
                             <button
-                                onClick={() => router.visit(route('album.show', album.id))}
-                                className="w-7 h-7 flex items-center justify-center rounded-md bg-[#209B8B] text-white hover:opacity-80 transition-opacity shadow-sm"
-                                title="Lihat Detail"
+                                type="button"
+                                onClick={handleVisit}
+                                className="
+                                    flex h-8 w-8
+                                    items-center justify-center
+                                    rounded-lg
+                                    bg-accent text-white
+                                    shadow-sm
+                                    transition-opacity
+                                    hover:opacity-80
+                                "
+                                title="Lihat detail"
+                                aria-label={`Lihat album ${album.title}`}
                             >
-                                <HiOutlineEye size={14} />
+                                <HiOutlineEye size={15} />
                             </button>
+
                             <button
-                                onClick={() => router.visit(route('album.edit', album.id))}
-                                className="w-7 h-7 flex items-center justify-center rounded-md bg-[#428845] text-white hover:opacity-80 transition-opacity shadow-sm"
-                                title="Edit"
+                                type="button"
+                                onClick={handleEdit}
+                                className="
+                                    flex h-8 w-8
+                                    items-center justify-center
+                                    rounded-lg
+                                    bg-secondary text-white
+                                    shadow-sm
+                                    transition-opacity
+                                    hover:opacity-80
+                                "
+                                title="Edit album"
+                                aria-label={`Edit album ${album.title}`}
                             >
-                                <FiEdit2 size={13} />
+                                <FiEdit2 size={14} />
                             </button>
+
                             <button
+                                type="button"
                                 onClick={() => onDelete(album.id)}
-                                className="w-7 h-7 flex items-center justify-center rounded-md bg-[#D32F2F] text-white hover:opacity-80 transition-opacity shadow-sm"
-                                title="Hapus"
+                                className="
+                                    flex h-8 w-8
+                                    items-center justify-center
+                                    rounded-lg
+                                    bg-error-dark text-white
+                                    shadow-sm
+                                    transition-opacity
+                                    hover:opacity-80
+                                "
+                                title="Hapus album"
+                                aria-label={`Hapus album ${album.title}`}
                             >
-                                <FiTrash2 size={13} />
+                                <FiTrash2 size={14} />
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </article>
     );
 }
 
-// Hasil pencarian user
+// ============================================================
+// USER SEARCH RESULT
+// ============================================================
 function UserSearchResult({ user }) {
+    const handleVisitAlbums = () => {
+        router.visit(
+            route('album.user.albums', user.id)
+        );
+    };
+
     return (
-        <div className="flex items-center gap-4 bg-white rounded-xl px-5 py-4 shadow-sm border border-gray-10 hover:shadow-md transition-shadow">
-            <div className="w-14 h-14 rounded-full bg-amber-100 overflow-hidden flex-shrink-0 border-2 border-amber-200">
+        <article
+            className="
+                flex items-center gap-4
+                rounded-xl
+                border border-gray-10
+                bg-white px-5 py-4
+                shadow-sm
+                transition-shadow
+                hover:shadow-md
+            "
+        >
+            {/* Profile Image */}
+            <div
+                className="
+                    h-14 w-14 shrink-0
+                    overflow-hidden rounded-full
+                    border-2 border-primary-30
+                    bg-primary-10
+                "
+            >
                 <img
-                    src={user.profile_path ? `/storage/${user.profile_path}` : '/images/defaults/avatar.png'}
+                    src={getProfileImage(user.profile_path)}
                     alt={user.fullname}
-                    className="w-full h-full object-cover"
-                    onError={(e) => { e.target.src = '/images/defaults/avatar.png'; }}
+                    className="h-full w-full object-cover"
+                    onError={(event) => {
+                        event.currentTarget.src =
+                            '/images/defaults/avatar.png';
+                    }}
                 />
             </div>
-            <div className="flex-1 min-w-0">
-                <h3 className="font-heading font-bold text-base text-primary-100">{user.fullname}</h3>
-                <p className="text-sm text-gray-50">{user.province}</p>
+
+            {/* User Information */}
+            <div className="min-w-0 flex-1">
+                <h3
+                    className="
+                        truncate
+                        font-heading text-body
+                        font-bold text-primary-100
+                    "
+                >
+                    {user.fullname}
+                </h3>
+
+                <p
+                    className="
+                        truncate
+                        font-body text-small
+                        text-gray-50
+                    "
+                >
+                    {user.province || 'Lokasi tidak tersedia'}
+                </p>
             </div>
+
             <Button
                 variant="primary"
                 size="btn-sm"
-                onClick={() => router.visit(route('album.user.albums', user.id))}
+                onClick={handleVisitAlbums}
             >
                 Lihat Album
             </Button>
+        </article>
+    );
+}
+
+// ============================================================
+// EMPTY STATE
+// ============================================================
+function EmptyState({
+    title,
+    description,
+}) {
+    return (
+        <div
+            className="
+                flex flex-col
+                items-center justify-center
+                py-12 text-center
+            "
+        >
+            <img
+                src="/images/mascots/wait.png"
+                alt="Maskot NuraLoka"
+                className="
+                    mb-4 h-24 w-24
+                    object-contain
+                    opacity-50
+                "
+            />
+
+            <p
+                className="
+                    font-body text-small
+                    font-medium text-gray-50
+                "
+            >
+                {title}
+            </p>
+
+            {description && (
+                <p
+                    className="
+                        mt-1 font-body
+                        text-micro text-gray-30
+                    "
+                >
+                    {description}
+                </p>
+            )}
         </div>
     );
 }
 
-export default function AlbumIndex({ popularAlbums = [], myAlbums = [], totalMyAlbums = 0, searchResults = null, searchQuery = '' }) {
+// ============================================================
+// MAIN PAGE
+// ============================================================
+export default function Index({
+    popularAlbums = [],
+    myAlbums = [],
+    searchResults = null,
+    searchQuery = '',
+}) {
     const [search, setSearch] = useState(searchQuery);
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        if (search.trim()) {
-            router.get(route('album.index'), { search: search.trim() }, { preserveState: true });
-        }
+    const isSearching = searchResults !== null;
+
+    const handleSearch = (event) => {
+        event.preventDefault();
+
+        const query = search.trim();
+
+        if (!query) return;
+
+        router.get(
+            route('album.index'),
+            {
+                search: query,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+            }
+        );
     };
 
-    const clearSearch = () => {
+    const handleClearSearch = () => {
         setSearch('');
-        router.get(route('album.index'));
+
+        router.get(
+            route('album.index'),
+            {},
+            {
+                preserveState: false,
+                preserveScroll: true,
+            }
+        );
     };
 
     const handleDelete = (albumId) => {
-        if (confirm('Yakin ingin menghapus album ini?')) {
-            router.delete(route('album.destroy', albumId));
-        }
+        const isConfirmed = window.confirm(
+            'Yakin ingin menghapus album ini?'
+        );
+
+        if (!isConfirmed) return;
+
+        router.delete(
+            route('album.destroy', albumId),
+            {
+                preserveScroll: true,
+            }
+        );
+    };
+
+    const handleCreateAlbum = () => {
+        router.visit(route('album.create'));
+    };
+
+    const handleViewAllAlbums = () => {
+        router.visit(route('album.all'));
     };
 
     return (
-        <>
-            <Head title="NuraLoka | Album">
-                <meta name="description" content="Album perjalanan wisata kamu dan komunitas Nuravers." />
-            </Head>
+        <section className="py-10">
+            {/* ========================================================
+                PAGE HEADER
+            ======================================================== */}
+            <div
+                className="
+                    mb-8 flex
+                    items-center gap-4
+                "
+            >
+                <img
+                    src="/images/mascots/camera.png"
+                    alt="Maskot NuraLoka dengan kamera"
+                    className="
+                        h-24 w-24
+                        shrink-0 object-contain
+                    "
+                />
 
-            <div className="min-h-screen flex flex-col bg-[#FDFBF7] font-sans">
-                <Navbar />
+                <div>
+                    <h1
+                        className="
+                            font-heading text-title
+                            font-extrabold
+                            text-primary-100
 
-                <main className="flex-1">
-                    {/* ── Header ── */}
-                    <section className="container mx-auto px-4 md:px-6 lg:px-8 pt-10 pb-4">
-                        <div className="grid grid-cols-12 gap-5">
-                            <div className="col-start-2 col-end-12">
-                                <div className="flex items-center gap-4 mb-2">
-                                    <div className="w-24 h-24 flex-shrink-0">
-                                        <img
-                                            src="/images/mascots/camera.png"
-                                            alt="Mascot"
-                                            className="w-full h-full object-contain"
-                                            onError={(e) => { e.target.style.display = 'none'; }}
+                            md:text-hero
+                        "
+                    >
+                        Album Nuravers
+                    </h1>
+
+                    <p
+                        className="
+                            font-heading text-body
+                            font-medium italic
+                            text-primary-70
+                        "
+                    >
+                        Albumipun Nuravers
+                    </p>
+                </div>
+            </div>
+
+            {/* ========================================================
+                SEARCH
+            ======================================================== */}
+            <form
+                onSubmit={handleSearch}
+                className="relative mb-8"
+            >
+                <div
+                    className="
+                        flex items-center
+                        overflow-hidden
+                        rounded-xl
+                        border border-gray-30
+                        bg-white
+                        shadow-sm
+                        transition-shadow
+                        focus-within:border-primary-50
+                        focus-within:shadow-md
+                        hover:shadow-md
+                    "
+                >
+                    <div className="pl-4 text-gray-50">
+                        <FiSearch size={20} />
+                    </div>
+
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(event) =>
+                            setSearch(event.target.value)
+                        }
+                        placeholder="Masukkan nama Nuravers lain untuk melihat koleksi album mereka..."
+                        className="
+                            w-full
+                            border-none bg-transparent
+                            px-3 py-3
+                            font-body text-small
+                            text-gray-85
+                            outline-none
+                            focus:ring-0
+                        "
+                    />
+
+                    {search && (
+                        <button
+                            type="button"
+                            onClick={handleClearSearch}
+                            className="
+                                p-4
+                                text-gray-50
+                                transition-colors
+                                hover:text-gray-85
+                            "
+                            aria-label="Hapus pencarian"
+                        >
+                            <FiX size={18} />
+                        </button>
+                    )}
+                </div>
+            </form>
+
+            {/* ========================================================
+                SEARCH RESULTS
+            ======================================================== */}
+            {isSearching ? (
+                <section className="mb-10">
+                    <p
+                        className="
+                            mb-4 text-right
+                            font-body text-small
+                            text-gray-50
+                        "
+                    >
+                        Ditemukan {searchResults.length} hasil
+                    </p>
+
+                    {searchResults.length > 0 ? (
+                        <div className="flex flex-col gap-3">
+                            {searchResults.map((user) => (
+                                <UserSearchResult
+                                    key={user.id}
+                                    user={user}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <EmptyState
+                            title="Tidak ditemukan Nuravers dengan nama tersebut."
+                        />
+                    )}
+                </section>
+            ) : (
+                <>
+                    {/* ====================================================
+                        POPULAR ALBUMS
+                    ==================================================== */}
+                    <section className="mb-10">
+                        <div
+                            className="
+                                rounded-2xl
+                                border border-primary-30/30
+                                bg-gradient-to-r
+                                from-primary-10
+                                to-warning-light
+                                p-6
+                            "
+                        >
+                            <h2
+                                className="
+                                    mb-5
+                                    font-heading text-subtitle
+                                    font-bold text-primary-100
+                                "
+                            >
+                                Album Populer Minggu Ini
+                            </h2>
+
+                            {popularAlbums.length > 0 ? (
+                                <div
+                                    className="
+                                        grid grid-cols-1
+                                        gap-5
+
+                                        sm:grid-cols-2
+                                        lg:grid-cols-3
+                                    "
+                                >
+                                    {popularAlbums.map((album) => (
+                                        <PopularAlbumCard
+                                            key={album.id}
+                                            album={album}
                                         />
-                                    </div>
-                                    <div>
-                                        <h1 className="text-title md:text-hero font-extrabold text-primary-100 font-heading">
-                                            Album Nuravers
-                                        </h1>
-                                        <p className="text-body text-primary-70 font-medium font-heading italic">
-                                            Albumipun Nuravers
-                                        </p>
-                                    </div>
+                                    ))}
                                 </div>
-
-                                {/* Search Bar */}
-                                <form onSubmit={handleSearch} className="relative mt-6 mb-8">
-                                    <div className="flex items-center bg-white rounded-xl border border-gray-30 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                                        <div className="pl-4 text-gray-50">
-                                            <FiSearch size={18} />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            value={search}
-                                            onChange={(e) => setSearch(e.target.value)}
-                                            placeholder="Masukkan nama Nuravers lain untuk melihat koleksi album mereka..."
-                                            className="w-full px-3 py-3 text-sm text-gray-85 bg-transparent outline-none border-none focus:ring-0"
-                                        />
-                                        {search && (
-                                            <button
-                                                type="button"
-                                                onClick={clearSearch}
-                                                className="pr-4 text-gray-50 hover:text-gray-85 transition-colors"
-                                            >
-                                                <FiX size={18} />
-                                            </button>
-                                        )}
-                                    </div>
-                                </form>
-
-                                {/* ── Search Results (Gambar 5) ── */}
-                                {searchResults !== null ? (
-                                    <div className="mb-10">
-                                        <p className="text-sm text-gray-50 text-right mb-4">
-                                            Ditemukan {searchResults.length} hasil
-                                        </p>
-                                        {searchResults.length > 0 ? (
-                                            <div className="flex flex-col gap-3">
-                                                {searchResults.map((user) => (
-                                                    <UserSearchResult key={user.id} user={user} />
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center py-12">
-                                                <div className="w-24 h-24 mx-auto mb-4 opacity-50">
-                                                    <img src="/images/mascots/wait.png" alt="No result" className="w-full h-full object-contain" />
-                                                </div>
-                                                <p className="text-gray-50 text-sm">Tidak ditemukan Nuravers dengan nama tersebut.</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <>
-                                        {/* ── Album Populer Minggu Ini ── */}
-                                        <section className="mb-10">
-                                            <div className="bg-gradient-to-r from-primary-10 to-amber-50 rounded-2xl p-6 border border-primary-30/30">
-                                                <h2 className="text-subtitle font-bold text-primary-100 font-heading mb-5">
-                                                    Album Populer Minggu Ini
-                                                </h2>
-                                                {popularAlbums.length > 0 ? (
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                                                        {popularAlbums.map((album) => (
-                                                            <PopularAlbumCard key={album.id} album={album} />
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <p className="text-sm text-gray-50 text-center py-8">
-                                                        Belum ada album populer minggu ini.
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </section>
-
-                                        {/* ── Album Kamu ── */}
-                                        <section className="mb-10">
-                                            <div className="flex items-center justify-between mb-5">
-                                                <h2 className="text-subtitle font-bold text-primary-100 font-heading">
-                                                    Album Kamu
-                                                </h2>
-                                                <Button
-                                                    variant="primary"
-                                                    size="btn-sm"
-                                                    onClick={() => router.visit(route('album.create'))}
-                                                >
-                                                    Tambah Album Baru
-                                                </Button>
-                                            </div>
-
-                                            {myAlbums.length > 0 ? (
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                                    {myAlbums.map((album) => (
-                                                        <MyAlbumCard key={album.id} album={album} onDelete={handleDelete} />
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <div className="text-center py-12 bg-white rounded-2xl border border-gray-10">
-                                                    <div className="w-24 h-24 mx-auto mb-4 opacity-50">
-                                                        <img src="/images/mascots/wait.png" alt="No albums" className="w-full h-full object-contain" />
-                                                    </div>
-                                                    <p className="text-gray-50 text-sm mb-2">Kamu belum memiliki album.</p>
-                                                    <p className="text-gray-30 text-xs">Ayo mulai dokumentasikan perjalananmu!</p>
-                                                </div>
-                                            )}
-
-                                            {myAlbums.length > 0 && (
-                                                <div className="flex justify-end mt-6">
-                                                    <Button
-                                                        variant="primary"
-                                                        size="btn-sm"
-                                                        onClick={() => router.visit(route('album.all'))}
-                                                    >
-                                                        Lihat Semua Album
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </section>
-                                    </>
-                                )}
-                            </div>
+                            ) : (
+                                <EmptyState
+                                    title="Belum ada album populer minggu ini."
+                                />
+                            )}
                         </div>
                     </section>
-                </main>
 
-                <Footer />
-            </div>
-        </>
+                    {/* ====================================================
+                        MY ALBUMS
+                    ==================================================== */}
+                    <section className="mb-10">
+                        {/* Header */}
+                        <div
+                            className="
+                                mb-5 flex
+                                flex-col gap-4
+
+                                sm:flex-row
+                                sm:items-center
+                                sm:justify-between
+                            "
+                        >
+                            <h2
+                                className="
+                                    font-heading text-subtitle
+                                    font-bold text-primary-100
+                                "
+                            >
+                                Album Kamu
+                            </h2>
+
+                            <Button
+                                variant="primary"
+                                size="btn-sm"
+                                onClick={handleCreateAlbum}
+                            >
+                                Tambah Album Baru
+                            </Button>
+                        </div>
+
+                        {/* Albums */}
+                        {myAlbums.length > 0 ? (
+                            <div
+                                className="
+                                    grid grid-cols-1
+                                    gap-5
+
+                                    sm:grid-cols-2
+                                "
+                            >
+                                {myAlbums.map((album) => (
+                                    <MyAlbumCard
+                                        key={album.id}
+                                        album={album}
+                                        onDelete={handleDelete}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div
+                                className="
+                                    rounded-2xl
+                                    border border-gray-10
+                                    bg-white
+                                "
+                            >
+                                <EmptyState
+                                    title="Kamu belum memiliki album."
+                                    description="Ayo mulai dokumentasikan perjalananmu!"
+                                />
+                            </div>
+                        )}
+
+                        {/* View All */}
+                        {myAlbums.length > 0 && (
+                            <div className="mt-6 flex justify-end">
+                                <Button
+                                    variant="primary"
+                                    size="btn-sm"
+                                    onClick={handleViewAllAlbums}
+                                >
+                                    Lihat Semua Album
+                                </Button>
+                            </div>
+                        )}
+                    </section>
+                </>
+            )}
+        </section>
     );
 }
+
+// ============================================================
+// LAYOUT
+// ============================================================
+Index.layout = (page) => (
+    <MainLayout
+        pageTitle="Album"
+        pageDescription="Jelajahi album perjalanan dari komunitas Nuravers, temukan cerita wisata dari pengguna lain, dan dokumentasikan pengalaman perjalananmu sendiri bersama NuraLoka."
+        content={page}
+    />
+);

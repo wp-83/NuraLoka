@@ -170,8 +170,8 @@ export default function LandingPage() {
                     </Link>
 
                     {auth.user ? (
-                        <Link href={route("home")}>
-                            <Button>Mulai Perjalananmu!</Button>
+                        <Link href={route("home.index")}>
+                            <Button>Masuk ke Beranda</Button>
                         </Link>
                     ) : (
                         <Link href={route("auth.login.index")}>
@@ -310,7 +310,7 @@ export default function LandingPage() {
                                     <Link
                                         href={
                                             auth.user
-                                                ? route("home")
+                                                ? route("home.index")
                                                 : route("auth.login.index")
                                         }
                                     >

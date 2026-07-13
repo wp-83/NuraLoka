@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 
-import Button from '@components/Forms/Button';
 import MainLayout from '@js/Layouts/MainLayout';
 
 import {
@@ -36,10 +35,6 @@ export default function Show({
         { id: 8, height: 'h-64' },
     ];
 
-    const handleBack = () => {
-        router.visit(route('wishlist.index'));
-    };
-
     const handleToggleSave = () => {
         if (!place?.id) return;
 
@@ -50,6 +45,7 @@ export default function Show({
             },
             {
                 preserveScroll: true,
+
                 onSuccess: () => {
                     setIsSaved((previous) => !previous);
                 },
@@ -57,7 +53,8 @@ export default function Show({
         );
     };
 
-    const formattedTotalSaves = totalSaves.toLocaleString('id-ID');
+    const formattedTotalSaves =
+        Number(totalSaves).toLocaleString('id-ID');
 
     return (
         <>
@@ -67,7 +64,10 @@ export default function Show({
             <section className="relative w-full overflow-hidden">
                 {/* Background Image */}
                 <div
-                    className="absolute inset-0 z-0 bg-cover bg-center"
+                    className="
+                        absolute inset-0 z-0
+                        bg-cover bg-center
+                    "
                     style={{
                         backgroundImage: `url(${
                             place?.img ||
@@ -82,34 +82,58 @@ export default function Show({
                 <div
                     className="
                         absolute inset-0 z-0
-                        bg-gradient-to-b
                     "
                 />
 
                 {/* Hero Content */}
                 <div className="relative z-10 pb-16 pt-8">
                     {/* Top Actions */}
-                    <div className="mb-8 flex items-center justify-between gap-4">
-                        <Button
-                            onClick={handleBack}
-                            variant="primary"
-                            iconLeft={
-                                <FiChevronLeft size={18} />
-                            }
-                        >
-                            Kembali ke Impian
-                        </Button>
+                    <div
+                        className="
+                            mb-8 flex
+                            items-center justify-between
+                            gap-4
+                        "
+                    >
+                        {/* Back */}
+                        <Link
+                            href={route('explore.index')}
+                            className="
+                                inline-flex items-center gap-2
+                                rounded-xl
+                                bg-primary
+                                px-5 py-2.5
+                                font-body text-small
+                                font-semibold text-white
+                                shadow-md
+                                transition-all duration-200
 
+                                hover:bg-primary-85
+                                active:scale-[0.98]
+                            "
+                        >
+                            <FiChevronLeft
+                                size={18}
+                                className="shrink-0"
+                            />
+
+                            <span className="hidden xs:inline">
+                                Kembali ke Jelajah
+                            </span>
+                        </Link>
+
+                        {/* Wishlist Toggle */}
                         <button
                             type="button"
                             onClick={handleToggleSave}
                             className={`
                                 inline-flex items-center gap-2
-                                rounded-lg border
+                                rounded-xl border
                                 px-4 py-2
-                                font-body font-medium
+                                font-body text-small
+                                font-semibold
                                 shadow-sm backdrop-blur-sm
-                                transition-colors
+                                transition-all duration-200
 
                                 ${
                                     isSaved
@@ -120,11 +144,10 @@ export default function Show({
                                             hover:bg-warning-light
                                         `
                                         : `
-                                            border-secondary-30/50
-                                            bg-white/50
+                                            border-secondary-30
+                                            bg-white/70
                                             text-secondary
                                             hover:bg-secondary-10
-                                            hover:text-secondary-85
                                         `
                                 }
                             `}
@@ -136,30 +159,39 @@ export default function Show({
                             </span>
 
                             {isSaved ? (
-                                <FaBookmark size={18} />
+                                <FaBookmark
+                                    size={18}
+                                    className="shrink-0"
+                                />
                             ) : (
-                                <FiBookmark size={18} />
+                                <FiBookmark
+                                    size={18}
+                                    className="shrink-0"
+                                />
                             )}
                         </button>
                     </div>
 
-                    {/* Main Information */}
+                    {/* Main Content */}
                     <div
                         className="
                             flex flex-col
                             items-start justify-between
-                            gap-8
+                            gap-10
 
                             lg:flex-row
                         "
                     >
-                        {/* Left Information */}
+                        {/* ====================================================
+                            LEFT INFORMATION
+                        ==================================================== */}
                         <div className="w-full lg:w-2/3">
+                            {/* Place Name */}
                             <h1
                                 className="
                                     mb-4
-                                    font-heading
-                                    text-title font-extrabold
+                                    font-heading text-title
+                                    font-extrabold
                                     text-primary-100
                                     drop-shadow-sm
 
@@ -169,6 +201,7 @@ export default function Show({
                                 {place?.name}
                             </h1>
 
+                            {/* Description */}
                             <p
                                 className="
                                     mb-6 max-w-3xl
@@ -195,12 +228,14 @@ export default function Show({
                                                     bg-secondary
                                                     px-4 py-1.5
                                                     font-body text-small
-                                                    font-semibold text-white
+                                                    font-semibold
+                                                    text-white
                                                     shadow-sm
                                                 "
                                             >
                                                 <MdOutlinePark
                                                     size={16}
+                                                    className="shrink-0"
                                                 />
 
                                                 {category.name}
@@ -216,12 +251,14 @@ export default function Show({
                                             bg-secondary
                                             px-4 py-1.5
                                             font-body text-small
-                                            font-semibold text-white
+                                            font-semibold
+                                            text-white
                                             shadow-sm
                                         "
                                     >
                                         <MdOutlinePark
                                             size={16}
+                                            className="shrink-0"
                                         />
 
                                         Kategori Umum
@@ -229,7 +266,7 @@ export default function Show({
                                 )}
                             </div>
 
-                            {/* Place Information */}
+                            {/* Information */}
                             <div className="flex flex-col gap-4">
                                 {/* Address */}
                                 <div className="flex items-start gap-3">
@@ -245,7 +282,8 @@ export default function Show({
                                         className="
                                             max-w-md
                                             font-body text-small
-                                            font-medium text-gray-85
+                                            font-medium
+                                            text-gray-85
 
                                             md:text-body
                                         "
@@ -268,7 +306,8 @@ export default function Show({
                                     <span
                                         className="
                                             font-body text-small
-                                            font-medium text-gray-85
+                                            font-medium
+                                            text-gray-85
 
                                             md:text-body
                                         "
@@ -279,7 +318,7 @@ export default function Show({
                                     </span>
                                 </div>
 
-                                {/* Estimated Price */}
+                                {/* Price */}
                                 <div className="flex items-center gap-3">
                                     <FaMoneyBillWave
                                         size={22}
@@ -292,7 +331,8 @@ export default function Show({
                                     <span
                                         className="
                                             font-body text-small
-                                            font-medium text-gray-85
+                                            font-medium
+                                            text-gray-85
 
                                             md:text-body
                                         "
@@ -307,13 +347,21 @@ export default function Show({
                         {/* ====================================================
                             MAP PREVIEW
                         ==================================================== */}
-                        <div className="flex w-full justify-end lg:w-1/3">
+                        <div
+                            className="
+                                flex w-full justify-end
+                                lg:w-1/3
+                            "
+                        >
                             <div
                                 className="
-                                    w-full max-w-sm rotate-1
-                                    rounded-2xl bg-white
-                                    p-2 shadow-lg
-                                    transition-transform duration-300
+                                    w-full max-w-sm
+                                    rotate-1
+                                    rounded-2xl
+                                    bg-white p-2
+                                    shadow-lg
+                                    transition-transform
+                                    duration-300
 
                                     hover:rotate-0
                                 "
@@ -321,16 +369,19 @@ export default function Show({
                                 <div
                                     className="
                                         relative h-56 w-full
-                                        overflow-hidden rounded-xl
-                                        border border-gray-10
+                                        overflow-hidden
+                                        rounded-xl
+                                        border border-gray-30
                                         bg-secondary-10
                                     "
                                 >
                                     {/* Mock Road */}
                                     <div
                                         className="
-                                            absolute bottom-0 left-12 top-0
-                                            w-2 bg-primary-85/80
+                                            absolute bottom-0
+                                            left-12 top-0
+                                            w-2
+                                            bg-primary-85/80
                                         "
                                     />
 
@@ -345,9 +396,11 @@ export default function Show({
                                             className="
                                                 relative z-10
                                                 flex h-8 w-8
-                                                items-center justify-center
+                                                items-center
+                                                justify-center
                                                 rounded-full
-                                                border-2 border-secondary
+                                                border-2
+                                                border-secondary
                                                 bg-secondary-10
                                                 shadow-sm
                                             "
@@ -360,10 +413,12 @@ export default function Show({
 
                                         <span
                                             className="
-                                                rounded bg-white/80
+                                                rounded
+                                                bg-white/80
                                                 px-2 py-0.5
                                                 font-body text-micro
-                                                font-bold text-secondary
+                                                font-bold
+                                                text-secondary
                                                 shadow-sm
                                             "
                                         >
@@ -382,9 +437,11 @@ export default function Show({
                                             className="
                                                 relative z-10
                                                 flex h-8 w-8
-                                                items-center justify-center
+                                                items-center
+                                                justify-center
                                                 rounded-full
-                                                border-2 border-warning
+                                                border-2
+                                                border-warning
                                                 bg-warning-light
                                                 shadow-sm
                                             "
@@ -397,10 +454,12 @@ export default function Show({
 
                                         <span
                                             className="
-                                                rounded bg-white/80
+                                                rounded
+                                                bg-white/80
                                                 px-2 py-0.5
                                                 font-body text-micro
-                                                font-bold text-gray-70
+                                                font-bold
+                                                text-gray-70
                                                 shadow-sm
                                             "
                                         >
@@ -419,9 +478,11 @@ export default function Show({
                                             className="
                                                 relative z-10
                                                 flex h-8 w-8
-                                                items-center justify-center
+                                                items-center
+                                                justify-center
                                                 rounded-full
-                                                border-2 border-info
+                                                border-2
+                                                border-info
                                                 bg-info-light
                                                 shadow-sm
                                             "
@@ -434,10 +495,12 @@ export default function Show({
 
                                         <span
                                             className="
-                                                rounded bg-white/80
+                                                rounded
+                                                bg-white/80
                                                 px-2 py-0.5
                                                 font-body text-micro
-                                                font-bold text-gray-70
+                                                font-bold
+                                                text-gray-70
                                                 shadow-sm
                                             "
                                         >
@@ -445,11 +508,11 @@ export default function Show({
                                         </span>
                                     </div>
 
-                                    {/* Map Pattern */}
+                                    {/* Pattern */}
                                     <div
                                         className="
-                                            absolute inset-0
                                             pointer-events-none
+                                            absolute inset-0
                                             opacity-10
                                             [background-image:radial-gradient(#000_1px,transparent_1px)]
                                             [background-size:16px_16px]
@@ -481,8 +544,8 @@ export default function Show({
 
                     <h2
                         className="
-                            font-heading
-                            text-title font-bold
+                            font-heading text-title
+                            font-bold
                             text-primary-100
 
                             md:text-hero
@@ -533,7 +596,8 @@ export default function Show({
                                     className={`
                                         h-full w-full
                                         object-cover
-                                        transition-transform duration-700
+                                        transition-transform
+                                        duration-700
 
                                         group-hover:scale-105
 
@@ -551,7 +615,8 @@ export default function Show({
                                     pointer-events-none
                                     absolute inset-0
                                     bg-black/0
-                                    transition-colors duration-300
+                                    transition-colors
+                                    duration-300
 
                                     group-hover:bg-black/10
                                 "
@@ -567,7 +632,7 @@ export default function Show({
 Show.layout = (page) => (
     <MainLayout
         pageTitle='Detail Tempat'
-        pageDescription="Temukan informasi lengkap tentang destinasi wisata, mulai dari lokasi, kategori, hingga inspirasi perjalanan bersama NuraLoka."
+        pageDescription="Jelajahi informasi lengkap tentang destinasi wisata, mulai dari lokasi, kategori, hingga inspirasi perjalanan bersama NuraLoka."
         content={page}
     />
 );

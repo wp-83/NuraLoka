@@ -1,8 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import MainLayout from '@js/Layouts/MainLayout';
 import ExploreMap from '@components/Features/ExploreMap';
-import Navbar from '@components/Layouts/User/Navbar';
-import Footer from '@components/Layouts/User/Footer';
 import LocationSearchInput from '@components/Features/LocationSearchInput';
 import PlaceCard from '@components/Features/PlaceCard';
 import { FiMapPin, FiSearch, FiChevronLeft, FiBookmark, FiGlobe } from 'react-icons/fi';
@@ -47,14 +46,7 @@ const filterIconMap = {
     'Religi': <MdMuseum size={15} />,
 };
 
-// ─────────────────────────────────────────────
-// OSM / Overpass API Helpers
-// ─────────────────────────────────────────────
-
-/**
- * Petakan tags OSM ke kategori NuraLoka.
- * Mengembalikan null jika tidak ada kategori yang cocok (dibuang).
- */
+// ── OSM / Overpass API Helpers ──
 function getOsmCategory(tags) {
     if (!tags) return null;
     if (['restaurant', 'cafe', 'food_court', 'fast_food'].includes(tags.amenity)) return 'Kuliner';
@@ -73,10 +65,6 @@ function getOsmCategory(tags) {
     return null;
 }
 
-/**
- * Konversi node Overpass API ke format place internal NuraLoka.
- * Mengembalikan null jika node tidak punya nama atau kategori.
- */
 function mapOsmToPlace(node) {
     const tags = node.tags || {};
     const name = tags.name || tags['name:id'] || tags['name:en'];
@@ -97,15 +85,10 @@ function mapOsmToPlace(node) {
         category,
         subtype,
         source: 'osm',
-        // Diformat agar kompatibel dengan filter sistem
         categories: [{ id: `osm-cat-${category}`, name: category }],
     };
 }
 
-/**
- * Bangun Overpass QL query berdasarkan bounding box viewport peta.
- * Menggunakan exact match (bukan regex) agar query jauh lebih cepat dan tidak timeout.
- */
 function buildOverpassQuery(south, west, north, east) {
     const bbox = `${south},${west},${north},${east}`;
     return `[out:json][timeout:25];
@@ -131,9 +114,7 @@ function buildOverpassQuery(south, west, north, east) {
 out body 300;`;
 }
 
-// ─────────────────────────────────────────────
-// ExplorePanel Sub-Component
-// ─────────────────────────────────────────────
+// ── ExplorePanel Sub-Component ──
 function ExplorePanel({
     activeTab, setActiveTab,
     searchQuery, setSearchQuery,
@@ -142,7 +123,6 @@ function ExplorePanel({
     searchSuggestions = [],
     onSuggestionClick,
     setOrigin, setDestination,
-    // Props OSM
     osmLoading, osmCount
 }) {
     const toggleFilter = (label) => {
@@ -150,23 +130,25 @@ function ExplorePanel({
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-xl p-4 w-full" style={{ maxHeight: '100%' }}>
-            <h2 className="text-lg font-bold text-gray-900 mb-3" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        <div className="bg-white rounded-2xl shadow-xl p-4 w-full max-h-full">
+            <h2 className="font-heading text-lg font-bold text-primary mb-3">
                 Eksplor Sesuai Gayamu!
             </h2>
 
             {/* Tab Switcher */}
-            <div className="flex bg-gray-100 rounded-xl p-1 mb-3 relative">
+            <div className="flex bg-gray-10 rounded-xl p-1 mb-3 relative">
                 <div
                     className="absolute top-1 bottom-1 w-1/2 bg-white rounded-lg shadow-sm transition-transform duration-300 ease-in-out"
                     style={{ transform: activeTab === 'Dua Titik' ? 'translateX(100%)' : 'translateX(0)' }}
-                ></div>
+                />
                 {['Satu Titik', 'Dua Titik'].map((tab) => (
                     <div
                         key={tab}
                         role="button"
                         onClick={() => setActiveTab(tab)}
-                        className={`relative z-10 cursor-pointer text-center flex-1 py-1.5 rounded-lg text-sm transition-all duration-300 font-medium ${activeTab === tab ? 'text-amber-800' : 'text-gray-500 hover:text-gray-700'}`}
+                        className={`relative z-10 cursor-pointer text-center flex-1 py-1.5 rounded-lg font-body text-btn-sm transition-all duration-300 font-medium ${
+                            activeTab === tab ? 'text-accent' : 'text-gray-70 hover:text-primary'
+                        }`}
                     >
                         {tab}
                     </div>
@@ -176,21 +158,19 @@ function ExplorePanel({
             {/* ── Konten Tab Satu Titik ── */}
             {activeTab === 'Satu Titik' && (
                 <>
-                    {/* Search Input */}
                     <div className="relative mb-4">
-                        <div className="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 focus-within:bg-white focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-200 transition-all">
-                            <FiSearch size={14} className="text-gray-400 flex-shrink-0" />
+                        <div className="flex items-center gap-2 border border-gray-30 rounded-xl px-3 py-2 bg-gray-10 focus-within:bg-white focus-within:border-accent focus-within:ring-2 focus-within:ring-accent-30 transition-all">
+                            <FiSearch size={14} className="text-gray-50 flex-shrink-0" />
                             <input
                                 type="text"
                                 placeholder="Temukan destinasi wisatamu sekarang!"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="bg-transparent w-full outline-none text-sm text-gray-800 placeholder-gray-400"
+                                className="bg-transparent w-full outline-none font-body text-body text-primary placeholder-gray-50"
                             />
                         </div>
-                        {/* Search Suggestions Dropdown */}
                         {searchSuggestions.length > 0 && searchQuery.trim() !== '' && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-[500] overflow-y-auto max-h-56">
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-30 rounded-xl shadow-lg z-[500] overflow-y-auto max-h-56">
                                 {searchSuggestions.map((place) => (
                                     <div
                                         key={place.id}
@@ -198,12 +178,12 @@ function ExplorePanel({
                                             setSearchQuery(place.name);
                                             onSuggestionClick(place);
                                         }}
-                                        className="flex items-center gap-3 px-4 py-2 hover:bg-amber-50 cursor-pointer transition-colors"
+                                        className="flex items-center gap-3 px-4 py-2 hover:bg-accent-10 cursor-pointer transition-colors"
                                     >
-                                        <FiMapPin className="text-gray-400 flex-shrink-0" size={14} />
+                                        <FiMapPin className="text-gray-50 flex-shrink-0" size={14} />
                                         <div className="min-w-0">
-                                            <p className="text-sm font-bold text-gray-800 truncate">{place.name}</p>
-                                            <p className="text-xs text-gray-400 truncate">{place.address}</p>
+                                            <p className="font-body text-small font-bold text-primary truncate">{place.name}</p>
+                                            <p className="font-body text-micro text-gray-50 truncate">{place.address}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -211,25 +191,27 @@ function ExplorePanel({
                         )}
                     </div>
 
-                    {/* Category Filters */}
-                    <span className="block text-sm font-semibold text-gray-700 mb-2">Filter Tempat Spesifik</span>
+                    <span className="block font-body text-small font-semibold text-primary mb-2">Filter Tempat Spesifik</span>
                     <div className="flex flex-wrap gap-2">
                         {categories.map((cat) => (
                             <div
                                 key={cat.id}
                                 role="button"
                                 onClick={() => toggleFilter(cat.name)}
-                                className={`cursor-pointer flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all duration-150 ${activeFilters.includes(cat.name) ? 'bg-green-800 text-white border-green-800' : 'bg-white text-gray-700 border-gray-200 hover:border-teal-500 hover:text-teal-600'}`}
+                                className={`cursor-pointer flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl border font-body text-micro font-semibold transition-all duration-150 ${
+                                    activeFilters.includes(cat.name)
+                                        ? 'bg-secondary text-white border-secondary'
+                                        : 'bg-white text-primary border-gray-30 hover:border-accent hover:text-accent'
+                                }`}
                             >
                                 {filterIconMap[cat.name] || <FiMapPin size={13} />}{cat.name}
                             </div>
                         ))}
                     </div>
 
-                    {/* ── OSM Data Loading Indicator (Subtle) ── */}
                     {osmLoading && (
-                        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-center">
-                            <span className="text-xs text-amber-500 animate-pulse font-medium">Memuat tambahan data peta...</span>
+                        <div className="mt-3 pt-3 border-t border-gray-30 flex items-center justify-center">
+                            <span className="font-body text-micro text-accent animate-pulse font-medium">Memuat tambahan data peta...</span>
                         </div>
                     )}
                 </>
@@ -238,13 +220,13 @@ function ExplorePanel({
             {/* ── Konten Tab Dua Titik ── */}
             {activeTab === 'Dua Titik' && (
                 <div className="flex flex-col mt-2">
-                    <span className="block text-xs font-semibold text-gray-600 mb-1">Tempat Keberangkatan</span>
+                    <span className="block font-body text-micro font-semibold text-gray-70 mb-1">Tempat Keberangkatan</span>
                     <LocationSearchInput
                         placeholder="Cari lokasi awal..."
                         onSelectLocation={(loc) => setOrigin(loc)}
                     />
 
-                    <span className="block text-xs font-semibold text-gray-600 mb-1">Tempat Tujuan</span>
+                    <span className="block font-body text-micro font-semibold text-gray-70 mb-1">Tempat Tujuan</span>
                     <LocationSearchInput
                         placeholder="Cari lokasi tujuan..."
                         onSelectLocation={(loc) => setDestination(loc)}
@@ -255,34 +237,34 @@ function ExplorePanel({
     );
 }
 
-/* ── RecentlyVisitedPanel ── */
+// ── RecentlyVisitedPanel ──
 function RecentlyVisitedPanel({ recentlyVisited = [], onVisit }) {
     if (recentlyVisited.length === 0) return null;
 
     return (
         <div className="bg-white rounded-2xl shadow-xl p-4 w-full">
-            <h3 className="text-sm font-bold mb-3" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            <h3 className="font-heading text-small font-bold text-primary mb-3">
                 Baru Saja Dikunjungi
             </h3>
             <div className="flex flex-col gap-2">
                 {recentlyVisited.slice(0, 2).map((place) => (
                     <div
                         key={place.id}
-                        className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded-lg p-1 transition-colors"
+                        className="flex items-center gap-2 cursor-pointer hover:bg-gray-10 rounded-lg p-1 transition-colors"
                         onClick={() => onVisit(place)}
                     >
-                        <div className="w-10 h-10 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden">
+                        <div className="w-10 h-10 rounded-lg bg-gray-30 flex-shrink-0 overflow-hidden">
                             {place.img ? (
                                 <img src={place.img} alt={place.name} className="w-full h-full object-cover" />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gray-300">
-                                    <FiMapPin size={16} className="text-gray-500" />
+                                <div className="w-full h-full flex items-center justify-center bg-gray-30">
+                                    <FiMapPin size={16} className="text-gray-50" />
                                 </div>
                             )}
                         </div>
                         <div className="min-w-0">
-                            <p className="text-xs font-bold text-gray-800 truncate">{place.name}</p>
-                            <p className="text-xs text-gray-400 truncate">{place.address}</p>
+                            <p className="font-body text-micro font-bold text-primary truncate">{place.name}</p>
+                            <p className="font-body text-micro text-gray-50 truncate">{place.address}</p>
                         </div>
                     </div>
                 ))}
@@ -291,19 +273,19 @@ function RecentlyVisitedPanel({ recentlyVisited = [], onVisit }) {
     );
 }
 
-/* ── RouteFilterPanel ── */
+// ── RouteFilterPanel ──
 function RouteFilterPanel({ routeData, categories, activeFilters, toggleFilter, routeRadius, setRouteRadius }) {
     return (
         <div className="bg-white rounded-2xl shadow-xl p-4 w-full relative z-[500]">
             <div className="flex justify-between items-center mb-3">
-                <h3 className="text-sm font-bold" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                <h3 className="font-heading text-small font-bold text-primary">
                     Filter Tempat Spesifik
                 </h3>
                 {routeData && (
                     <select
                         value={routeRadius}
                         onChange={(e) => setRouteRadius(Number(e.target.value))}
-                        className="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 outline-none text-gray-700 font-medium cursor-pointer hover:border-amber-500 transition-colors"
+                        className="font-body text-micro bg-gray-10 border border-gray-30 rounded-lg px-2 py-1 outline-none text-primary font-medium cursor-pointer hover:border-accent transition-colors"
                     >
                         <option value={1}>± 1 KM Rute</option>
                         <option value={3}>± 3 KM Rute</option>
@@ -319,7 +301,11 @@ function RouteFilterPanel({ routeData, categories, activeFilters, toggleFilter, 
                         key={cat.id}
                         role="button"
                         onClick={() => toggleFilter(cat.name)}
-                        className={`cursor-pointer flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all duration-150 ${activeFilters.includes(cat.name) ? 'bg-green-800 text-white border-green-800' : 'bg-white text-gray-700 border-gray-200 hover:border-teal-500 hover:text-teal-600'}`}
+                        className={`cursor-pointer flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl border font-body text-micro font-semibold transition-all duration-150 ${
+                            activeFilters.includes(cat.name)
+                                ? 'bg-secondary text-white border-secondary'
+                                : 'bg-white text-primary border-gray-30 hover:border-accent hover:text-accent'
+                        }`}
                     >
                         {filterIconMap[cat.name] || <FiMapPin size={13} />}{cat.name}
                     </div>
@@ -327,12 +313,12 @@ function RouteFilterPanel({ routeData, categories, activeFilters, toggleFilter, 
             </div>
 
             {routeData && (
-                <div className="flex flex-col xl:flex-row xl:items-center gap-3 mt-4 pt-3 border-t border-gray-100">
-                    <div className="flex items-center gap-2 text-sm font-bold text-gray-800">
-                        <span className="text-teal-500">🛣</span> ± {routeData.distance} km
+                <div className="flex flex-col xl:flex-row xl:items-center gap-3 mt-4 pt-3 border-t border-gray-30">
+                    <div className="flex items-center gap-2 font-body text-small font-bold text-primary">
+                        <span className="text-accent">🛣</span> ± {routeData.distance} km
                     </div>
-                    <div className="flex items-center gap-2 text-sm font-bold text-gray-800">
-                        <span className="text-teal-500">⏱</span> ± {routeData.duration} menit
+                    <div className="flex items-center gap-2 font-body text-small font-bold text-primary">
+                        <span className="text-accent">⏱</span> ± {routeData.duration} menit
                     </div>
                 </div>
             )}
@@ -340,7 +326,7 @@ function RouteFilterPanel({ routeData, categories, activeFilters, toggleFilter, 
     );
 }
 
-/* ── MapTooltip ── */
+// ── MapTooltip ──
 function MapTooltip({ isVisible }) {
     if (!isVisible) return null;
 
@@ -357,9 +343,8 @@ function MapTooltip({ isVisible }) {
             className="flex flex-col items-end cursor-pointer hover:scale-105 transition-transform duration-300"
         >
             <div className="bg-white rounded-2xl shadow-xl px-5 py-3 max-w-xs relative mr-16 z-10">
-                <p className="text-sm font-bold text-gray-800 mb-0.5">Masih bingung mau ke mana?</p>
-                <p className="text-xs text-gray-500">Yuk, lihat tempat-tempat populer pilihan Nuravers!</p>
-                {/* Panah menunjuk ke bawah, pas di atas kepala kiri maskot */}
+                <p className="font-body text-small font-bold text-primary mb-0.5">Masih bingung mau ke mana?</p>
+                <p className="font-body text-micro text-gray-50">Yuk, lihat tempat-tempat populer pilihan Nuravers!</p>
                 <div className="absolute -bottom-2 right-2 w-4 h-4 bg-white rotate-45 shadow-sm" style={{ zIndex: -1 }} />
             </div>
             <div className="w-20 h-20 flex-shrink-0 -mt-4 drop-shadow-lg">
@@ -374,29 +359,23 @@ function MapTooltip({ isVisible }) {
     );
 }
 
-
-
 // ─────────────────────────────────────────────
 // MAIN PAGE
 // ─────────────────────────────────────────────
-export default function ExploreIndex({ places = [], categories = [], trendingPlaces = [], recentlyVisited = [], auth, savedPlaceIds = [] }) {
-    // ── Existing state ──
+export default function Index({ places = [], categories = [], trendingPlaces = [], recentlyVisited = [], auth, savedPlaceIds = [] }) {
+    // ── State ──
     const [activeTab, setActiveTab] = useState('Satu Titik');
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilters, setActiveFilters] = useState([]);
     const [selectedPlace, setSelectedPlace] = useState(null);
-
-    // State mode 2 titik
     const [origin, setOrigin] = useState(null);
     const [destination, setDestination] = useState(null);
     const [routeData, setRouteData] = useState(null);
     const [routeRadius, setRouteRadius] = useState(5);
-
-    // ── OSM / Overpass state ──
     const [osmPlaces, setOsmPlaces] = useState([]);
     const [osmLoading, setOsmLoading] = useState(false);
 
-    // Refs
+    // ── Refs ──
     const currentBoundsRef = useRef(null);
     const osmFetchTimeoutRef = useRef(null);
 
@@ -405,8 +384,6 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
         if (!bounds) return;
         let { south, west, north, east } = bounds;
 
-        // Batasi ukuran bounding box maksimal menjadi 1.2 derajat (sekitar 130x130 km, seukuran provinsi)
-        // Jika user zoom out lebih dari ini, kita hanya ambil area tengahnya saja agar query API tidak timeout.
         const maxSpan = 1.2;
         const latSpan = Math.abs(north - south);
         const lngSpan = Math.abs(east - west);
@@ -424,7 +401,6 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
         try {
             const query = buildOverpassQuery(south, west, north, east);
 
-            // Daftar server publik Overpass API
             const ENDPOINTS = [
                 'https://overpass-api.de/api/interpreter',
                 'https://lz4.overpass-api.de/api/interpreter',
@@ -435,7 +411,6 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
             let data = null;
             let success = false;
 
-            // Coba setiap endpoint secara berurutan jika ada error 429 atau server mati
             for (const endpoint of ENDPOINTS) {
                 try {
                     const response = await fetch(`${endpoint}?data=${encodeURIComponent(query)}`);
@@ -452,7 +427,7 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
             }
 
             if (!success || !data) {
-                throw new Error("Semua server publik Overpass API sedang sibuk (Rate Limited). Silakan coba lagi nanti.");
+                throw new Error("Semua server publik Overpass API sedang sibuk. Silakan coba lagi nanti.");
             }
 
             const mapped = (data.elements || [])
@@ -467,16 +442,14 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
         }
     }, []);
 
-    // Debounced handler — dipanggil oleh BoundsWatcher di ExploreMap
     const handleBoundsChange = useCallback((bounds) => {
         currentBoundsRef.current = bounds;
         if (osmFetchTimeoutRef.current) clearTimeout(osmFetchTimeoutRef.current);
         osmFetchTimeoutRef.current = setTimeout(() => {
             fetchOsmData(bounds);
-        }, 1500); // debounce 1.5 detik agar tidak spam API
+        }, 1500);
     }, [fetchOsmData]);
 
-    // Cleanup timeout saat unmount
     useEffect(() => {
         return () => {
             if (osmFetchTimeoutRef.current) clearTimeout(osmFetchTimeoutRef.current);
@@ -504,7 +477,6 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
         }
     }, [origin, destination]);
 
-    // Otomatis fetch rute jika kedua lokasi (keberangkatan & tujuan) sudah dipilih
     useEffect(() => {
         if (origin && destination) {
             fetchRoute();
@@ -518,16 +490,15 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
                 router.post(route('explore.track'), { place_id: place.id }, {
                     preserveScroll: true,
                     onSuccess: () => {
-                        router.visit(route('places.show', place.slug));
+                        router.visit(route('explore.show', place.slug));
                     }
                 });
             } else {
-                router.visit(route('places.show', place.slug));
+                router.visit(route('explore.show', place.slug));
             }
         }
     };
 
-    // ── Toggle Save / Wishlist ──
     const handleToggleSave = (place) => {
         router.post(route('wishlist.toggle'), {
             place_id: place.id,
@@ -536,7 +507,7 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
         });
     };
 
-    // ── Filtered LOCAL places ──
+    // ── Filtered Places ──
     const filteredPlaces = useMemo(() => {
         return places.filter((place) => {
             if (activeTab === 'Dua Titik' && routeData && routeData.coordinates) {
@@ -552,21 +523,17 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
         });
     }, [places, searchQuery, activeFilters, activeTab, routeData, routeRadius]);
 
-    // ── Filtered OSM places ──
     const filteredOsmPlaces = useMemo(() => {
         return osmPlaces.filter(place => {
-            // Filter berdasarkan rute (mode Dua Titik)
             if (activeTab === 'Dua Titik' && routeData && routeData.coordinates) {
                 const isNear = isPointNearRoute(place.latitude, place.longitude, routeData.coordinates, routeRadius);
                 if (!isNear) return false;
             }
-            // Filter berdasarkan kategori aktif
             const matchesFilter = activeFilters.length === 0 || activeFilters.includes(place.category);
             return matchesFilter;
         });
     }, [osmPlaces, activeFilters, activeTab, routeData, routeRadius]);
 
-    // ── Search suggestions (local only) ──
     const searchSuggestions = useMemo(() => {
         if (searchQuery.trim() === '') return [];
         return places
@@ -574,132 +541,120 @@ export default function ExploreIndex({ places = [], categories = [], trendingPla
             .slice(0, 5);
     }, [places, searchQuery]);
 
-    // Cek apakah user sudah berinteraksi (search/filter/titik rute)
     const hasInteracted =
         (activeTab === 'Satu Titik' && (searchQuery.trim() !== '' || activeFilters.length > 0 || selectedPlace !== null)) ||
         (activeTab === 'Dua Titik' && (origin !== null || destination !== null));
 
+    // ── Render ──
     return (
-        <>
-            <Head title="NuraLoka | Jelajah">
-                <meta name="description" content="Jelajahi destinasi wisata, kuliner, dan tempat menarik di seluruh Nusantara bersama NuraLoka." />
-            </Head>
+        <div className="min-h-screen flex flex-col mt-4">
+            {/* ── Map Section ── */}
+            <section className="relative w-full" style={{ height: '520px' }}>
+                <div className="absolute inset-0 min-h-screen">
+                    <ExploreMap
+                        places={filteredPlaces}
+                        selectedPlace={selectedPlace}
+                        onVisit={handleVisit}
+                        routeData={routeData}
+                        origin={origin}
+                        destination={destination}
+                        osmPlaces={filteredOsmPlaces}
+                        onBoundsChange={handleBoundsChange}
+                    />
+                </div>
 
-            <div className="min-h-screen flex flex-col bg-amber-50">
-
-                {/* ── Navbar ── */}
-                <Navbar />
-
-                {/* ── Map Section ── */}
-                <section className="relative w-full" style={{ height: '520px' }}>
-                    <div className="absolute inset-0">
-                        <ExploreMap
-                            places={filteredPlaces}
-                            selectedPlace={selectedPlace}
-                            onVisit={handleVisit}
-                            routeData={routeData}
-                            origin={origin}
-                            destination={destination}
-                            osmPlaces={filteredOsmPlaces}
-                            onBoundsChange={handleBoundsChange}
-                        />
-                    </div>
-
-                    {/* ── Top Area (Panels) ── */}
-                    <div className="absolute inset-0 pointer-events-none z-[400] pt-4">
-                        <div className="container mx-auto px-4 md:px-6 lg:px-8 grid grid-cols-12 items-start gap-5 w-full">
-                            <div className="col-start-1 col-end-4 pointer-events-auto relative">
-                                <ExplorePanel
-                                    activeTab={activeTab} setActiveTab={setActiveTab}
-                                    searchQuery={searchQuery} setSearchQuery={setSearchQuery}
-                                    activeFilters={activeFilters} setActiveFilters={setActiveFilters}
+                {/* ── Top Area (Panels) ── */}
+                <div className="absolute inset-0 pointer-events-none z-[400] pt-4">
+                    <div className="container mx-auto px-4 md:px-6 lg:px-8 grid grid-cols-12 items-start gap-5 w-full">
+                        <div className="col-start-1 col-end-4 pointer-events-auto relative">
+                            <ExplorePanel
+                                activeTab={activeTab} setActiveTab={setActiveTab}
+                                searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+                                activeFilters={activeFilters} setActiveFilters={setActiveFilters}
+                                categories={categories}
+                                searchSuggestions={searchSuggestions}
+                                onSuggestionClick={handleVisit}
+                                setOrigin={setOrigin}
+                                setDestination={setDestination}
+                                osmLoading={osmLoading}
+                                osmCount={filteredOsmPlaces.length}
+                            />
+                        </div>
+                        <div className="col-start-4 col-end-10" />
+                        <div className="col-start-10 col-end-13 pointer-events-auto">
+                            {activeTab === 'Satu Titik' ? (
+                                <RecentlyVisitedPanel recentlyVisited={recentlyVisited} onVisit={handleVisit} />
+                            ) : (
+                                <RouteFilterPanel
+                                    routeData={routeData}
                                     categories={categories}
-                                    searchSuggestions={searchSuggestions}
-                                    onSuggestionClick={handleVisit}
-                                    setOrigin={setOrigin}
-                                    setDestination={setDestination}
-                                    osmLoading={osmLoading}
-                                    osmCount={filteredOsmPlaces.length}
+                                    activeFilters={activeFilters}
+                                    toggleFilter={(label) => {
+                                        setActiveFilters((prev) => prev.includes(label) ? prev.filter((f) => f !== label) : [...prev, label]);
+                                    }}
+                                    routeRadius={routeRadius}
+                                    setRouteRadius={setRouteRadius}
                                 />
-                            </div>
-                            <div className="col-start-4 col-end-10" />
-                            <div className="col-start-10 col-end-13 pointer-events-auto">
-                                {activeTab === 'Satu Titik' ? (
-                                    <RecentlyVisitedPanel recentlyVisited={recentlyVisited} onVisit={handleVisit} />
-                                ) : (
-                                    <RouteFilterPanel
-                                        routeData={routeData}
-                                        categories={categories}
-                                        activeFilters={activeFilters}
-                                        toggleFilter={(label) => {
-                                            setActiveFilters((prev) => prev.includes(label) ? prev.filter((f) => f !== label) : [...prev, label]);
-                                        }}
-                                        routeRadius={routeRadius}
-                                        setRouteRadius={setRouteRadius}
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* ── Bottom Area (Tooltip) ── */}
+                <div className="absolute bottom-6 left-0 right-0 pointer-events-none z-[400]">
+                    <div className="container mx-auto px-4 md:px-6 lg:px-8 grid grid-cols-12 gap-5 w-full">
+                        <div className="col-start-10 col-end-13 pointer-events-auto flex justify-end">
+                            <MapTooltip isVisible={!hasInteracted} />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ── Trending Section ── */}
+            <section id="trending-section" className="w-full py-10">
+                <div className="overflow-hidden">
+                    <div className="container mx-auto px-4 md:px-6 lg:px-8 my-5">
+                        <div className="grid grid-cols-12 gap-5">
+                            <div className="col-start-2 col-end-12 flex items-center gap-4 mb-6">
+                                <div className="w-40 flex-shrink-0 scale-x-[-1]">
+                                    <img
+                                        src="/images/mascots/map-v2.png"
+                                        alt="mascot"
+                                        className="w-full object-contain"
+                                        onError={(e) => { e.target.style.display = 'none'; }}
                                     />
-                                )}
+                                </div>
+                                <div>
+                                    <h2 className="font-heading text-title font-bold text-primary leading-tight">
+                                        Ramai Dikunjungi oleh Nuravers
+                                    </h2>
+                                    <p className="font-body text-body text-gray-50 mt-1 max-w-[28rem]">
+                                        Sedang tren di kalangan Nuravers! Temukan tempat-tempat yang ramai dikunjungi
+                                        dan layak masuk daftar perjalananmu
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-
-                    {/* ── Bottom Area (Tooltip) ── */}
-                    <div className="absolute bottom-6 left-0 right-0 pointer-events-none z-[400]">
-                        <div className="container mx-auto px-4 md:px-6 lg:px-8 grid grid-cols-12 gap-5 w-full">
-                            <div className="col-start-10 col-end-13 pointer-events-auto flex justify-end">
-                                <MapTooltip isVisible={!hasInteracted} />
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* ── Trending Section ── */}
-                <section id="trending-section" className="w-full py-10">
-                    <div className="overflow-hidden">
-                        <div className="container mx-auto px-4 md:px-6 lg:px-8 my-5">
-                            <div className="grid grid-cols-12 gap-5">
-                                <div className="col-start-2 col-end-12 flex items-center gap-4 mb-6">
-                                    <div className="w-40 flex-shrink-0 scale-x-[-1]">
-                                        <img
-                                            src="/images/mascots/map-v2.png"
-                                            alt="mascot"
-                                            className="w-full object-contain"
-                                            onError={(e) => { e.target.style.display = 'none'; }}
+                            <div
+                                className="col-start-2 col-end-12 flex flex-row gap-5 hide-scrollbar"
+                                style={{ overflowX: 'auto', overflowY: 'hidden', paddingBottom: '0.75rem', scrollSnapType: 'x mandatory' }}
+                            >
+                                {trendingPlaces.map((place) => (
+                                    <div key={place.id} className="flex-shrink-0" style={{ width: '24rem', scrollSnapAlign: 'start' }}>
+                                        <PlaceCard
+                                            place={place}
+                                            onVisit={handleVisit}
+                                            isSaved={savedPlaceIds.includes(place.id)}
+                                            onToggleSave={handleToggleSave}
                                         />
                                     </div>
-                                    <div>
-                                        <h2 className="font-bold text-2xl text-gray-900 leading-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                            Ramai Dikunjungi oleh Nuravers
-                                        </h2>
-                                        <p className="text-sm text-gray-500 mt-1 max-w-[28rem]">
-                                            Sedang tren di kalangan Nuravers! Temukan tempat-tempat yang ramai dikunjungi
-                                            dan layak masuk daftar perjalananmu
-                                        </p>
-                                    </div>
-                                </div>
-                                <div
-                                    className="col-start-2 col-end-12 flex flex-row gap-5 hide-scrollbar"
-                                    style={{ overflowX: 'auto', overflowY: 'hidden', paddingBottom: '0.75rem', scrollSnapType: 'x mandatory' }}
-                                >
-                                    {trendingPlaces.map((place) => (
-                                        <div key={place.id} className="flex-shrink-0" style={{ width: '24rem', scrollSnapAlign: 'start' }}>
-                                            <PlaceCard
-                                                place={place}
-                                                onVisit={handleVisit}
-                                                isSaved={savedPlaceIds.includes(place.id)}
-                                                onToggleSave={handleToggleSave}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
+                                ))}
                             </div>
                         </div>
                     </div>
-                </section>
-
-                {/* ── Footer ── */}
-                <Footer />
-
-            </div>
-        </>
+                </div>
+            </section>
+        </div>
     );
 }
+
+Index.layout = (page) => <MainLayout pageTitle="Jelajah" pageDescription="Jelajahi destinasi wisata, kuliner, dan tempat menarik di seluruh Nusantara bersama NuraLoka." content={page}></MainLayout>

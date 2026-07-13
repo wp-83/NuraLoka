@@ -28,6 +28,7 @@ export default function MainLayout({ pageTitle = "", content, pageDescription = 
             <Navbar />
 
             <main className='container min-h-80'>
+                <h1 className='font-primary text-title'>WOIIIIIII</h1>
                 {content}
             </main>
 

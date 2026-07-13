@@ -1,9 +1,9 @@
 import { Link, router } from '@inertiajs/react';
 import Button from '@components/Forms/Button';
 import NewsSection from '@components/Features/NewsSection';
-import MainLayout from '../Layouts/MainLayout';
+import MainLayout from '../../Layouts/MainLayout';
 
-export default function Home({ latestNews }){
+export default function Index({ latestNews }){
     return (
         <div className="flex flex-col gap-8 p-4 sm:p-8">
             <section className="flex flex-col gap-4 rounded-2xl border border-primary-30 bg-white/80 p-4 shadow-sm sm:p-6">
@@ -27,4 +27,4 @@ export default function Home({ latestNews }){
     );
 };
 
-Home.layout = (page) => <MainLayout content={page}></MainLayout>
+Index.layout = (page) => <MainLayout content={page}></MainLayout>
