@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminCategoryController;
+use App\Http\Controllers\AdminMissionController;
 use App\Http\Controllers\AdminNewsController;
 use App\Http\Controllers\AdminPlaceController;
 use App\Http\Controllers\AlbumController;
@@ -147,12 +148,12 @@ Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(fu
 
     // Mission Management
     Route::prefix('/tantangan')->name('missions.')->group(function () {
-        Route::get('/', [App\Http\Controllers\AdminMissionController::class, 'index'])->name('index');
-        Route::get('/create', [App\Http\Controllers\AdminMissionController::class, 'create'])->name('create');
-        Route::post('/', [App\Http\Controllers\AdminMissionController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [App\Http\Controllers\AdminMissionController::class, 'edit'])->name('edit');
-        Route::post('/{id}', [App\Http\Controllers\AdminMissionController::class, 'update'])->name('update');
-        Route::delete('/{id}', [App\Http\Controllers\AdminMissionController::class, 'destroy'])->name('destroy');
+        Route::get('/', [AdminMissionController::class, 'index'])->name('index');
+        Route::get('/create', [AdminMissionController::class, 'create'])->name('create');
+        Route::post('/', [AdminMissionController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [AdminMissionController::class, 'edit'])->name('edit');
+        Route::post('/{id}', [AdminMissionController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdminMissionController::class, 'destroy'])->name('destroy');
     });
 
     // Level

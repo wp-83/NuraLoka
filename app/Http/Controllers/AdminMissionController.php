@@ -40,7 +40,7 @@ class AdminMissionController extends Controller
     public function create()
     {
         $badges = Badge::all();
-        
+
         return Inertia::render('Admin/Mission/Create', [
             'badges' => $badges,
         ]);
