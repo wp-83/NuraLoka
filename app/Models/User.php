@@ -57,7 +57,7 @@ class User extends Authenticatable
 
     public function badges()
     {
-        return $this->belongsToMany(Badge::class)
+        return $this->belongsToMany(Badge::class, 'user_badges')
             ->withPivot('id')
             ->withTimestamps();
     }
@@ -69,7 +69,7 @@ class User extends Authenticatable
 
     public function missions()
     {
-        return $this->belongsToMany(Mission::class)
+        return $this->belongsToMany(Mission::class, 'user_missions')
             ->withPivot('id')
             ->withTimestamps();
     }

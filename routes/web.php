@@ -83,7 +83,9 @@ Route::middleware('auth')->group(function () {
     // Challenges
     Route::prefix('/tantangan')->name('challenge.')->controller(ChallengeController::class)->group(function () {
         Route::get('/', 'index')->name('index');
-
+        Route::get('/lencana', 'badges')->name('badges');
+        Route::get('/papan-peringkat', 'leaderboard')->name('leaderboard');
+        Route::get('/level', 'levels')->name('levels');
     });
 
     // Wishlist
@@ -124,7 +126,7 @@ Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(fu
     });
 
     // Place Management
-    Route::prefix('/places')->name('admin.places.')->group(function () {
+    Route::prefix('/places')->name('places.')->group(function () {
         Route::get('/', [AdminPlaceController::class, 'index'])->name('index');
         Route::get('/create', [AdminPlaceController::class, 'create'])->name('create');
         Route::post('/', [AdminPlaceController::class, 'store'])->name('store');
@@ -143,10 +145,15 @@ Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(fu
         Route::delete('/{id}', [AdminCategoryController::class, 'destroy'])->name('destroy');
     });
 
-    // Mission and Badge
-    // Route::prefix('/lencana-dan-misi')->name('mission-and-badges.')->group(function(){
-
-    // });
+    // Mission Management
+    Route::prefix('/tantangan')->name('missions.')->group(function () {
+        Route::get('/', [App\Http\Controllers\AdminMissionController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\AdminMissionController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\AdminMissionController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [App\Http\Controllers\AdminMissionController::class, 'edit'])->name('edit');
+        Route::post('/{id}', [App\Http\Controllers\AdminMissionController::class, 'update'])->name('update');
+        Route::delete('/{id}', [App\Http\Controllers\AdminMissionController::class, 'destroy'])->name('destroy');
+    });
 
     // Level
     // Route::prefix('/level')->name('level.')->group(function(){
