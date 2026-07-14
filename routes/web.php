@@ -75,7 +75,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Profile
-    Route::prefix('/profil')->name('profile.')->controller(ProfileController::class)->group(function(){
+    Route::prefix('/profil')->name('profile.')->controller(ProfileController::class)->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/ubah', 'edit')->name('edit');
         Route::put('/', 'update')->name('update');

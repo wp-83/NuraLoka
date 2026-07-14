@@ -34,7 +34,6 @@ class User extends Authenticatable
         'google_id',
     ];
 
-
     protected $appends = [
         'public_profile_photo',
     ];
@@ -56,7 +55,7 @@ class User extends Authenticatable
     public function getPublicProfilePhotoAttribute()
     {
         if ($this->userDetail?->profile_path) {
-            return asset('storage/' . $this->userDetail->profile_path);
+            return asset('storage/'.$this->userDetail->profile_path);
         }
 
         return match ($this->userDetail->gender) {

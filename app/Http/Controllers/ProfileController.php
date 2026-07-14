@@ -161,17 +161,13 @@ class ProfileController extends Controller
                 'max:2048',
             ],
         ], [
-            'password.regex' =>
-                'Kata sandi harus mengandung minimal 1 huruf kapital dan 1 simbol di antara !,@,#,$,%.',
+            'password.regex' => 'Kata sandi harus mengandung minimal 1 huruf kapital dan 1 simbol di antara !,@,#,$,%.',
 
-            'username.unique' =>
-                'Username tersebut sudah digunakan oleh pengguna lain.',
+            'username.unique' => 'Username tersebut sudah digunakan oleh pengguna lain.',
 
-            'email.unique' =>
-                'Email tersebut sudah digunakan oleh pengguna lain.',
+            'email.unique' => 'Email tersebut sudah digunakan oleh pengguna lain.',
 
-            'profile_photo.max' =>
-                'Ukuran maksimal Foto profil 2MB.',
+            'profile_photo.max' => 'Ukuran maksimal Foto profil 2MB.',
         ]);
 
         DB::transaction(function () use (
@@ -221,7 +217,7 @@ class ProfileController extends Controller
 
                 // Buat image manager menggunakan GD.
                 $manager = new ImageManager(
-                    new Driver()
+                    new Driver
                 );
 
                 // Baca gambar.
