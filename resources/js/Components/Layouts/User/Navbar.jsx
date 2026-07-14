@@ -20,7 +20,7 @@ export default function Navbar() {
             {/* Profil Saya */}
             <div className="my-2">
                 <Link
-                    href={route('profile.index', user.username)}
+                    href={route('profile.index')}
                     className="
                         flex w-full items-center gap-3
                         rounded-xl px-3 py-2
