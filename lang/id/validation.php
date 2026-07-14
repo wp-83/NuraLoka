@@ -204,6 +204,7 @@ return [
         'password' => 'Kata sandi',
         'confirmPassword' => 'Konfirmasi kata sandi',
         'password_confirmation' => 'Konfirmasi kata sandi',
+        'profile_photo' => 'Foto profil',
     ],
 
 ];
