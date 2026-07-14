@@ -20,7 +20,7 @@ export default function Navbar() {
             {/* Profil Saya */}
             <div className="my-2">
                 <Link
-                    href="/profile"
+                    href={route('profile.index', user.username)}
                     className="
                         flex w-full items-center gap-3
                         rounded-xl px-3 py-2
@@ -190,16 +190,16 @@ export default function Navbar() {
                             >
                                 <div className="text-right">
                                     <h5 className="font-body text-small font-bold text-primary">
-                                        Jayadi Christopher
+                                        {user.fullname}
                                     </h5>
 
                                     <p className="font-body text-micro italic text-secondary">
-                                        Pemula
+                                        Gelar/Badge
                                     </p>
                                 </div>
 
                                 <img
-                                    src="/images/background-auth/login/1.jpg"
+                                    src={user.public_profile_photo}
                                     alt="Profile"
                                     className="
                                         h-12 w-12 rounded-full
@@ -255,16 +255,16 @@ export default function Navbar() {
                     >
                         <div className="text-right">
                             <h5 className="font-body text-small font-bold text-primary">
-                                Jayadi Christopher
+                                {user.fullname}
                             </h5>
 
                             <p className="font-body text-micro italic text-secondary">
-                                Pemula
+                                Gelar/Badge Mobile
                             </p>
                         </div>
 
                         <img
-                            src="/images/background-auth/login/1.jpg"
+                            src={user.public_profile_photo}
                             alt="Profile"
                             className="
                                 h-12 w-12 rounded-full

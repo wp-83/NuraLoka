@@ -34,6 +34,10 @@ class User extends Authenticatable
         'google_id',
     ];
 
+    protected $appends = [
+        'public_profile_photo',
+    ];
+
     /**
      * Get the attributes that should be cast.
      *
@@ -45,6 +49,20 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // profile picture
+    public function getPublicProfilePhotoAttribute()
+    {
+        if ($this->userDetail?->profile_path) {
+            return asset('storage/'.$this->userDetail->profile_path);
+        }
+
+        return match ($this->userDetail->gender) {
+            'male' => asset('images/defaults/user-male.png'),
+            'female' => asset('images/defaults/user-female.png'),
+            default => asset('images/defaults/profile-general.png'),
+        };
     }
 
     // Relationships
@@ -62,7 +80,7 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    public function userDetails()
+    public function userDetail()
     {
         return $this->hasOne(UserDetail::class);
     }

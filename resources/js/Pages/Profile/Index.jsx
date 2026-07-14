@@ -1,0 +1,179 @@
+import { Link } from '@inertiajs/react';
+import Button from '@components/Forms/Button';
+import ProfileStatisticCard from '@components/Features/ProfileStatisticCard';
+import MainLayout from '@js/Layouts/MainLayout';
+import { FiMail, FiMapPin, FiCalendar, FiUser } from 'react-icons/fi';
+import { FaGenderless, FaMars, FaVenus } from 'react-icons/fa6';
+
+// ===================== SISA STATISTIC
+
+// =========================================================
+// FORMATTER
+// =========================================================
+const formatDate = (date) => {
+    if (!date) return '-';
+    return new Intl.DateTimeFormat('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+    }).format(new Date(date));
+};
+
+// =========================================================
+// MAIN COMPONENT
+// =========================================================
+export default function Index({ user, totalUser, rank, recentBadges, totalBadge, statistics }) {
+    return (
+        <section className="w-full py-8">
+        {/* PAGE TITLE */}
+        <h1 className="mb-8 font-heading text-title font-bold text-primary sm:text-hero">
+            Profil Kamu
+        </h1>
+
+        {/* PROFILE */}
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+            {/* LEFT SIDE */}
+            <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start lg:gap-8">
+
+                {/* AVATAR */}
+                <div className="h-44 w-44 shrink-0 overflow-hidden rounded-full border-3 border-secondary bg-white p-1 shadow-sm sm:h-48 sm:w-48">
+                    <img
+                    src={user.public_profile_photo}
+                    alt={user.user_detail.fullname}
+                    className="h-full w-full rounded-full object-cover"
+                    />
+                </div>
+
+                {/* USER DATA */}
+                <div className="w-full text-center sm:text-left">
+                    <h2 className="font-heading text-subtitle text-primary">
+                        {user.user_detail.fullname}
+                    </h2>
+                    <p className="mt-1 font-heading text-body text-secondary">
+                        diisi dengan role nanti
+                    </p>
+
+                    {/* PROFILE INFORMATION */}
+                    <div className="mt-6 grid grid-cols-1 gap-x-8 gap-y-4 text-left sm:grid-cols-2">
+                        <div className="flex min-w-0 items-center gap-2 font-body text-body text-gray-100">
+                            <FiUser size={24} className='text-accent'></FiUser>
+                            <span className="truncate">{user.username}</span>
+                        </div>
+                        <div className="flex min-w-0 items-center gap-2 font-body text-body text-gray-100">
+                            <FiMail size={24} className='text-accent'></FiMail>
+                            <span className="truncate">{user.email}</span>
+                        </div>
+                        <div className="flex min-w-0 items-center gap-2 font-body text-body text-gray-100">
+                            <FiCalendar size={24} className='text-accent'></FiCalendar>
+                            <span className="truncate">{formatDate(user.user_detail.dob)}</span>
+                        </div>
+                        <div className="flex min-w-0 items-center gap-2 font-body text-body text-gray-100">
+                            <FiMapPin size={24} className='text-accent'></FiMapPin>
+                            <span className="truncate">{user.user_detail.province.name}</span>
+                        </div>
+                        <div className="flex min-w-0 items-center gap-2 font-body text-body text-gray-100">
+                            {user.user_detail?.gender === 'male' ? (
+                                <FaMars size={24} className="text-accent" />
+                            ) : user.user_detail?.gender === 'female' ? (
+                                <FaVenus size={24} className="text-accent" />
+                            ) : (
+                                <FaGenderless size={24} className="text-accent" />
+                            )}
+
+                            <span className="truncate">
+                                {user.user_detail?.gender === 'male' ? (
+                                    "Laki-laki"
+                                ) : user.user_detail?.gender === 'female' ? (
+                                    "Perempuan"
+                                ) : (
+                                    "Tidak ingin memberi tahu"
+                                )}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* RIGHT SIDE */}
+            <div className="flex w-full flex-row items-start justify-between gap-8 border-t border-gray-30 pt-6 lg:w-auto lg:flex-col lg:items-end lg:border-0 lg:pt-0">
+                {/* RANK */}
+                <div className="text-left lg:text-right">
+                    <p className="font-heading text-subtitle font-bold text-accent sm:text-title">
+                        #{rank}
+                    </p>
+                    <p className="font-body text-paragraph text-primary-100">
+                        dari {totalUser} Nuravers
+                    </p>
+                </div>
+
+                {/* RECENT BADGES */}
+                <div className="text-right">
+                    <p className="mb-3 font-body text-body text-primary-100">
+                        Lencana Baru-Baru Ini
+                    </p>
+
+                    {recentBadges?.length > 0 ? (
+                        <div className="flex justify-end gap-3">
+                            {recentBadges.map((badge) => (
+                                <img
+                                    key={badge.id}
+                                    src={`/storage/${badge.image}`}
+                                    alt={badge.name}
+                                    title={badge.name}
+                                    className="h-14 w-14 object-contain sm:h-16 sm:w-16"
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="font-body text-small text-gray-70 italic">Belum ada lencana</p>
+                    )}
+                </div>
+            </div>
+        </div>
+
+        {/* STATISTICS */}
+        <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-3">
+            <ProfileStatisticCard
+                title="Lencana Terkumpul"
+                value={statistics?.badges ?? 0}
+                description={`dari ${totalBadge} lencana`}
+                image="/images/badges/siPalingBudaya/4.png"
+            />
+            <ProfileStatisticCard
+                title="Album Kamu"
+                value={statistics?.albums ?? 0}
+                description={`album hingga ${new Date().getFullYear()}`}
+                image="/images/mascots/map-v2.png"
+            />
+            <ProfileStatisticCard
+                title="Poin Nura Kamu"
+                value={(user.user_detail?.total_points ?? 0).toLocaleString('id-ID')}
+                description="poin"
+                image="/images/mascots/telescope.png"
+                flipImage={true}
+            />
+        </div>
+
+        {/* UPDATE PROFILE */}
+        <div className="mt-8 flex justify-end">
+            <Link href={route('profile.edit')} className="w-full sm:w-auto">
+                <Button type="button" className="w-full sm:min-w-52">
+                    Perbarui Data Profil
+                </Button>
+            </Link>
+        </div>
+        </section>
+    );
+}
+
+
+// =========================================================
+// LAYOUT
+// =========================================================
+Index.layout = (page) => (
+    <MainLayout
+        pageTitle="Profil"
+        pageDescription="Lihat profil, pencapaian, lencana, album, dan poin Nura kamu."
+        content={page}
+    />
+);
