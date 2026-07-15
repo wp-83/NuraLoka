@@ -107,6 +107,7 @@ Route::middleware('auth')->group(function () {
     // Album
     Route::prefix('/album')->name('album.')->controller(AlbumController::class)->group(function () {
         Route::get('/', 'index')->name('index');
+        Route::get('/lokasi/cari', 'searchLocation')->name('location.search');
         Route::get('/buat', 'create')->name('create');
         Route::post('/', 'store')->name('store');
         Route::get('/semua', 'allAlbums')->name('all');

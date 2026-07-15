@@ -318,15 +318,8 @@ export default function AlbumAll({
 // ============================================================
 AlbumAll.layout = (page) => (
     <MainLayout
-        pageTitle={
-            page.props.pageTitle ||
-            'Semua Album'
-        }
-        pageDescription={
-            page.props.ownerName
-                ? `Jelajahi koleksi album perjalanan publik milik ${page.props.ownerName} dan temukan berbagai cerita serta pengalaman wisata bersama komunitas Nuravers di NuraLoka.`
-                : 'Lihat dan kelola seluruh koleksi album perjalananmu di NuraLoka. Dokumentasikan setiap momen, destinasi, dan pengalaman wisata berkesan dalam satu tempat.'
-        }
+        pageTitle="Semua Album"
+        pageDescription="Jelajahi koleksi album perjalanan dan temukan berbagai cerita serta pengalaman wisata bersama komunitas Nuravers di NuraLoka."
         content={page}
     />
 );

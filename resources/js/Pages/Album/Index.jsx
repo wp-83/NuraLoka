@@ -50,7 +50,7 @@ function getProfileImage(profilePath) {
 // ============================================================
 function PopularAlbumCard({ album }) {
     const handleVisit = () => {
-        router.visit(route('album.show', album.slug));
+        router.visit(route('album.show', { album: album.slug }));
     };
 
     return (
@@ -151,7 +151,7 @@ function MyAlbumCard({ album, onDelete }) {
     };
 
     const handleVisit = () => {
-        router.visit(route('album.show', album.slug));
+        router.visit(route('album.show', { album: album.slug }));
     };
 
     const handleEdit = () => {
@@ -277,30 +277,30 @@ function MyAlbumCard({ album, onDelete }) {
                         >
                             <span
                                 className={`
-                                    relative
-                                    h-5 w-10
+                                    relative inline-flex
+                                    h-6 w-11
+                                    items-center
                                     rounded-full
-                                    transition-colors duration-200
+                                    border-2
+                                    transition-colors duration-300
 
-                                    ${
-                                        album.is_public
-                                            ? 'bg-primary-100'
-                                            : 'bg-gray-30'
+                                    ${album.is_public
+                                        ? 'border-primary-100 bg-primary-30'
+                                        : 'border-gray-30 bg-gray-10'
                                     }
                                 `}
                             >
                                 <span
                                     className={`
-                                        absolute top-0.5
+                                        inline-block
                                         h-4 w-4
                                         rounded-full
-                                        bg-white shadow
-                                        transition-transform duration-200
+                                        shadow-md
+                                        transition-all duration-300
 
-                                        ${
-                                            album.is_public
-                                                ? 'translate-x-[22px]'
-                                                : 'translate-x-0.5'
+                                        ${album.is_public
+                                            ? 'translate-x-[22px] bg-primary-100'
+                                            : 'translate-x-[3px] bg-gray-50'
                                         }
                                     `}
                                 />
