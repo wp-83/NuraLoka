@@ -1,28 +1,40 @@
-import { Link, Head, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaArrowLeft, FaTag } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaTag } from 'react-icons/fa';
 import Flash from '@components/Common/Flash';
-// import '@css/Init.css';
-import '@css/Admin/News.css';
-import '@css/Admin/Category.css';
+import Modal from '@components/Common/Modal';
+import Button from '@components/Forms/Button';
+import Input from '@components/Forms/Input';
+import AdminLayout from '../../../Layouts/AdminLayout';
 
 export default function Index({ categories, filters }) {
     const { flash } = usePage().props;
     const [search, setSearch] = useState(filters.search || '');
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [deleting, setDeleting] = useState(false);
 
     const handleSearch = (e) => {
         e.preventDefault();
         router.get(route('admin.categories.index'), { search }, { preserveState: true, replace: true });
     };
 
-    const handleDelete = (id, name, placesCount) => {
-        if (placesCount > 0) {
-            alert(`Kategori "${name}" tidak dapat dihapus karena masih digunakan oleh ${placesCount} destinasi.`);
+    const handleDeleteClick = (cat) => {
+        if (cat.places_count > 0) {
+            alert(`Kategori "${cat.name}" tidak dapat dihapus karena masih digunakan oleh ${cat.places_count} destinasi.`);
             return;
         }
-        if (confirm(`Apakah Anda yakin ingin menghapus kategori "${name}"?`)) {
-            router.delete(route('admin.categories.destroy', id));
-        }
+        setDeleteTarget({ id: cat.id, name: cat.name });
+    };
+
+    const confirmDelete = () => {
+        if (!deleteTarget) return;
+        router.delete(route('admin.categories.destroy', deleteTarget.id), {
+            onStart: () => setDeleting(true),
+            onFinish: () => {
+                setDeleting(false);
+                setDeleteTarget(null);
+            },
+        });
     };
 
     return (
@@ -35,114 +47,124 @@ export default function Index({ categories, filters }) {
                 <Flash type={flash.type || 'success'} message={flash.message} />
             )}
 
-            <div className="admin-category-container">
-                {/* Back navigation */}
-                <div className="back-navigation">
-                    <Link href={route('admin.dashboard')} className="back-to-home-link">
-                        <FaArrowLeft style={{ fontSize: '0.9rem', marginRight: '0.5rem' }} /> Kembali ke Dashboard Admin
-                    </Link>
-                </div>
-
+            <div className="mx-auto w-full max-w-6xl">
                 {/* Header */}
-                <div className="admin-category-header">
+                <div className="flex flex-col items-center gap-4 border-b border-primary-10 pb-6 text-center sm:flex-row sm:text-left">
                     <img
                         src="/images/mascots/welcome.png"
                         alt="NuraLoka Mascot"
-                        className="admin-category-mascot"
+                        className="h-24 w-24 shrink-0 object-contain"
                     />
-                    <div className="admin-category-title-wrapper">
-                        <h1 className="admin-category-title">Kelola Kategori Destinasi</h1>
-                        <p className="admin-category-subtitle">
-                            Tambah, ubah, dan hapus kategori destinasi wisata. Kategori digunakan untuk mengklasifikasi tempat-tempat di NuraLoka.
+                    <div>
+                        <h1 className="font-heading text-subtitle font-bold text-primary-100">
+                            Kelola Kategori Destinasi
+                        </h1>
+                        <p className="mt-1 text-body text-gray-70">
+                            Tambah, ubah, dan hapus kategori destinasi wisata. Kategori digunakan untuk
+                            mengklasifikasi tempat-tempat di NuraLoka.
                         </p>
                     </div>
                 </div>
 
                 {/* Toolbar */}
-                <div className="admin-toolbar">
-                    <form onSubmit={handleSearch} className="admin-search-wrapper">
-                        <div className="search-input-group">
-                            <input
-                                type="text"
-                                placeholder="Cari kategori berdasarkan nama..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-                            <FaSearch className="search-icon" />
-                        </div>
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <form onSubmit={handleSearch} className="w-full sm:max-w-md">
+                        <Input
+                            name="search"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Cari kategori berdasarkan nama..."
+                            icon={<FaSearch />}
+                        />
                     </form>
 
-                    <Link href={route('admin.categories.create')} className="admin-add-category-btn">
-                        <span className="add-category-icon-box">
-                            <FaPlus />
-                        </span>
-                        <span>Tambah Kategori</span>
-                    </Link>
+                    <Button
+                        variant="primary"
+                        iconLeft={<FaPlus />}
+                        onClick={() => router.get(route('admin.categories.create'))}
+                        className="shrink-0"
+                    >
+                        Tambah Kategori
+                    </Button>
                 </div>
 
                 {/* Table */}
-                <div className="table-responsive">
-                    <table className="admin-table">
+                <div className="mt-6 overflow-x-auto rounded-xl border border-primary-10">
+                    <table className="w-full border-collapse text-left">
                         <thead>
-                            <tr>
-                                <th style={{ width: '10%' }}>Icon</th>
-                                <th style={{ width: '45%' }}>Nama Kategori</th>
-                                <th style={{ width: '20%', textAlign: 'center' }}>Jumlah Destinasi</th>
-                                <th style={{ width: '25%', textAlign: 'center' }}>Aksi</th>
+                            <tr className="bg-primary-10 text-primary-100">
+                                <th className="px-4 py-3 font-heading text-small font-semibold">Icon</th>
+                                <th className="px-4 py-3 font-heading text-small font-semibold">Nama Kategori</th>
+                                <th className="px-4 py-3 text-center font-heading text-small font-semibold">Jumlah Destinasi</th>
+                                <th className="px-4 py-3 text-center font-heading text-small font-semibold">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             {categories.data && categories.data.length > 0 ? (
                                 categories.data.map((cat) => (
-                                    <tr key={cat.id}>
-                                        <td>
+                                    <tr
+                                        key={cat.id}
+                                        className="border-t border-primary-10 transition-colors hover:bg-secondary-10"
+                                    >
+                                        <td className="px-4 py-3">
                                             {cat.icon_path ? (
                                                 <img
                                                     src={cat.icon_path}
                                                     alt={cat.name}
-                                                    className="category-icon-cell"
+                                                    className="h-10 w-10 rounded-lg object-contain"
                                                     onError={(e) => { e.target.style.display = 'none'; }}
                                                 />
                                             ) : (
-                                                <div className="category-icon-placeholder">
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-10 text-primary-50">
                                                     <FaTag />
                                                 </div>
                                             )}
                                         </td>
-                                        <td style={{ fontWeight: '600', color: 'var(--primary-100)' }}>
+                                        <td className="px-4 py-3 font-semibold text-primary-100">
                                             {cat.name}
                                         </td>
-                                        <td style={{ textAlign: 'center' }}>
-                                            <span className={`places-count-badge ${cat.places_count === 0 ? 'zero' : ''}`}>
+                                        <td className="px-4 py-3 text-center">
+                                            <span
+                                                className={`inline-flex rounded-full px-3 py-1 text-micro font-semibold ${
+                                                    cat.places_count === 0
+                                                        ? 'bg-gray-10 text-gray-50'
+                                                        : 'bg-secondary-10 text-secondary-100'
+                                                }`}
+                                            >
                                                 {cat.places_count} Destinasi
                                             </span>
                                         </td>
-                                        <td>
-                                            <div className="admin-actions" style={{ justifyContent: 'center' }}>
-                                                <Link
-                                                    href={route('admin.categories.edit', cat.id)}
-                                                    className="btn-info btn-sm admin-action-btn edit-btn-icon-only"
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Button
+                                                    variant="info"
+                                                    size="btn-sm"
+                                                    iconLeft={<FaEdit />}
+                                                    onClick={() => router.get(route('admin.categories.edit', cat.id))}
                                                     title="Edit Kategori"
                                                 >
-                                                    <FaEdit />
-                                                </Link>
-                                                <button
-                                                    onClick={() => handleDelete(cat.id, cat.name, cat.places_count)}
-                                                    className="btn-error btn-sm admin-action-btn"
+                                                    Edit
+                                                </Button>
+                                                <Button
+                                                    variant="error"
+                                                    size="btn-sm"
+                                                    iconLeft={<FaTrash />}
+                                                    onClick={() => handleDeleteClick(cat)}
                                                     title={cat.places_count > 0 ? 'Tidak bisa dihapus — masih digunakan' : 'Hapus Kategori'}
-                                                    type="button"
-                                                    style={{ opacity: cat.places_count > 0 ? 0.5 : 1, cursor: cat.places_count > 0 ? 'not-allowed' : 'pointer' }}
+                                                    className={cat.places_count > 0 ? 'opacity-50' : ''}
                                                 >
-                                                    <FaTrash /> Hapus
-                                                </button>
+                                                    Hapus
+                                                </Button>
                                             </div>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="4" style={{ textAlign: 'center', padding: '3rem', color: 'var(--gray-50)' }}>
-                                        {search ? 'Tidak ada kategori yang cocok dengan pencarian Anda.' : 'Belum ada data kategori.'}
+                                    <td colSpan="4" className="px-4 py-12 text-center text-body text-gray-50">
+                                        {search
+                                            ? 'Tidak ada kategori yang cocok dengan pencarian Anda.'
+                                            : 'Belum ada data kategori.'}
                                     </td>
                                 </tr>
                             )}
@@ -152,36 +174,65 @@ export default function Index({ categories, filters }) {
 
                 {/* Pagination */}
                 {categories.links && categories.links.length > 3 && (
-                    <div className="admin-pagination-wrapper">
-                        <div className="news-pagination">
-                            {categories.links.map((link, index) => {
-                                let label = link.label;
-                                if (label.includes('Previous')) label = 'Sebelumnya';
-                                else if (label.includes('Next')) label = 'Selanjutnya';
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                        {categories.links.map((link, index) => {
+                            let label = link.label;
+                            if (label.includes('Previous')) label = 'Sebelumnya';
+                            else if (label.includes('Next')) label = 'Selanjutnya';
 
-                                if (!link.url) {
-                                    return (
-                                        <span
-                                            key={index}
-                                            className="pagination-link pagination-disabled"
-                                            dangerouslySetInnerHTML={{ __html: label }}
-                                        />
-                                    );
-                                }
+                            const base =
+                                'min-w-9 rounded-lg px-3 py-2 text-small font-semibold transition-colors';
 
+                            if (!link.url) {
                                 return (
-                                    <Link
+                                    <span
                                         key={index}
-                                        href={link.url}
-                                        className={`pagination-link ${link.active ? 'pagination-active' : ''}`}
+                                        className={`${base} cursor-not-allowed bg-gray-10 text-gray-30`}
                                         dangerouslySetInnerHTML={{ __html: label }}
                                     />
                                 );
-                            })}
-                        </div>
+                            }
+
+                            return (
+                                <button
+                                    key={index}
+                                    type="button"
+                                    onClick={() => router.get(link.url)}
+                                    className={`${base} ${
+                                        link.active
+                                            ? 'bg-primary-100 text-white'
+                                            : 'bg-primary-10 text-primary-100 hover:bg-primary-30'
+                                    }`}
+                                    dangerouslySetInnerHTML={{ __html: label }}
+                                />
+                            );
+                        })}
                     </div>
                 )}
             </div>
+
+            <Modal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                type="warning"
+                title={`Apakah kamu yakin ingin menghapus kategori "${deleteTarget?.name}"?`}
+                actions={[
+                    {
+                        label: 'Batal',
+                        variant: 'gray',
+                        onClick: () => setDeleteTarget(null),
+                        disabled: deleting,
+                    },
+                    {
+                        label: 'Hapus Data',
+                        variant: 'error',
+                        onClick: confirmDelete,
+                        loading: deleting,
+                    },
+                ]}
+            />
         </>
     );
 }
+
+Index.layout = (page) => <AdminLayout content={page}></AdminLayout>;
