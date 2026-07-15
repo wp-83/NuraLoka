@@ -20,7 +20,9 @@ class ExploreController extends Controller
 
     // Bobot skor "Ramai Dikunjungi": pengunjung > pemosting album > saves.
     private const WEIGHT_VISIT = 3;
+
     private const WEIGHT_ALBUM = 2;
+
     private const WEIGHT_SAVE = 1;
 
     // Radius maksimal (meter) agar check-in dianggap sah (verifikasi lokasi).

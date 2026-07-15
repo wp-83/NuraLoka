@@ -27,11 +27,11 @@ class ImportOsmPlaces extends Command
 
     // Preset bounding box [south, west, north, east]
     private array $regions = [
-        'jakarta'   => [-6.40, 106.60, -6.05, 107.05],
-        'jabar'     => [-7.85, 106.30, -5.90, 108.85],
-        'jateng'    => [-8.30, 108.55, -6.00, 111.70],
-        'jatim'     => [-8.80, 110.80, -6.75, 114.60],
-        'bali'      => [-8.90, 114.40, -8.05, 115.75],
+        'jakarta' => [-6.40, 106.60, -6.05, 107.05],
+        'jabar' => [-7.85, 106.30, -5.90, 108.85],
+        'jateng' => [-8.30, 108.55, -6.00, 111.70],
+        'jatim' => [-8.80, 110.80, -6.75, 114.60],
+        'bali' => [-8.90, 114.40, -8.05, 115.75],
         'indonesia' => [-11.00, 95.00, 6.10, 141.10],
     ];
 
@@ -97,14 +97,17 @@ class ImportOsmPlaces extends Command
             $key = strtolower($region);
             if (! isset($this->regions[$key])) {
                 $this->error("Region '{$region}' tidak dikenal. Pilihan: ".implode(', ', array_keys($this->regions)));
+
                 return [null, null, null, null];
             }
+
             return $this->regions[$key];
         }
 
         foreach (['south', 'west', 'north', 'east'] as $opt) {
             if ($this->option($opt) === null) {
                 $this->error('Sertakan --region ATAU keempat batas --south --west --north --east.');
+
                 return [null, null, null, null];
             }
         }
@@ -194,17 +197,35 @@ class ImportOsmPlaces extends Command
         $tourism = $tags['tourism'] ?? null;
         $natural = $tags['natural'] ?? null;
 
-        if (in_array($amenity, ['restaurant', 'cafe', 'food_court', 'fast_food'], true)) return 'Kuliner';
-        if ($tourism === 'museum') return 'Museum';
-        if ($natural === 'beach') return 'Pantai';
-        if ($natural === 'waterfall' || ($tags['waterway'] ?? null) === 'waterfall') return 'Air Terjun';
+        if (in_array($amenity, ['restaurant', 'cafe', 'food_court', 'fast_food'], true)) {
+            return 'Kuliner';
+        }
+        if ($tourism === 'museum') {
+            return 'Museum';
+        }
+        if ($natural === 'beach') {
+            return 'Pantai';
+        }
+        if ($natural === 'waterfall' || ($tags['waterway'] ?? null) === 'waterfall') {
+            return 'Air Terjun';
+        }
         if (in_array($natural, ['peak', 'volcano'], true)
             || ($tags['leisure'] ?? null) === 'nature_reserve'
-            || in_array($tourism, ['viewpoint', 'attraction'], true)) return 'Wisata Alam';
-        if (($tags['leisure'] ?? null) === 'theme_park') return 'Taman Hiburan';
-        if (isset($tags['historic'])) return 'Wisata Budaya';
-        if ($amenity === 'place_of_worship') return 'Religi';
-        if (in_array($tags['shop'] ?? null, ['mall', 'department_store'], true)) return 'Belanja';
+            || in_array($tourism, ['viewpoint', 'attraction'], true)) {
+            return 'Wisata Alam';
+        }
+        if (($tags['leisure'] ?? null) === 'theme_park') {
+            return 'Taman Hiburan';
+        }
+        if (isset($tags['historic'])) {
+            return 'Wisata Budaya';
+        }
+        if ($amenity === 'place_of_worship') {
+            return 'Religi';
+        }
+        if (in_array($tags['shop'] ?? null, ['mall', 'department_store'], true)) {
+            return 'Belanja';
+        }
 
         return null;
     }
