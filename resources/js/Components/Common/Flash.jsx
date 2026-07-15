@@ -1,8 +1,12 @@
-import '@css/app.css';
-
 import IconButton from '@components/Common/IconButton';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
+
 import { MdOutlineClose } from 'react-icons/md';
 
 export default function Flash({
@@ -73,14 +77,16 @@ export default function Flash({
         const handleClickOutside = (event) => {
             if (
                 flashRef.current &&
-                !flashRef.current.contains(event.target)
+                !flashRef.current.contains(
+                    event.target
+                )
             ) {
                 closeFlash();
             }
         };
 
         document.addEventListener(
-            'mousedown',
+            'pointerdown',
             handleClickOutside
         );
 
@@ -100,7 +106,7 @@ export default function Flash({
                 originalOverflow;
 
             document.removeEventListener(
-                'mousedown',
+                'pointerdown',
                 handleClickOutside
             );
         };
@@ -170,7 +176,10 @@ export default function Flash({
                 className={`
                     h-1
                     animate-progress
-                    ${loadingColor[type] ?? loadingColor.info}
+                    ${
+                        loadingColor[type] ??
+                        loadingColor.info
+                    }
                 `}
             />
         </div>

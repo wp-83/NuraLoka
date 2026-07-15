@@ -15,6 +15,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 
@@ -84,8 +85,10 @@ Route::middleware('auth')->group(function () {
     // Explore
     Route::prefix('/jelajah')->name('explore.')->controller(ExploreController::class)->group(function () {
         Route::get('/', 'index')->name('index');
-        Route::get('/{slug}', 'show')->name('show');
+        Route::get('/titik', 'points')->name('points');   // API peta — sebelum /{slug} agar tidak tertangkap
         Route::post('/lacak', 'trackVisit')->name('track');
+        Route::post('/checkin', 'checkIn')->name('checkin'); // check-in kunjungan (verifikasi lokasi)
+        Route::get('/{slug}', 'show')->name('show');
     });
 
     // Challenges
@@ -127,12 +130,12 @@ Route::middleware('auth')->group(function () {
 // Admin Features
 Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(function () {
     // Dashboard
-    Route::prefix('/dashboard')->name('dashboard.')->controller(DashboardController::class)->group(function () {
+    Route::prefix('/dasbor')->name('dashboard.')->controller(DashboardController::class)->group(function () {
         Route::get('/', 'index')->name('index');
     });
 
     // Place Management
-    Route::prefix('/places')->name('admin.places.')->group(function () {
+    Route::prefix('/places')->name('places.')->group(function () {
         Route::get('/', [AdminPlaceController::class, 'index'])->name('index');
         Route::get('/create', [AdminPlaceController::class, 'create'])->name('create');
         Route::post('/', [AdminPlaceController::class, 'store'])->name('store');
@@ -172,6 +175,16 @@ Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(fu
     });
 
     // User Management
+    Route::prefix('/pengguna')->name('users.')->controller(UserController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/tambah', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/{user}/ubah', 'edit')->name('edit');
+        Route::put('/{user}', 'update')->name('update');
+        Route::patch('/{user}/blokir', 'ban')->name('ban');
+        Route::patch('/{user}/buka-blokir', 'unban')->name('unban');
+        Route::delete('/{user}', 'destroy')->name('destroy');
+    });
 
     // Language Management
 

@@ -13,16 +13,16 @@ export const adminMenuItems = [
         route: 'dashboard',
         icon: LuLayoutDashboard,
     },
-    // {
-    //     label: 'Tempat Wisata',
-    //     route: 'places',
-    //     icon: BiMapPin,
-    // },
-    // {
-    //     label: 'Kategori Tempat',
-    //     route: 'categories',
-    //     icon: MdOutlineCategory,
-    // },
+    {
+        label: 'Tempat Wisata',
+        route: 'places',
+        icon: BiMapPin,
+    },
+    {
+        label: 'Kategori Tempat',
+        route: 'categories',
+        icon: MdOutlineCategory,
+    },
     // {
     //     label: 'Lencana dan Misi',
     //     route: 'missions',
@@ -38,11 +38,11 @@ export const adminMenuItems = [
     //     route: 'insights',
     //     icon: FaRegNewspaper,
     // },
-    // {
-    //     label: 'Pengguna',
-    //     route: 'users',
-    //     icon: TiGroupOutline,
-    // },
+    {
+        label: 'Pengguna',
+        route: 'users',
+        icon: TiGroupOutline,
+    },
     // {
     //     label: 'Preferensi Bahasa',
     //     route: 'languages',

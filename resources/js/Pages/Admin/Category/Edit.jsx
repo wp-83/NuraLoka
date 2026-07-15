@@ -1,13 +1,13 @@
-import { Link, Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { FaArrowLeft, FaUpload, FaTrash, FaSearchPlus } from 'react-icons/fa';
-// import '@css/Init.css';
-import '@css/Admin/News.css';
-import '@css/Admin/Category.css';
+import Button from '@components/Forms/Button';
+import Input from '@components/Forms/Input';
+import AdminLayout from '../../../Layouts/AdminLayout';
 
 export default function Edit({ category }) {
     const [previewUrl, setPreviewUrl] = useState(category.icon_path || null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm({
         name: category.name || '',
@@ -18,11 +18,7 @@ export default function Edit({ category }) {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         setData((d) => ({ ...d, icon_path: file, remove_icon: false }));
-        if (file) {
-            setPreviewUrl(URL.createObjectURL(file));
-        } else {
-            setPreviewUrl(category.icon_path || null);
-        }
+        setPreviewUrl(file ? URL.createObjectURL(file) : category.icon_path || null);
     };
 
     const handleRemoveIcon = () => {
@@ -47,139 +43,154 @@ export default function Edit({ category }) {
                 <title>Admin | Edit Kategori</title>
             </Head>
 
-            <div className="admin-form-container">
+            <div className="mx-auto w-full max-w-3xl">
                 {/* Back button */}
-                <div className="back-navigation" style={{ marginBottom: '2rem' }}>
-                    <Link href={route('admin.categories.index')} className="back-to-home-link">
-                        <FaArrowLeft style={{ fontSize: '0.9rem', marginRight: '0.5rem' }} /> Kembali ke Daftar Kategori
-                    </Link>
+                <div className="mb-6">
+                    <Button
+                        variant="white"
+                        size="btn-sm"
+                        iconLeft={<FaArrowLeft />}
+                        onClick={() => router.get(route('admin.categories.index'))}
+                    >
+                        Kembali ke Daftar Kategori
+                    </Button>
                 </div>
 
-                <div className="admin-form-card">
-                    <h2 className="admin-form-title">Edit Kategori</h2>
+                <h2 className="mb-6 border-b border-primary-10 pb-4 font-heading text-subtitle font-bold text-primary-100">
+                    Edit Kategori
+                </h2>
 
-                    <form onSubmit={handleSubmit} className="admin-crud-form">
-                        {/* Name */}
-                        <div className="input-group">
-                            <label htmlFor="name"><b>Nama Kategori</b></label>
-                            <div className={`input-wrapper ${errors.name ? 'input-error' : ''}`}>
-                                <input
-                                    id="name"
-                                    type="text"
-                                    placeholder="Contoh: Pantai, Pegunungan, Kuliner, Sejarah..."
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    required
-                                />
-                            </div>
-                            {errors.name && <span className="error-message">{errors.name}</span>}
-                        </div>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                    <Input
+                        label="Nama Kategori"
+                        name="name"
+                        value={data.name}
+                        onChange={(e) => setData('name', e.target.value)}
+                        placeholder="Contoh: Pantai, Pegunungan, Kuliner, Sejarah..."
+                        error={errors.name}
+                        required
+                    />
 
-                        {/* Icon Upload */}
-                        <div className="input-group" style={{ marginTop: '1.5rem' }}>
-                            <label><b>Icon Kategori</b></label>
-                            <div className="thumbnail-upload-section">
-                                {/* Preview Box */}
-                                <div
-                                    className={`icon-preview-box ${!previewUrl ? 'clickable-icon' : ''}`}
-                                    onClick={!previewUrl ? triggerFileInput : undefined}
-                                    style={{ cursor: !previewUrl ? 'pointer' : 'default' }}
-                                >
-                                    {previewUrl ? (
-                                        <div className="preview-image-wrapper">
-                                            <img
-                                                src={previewUrl}
-                                                alt="Icon Preview"
-                                                style={{ objectFit: 'contain' }}
-                                                onError={(e) => { e.target.src = '/images/defaults/image.png'; }}
-                                            />
-                                            <div className="preview-overlay">
-                                                <button
-                                                    type="button"
-                                                    className="overlay-action-btn view-btn"
-                                                    onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
-                                                    title="Lihat Icon"
-                                                >
-                                                    <FaSearchPlus />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="overlay-action-btn delete-btn"
-                                                    onClick={(e) => { e.stopPropagation(); handleRemoveIcon(); }}
-                                                    title="Hapus Icon"
-                                                >
-                                                    <FaTrash />
-                                                </button>
-                                            </div>
+                    {/* Icon Upload */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="font-heading text-paragraph text-primary-100">
+                            Icon Kategori
+                        </label>
+
+                        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+                            {/* Preview Box */}
+                            <div
+                                className={`group relative flex h-32 w-32 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-dashed ${
+                                    errors.icon_path ? 'border-error-dark' : 'border-primary-30'
+                                } bg-gray-10 ${!previewUrl ? 'cursor-pointer hover:bg-secondary-10' : ''}`}
+                                onClick={!previewUrl ? triggerFileInput : undefined}
+                            >
+                                {previewUrl ? (
+                                    <>
+                                        <img
+                                            src={previewUrl}
+                                            alt="Icon Preview"
+                                            className="h-full w-full object-contain p-2"
+                                            onError={(e) => { e.target.src = '/images/defaults/image.png'; }}
+                                        />
+                                        <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsPreviewOpen(true)}
+                                                title="Lihat Icon"
+                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary-100 hover:opacity-80"
+                                            >
+                                                <FaSearchPlus />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={handleRemoveIcon}
+                                                title="Hapus Icon"
+                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-error-dark hover:opacity-80"
+                                            >
+                                                <FaTrash />
+                                            </button>
                                         </div>
-                                    ) : (
-                                        <div className="no-icon">Belum ada icon</div>
-                                    )}
-                                </div>
+                                    </>
+                                ) : (
+                                    <span className="px-2 text-center text-micro italic text-gray-50">
+                                        Belum ada icon
+                                    </span>
+                                )}
+                            </div>
 
-                                {/* File Picker */}
-                                <div className="file-input-wrapper">
-                                    <div
-                                        className={`select-wrapper ${errors.icon_path ? 'input-error' : ''}`}
-                                        style={{ padding: '0', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                            {/* File Picker */}
+                            <div className="flex flex-col gap-2">
+                                <input
+                                    id="icon-file"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    className="hidden"
+                                />
+                                <div className="flex items-center gap-3">
+                                    <Button
+                                        variant="white"
+                                        size="btn-sm"
+                                        iconLeft={<FaUpload />}
                                         onClick={triggerFileInput}
                                     >
-                                        <label
-                                            htmlFor="icon-file"
-                                            className="btn-white"
-                                            style={{ border: 'none', margin: '0', borderRadius: '0', paddingBlock: '0.6rem', paddingInline: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--text-small)' }}
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <FaUpload /> Pilih File Baru
-                                        </label>
-                                        <input
-                                            id="icon-file"
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleFileChange}
-                                            style={{ display: 'none' }}
-                                        />
-                                        <span style={{ paddingInline: '1rem', fontSize: 'var(--text-small)', color: 'var(--gray-70)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                            {data.icon_path ? data.icon_path.name : 'Menggunakan icon saat ini'}
-                                        </span>
-                                    </div>
-                                    <span style={{ fontSize: 'var(--text-micro)', color: 'var(--gray-50)', marginTop: '0.5rem' }}>
-                                        Biarkan kosong jika tidak ingin mengganti icon. Maks. 1MB.
+                                        Pilih File Baru
+                                    </Button>
+                                    <span className="max-w-[12rem] truncate text-small text-gray-70">
+                                        {data.icon_path ? data.icon_path.name : 'Menggunakan icon saat ini'}
                                     </span>
                                 </div>
+                                <span className="text-micro text-gray-50">
+                                    Biarkan kosong jika tidak ingin mengganti icon. Maks. 1MB.
+                                </span>
                             </div>
-                            {errors.icon_path && <span className="error-message" style={{ marginTop: '0.5rem' }}>{errors.icon_path}</span>}
                         </div>
 
-                        {/* Actions */}
-                        <div className="form-actions">
-                            <Link
-                                href={route('admin.categories.index')}
-                                className="btn-white btn-link-cancel"
-                            >
-                                Batal
-                            </Link>
-                            <button
-                                type="submit"
-                                className="btn-success"
-                                disabled={processing}
-                            >
-                                {processing ? 'Memperbarui...' : 'Simpan Perubahan'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                        {errors.icon_path && (
+                            <p className="text-small italic text-error-dark">{errors.icon_path}</p>
+                        )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="mt-2 flex justify-end gap-3 border-t border-primary-10 pt-5">
+                        <Button
+                            variant="white"
+                            onClick={() => router.get(route('admin.categories.index'))}
+                        >
+                            Batal
+                        </Button>
+                        <Button variant="success" type="submit" loading={processing}>
+                            {processing ? 'Memperbarui...' : 'Simpan Perubahan'}
+                        </Button>
+                    </div>
+                </form>
             </div>
 
-            {/* Image preview modal */}
-            {isModalOpen && previewUrl && (
-                <div className="image-popup-modal" onClick={() => setIsModalOpen(false)}>
-                    <div className="modal-content-wrapper" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-close-btn" onClick={() => setIsModalOpen(false)}>&times;</div>
-                        <img src={previewUrl} alt="Preview Icon" />
+            {/* Image preview overlay */}
+            {isPreviewOpen && previewUrl && (
+                <div
+                    className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4"
+                    onClick={() => setIsPreviewOpen(false)}
+                >
+                    <div className="relative" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            type="button"
+                            onClick={() => setIsPreviewOpen(false)}
+                            className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-100 shadow-md hover:opacity-80"
+                        >
+                            &times;
+                        </button>
+                        <img
+                            src={previewUrl}
+                            alt="Preview Icon"
+                            className="max-h-[80vh] max-w-[80vw] rounded-lg bg-white object-contain p-4"
+                        />
                     </div>
                 </div>
             )}
         </>
     );
 }
+
+Edit.layout = (page) => <AdminLayout content={page}></AdminLayout>;
