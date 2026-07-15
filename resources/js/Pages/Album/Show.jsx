@@ -36,13 +36,13 @@ function formatViews(count = 0) {
 function getProfileImage(profilePath) {
     return profilePath
         ? `/storage/${profilePath}`
-        : '/images/defaults/avatar.png';
+        : '/images/defaults/profile-general.png';
 }
 
 function getPhotoPath(photoPath) {
     return photoPath
         ? `/storage/${photoPath}`
-        : '/images/defaults/avatar.png';
+        : '/images/defaults/image.png';
 }
 
 // ============================================================
@@ -144,7 +144,7 @@ export default function AlbumShow({
 
     const handleEdit = () => {
         router.visit(
-            route('album.edit', album.id)
+            route('album.edit', album.slug)
         );
     };
 
@@ -156,7 +156,7 @@ export default function AlbumShow({
         if (!isConfirmed) return;
 
         router.delete(
-            route('album.destroy', album.id)
+            route('album.destroy', album.slug)
         );
     };
 
@@ -164,7 +164,7 @@ export default function AlbumShow({
         router.post(
             route(
                 'album.toggle.visibility',
-                album.id
+                album.slug
             ),
             {},
             {
@@ -237,10 +237,9 @@ export default function AlbumShow({
                                         transition-colors
                                         duration-200
 
-                                        ${
-                                            album.is_public
-                                                ? 'bg-primary-100'
-                                                : 'bg-gray-30'
+                                        ${album.is_public
+                                            ? 'bg-primary-100'
+                                            : 'bg-gray-30'
                                         }
                                     `}
                                 >
@@ -254,10 +253,9 @@ export default function AlbumShow({
                                             transition-transform
                                             duration-200
 
-                                            ${
-                                                album.is_public
-                                                    ? 'translate-x-[22px]'
-                                                    : 'translate-x-0.5'
+                                            ${album.is_public
+                                                ? 'translate-x-[22px]'
+                                                : 'translate-x-0.5'
                                             }
                                         `}
                                     />
@@ -302,7 +300,7 @@ export default function AlbumShow({
                                     "
                                     onError={(event) => {
                                         event.currentTarget.src =
-                                            '/images/defaults/avatar.png';
+                                            '/images/defaults/profile-general.png';
                                     }}
                                 />
                             </div>
@@ -458,7 +456,7 @@ export default function AlbumShow({
                             (photo, index) => {
                                 const isLastOddPhoto =
                                     index ===
-                                        photos.length - 1 &&
+                                    photos.length - 1 &&
                                     photos.length % 2 !== 0;
 
                                 return (
@@ -483,10 +481,9 @@ export default function AlbumShow({
                                             hover:-translate-y-1
                                             hover:shadow-xl
 
-                                            ${
-                                                isLastOddPhoto
-                                                    ? 'md:col-span-2'
-                                                    : ''
+                                            ${isLastOddPhoto
+                                                ? 'md:col-span-2'
+                                                : ''
                                             }
                                         `}
                                     >
@@ -496,10 +493,9 @@ export default function AlbumShow({
                                                 overflow-hidden
                                                 bg-gray-10
 
-                                                ${
-                                                    index < 2
-                                                        ? 'h-72'
-                                                        : 'h-56'
+                                                ${index < 2
+                                                    ? 'h-72'
+                                                    : 'h-56'
                                                 }
                                             `}
                                         >
@@ -509,8 +505,7 @@ export default function AlbumShow({
                                                 )}
                                                 alt={
                                                     photo.filename ||
-                                                    `${album.title} - Foto ${
-                                                        index + 1
+                                                    `${album.title} - Foto ${index + 1
                                                     }`
                                                 }
                                                 className="
@@ -525,7 +520,7 @@ export default function AlbumShow({
                                                     event
                                                 ) => {
                                                     event.currentTarget.src =
-                                                        '/images/defaults/avatar.png';
+                                                        '/images/defaults/image.png';
                                                 }}
                                             />
                                         </div>
@@ -666,8 +661,7 @@ export default function AlbumShow({
                             alt={
                                 photos[lightboxIndex]
                                     .filename ||
-                                `${album.title} - Foto ${
-                                    lightboxIndex + 1
+                                `${album.title} - Foto ${lightboxIndex + 1
                                 }`
                             }
                             className="
@@ -679,7 +673,7 @@ export default function AlbumShow({
                             "
                             onError={(event) => {
                                 event.currentTarget.src =
-                                    '/images/defaults/avatar.png';
+                                    '/images/defaults/image.png';
                             }}
                         />
                     </div>
@@ -742,15 +736,8 @@ export default function AlbumShow({
 // ============================================================
 AlbumShow.layout = (page) => (
     <MainLayout
-        pageTitle={
-            page.props.album?.title ||
-            'Detail Album'
-        }
-        pageDescription={
-            page.props.album?.title
-                ? `Jelajahi album perjalanan "${page.props.album.title}" dan lihat berbagai momen serta pengalaman wisata yang dibagikan di NuraLoka.`
-                : 'Jelajahi album perjalanan dan berbagai momen wisata yang dibagikan oleh komunitas Nuravers di NuraLoka.'
-        }
+        pageTitle="Detail Album"
+        pageDescription="Jelajahi album perjalanan dan berbagai momen wisata yang dibagikan oleh komunitas Nuravers di NuraLoka."
         content={page}
     />
 );
