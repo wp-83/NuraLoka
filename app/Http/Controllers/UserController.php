@@ -116,26 +116,22 @@ class UserController extends Controller
                 ]),
 
                 'statistics' => [
-                    'total_users' =>
-                        User::count(),
+                    'total_users' => User::count(),
 
-                    'total_regular_users' =>
-                        User::where(
-                            'is_admin',
-                            false
-                        )->count(),
+                    'total_regular_users' => User::where(
+                        'is_admin',
+                        false
+                    )->count(),
 
-                    'total_admins' =>
-                        User::where(
-                            'is_admin',
-                            true
-                        )->count(),
+                    'total_admins' => User::where(
+                        'is_admin',
+                        true
+                    )->count(),
 
-                    'total_banned_users' =>
-                        User::where(
-                            'is_banned',
-                            true
-                        )->count(),
+                    'total_banned_users' => User::where(
+                        'is_banned',
+                        true
+                    )->count(),
                 ],
             ]
         );
@@ -230,17 +226,13 @@ class UserController extends Controller
                 ],
             ],
             [
-                'password.regex' =>
-                    'Kata sandi harus mengandung minimal 1 huruf kapital dan 1 simbol di antara !,@,#,$,%.',
+                'password.regex' => 'Kata sandi harus mengandung minimal 1 huruf kapital dan 1 simbol di antara !,@,#,$,%.',
 
-                'username.unique' =>
-                    'Username tersebut sudah digunakan oleh pengguna lain.',
+                'username.unique' => 'Username tersebut sudah digunakan oleh pengguna lain.',
 
-                'email.unique' =>
-                    'Email tersebut sudah digunakan oleh pengguna lain.',
+                'email.unique' => 'Email tersebut sudah digunakan oleh pengguna lain.',
 
-                'profile_photo.max' =>
-                    'Ukuran maksimal foto profil 2MB.',
+                'profile_photo.max' => 'Ukuran maksimal foto profil 2MB.',
             ]
         );
 
@@ -256,19 +248,15 @@ class UserController extends Controller
                 */
 
                 $user = User::create([
-                    'username' =>
-                        $validated['username'],
+                    'username' => $validated['username'],
 
-                    'email' =>
-                        $validated['email'],
+                    'email' => $validated['email'],
 
-                    'password' =>
-                        Hash::make(
-                            $validated['password']
-                        ),
+                    'password' => Hash::make(
+                        $validated['password']
+                    ),
 
-                    'is_admin' =>
-                        $validated['is_admin'],
+                    'is_admin' => $validated['is_admin'],
                 ]);
 
                 /*
@@ -278,17 +266,13 @@ class UserController extends Controller
                 */
 
                 $userDetailData = [
-                    'fullname' =>
-                        $validated['fullname'],
+                    'fullname' => $validated['fullname'],
 
-                    'dob' =>
-                        $validated['dob'],
+                    'dob' => $validated['dob'],
 
-                    'gender' =>
-                        $validated['gender'],
+                    'gender' => $validated['gender'],
 
-                    'province_id' =>
-                        $validated['province_id'],
+                    'province_id' => $validated['province_id'],
                 ];
 
                 /*
@@ -326,8 +310,7 @@ class UserController extends Controller
             ->route('admin.users.index')
             ->with([
                 'flash.type' => 'success',
-                'flash.message' =>
-                    'Pengguna baru berhasil ditambahkan.',
+                'flash.message' => 'Pengguna baru berhasil ditambahkan.',
             ]);
     }
 
@@ -434,17 +417,13 @@ class UserController extends Controller
                 ],
             ],
             [
-                'password.regex' =>
-                    'Kata sandi harus mengandung minimal 1 huruf kapital dan 1 simbol di antara !,@,#,$,%.',
+                'password.regex' => 'Kata sandi harus mengandung minimal 1 huruf kapital dan 1 simbol di antara !,@,#,$,%.',
 
-                'username.unique' =>
-                    'Username tersebut sudah digunakan oleh pengguna lain.',
+                'username.unique' => 'Username tersebut sudah digunakan oleh pengguna lain.',
 
-                'email.unique' =>
-                    'Email tersebut sudah digunakan oleh pengguna lain.',
+                'email.unique' => 'Email tersebut sudah digunakan oleh pengguna lain.',
 
-                'profile_photo.max' =>
-                    'Ukuran maksimal foto profil 2MB.',
+                'profile_photo.max' => 'Ukuran maksimal foto profil 2MB.',
             ]
         );
 
@@ -461,11 +440,9 @@ class UserController extends Controller
                 */
 
                 $userData = [
-                    'username' =>
-                        $validated['username'],
+                    'username' => $validated['username'],
 
-                    'email' =>
-                        $validated['email'],
+                    'email' => $validated['email'],
                 ];
 
                 /*
@@ -503,17 +480,13 @@ class UserController extends Controller
                 */
 
                 $userDetailData = [
-                    'fullname' =>
-                        $validated['fullname'],
+                    'fullname' => $validated['fullname'],
 
-                    'dob' =>
-                        $validated['dob'],
+                    'dob' => $validated['dob'],
 
-                    'gender' =>
-                        $validated['gender'],
+                    'gender' => $validated['gender'],
 
-                    'province_id' =>
-                        $validated['province_id'],
+                    'province_id' => $validated['province_id'],
                 ];
 
                 /*
@@ -564,8 +537,7 @@ class UserController extends Controller
                     ->userDetail()
                     ->updateOrCreate(
                         [
-                            'user_id' =>
-                                $user->id,
+                            'user_id' => $user->id,
                         ],
                         $userDetailData
                     );
@@ -576,8 +548,7 @@ class UserController extends Controller
             ->route('admin.users.index')
             ->with([
                 'flash.type' => 'success',
-                'flash.message' =>
-                    'Data pengguna berhasil diperbarui.',
+                'flash.message' => 'Data pengguna berhasil diperbarui.',
             ]);
     }
 
@@ -589,24 +560,21 @@ class UserController extends Controller
         if ($user->id === Auth::id()) {
             return back()->with([
                 'flash.type' => 'error',
-                'flash.message' =>
-                    'Anda tidak dapat memblokir akun sendiri.',
+                'flash.message' => 'Anda tidak dapat memblokir akun sendiri.',
             ]);
         }
 
         if ($user->is_admin) {
             return back()->with([
                 'flash.type' => 'error',
-                'flash.message' =>
-                    'Akun admin tidak dapat diblokir.',
+                'flash.message' => 'Akun admin tidak dapat diblokir.',
             ]);
         }
 
         if ($user->is_banned) {
             return back()->with([
                 'flash.type' => 'error',
-                'flash.message' =>
-                    'Pengguna sudah diblokir.',
+                'flash.message' => 'Pengguna sudah diblokir.',
             ]);
         }
 
@@ -627,8 +595,7 @@ class UserController extends Controller
 
         return back()->with([
             'flash.type' => 'success',
-            'flash.message' =>
-                'Pengguna berhasil diblokir.',
+            'flash.message' => 'Pengguna berhasil diblokir.',
         ]);
     }
 
@@ -640,8 +607,7 @@ class UserController extends Controller
         if (! $user->is_banned) {
             return back()->with([
                 'flash.type' => 'error',
-                'flash.message' =>
-                    'Pengguna tidak sedang diblokir.',
+                'flash.message' => 'Pengguna tidak sedang diblokir.',
             ]);
         }
 
@@ -651,8 +617,7 @@ class UserController extends Controller
 
         return back()->with([
             'flash.type' => 'success',
-            'flash.message' =>
-                'Blokir pengguna berhasil dicabut.',
+            'flash.message' => 'Blokir pengguna berhasil dicabut.',
         ]);
     }
 
@@ -664,16 +629,14 @@ class UserController extends Controller
         if ($user->id === Auth::id()) {
             return back()->with([
                 'flash.type' => 'error',
-                'flash.message' =>
-                    'Anda tidak dapat menghapus akun sendiri.',
+                'flash.message' => 'Anda tidak dapat menghapus akun sendiri.',
             ]);
         }
 
         if ($user->is_admin) {
             return back()->with([
                 'flash.type' => 'error',
-                'flash.message' =>
-                    'Akun admin tidak dapat dihapus.',
+                'flash.message' => 'Akun admin tidak dapat dihapus.',
             ]);
         }
 
@@ -713,8 +676,7 @@ class UserController extends Controller
             ->route('admin.users.index')
             ->with([
                 'flash.type' => 'success',
-                'flash.message' =>
-                    'Pengguna berhasil dihapus.',
+                'flash.message' => 'Pengguna berhasil dihapus.',
             ]);
     }
 
