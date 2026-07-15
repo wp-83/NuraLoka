@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
 
 import MainLayout from '@js/Layouts/MainLayout';
+import PlaceMiniMap from '@components/Features/PlaceMiniMap';
 
 import {
     FiBookmark,
@@ -17,12 +18,20 @@ import {
 
 import { MdOutlinePark } from 'react-icons/md';
 
+// Ambil nilai cookie (untuk header CSRF pada fetch non-Inertia)
+function getCookie(name) {
+    const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return m ? decodeURIComponent(m.pop()) : '';
+}
+
 export default function Show({
     place,
     isSaved: initialSaved = false,
     totalSaves = 0,
 }) {
     const [isSaved, setIsSaved] = useState(initialSaved);
+    const [checkingIn, setCheckingIn] = useState(false);
+    const [checkinStatus, setCheckinStatus] = useState(null); // { ok, message }
 
     const gallery = [
         { id: 1, height: 'h-[28rem]' },
@@ -50,6 +59,47 @@ export default function Show({
                     setIsSaved((previous) => !previous);
                 },
             }
+        );
+    };
+
+    const handleCheckIn = () => {
+        if (!place?.id) return;
+        if (!navigator.geolocation) {
+            setCheckinStatus({ ok: false, message: 'Perangkat tidak mendukung deteksi lokasi.' });
+            return;
+        }
+        setCheckingIn(true);
+        setCheckinStatus(null);
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                try {
+                    const res = await fetch('/jelajah/checkin', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                            'X-XSRF-TOKEN': getCookie('XSRF-TOKEN'),
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            place_id: place.id,
+                            latitude: pos.coords.latitude,
+                            longitude: pos.coords.longitude,
+                        }),
+                    });
+                    const data = await res.json();
+                    setCheckinStatus({ ok: res.ok && data.ok, message: data.message || 'Check-in gagal.' });
+                } catch (e) {
+                    setCheckinStatus({ ok: false, message: 'Gagal terhubung ke server. Coba lagi.' });
+                } finally {
+                    setCheckingIn(false);
+                }
+            },
+            () => {
+                setCheckingIn(false);
+                setCheckinStatus({ ok: false, message: 'Izin lokasi ditolak atau lokasi tidak terdeteksi.' });
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
         );
     };
 
@@ -170,7 +220,39 @@ export default function Show({
                                 />
                             )}
                         </button>
+
+                        {/* Check-in (verifikasi lokasi) */}
+                        <button
+                            type="button"
+                            onClick={handleCheckIn}
+                            disabled={checkingIn}
+                            className="
+                                inline-flex items-center gap-2
+                                rounded-xl border border-accent-30
+                                bg-white/70 px-4 py-2
+                                font-body text-small font-semibold text-accent
+                                shadow-sm backdrop-blur-sm
+                                transition-all duration-200
+                                hover:bg-accent-10
+                                disabled:opacity-60
+                            "
+                        >
+                            <FiMapPin size={18} className="shrink-0" />
+                            <span className="hidden sm:inline">
+                                {checkingIn ? 'Mendeteksi lokasi…' : 'Check-in di sini'}
+                            </span>
+                        </button>
                     </div>
+
+                    {checkinStatus && (
+                        <p
+                            className={`mt-2 font-body text-small font-medium ${
+                                checkinStatus.ok ? 'text-success-dark' : 'text-error-dark'
+                            }`}
+                        >
+                            {checkinStatus.message}
+                        </p>
+                    )}
 
                     {/* Main Content */}
                     <div
@@ -356,14 +438,9 @@ export default function Show({
                             <div
                                 className="
                                     w-full max-w-sm
-                                    rotate-1
                                     rounded-2xl
                                     bg-white p-2
                                     shadow-lg
-                                    transition-transform
-                                    duration-300
-
-                                    hover:rotate-0
                                 "
                             >
                                 <div
@@ -375,148 +452,11 @@ export default function Show({
                                         bg-secondary-10
                                     "
                                 >
-                                    {/* Mock Road */}
-                                    <div
-                                        className="
-                                            absolute bottom-0
-                                            left-12 top-0
-                                            w-2
-                                            bg-primary-85/80
-                                        "
-                                    />
-
-                                    {/* Current Place */}
-                                    <div
-                                        className="
-                                            absolute left-8 top-6
-                                            flex items-center gap-2
-                                        "
-                                    >
-                                        <div
-                                            className="
-                                                relative z-10
-                                                flex h-8 w-8
-                                                items-center
-                                                justify-center
-                                                rounded-full
-                                                border-2
-                                                border-secondary
-                                                bg-secondary-10
-                                                shadow-sm
-                                            "
-                                        >
-                                            <FiMapPin
-                                                size={16}
-                                                className="text-secondary"
-                                            />
-                                        </div>
-
-                                        <span
-                                            className="
-                                                rounded
-                                                bg-white/80
-                                                px-2 py-0.5
-                                                font-body text-micro
-                                                font-bold
-                                                text-secondary
-                                                shadow-sm
-                                            "
-                                        >
-                                            {place?.name}
-                                        </span>
-                                    </div>
-
-                                    {/* Nearby Culinary */}
-                                    <div
-                                        className="
-                                            absolute left-8 top-24
-                                            flex items-center gap-2
-                                        "
-                                    >
-                                        <div
-                                            className="
-                                                relative z-10
-                                                flex h-8 w-8
-                                                items-center
-                                                justify-center
-                                                rounded-full
-                                                border-2
-                                                border-warning
-                                                bg-warning-light
-                                                shadow-sm
-                                            "
-                                        >
-                                            <FaMoneyBillWave
-                                                size={14}
-                                                className="text-warning-dark"
-                                            />
-                                        </div>
-
-                                        <span
-                                            className="
-                                                rounded
-                                                bg-white/80
-                                                px-2 py-0.5
-                                                font-body text-micro
-                                                font-bold
-                                                text-gray-70
-                                                shadow-sm
-                                            "
-                                        >
-                                            Sate Klathak Pak Pong
-                                        </span>
-                                    </div>
-
-                                    {/* Nearby Place */}
-                                    <div
-                                        className="
-                                            absolute left-8 top-44
-                                            flex items-center gap-2
-                                        "
-                                    >
-                                        <div
-                                            className="
-                                                relative z-10
-                                                flex h-8 w-8
-                                                items-center
-                                                justify-center
-                                                rounded-full
-                                                border-2
-                                                border-info
-                                                bg-info-light
-                                                shadow-sm
-                                            "
-                                        >
-                                            <MdOutlinePark
-                                                size={16}
-                                                className="text-info-dark"
-                                            />
-                                        </div>
-
-                                        <span
-                                            className="
-                                                rounded
-                                                bg-white/80
-                                                px-2 py-0.5
-                                                font-body text-micro
-                                                font-bold
-                                                text-gray-70
-                                                shadow-sm
-                                            "
-                                        >
-                                            Tebing Breksi
-                                        </span>
-                                    </div>
-
-                                    {/* Pattern */}
-                                    <div
-                                        className="
-                                            pointer-events-none
-                                            absolute inset-0
-                                            opacity-10
-                                            [background-image:radial-gradient(#000_1px,transparent_1px)]
-                                            [background-size:16px_16px]
-                                        "
+                                    <PlaceMiniMap
+                                        latitude={place?.latitude}
+                                        longitude={place?.longitude}
+                                        name={place?.name}
+                                        zoom={16}
                                     />
                                 </div>
                             </div>
