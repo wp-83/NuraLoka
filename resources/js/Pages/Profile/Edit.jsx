@@ -48,7 +48,7 @@ export default function Edit({ user, provinces }) {
         },
         {
             value: 'unspecified',
-            label: 'Tidak Ditentukan',
+            label: 'Tidak Ingin Memberi Tahu',
         },
     ];
 

@@ -14,8 +14,6 @@ export default function MainLayout({
 }) {
     const { flash } = usePage().props;
 
-    console.log(flash);
-
     const [currentFlash, setCurrentFlash] = useState(
         flash ?? {
             type: null,
@@ -49,6 +47,9 @@ export default function MainLayout({
             type: null,
             message: null,
         });
+
+        flash.type = null;
+        flash.message = null;
     };
 
     const title =

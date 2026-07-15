@@ -38,11 +38,11 @@ export const adminMenuItems = [
     //     route: 'insights',
     //     icon: FaRegNewspaper,
     // },
-    // {
-    //     label: 'Pengguna',
-    //     route: 'users',
-    //     icon: TiGroupOutline,
-    // },
+    {
+        label: 'Pengguna',
+        route: 'users',
+        icon: TiGroupOutline,
+    },
     // {
     //     label: 'Preferensi Bahasa',
     //     route: 'languages',
