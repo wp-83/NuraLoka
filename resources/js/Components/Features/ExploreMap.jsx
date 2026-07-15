@@ -46,9 +46,11 @@ const MapUpdater = ({ selectedPlace, routeData }) => {
 };
 
 // BoundsWatcher — fires onBoundsChange when user pans or zooms the map, and on mount
-const BoundsWatcher = ({ onBoundsChange, onZoomChange }) => {
+const BoundsWatcher = ({ onBoundsChange, onZoomChange, onSettle }) => {
   const map = useMapEvents({
     moveend: () => {
+      // Peta selesai bergerak (termasuk setelah flyTo ke titik terpilih).
+      if (onSettle) onSettle();
       if (onBoundsChange) {
         const b = map.getBounds();
         onBoundsChange({
@@ -230,6 +232,102 @@ function MapMarkers({ points = [], currentZoom = 5, onVisit }) {
   );
 }
 
+// Marker khusus untuk titik yang dipilih lewat pencarian. Popup-nya terbuka OTOMATIS
+// setelah peta selesai fly ke lokasi (sama seperti mengeklik ikon di peta), bukan
+// langsung membuka halaman detail.
+function SelectedPlaceMarker({ place, onVisit }) {
+  const markerRef = React.useRef(null);
+  const pendingRef = React.useRef(false);
+
+  // Buka popup saat gerakan peta (flyTo) berhenti; fallback via timer bila peta tak bergerak.
+  React.useEffect(() => {
+    if (!place) return;
+    pendingRef.current = true;
+    const fallback = setTimeout(() => {
+      if (pendingRef.current) {
+        pendingRef.current = false;
+        try { markerRef.current?.openPopup(); } catch (e) { /* noop */ }
+      }
+    }, 1800);
+    return () => clearTimeout(fallback);
+  }, [place]);
+
+  useMapEvents({
+    moveend: () => {
+      if (pendingRef.current) {
+        pendingRef.current = false;
+        setTimeout(() => { try { markerRef.current?.openPopup(); } catch (e) { /* noop */ } }, 50);
+      }
+    },
+  });
+
+  if (!place || !place.latitude || !place.longitude) return null;
+
+  const isOsm = place.source === 'osm';
+  const color = OSM_COLORS[place.category] || OSM_COLORS['Lainnya'];
+
+  return (
+    <Marker
+      ref={markerRef}
+      position={[parseFloat(place.latitude), parseFloat(place.longitude)]}
+      icon={createMarkerIcon(!isOsm ? place.categories?.[0]?.icon_path : undefined)}
+    >
+      <Popup>
+        <div style={{ maxWidth: '220px', fontFamily: 'sans-serif' }}>
+          {isOsm ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '7px', flexWrap: 'wrap' }}>
+              <span style={{ background: '#0ea5e9', color: 'white', fontSize: '9px', padding: '2px 7px', borderRadius: '10px', fontWeight: 'bold' }}>
+                🌐 OpenStreetMap
+              </span>
+              {place.category && (
+                <span style={{ background: color, color: 'white', fontSize: '9px', padding: '2px 7px', borderRadius: '10px', fontWeight: 'bold' }}>
+                  {place.category}
+                </span>
+              )}
+            </div>
+          ) : (
+            <div style={{ marginBottom: '7px' }}>
+              <span style={{ background: '#6B4B3A', color: 'white', fontSize: '9px', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold', letterSpacing: '0.3px' }}>
+                ✦ NuraLoka
+              </span>
+            </div>
+          )}
+          <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 'bold', color: '#1a1a1a' }}>
+            {place.name}
+          </h4>
+          {place.address && (
+            <p style={{ margin: '0 0 6px 0', fontSize: '11px', color: '#777' }}>{place.address}</p>
+          )}
+          {!isOsm && place.categories?.length > 0 && (
+            <div style={{ marginBottom: '8px' }}>
+              <span style={{ background: '#fef3c7', color: '#92400e', fontSize: '10px', padding: '2px 7px', borderRadius: '8px', fontWeight: '600' }}>
+                {place.categories[0].name}
+              </span>
+            </div>
+          )}
+          {isOsm ? (
+            <a
+              href={`https://www.openstreetmap.org/node/${place.osmId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontSize: '10px', color: '#0ea5e9', fontWeight: '600', textDecoration: 'none' }}
+            >
+              Lihat di OpenStreetMap ↗
+            </a>
+          ) : (
+            <button
+              onClick={(e) => { e.stopPropagation(); if (onVisit) onVisit(place); }}
+              style={{ display: 'block', width: '100%', padding: '6px 0', background: '#d97706', color: 'white', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginTop: '4px' }}
+            >
+              Lihat Detail
+            </button>
+          )}
+        </div>
+      </Popup>
+    </Marker>
+  );
+}
+
 export default function ExploreMap({
   places = [],            // hanya dipakai untuk menghitung center awal peta
   points = [],            // titik individual dari server
@@ -239,6 +337,7 @@ export default function ExploreMap({
   origin,
   destination,
   onBoundsChange,
+  onSettle,
 }) {
   const defaultCenter = [-8.0, 113.0];
   const [center, setCenter] = React.useState(defaultCenter);
@@ -275,7 +374,11 @@ export default function ExploreMap({
         <MapUpdater selectedPlace={selectedPlace} routeData={routeData} />
 
         {/* Bounds watcher — triggers OSM data fetch when user pans/zooms */}
-        <BoundsWatcher onBoundsChange={onBoundsChange} onZoomChange={setCurrentZoom} />
+        <BoundsWatcher onBoundsChange={onBoundsChange} onZoomChange={setCurrentZoom} onSettle={onSettle} />
+
+        {/* Marker titik terpilih dari pencarian — popup terbuka otomatis.
+            Disembunyikan saat ada rute (mode dua titik) agar tidak menimpa tampilan rute. */}
+        {!routeData && <SelectedPlaceMarker place={selectedPlace} onVisit={onVisit} />}
 
         {/* Route Polyline */}
         {routeData && routeData.coordinates && (
