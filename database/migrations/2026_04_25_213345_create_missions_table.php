@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('missions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('badge_id')->constrained();
+            $table->foreignId('badge_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('title');
             $table->string('slug')->unique();
             $table->string('description');
