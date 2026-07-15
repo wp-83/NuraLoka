@@ -8,4 +8,19 @@ class ChallengeController extends Controller
     {
         return inertia('Challenge/Index');
     }
+
+    public function badges()
+    {
+        return inertia('Challenge/Badges');
+    }
+
+    public function leaderboard()
+    {
+        return inertia('Challenge/LeaderboardFull');
+    }
+
+    public function levels()
+    {
+        return inertia('Challenge/Levels');
+    }
 }

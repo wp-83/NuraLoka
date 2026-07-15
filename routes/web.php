@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminCategoryController;
+use App\Http\Controllers\AdminMissionController;
 use App\Http\Controllers\AdminNewsController;
 use App\Http\Controllers\AdminPlaceController;
 use App\Http\Controllers\AlbumController;
@@ -94,7 +95,9 @@ Route::middleware('auth')->group(function () {
     // Challenges
     Route::prefix('/tantangan')->name('challenge.')->controller(ChallengeController::class)->group(function () {
         Route::get('/', 'index')->name('index');
-
+        Route::get('/lencana', 'badges')->name('badges');
+        Route::get('/papan-peringkat', 'leaderboard')->name('leaderboard');
+        Route::get('/level', 'levels')->name('levels');
     });
 
     // Wishlist
@@ -155,10 +158,15 @@ Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(fu
         Route::delete('/{id}', [AdminCategoryController::class, 'destroy'])->name('destroy');
     });
 
-    // Mission and Badge
-    // Route::prefix('/lencana-dan-misi')->name('mission-and-badges.')->group(function(){
-
-    // });
+    // Mission Management
+    Route::prefix('/tantangan')->name('missions.')->group(function () {
+        Route::get('/', [AdminMissionController::class, 'index'])->name('index');
+        Route::get('/create', [AdminMissionController::class, 'create'])->name('create');
+        Route::post('/', [AdminMissionController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [AdminMissionController::class, 'edit'])->name('edit');
+        Route::post('/{id}', [AdminMissionController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdminMissionController::class, 'destroy'])->name('destroy');
+    });
 
     // Level
     // Route::prefix('/level')->name('level.')->group(function(){

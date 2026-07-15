@@ -10,6 +10,13 @@ class Badge extends Model
 {
     use HasSlug;
 
+    protected $fillable = [
+        'name',
+        'requirement_description',
+        'icon_path',
+        'slug',
+    ];
+
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()

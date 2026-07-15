@@ -23,16 +23,21 @@ export const adminMenuItems = [
         route: 'categories',
         icon: MdOutlineCategory,
     },
-    // {
-    //     label: 'Lencana dan Misi',
-    //     route: 'missions',
-    //     icon: TbTargetArrow,
-    // },
+    {
+        label: 'Lencana dan Misi',
+        route: 'missions',
+        icon: TbTargetArrow,
+    },
     // {
     //     label: 'Level',
     //     route: 'levels',
     //     icon: GiStairsGoal,
     // },
+    {
+        label: 'Wawasan Wisata',
+        route: 'news',
+        icon: FaRegNewspaper,
+    },
     // {
     //     label: 'Wawasan Wisata',
     //     route: 'insights',
