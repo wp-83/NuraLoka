@@ -12,7 +12,7 @@ class NewsController extends Controller
      */
     public function index()
     {
-        $news = News::with('user.userDetails')
+        $news = News::with('user.userDetail')
             ->orderBy('publish_date', 'desc')
             ->paginate(6);
 

@@ -1,5 +1,5 @@
 const baseClasses =
-    'font-body inline-flex min-w-fit items-center justify-center gap-2 rounded-lg transition-all duration-200 ease-out hover:-translate-y-0.5 hover:opacity-70 focus:outline-none disabled:cursor-not-allowed disabled:opacity-70';
+    'font-body inline-flex min-w-fit items-center justify-center gap-2 rounded-lg transition-all duration-200 ease-out hover:-translate-y-0.5 hover:opacity-70 focus:outline-none disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:opacity-70';
 
 const variants = {
     primary: 'bg-primary-100 text-white',
@@ -39,13 +39,18 @@ export default function Button({
     iconRight,
     ...props
 }) {
-    const isDisabled = disabled || loading;
+    const isDisabled =
+        disabled || loading;
+
     const isIconOnly =
-        !children && (iconLeft || iconRight);
+        !children &&
+        (iconLeft || iconRight);
 
     const sizeClasses = isIconOnly
-        ? iconOnlySizes[size] ?? iconOnlySizes['btn-md']
-        : sizes[size] ?? sizes['btn-md'];
+        ? iconOnlySizes[size] ??
+          iconOnlySizes['btn-md']
+        : sizes[size] ??
+          sizes['btn-md'];
 
     const textSize = sizeClasses
         .split(' ')
@@ -59,7 +64,8 @@ export default function Button({
             disabled={isDisabled}
             className={[
                 baseClasses,
-                variants[variant] ?? variants.primary,
+                variants[variant] ??
+                    variants.primary,
                 sizeClasses,
                 fullWidth && 'w-full',
                 className,
@@ -76,7 +82,9 @@ export default function Button({
                     />
 
                     {children && (
-                        <span className={textSize}>
+                        <span
+                            className={textSize}
+                        >
                             {children}
                         </span>
                     )}
@@ -90,7 +98,9 @@ export default function Button({
                     )}
 
                     {children && (
-                        <span className={textSize}>
+                        <span
+                            className={textSize}
+                        >
                             {children}
                         </span>
                     )}

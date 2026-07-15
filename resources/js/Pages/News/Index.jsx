@@ -52,7 +52,7 @@ export default function Index({ news }) {
             <div className="news-index-container">
                 {/* Back button */}
                 <div className="back-navigation">
-                    <Link href={route('/')} className="back-to-home-link">
+                    <Link href={route('home.index')} className="back-to-home-link">
                         &larr; Kembali ke Beranda
                     </Link>
                 </div>
