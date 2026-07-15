@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { router, useForm } from '@inertiajs/react';
 
 import MainLayout from '@js/Layouts/MainLayout';
@@ -8,6 +8,8 @@ import {
     FiChevronLeft,
     FiPlus,
     FiX,
+    FiSearch,
+    FiMapPin,
 } from 'react-icons/fi';
 
 // ============================================================
@@ -19,6 +21,9 @@ export default function AlbumEdit({
 }) {
     const [photos, setPhotos] = useState(initialPhotos);
     const fileInputRef = useRef(null);
+
+    const [locationSuggestions, setLocationSuggestions] = useState([]);
+    const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
     const {
         data,
@@ -42,15 +47,31 @@ export default function AlbumEdit({
     // ============================================================
     const handleBack = () => {
         router.visit(
-            route('album.show', album.id)
+            route('album.show', album.slug)
         );
     };
+
+    useEffect(() => {
+        if (!showLocationDropdown || !data.location) {
+            setLocationSuggestions([]);
+            return;
+        }
+
+        const delayDebounceFn = setTimeout(() => {
+            fetch(`/album/lokasi/cari?q=${encodeURIComponent(data.location)}`)
+                .then(res => res.json())
+                .then(places => setLocationSuggestions(places))
+                .catch(err => console.error(err));
+        }, 300);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [data.location, showLocationDropdown]);
 
     const handleToggleVisibility = () => {
         router.post(
             route(
                 'album.toggle.visibility',
-                album.id
+                album.slug
             ),
             {},
             {
@@ -72,7 +93,7 @@ export default function AlbumEdit({
         put(
             route(
                 'album.update',
-                album.id
+                album.slug
             ),
             {
                 preserveScroll: true,
@@ -103,12 +124,15 @@ export default function AlbumEdit({
         router.post(
             route(
                 'album.photo.add',
-                album.id
+                album.slug
             ),
             formData,
             {
                 preserveScroll: true,
                 forceFormData: true,
+                onSuccess: (page) => {
+                    setPhotos(page.props.photos);
+                },
             }
         );
 
@@ -198,33 +222,34 @@ export default function AlbumEdit({
                         {/* Toggle */}
                         <span
                             className={`
-                                relative
+                                relative inline-flex
                                 h-6 w-11
+                                items-center
                                 rounded-full
+                                border-2
                                 transition-colors
-                                duration-200
+                                duration-300
 
                                 ${
                                     data.is_public
-                                        ? 'bg-primary-100'
-                                        : 'bg-gray-30'
+                                        ? 'border-primary-100 bg-primary-30'
+                                        : 'border-gray-30 bg-gray-10'
                                 }
                             `}
                         >
                             <span
                                 className={`
-                                    absolute top-0.5
-                                    h-5 w-5
+                                    inline-block
+                                    h-4 w-4
                                     rounded-full
-                                    bg-white
-                                    shadow
-                                    transition-transform
-                                    duration-200
+                                    shadow-md
+                                    transition-all
+                                    duration-300
 
                                     ${
                                         data.is_public
-                                            ? 'translate-x-[22px]'
-                                            : 'translate-x-0.5'
+                                            ? 'translate-x-[22px] bg-primary-100'
+                                            : 'translate-x-[3px] bg-gray-50'
                                     }
                                 `}
                             />
@@ -388,36 +413,81 @@ export default function AlbumEdit({
                                 </span>
                             </label>
 
-                            <input
-                                id="location"
-                                type="text"
-                                value={data.location}
-                                onChange={(event) =>
-                                    setData(
-                                        'location',
-                                        event.target.value
-                                    )
-                                }
-                                required
-                                placeholder="Contoh: Yogyakarta..."
-                                className="
-                                    w-full
-                                    rounded-lg
-                                    border border-gray-30
-                                    bg-white
-                                    px-4 py-2.5
-                                    font-body text-small
-                                    text-gray-85
-                                    outline-none
-                                    transition-all
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                                    <FiSearch className="text-gray-40" />
+                                </div>
+                                <input
+                                    id="location"
+                                    type="text"
+                                    value={data.location}
+                                    onChange={(event) => {
+                                        setData('location', event.target.value);
+                                        setShowLocationDropdown(true);
+                                    }}
+                                    onFocus={() => setShowLocationDropdown(true)}
+                                    onBlur={() => setTimeout(() => setShowLocationDropdown(false), 200)}
+                                    required
+                                    placeholder="Cari lokasi..."
+                                    className="
+                                        w-full
+                                        rounded-full
+                                        border-2 border-primary-30
+                                        bg-white
+                                        pl-11 pr-4 py-2.5
+                                        font-body text-small
+                                        text-gray-85
+                                        outline-none
+                                        transition-all
 
-                                    placeholder:text-gray-30
+                                        placeholder:text-gray-40
 
-                                    focus:border-primary-85
-                                    focus:ring-2
-                                    focus:ring-primary-30
-                                "
-                            />
+                                        focus:border-primary-100
+                                        focus:ring-0
+                                    "
+                                />
+
+                                {/* Dropdown Suggestions */}
+                                {showLocationDropdown && locationSuggestions.length > 0 && (
+                                    <div className="
+                                        absolute z-20 w-full mt-2
+                                        bg-white rounded-2xl
+                                        border border-gray-30 shadow-lg
+                                        overflow-hidden
+                                    ">
+                                        {locationSuggestions.map((place) => (
+                                            <button
+                                                key={place.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    setData('location', place.name);
+                                                    setShowLocationDropdown(false);
+                                                }}
+                                                className="
+                                                    w-full flex items-start gap-3
+                                                    px-4 py-3
+                                                    text-left
+                                                    hover:bg-primary-10
+                                                    transition-colors
+                                                    border-b border-gray-20 last:border-0
+                                                "
+                                            >
+                                                <div className="pt-0.5">
+                                                    <FiMapPin className="text-gray-50" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-heading text-small font-bold text-secondary-100">
+                                                        {place.name}
+                                                    </p>
+                                                    <p className="font-body text-micro text-gray-50 line-clamp-1">
+                                                        {place.address}
+                                                    </p>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
 
                             {errors.location && (
                                 <p
@@ -611,7 +681,7 @@ export default function AlbumEdit({
                                             "
                                             onError={(event) => {
                                                 event.currentTarget.src =
-                                                    '/images/defaults/avatar.png';
+                                                    '/images/defaults/image.png';
                                             }}
                                         />
                                     </div>

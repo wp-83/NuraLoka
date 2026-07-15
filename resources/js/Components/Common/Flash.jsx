@@ -1,57 +1,153 @@
-import '@css/app.css';
-import { MdOutlineClose } from "react-icons/md";
-import { useEffect, useRef, useState } from "react";
 import IconButton from '@components/Common/IconButton';
 
+import {
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
+
+import { MdOutlineClose } from 'react-icons/md';
+
 export default function Flash({
-    type = "success",
-    message = "message",
+    type = 'success',
+    message = '',
+    onClose,
 }) {
     const [visible, setVisible] = useState(false);
+
     const flashRef = useRef(null);
+    const closeTimerRef = useRef(null);
+    const isClosingRef = useRef(false);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Close Flash
+    |--------------------------------------------------------------------------
+    */
+
+    const closeFlash = useCallback(() => {
+        if (isClosingRef.current) {
+            return;
+        }
+
+        isClosingRef.current = true;
+
+        // Jalankan animasi keluar.
+        setVisible(false);
+
+        // Tunggu animasi 300ms selesai.
+        closeTimerRef.current = setTimeout(() => {
+            onClose?.();
+        }, 300);
+    }, [onClose]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Flash Lifecycle
+    |--------------------------------------------------------------------------
+    */
 
     useEffect(() => {
-        setVisible(true);
+        isClosingRef.current = false;
 
-        const timer = setTimeout(() => {
-            setVisible(false);
+        // Jalankan animasi masuk.
+        const showTimer = requestAnimationFrame(() => {
+            setVisible(true);
+        });
+
+        // Simpan kondisi overflow sebelumnya.
+        const originalOverflow =
+            document.body.style.overflow;
+
+        // Kunci scroll halaman.
+        document.body.style.overflow = 'hidden';
+
+        // Tutup otomatis setelah 4 detik.
+        const autoCloseTimer = setTimeout(() => {
+            closeFlash();
         }, 4000);
 
-        const handleClickOutside = (e) => {
-            if (flashRef.current && !flashRef.current.contains(e.target)) {
-                setVisible(false);
+        /*
+        |--------------------------------------------------------------------------
+        | Click Outside
+        |--------------------------------------------------------------------------
+        */
+
+        const handleClickOutside = (event) => {
+            if (
+                flashRef.current &&
+                !flashRef.current.contains(
+                    event.target
+                )
+            ) {
+                closeFlash();
             }
         };
 
-        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener(
+            'pointerdown',
+            handleClickOutside
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Cleanup
+        |--------------------------------------------------------------------------
+        */
 
         return () => {
-            clearTimeout(timer);
-            document.removeEventListener("mousedown", handleClickOutside);
+            cancelAnimationFrame(showTimer);
+
+            clearTimeout(autoCloseTimer);
+            clearTimeout(closeTimerRef.current);
+
+            document.body.style.overflow =
+                originalOverflow;
+
+            document.removeEventListener(
+                'pointerdown',
+                handleClickOutside
+            );
         };
-    }, []);
+    }, [closeFlash]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Colors
+    |--------------------------------------------------------------------------
+    */
 
     const loadingColor = {
-        success: "bg-success-dark",
-        error: "bg-error-dark",
-        warning: "bg-warning-dark",
-        info: "bg-info-dark",
+        success: 'bg-success-dark',
+        error: 'bg-error-dark',
+        warning: 'bg-warning-dark',
+        info: 'bg-info-dark',
     };
 
     return (
         <div
             ref={flashRef}
             className={`
-                absolute left-1/2 top-0 z-[1000]
-                w-max max-w-[calc(100vw-4rem)]
-                min-h-8 min-w-8
+                fixed
+                left-1/2
+                top-0
+                z-[1000]
+                min-h-8
+                min-w-8
+                w-max
+                max-w-[calc(100vw-4rem)]
                 -translate-x-1/2
-                overflow-hidden rounded-lg bg-white
-                transition-all duration-300 ease-in-out
+                overflow-hidden
+                rounded-lg
+                bg-white
+                transition-all
+                duration-300
+                ease-in-out
                 ${
                     visible
-                        ? "translate-y-6 opacity-100 shadow-[0_0_0_100vmax_rgba(0,0,0,.15)]"
-                        : "-translate-y-full opacity-0"
+                        ? 'translate-y-6 opacity-100 shadow-[0_0_0_100vmax_rgba(0,0,0,.15)]'
+                        : '-translate-y-full opacity-0'
                 }
             `}
         >
@@ -63,16 +159,28 @@ export default function Flash({
                         className="w-12"
                     />
 
-                    <p className="text-body font-body">
+                    <p className="font-body text-body">
                         {message}
                     </p>
                 </div>
 
-                <IconButton icon={<MdOutlineClose size={24} />} onClick={() => setVisible(false)} />
+                <IconButton
+                    icon={
+                        <MdOutlineClose size={24} />
+                    }
+                    onClick={closeFlash}
+                />
             </div>
 
             <div
-                className={`h-1 animate-progress ${loadingColor[type]}`}
+                className={`
+                    h-1
+                    animate-progress
+                    ${
+                        loadingColor[type] ??
+                        loadingColor.info
+                    }
+                `}
             />
         </div>
     );

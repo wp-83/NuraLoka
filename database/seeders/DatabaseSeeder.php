@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             PlaceSeeder::class,
             UserSeeder::class,
             ChallengeSeeder::class, // Added ChallengeSeeder
+            PlaceVisitSeeder::class,
             NewsSeederFW::class,
         ]);
     }

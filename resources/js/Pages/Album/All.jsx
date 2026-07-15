@@ -25,7 +25,7 @@ function formatDate(dateString) {
 function getAlbumThumbnail(thumbnail) {
     return thumbnail
         ? `/storage/${thumbnail}`
-        : '/images/defaults/avatar.png';
+        : '/images/defaults/image.png';
 }
 
 // ============================================================
@@ -33,7 +33,7 @@ function getAlbumThumbnail(thumbnail) {
 // ============================================================
 function SimpleAlbumCard({ album }) {
     const handleVisit = () => {
-        router.visit(route('album.show', album.id));
+        router.visit(route('album.show', album.slug));
     };
 
     return (
@@ -70,7 +70,7 @@ function SimpleAlbumCard({ album }) {
                     "
                     onError={(event) => {
                         event.currentTarget.src =
-                            '/images/defaults/avatar.png';
+                            '/images/defaults/image.png';
                     }}
                 />
             </div>
@@ -318,15 +318,8 @@ export default function AlbumAll({
 // ============================================================
 AlbumAll.layout = (page) => (
     <MainLayout
-        pageTitle={
-            page.props.pageTitle ||
-            'Semua Album'
-        }
-        pageDescription={
-            page.props.ownerName
-                ? `Jelajahi koleksi album perjalanan publik milik ${page.props.ownerName} dan temukan berbagai cerita serta pengalaman wisata bersama komunitas Nuravers di NuraLoka.`
-                : 'Lihat dan kelola seluruh koleksi album perjalananmu di NuraLoka. Dokumentasikan setiap momen, destinasi, dan pengalaman wisata berkesan dalam satu tempat.'
-        }
+        pageTitle="Semua Album"
+        pageDescription="Jelajahi koleksi album perjalanan dan temukan berbagai cerita serta pengalaman wisata bersama komunitas Nuravers di NuraLoka."
         content={page}
     />
 );

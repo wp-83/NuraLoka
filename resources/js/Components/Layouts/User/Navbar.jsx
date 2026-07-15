@@ -20,7 +20,7 @@ export default function Navbar() {
             {/* Profil Saya */}
             <div className="my-2">
                 <Link
-                    href="/profile"
+                    href={route('profile.index')}
                     className="
                         flex w-full items-center gap-3
                         rounded-xl px-3 py-2
@@ -159,7 +159,7 @@ export default function Navbar() {
             {/* ========================================================
                 DESKTOP NAVBAR
             ======================================================== */}
-            <nav className="sticky top-0 z-50 hidden bg-white shadow-md md:block">
+            <nav className="sticky top-0 z-[1000] hidden bg-white shadow-md md:block">
                 <div className="container w-full">
                     <div className="flex items-center justify-between py-1">
                         {/* Logo */}
@@ -190,16 +190,16 @@ export default function Navbar() {
                             >
                                 <div className="text-right">
                                     <h5 className="font-body text-small font-bold text-primary">
-                                        Jayadi Christopher
+                                        {user.fullname}
                                     </h5>
 
                                     <p className="font-body text-micro italic text-secondary">
-                                        Pemula
+                                        Gelar/Badge
                                     </p>
                                 </div>
 
                                 <img
-                                    src="/images/background-auth/login/1.jpg"
+                                    src={user.public_profile_photo}
                                     alt="Profile"
                                     className="
                                         h-12 w-12 rounded-full
@@ -236,7 +236,7 @@ export default function Navbar() {
             {/* ========================================================
                 MOBILE HEADER
             ======================================================== */}
-            <nav className="sticky top-0 z-50 bg-white shadow-md md:hidden">
+            <nav className="sticky top-0 z-[1000] bg-white shadow-md md:hidden">
                 <div className="container flex w-full items-center justify-between py-1">
                     {/* Logo */}
                     <Link href={route('home.index')}>
@@ -255,16 +255,16 @@ export default function Navbar() {
                     >
                         <div className="text-right">
                             <h5 className="font-body text-small font-bold text-primary">
-                                Jayadi Christopher
+                                {user.fullname}
                             </h5>
 
                             <p className="font-body text-micro italic text-secondary">
-                                Pemula
+                                Gelar/Badge Mobile
                             </p>
                         </div>
 
                         <img
-                            src="/images/background-auth/login/1.jpg"
+                            src={user.public_profile_photo}
                             alt="Profile"
                             className="
                                 h-12 w-12 rounded-full
@@ -337,7 +337,7 @@ export default function Navbar() {
             ======================================================== */}
             <nav
                 className="
-                    fixed bottom-0 left-0 right-0 z-50
+                    fixed bottom-0 left-0 right-0 z-[1000]
                     bg-white
                     shadow-[0_-4px_6px_-1px_rgb(0_0_0/0.1),0_-2px_4px_-2px_rgb(0_0_0/0.1)]
                     md:hidden

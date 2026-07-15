@@ -15,6 +15,8 @@ use App\Http\Controllers\ExploreController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\NewsController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 
@@ -74,11 +76,20 @@ Route::middleware('auth')->group(function () {
         Route::get('/', 'index')->name('index');
     });
 
+    // Profile
+    Route::prefix('/profil')->name('profile.')->controller(ProfileController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/ubah', 'edit')->name('edit');
+        Route::put('/', 'update')->name('update');
+    });
+
     // Explore
     Route::prefix('/jelajah')->name('explore.')->controller(ExploreController::class)->group(function () {
         Route::get('/', 'index')->name('index');
-        Route::get('/{slug}', 'show')->name('show');
+        Route::get('/titik', 'points')->name('points');   // API peta — sebelum /{slug} agar tidak tertangkap
         Route::post('/lacak', 'trackVisit')->name('track');
+        Route::post('/checkin', 'checkIn')->name('checkin'); // check-in kunjungan (verifikasi lokasi)
+        Route::get('/{slug}', 'show')->name('show');
     });
 
     // Challenges
@@ -99,17 +110,18 @@ Route::middleware('auth')->group(function () {
     // Album
     Route::prefix('/album')->name('album.')->controller(AlbumController::class)->group(function () {
         Route::get('/', 'index')->name('index');
-        Route::get('/create', 'create')->name('create');
+        Route::get('/lokasi/cari', 'searchLocation')->name('location.search');
+        Route::get('/buat', 'create')->name('create');
         Route::post('/', 'store')->name('store');
         Route::get('/semua', 'allAlbums')->name('all');
-        Route::get('/user/{userId}', 'userAlbums')->name('user.albums');
-        Route::get('/{id}', 'show')->name('show');
-        Route::get('/{id}/edit', 'edit')->name('edit');
-        Route::put('/{id}', 'update')->name('update');
-        Route::delete('/{id}', 'destroy')->name('destroy');
-        Route::post('/{id}/toggle-visibility', 'toggleVisibility')->name('toggle.visibility');
-        Route::post('/{id}/photo', 'addPhoto')->name('photo.add');
-        Route::delete('/photo/{photoId}', 'removePhoto')->name('photo.remove');
+        Route::get('/pengguna/{userId}', 'userAlbums')->name('user.albums');
+        Route::get('/{album:slug}', 'show')->name('show');
+        Route::get('/{album:slug}/ubah', 'edit')->name('edit');
+        Route::put('/{album:slug}', 'update')->name('update');
+        Route::delete('/{album:slug}/hapus', 'destroy')->name('destroy');
+        Route::post('/{album:slug}/visibilitas', 'toggleVisibility')->name('toggle.visibility');
+        Route::post('/{album:slug}/foto', 'addPhoto')->name('photo.add');
+        Route::delete('/foto/{photoId}/hapus', 'removePhoto')->name('photo.remove');
     });
 
     // News
@@ -122,7 +134,7 @@ Route::middleware('auth')->group(function () {
 // Admin Features
 Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(function () {
     // Dashboard
-    Route::prefix('/dashboard')->name('dashboard.')->controller(DashboardController::class)->group(function () {
+    Route::prefix('/dasbor')->name('dashboard.')->controller(DashboardController::class)->group(function () {
         Route::get('/', 'index')->name('index');
     });
 
@@ -172,6 +184,16 @@ Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(fu
     });
 
     // User Management
+    Route::prefix('/pengguna')->name('users.')->controller(UserController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/tambah', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/{user}/ubah', 'edit')->name('edit');
+        Route::put('/{user}', 'update')->name('update');
+        Route::patch('/{user}/blokir', 'ban')->name('ban');
+        Route::patch('/{user}/buka-blokir', 'unban')->name('unban');
+        Route::delete('/{user}', 'destroy')->name('destroy');
+    });
 
     // Language Management
 
