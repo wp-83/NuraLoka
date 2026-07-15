@@ -1,6 +1,9 @@
+import { usePage } from '@inertiajs/react';
 import { HiOutlineBars3 } from 'react-icons/hi2';
 
 export default function AdminHeader({ onOpenMobile }) {
+    const{ user } = usePage().props.auth;
+
     return (
         <header className="sticky top-0 z-30 py-1 shrink-0 bg-white shadow-md px-4 sm:px-6 lg:px-8">
             <div className='container flex items-center justify-between'>
@@ -27,12 +30,12 @@ export default function AdminHeader({ onOpenMobile }) {
                 <div className="group flex items-center gap-2 rounded-xl p-1.5 transition-colors">
                     <div className="text-right">
                         <h5 className="font-body font-bold text-body text-secondary">
-                            Jayadi Christopher
+                            {user.fullname}
                         </h5>
                     </div>
 
                     <img
-                        src="/images/background-auth/login/1.jpg"
+                        src={user.public_profile_photo}
                         className="w-12 h-12 rounded-full p-px border-2 border-error-dark object-cover"
                         alt="Profile"
                     />
