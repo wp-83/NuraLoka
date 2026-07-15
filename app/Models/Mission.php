@@ -10,6 +10,14 @@ class Mission extends Model
 {
     use HasSlug;
 
+    protected $fillable = [
+        'title',
+        'description',
+        'points_reward',
+        'badge_id',
+        'slug',
+    ];
+
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
@@ -20,7 +28,7 @@ class Mission extends Model
     // Relationships
     public function users()
     {
-        return $this->belongsToMany(User::class)
+        return $this->belongsToMany(User::class, 'user_missions')
             ->withPivot('id')
             ->withTimestamps();
     }

@@ -6,6 +6,7 @@ import {
     FaSignOutAlt,
     FaTag,
     FaUsers,
+    FaMedal,
 } from 'react-icons/fa';
 import AdminLayout from '@js/Layouts/AdminLayout';
 
@@ -47,7 +48,7 @@ export default function Dashboard({ stats }) {
             title: 'Kelola Wawasan Wisata',
             description:
                 'Tulis, sunting, dan hapus artikel berita, tips liburan, rekomendasi kuliner, serta informasi sejarah kebudayaan lokal.',
-            routeName: 'admin.insights.index',
+            routeName: 'admin.news.index',
             icon: FaNewspaper,
         },
         {
@@ -63,6 +64,13 @@ export default function Dashboard({ stats }) {
                 'Atur klasifikasi destinasi wisata seperti Pantai, Pegunungan, Kuliner, dan lainnya beserta ikon kategorinya.',
             routeName: 'admin.categories.index',
             icon: FaTag,
+        },
+        {
+            title: 'Kelola Tantangan',
+            description:
+                'Atur daftar tantangan (missions) untuk para pengguna beserta poin reward dan lencana (badge) yang bisa didapatkan.',
+            routeName: 'admin.missions.index',
+            icon: FaMedal,
         },
     ];
 
@@ -275,8 +283,7 @@ export default function Dashboard({ stats }) {
 
                                     <div className="flex justify-end">
                                         <Link
-                                            // href={route(menu.routeName)}
-                                            href=""
+                                            href={menu.routeName ? route(menu.routeName) : ""}
                                             className="
                                                 inline-flex items-center
                                                 gap-1 py-2

@@ -102,19 +102,22 @@ export default function Input({
             )}
 
             {type === "textarea" ? (
-                <textarea
-                    id={name}
-                    name={name}
-                    rows={rows}
-                    value={value}
-                    onChange={onChange}
-                    placeholder={placeholder}
-                    disabled={disabled}
-                    onFocus={() => setFocused(true)}
-                    onBlur={() => setFocused(false)}
-                    className={`${inputWrapperClass} ${inputClass} resize-none`}
-                    {...props}
-                />
+                <div className={containerClass}>
+                    <textarea
+                        id={name}
+                        name={name}
+                        rows={rows}
+                        value={value}
+                        onChange={onChange}
+                        placeholder={placeholder}
+                        disabled={disabled}
+                        required={props.required}
+                        onFocus={() => setFocused(true)}
+                        onBlur={() => setFocused(false)}
+                        className={`${inputClass} resize-none px-4 py-3 w-full bg-transparent`}
+                        {...props}
+                    />
+                </div>
             ) : (
                 <div className={containerClass}>
                     {icon && (
