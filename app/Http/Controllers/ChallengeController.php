@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Badge;
+use App\Models\Mission;
 use App\Models\UserDetail;
 use App\Models\UserMission;
 use Illuminate\Http\Request;
@@ -45,34 +46,36 @@ class ChallengeController extends Controller
         $user = auth()->user();
         $detail = tap(UserDetail::where('user_id', $user->id)->first(), function ($detail) {
             // For testing if user has no detail
-            if (!$detail) {
-                $detail = new UserDetail();
+            if (! $detail) {
+                $detail = new UserDetail;
                 $detail->total_points = 0;
             }
         });
-        
+
         $totalPoints = $detail ? $detail->total_points : 0;
-        
-        list($currentLevel, $nextLevel) = $this->calculateLevel($totalPoints);
-        
+
+        [$currentLevel, $nextLevel] = $this->calculateLevel($totalPoints);
+
         $pointsForNextLevel = $nextLevel ? $nextLevel['min'] - $totalPoints : 0;
-        
+
         // Fix for progress calculation
         $currentMin = $currentLevel['min'];
         $nextMin = $nextLevel ? $nextLevel['min'] : $currentMin;
         $progressPercent = 100;
-        
+
         if ($nextLevel) {
             $progressPercent = (($totalPoints - $currentMin) / ($nextMin - $currentMin)) * 100;
         }
-        
+
         $allBadges = Badge::all()->map(function ($badge) use ($user) {
             $badge->earned = clone tap($badge, function ($b) use ($user) {
                 if ($user) {
                     return $user->badges->contains($b->id);
                 }
+
                 return false;
             });
+
             return $badge;
         });
 
@@ -80,19 +83,20 @@ class ChallengeController extends Controller
         $userBadgeIds = $user ? $user->badges()->pluck('badges.id')->toArray() : [];
         $allBadges = Badge::all()->map(function ($badge) use ($userBadgeIds) {
             $badge->earned = in_array($badge->id, $userBadgeIds);
+
             return $badge;
         });
-        
+
         $ongoingMissions = [];
         if ($user) {
-            $ongoingMissions = \App\Models\Mission::leftJoin('user_missions', function ($join) use ($user) {
-                    $join->on('missions.id', '=', 'user_missions.mission_id')
-                         ->where('user_missions.user_id', '=', $user->id);
-                })
+            $ongoingMissions = Mission::leftJoin('user_missions', function ($join) use ($user) {
+                $join->on('missions.id', '=', 'user_missions.mission_id')
+                    ->where('user_missions.user_id', '=', $user->id);
+            })
                 ->join('badges', 'missions.badge_id', '=', 'badges.id')
-                ->where(function($query) {
+                ->where(function ($query) {
                     $query->where('user_missions.status', '!=', 'completed')
-                          ->orWhereNull('user_missions.status');
+                        ->orWhereNull('user_missions.status');
                 })
                 ->select(
                     'missions.id',
@@ -109,10 +113,11 @@ class ChallengeController extends Controller
                 ->get()
                 ->map(function ($mission) {
                     $mission->percent = $mission->target > 0 ? min(100, round(($mission->progress / $mission->target) * 100)) : 0;
+
                     return $mission;
                 });
         }
-        
+
         $levels = $this->getLevels();
         $leaderboard = UserDetail::with('user')
             ->orderByDesc('total_points')
@@ -126,7 +131,7 @@ class ChallengeController extends Controller
                         break;
                     }
                 }
-                
+
                 return [
                     'rank' => $index + 1,
                     'name' => $detail->fullname,
@@ -134,7 +139,7 @@ class ChallengeController extends Controller
                     'points' => $detail->total_points,
                     'profile_path' => $detail->profile_path,
                     'level' => $levelName,
-                    'is_current' => $user && $user->id === $detail->user_id
+                    'is_current' => $user && $user->id === $detail->user_id,
                 ];
             });
 
@@ -155,9 +160,9 @@ class ChallengeController extends Controller
     {
         $user = auth()->user();
         $userBadgeIds = $user ? $user->badges()->pluck('badges.id')->toArray() : [];
-        
+
         $badges = Badge::orderBy('tier_level')->get();
-        
+
         $specialBadges = $badges->where('type', 'special')->map(function ($badge) use ($userBadgeIds) {
             return [
                 'name' => $badge->name,
@@ -165,33 +170,33 @@ class ChallengeController extends Controller
                 'how_to' => 'Selesaikan tantangan ini untuk mendapatkan lencana.',
                 'icon_path' => $badge->icon_path,
                 'points' => $badge->points,
-                'earned' => in_array($badge->id, $userBadgeIds)
+                'earned' => in_array($badge->id, $userBadgeIds),
             ];
         })->values();
 
         // Group general badges by category
         $generalBadges = [];
         $categories = $badges->where('type', 'general')->groupBy('category');
-        
+
         foreach ($categories as $categoryName => $categoryBadges) {
             $tiers = [];
             $maxProgress = 0;
             $maxTarget = 1;
-            
+
             foreach ($categoryBadges as $badge) {
                 $earned = in_array($badge->id, $userBadgeIds);
                 if ($earned) {
                     $maxProgress = max($maxProgress, $badge->tier_target);
                 }
-                
+
                 $maxTarget = max($maxTarget, $badge->tier_target);
-                
+
                 $tiers[] = [
                     'name' => ['Perunggu', 'Perak', 'Emas', 'Berlian'][$badge->tier_level - 1] ?? 'Tingkat',
                     'target' => $badge->tier_target,
                     'icon_path' => $badge->icon_path,
                     'points' => $badge->points,
-                    'earned' => $earned
+                    'earned' => $earned,
                 ];
             }
 
@@ -213,7 +218,7 @@ class ChallengeController extends Controller
             $nextTierTarget = $categoryBadges->where('tier_target', '>', $currentProgress)->sortBy('tier_target')->first();
             $nextTierTargetVal = $nextTierTarget ? $nextTierTarget->tier_target : $maxTarget;
             $nextTierName = $nextTierTarget ? (['Perunggu', 'Perak', 'Emas', 'Berlian'][$nextTierTarget->tier_level - 1] ?? '') : 'Maksimal';
-            
+
             $progressPercent = $nextTierTargetVal > 0 ? min(100, round(($currentProgress / $nextTierTargetVal) * 100)) : 100;
 
             $generalBadges[] = [
@@ -223,7 +228,7 @@ class ChallengeController extends Controller
                 'progressCount' => $currentProgress,
                 'progressTarget' => $nextTierTargetVal,
                 'nextTier' => $nextTierName,
-                'tiers' => $tiers
+                'tiers' => $tiers,
             ];
         }
 
@@ -237,65 +242,65 @@ class ChallengeController extends Controller
     {
         $user = auth()->user();
         $search = $request->input('search');
-        
+
         $levels = $this->getLevels();
-        
+
         $query = UserDetail::with('user');
-        
+
         if ($search) {
             $query->where('fullname', 'like', "%{$search}%");
         }
-        
+
         $totalResults = null;
         if ($search) {
             $totalResults = $query->count();
         }
-        
+
         $leaderboardData = $query->orderByDesc('total_points')
             ->take(50)
             ->get();
-            
+
         // Calculate global rank by fetching all users ordered by points (simplistic, could be heavy in prod)
         $rankings = UserDetail::orderByDesc('total_points')->pluck('id')->toArray();
-            
+
         $leaderboard = $leaderboardData->map(function ($detail) use ($levels, $user, $rankings) {
-                $levelName = $levels[0]['name'];
-                for ($i = count($levels) - 1; $i >= 0; $i--) {
-                    if ($detail->total_points >= $levels[$i]['min']) {
-                        $levelName = $levels[$i]['name'];
-                        break;
-                    }
+            $levelName = $levels[0]['name'];
+            for ($i = count($levels) - 1; $i >= 0; $i--) {
+                if ($detail->total_points >= $levels[$i]['min']) {
+                    $levelName = $levels[$i]['name'];
+                    break;
                 }
-                
-                $rank = array_search($detail->id, $rankings) + 1;
-                
-                // Get user's badges
-                $badges = DB::table('user_badges')
-                    ->where('user_id', $detail->user_id)
-                    ->join('badges', 'user_badges.badge_id', '=', 'badges.id')
-                    ->take(5)
-                    ->pluck('badges.icon_path')
-                    ->toArray();
-                    
-                $badgeCount = DB::table('user_badges')->where('user_id', $detail->user_id)->count();
-                
-                return [
-                    'rank' => $rank,
-                    'name' => $detail->fullname,
-                    'username' => $detail->user->username ?? '',
-                    'points' => $detail->total_points,
-                    'profile_path' => $detail->profile_path,
-                    'level' => $levelName,
-                    'is_current' => $user && $user->id === $detail->user_id,
-                    'badge_icons' => $badges,
-                    'badge_count' => $badgeCount
-                ];
-            });
+            }
+
+            $rank = array_search($detail->id, $rankings) + 1;
+
+            // Get user's badges
+            $badges = DB::table('user_badges')
+                ->where('user_id', $detail->user_id)
+                ->join('badges', 'user_badges.badge_id', '=', 'badges.id')
+                ->take(5)
+                ->pluck('badges.icon_path')
+                ->toArray();
+
+            $badgeCount = DB::table('user_badges')->where('user_id', $detail->user_id)->count();
+
+            return [
+                'rank' => $rank,
+                'name' => $detail->fullname,
+                'username' => $detail->user->username ?? '',
+                'points' => $detail->total_points,
+                'profile_path' => $detail->profile_path,
+                'level' => $levelName,
+                'is_current' => $user && $user->id === $detail->user_id,
+                'badge_icons' => $badges,
+                'badge_count' => $badgeCount,
+            ];
+        });
 
         return Inertia::render('Challenge/LeaderboardFull', [
             'leaderboard' => $leaderboard,
             'search' => $search,
-            'totalResults' => $totalResults
+            'totalResults' => $totalResults,
         ]);
     }
 
@@ -304,14 +309,14 @@ class ChallengeController extends Controller
         $user = auth()->user();
         $detail = UserDetail::where('user_id', $user->id)->first();
         $totalPoints = $detail ? $detail->total_points : 0;
-        
+
         $levels = $this->getLevels();
-        list($currentLevel, $nextLevel) = $this->calculateLevel($totalPoints);
+        [$currentLevel, $nextLevel] = $this->calculateLevel($totalPoints);
 
         return Inertia::render('Challenge/Levels', [
             'totalPoints' => $totalPoints,
             'currentLevel' => $currentLevel,
-            'allLevels' => $levels
+            'allLevels' => $levels,
         ]);
     }
 }
