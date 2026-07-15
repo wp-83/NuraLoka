@@ -314,7 +314,13 @@ export default function ChallengeIndex({
                                         </div>
                                     ))}
                                 </div>
-                            ) : null}
+                            ) : (
+                                <div className="text-center py-6 bg-[#EEF5F0] rounded-xl border border-green-100 shadow-sm">
+                                    <div className="text-3xl mb-2">🎉</div>
+                                    <div className="font-bold text-primary">Hebat! Semua Tantangan Telah Selesai!</div>
+                                    <div className="text-sm text-gray-500 mt-1">Nantikan tantangan dan misi seru NuraLoka selanjutnya.</div>
+                                </div>
+                            )}
                         </div>
                     </section>
 
