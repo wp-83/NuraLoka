@@ -12,6 +12,17 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-        Category::factory()->count(8)->create();
+        // Daftar kategori tetap & distinct. Sebelumnya memakai
+        // Category::factory()->count(8) yang memakai faker randomElement
+        // (dengan pengembalian), sehingga nama kategori bisa terduplikasi.
+        $categories = [
+            'Wisata Alam', 'Wisata Budaya', 'Wisata Kuliner',
+            'Wisata Sejarah', 'Wisata Pantai', 'Wisata Gunung',
+            'Wisata Edukasi', 'Wisata Religi',
+        ];
+
+        foreach ($categories as $name) {
+            Category::firstOrCreate(['name' => $name]);
+        }
     }
 }

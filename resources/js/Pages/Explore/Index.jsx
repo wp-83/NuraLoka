@@ -4,34 +4,9 @@ import MainLayout from '@js/Layouts/MainLayout';
 import ExploreMap from '@components/Features/ExploreMap';
 import LocationSearchInput from '@components/Features/LocationSearchInput';
 import PlaceCard from '@components/Features/PlaceCard';
-import { FiMapPin, FiSearch, FiChevronLeft, FiBookmark, FiGlobe } from 'react-icons/fi';
+import { FiMapPin, FiSearch } from 'react-icons/fi';
 import { MdRestaurant, MdBeachAccess, MdDiamond, MdMuseum, MdWaterDrop, MdSportsHandball } from 'react-icons/md';
 import { FaMountain } from 'react-icons/fa6';
-
-// ── Haversine Distance (km) ──
-function haversineDistance(lat1, lon1, lat2, lon2) {
-    const toRad = (value) => (value * Math.PI) / 180;
-    const R = 6371;
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-}
-
-// Mengecek apakah sebuah titik berjarak kurang dari radius (km) terhadap rute (polyline)
-function isPointNearRoute(placeLat, placeLng, routeCoordinates, radiusKm) {
-    if (!routeCoordinates || routeCoordinates.length === 0) return false;
-    for (let i = 0; i < routeCoordinates.length; i += 5) {
-        const [rLat, rLng] = routeCoordinates[i];
-        if (haversineDistance(placeLat, placeLng, rLat, rLng) <= radiusKm) return true;
-    }
-    const [lastLat, lastLng] = routeCoordinates[routeCoordinates.length - 1];
-    return haversineDistance(placeLat, placeLng, lastLat, lastLng) <= radiusKm;
-}
 
 const filterIconMap = {
     'Kuliner': <MdRestaurant size={15} />,
@@ -45,74 +20,6 @@ const filterIconMap = {
     'Belanja': <MdDiamond size={15} />,
     'Religi': <MdMuseum size={15} />,
 };
-
-// ── OSM / Overpass API Helpers ──
-function getOsmCategory(tags) {
-    if (!tags) return null;
-    if (['restaurant', 'cafe', 'food_court', 'fast_food'].includes(tags.amenity)) return 'Kuliner';
-    if (tags.tourism === 'museum') return 'Museum';
-    if (tags.natural === 'beach') return 'Pantai';
-    if (tags.natural === 'waterfall' || tags.waterway === 'waterfall') return 'Air Terjun';
-    if (
-        ['peak', 'volcano'].includes(tags.natural) ||
-        tags.leisure === 'nature_reserve' ||
-        ['viewpoint', 'attraction'].includes(tags.tourism)
-    ) return 'Wisata Alam';
-    if (tags.leisure === 'theme_park') return 'Taman Hiburan';
-    if (tags.historic) return 'Wisata Budaya';
-    if (tags.amenity === 'place_of_worship') return 'Religi';
-    if (['mall', 'department_store'].includes(tags.shop)) return 'Belanja';
-    return null;
-}
-
-function mapOsmToPlace(node) {
-    const tags = node.tags || {};
-    const name = tags.name || tags['name:id'] || tags['name:en'];
-    const category = getOsmCategory(tags);
-    if (!name || !category) return null;
-
-    const subtype =
-        tags.amenity || tags.tourism || tags.natural ||
-        tags.leisure || tags.historic || tags.waterway || tags.shop || '';
-
-    return {
-        id: `osm-${node.id}`,
-        osmId: node.id,
-        name,
-        address: tags['addr:full'] || tags['addr:street'] || null,
-        latitude: node.lat,
-        longitude: node.lon,
-        category,
-        subtype,
-        source: 'osm',
-        categories: [{ id: `osm-cat-${category}`, name: category }],
-    };
-}
-
-function buildOverpassQuery(south, west, north, east) {
-    const bbox = `${south},${west},${north},${east}`;
-    return `[out:json][timeout:25];
-(
-  node["amenity"="restaurant"]["name"](${bbox});
-  node["amenity"="cafe"]["name"](${bbox});
-  node["amenity"="food_court"]["name"](${bbox});
-  node["amenity"="fast_food"]["name"](${bbox});
-  node["tourism"="museum"]["name"](${bbox});
-  node["tourism"="viewpoint"]["name"](${bbox});
-  node["tourism"="attraction"]["name"](${bbox});
-  node["natural"="beach"]["name"](${bbox});
-  node["natural"="peak"]["name"](${bbox});
-  node["natural"="waterfall"]["name"](${bbox});
-  node["waterway"="waterfall"]["name"](${bbox});
-  node["leisure"="theme_park"]["name"](${bbox});
-  node["leisure"="nature_reserve"]["name"](${bbox});
-  node["historic"]["name"](${bbox});
-  node["amenity"="place_of_worship"]["name"](${bbox});
-  node["shop"="mall"]["name"](${bbox});
-  node["shop"="department_store"]["name"](${bbox});
-);
-out body 300;`;
-}
 
 // ── ExplorePanel Sub-Component ──
 function ExplorePanel({
@@ -247,7 +154,7 @@ function RecentlyVisitedPanel({ recentlyVisited = [], onVisit }) {
                 Baru Saja Dikunjungi
             </h3>
             <div className="flex flex-col gap-2">
-                {recentlyVisited.slice(0, 2).map((place) => (
+                {recentlyVisited.slice(0, 3).map((place) => (
                     <div
                         key={place.id}
                         className="flex items-center gap-2 cursor-pointer hover:bg-gray-10 rounded-lg p-1 transition-colors"
@@ -372,87 +279,76 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
     const [destination, setDestination] = useState(null);
     const [routeData, setRouteData] = useState(null);
     const [routeRadius, setRouteRadius] = useState(5);
-    const [osmPlaces, setOsmPlaces] = useState([]);
-    const [osmLoading, setOsmLoading] = useState(false);
+    const [mapPoints, setMapPoints] = useState([]);
+    const [mapLoading, setMapLoading] = useState(false);
 
     // ── Refs ──
     const currentBoundsRef = useRef(null);
-    const osmFetchTimeoutRef = useRef(null);
+    const mapFetchTimeoutRef = useRef(null);
+    const mapAbortRef = useRef(null);       // membatalkan request yang masih berjalan
+    const mapCacheRef = useRef(new Map());  // cache per (zoom+filter+area) → pan/zoom balik instan
 
-    // ── Fetch Overpass API ──
-    const fetchOsmData = useCallback(async (bounds) => {
+    // ── Ambil titik/klaster dari server sendiri (DB admin + OSM), tanpa rate-limit ──
+    const fetchMapPoints = useCallback(async (bounds) => {
         if (!bounds) return;
-        let { south, west, north, east } = bounds;
 
-        const maxSpan = 1.2;
-        const latSpan = Math.abs(north - south);
-        const lngSpan = Math.abs(east - west);
+        // Batalkan request sebelumnya yang belum selesai
+        if (mapAbortRef.current) mapAbortRef.current.abort();
 
-        if (latSpan > maxSpan || lngSpan > maxSpan) {
-            const centerLat = (south + north) / 2;
-            const centerLng = (west + east) / 2;
-            south = centerLat - (maxSpan / 2);
-            north = centerLat + (maxSpan / 2);
-            west = centerLng - (maxSpan / 2);
-            east = centerLng + (maxSpan / 2);
+        const { south, west, north, east, zoom } = bounds;
+        const cats = activeFilters.join(',');
+
+        // Cache per (zoom + filter + area yang di-snap) → pan/zoom balik instan
+        const snap = (n) => Math.round(n * 50) / 50;
+        const cacheKey = `${zoom}|${cats}|${snap(south)},${snap(west)},${snap(north)},${snap(east)}`;
+        if (mapCacheRef.current.has(cacheKey)) {
+            setMapPoints(mapCacheRef.current.get(cacheKey));
+            return;
         }
 
-        setOsmLoading(true);
+        const controller = new AbortController();
+        mapAbortRef.current = controller;
+        setMapLoading(true);
         try {
-            const query = buildOverpassQuery(south, west, north, east);
-
-            const ENDPOINTS = [
-                'https://overpass-api.de/api/interpreter',
-                'https://lz4.overpass-api.de/api/interpreter',
-                'https://overpass.kumi.systems/api/interpreter',
-                'https://z.overpass-api.de/api/interpreter'
-            ];
-
-            let data = null;
-            let success = false;
-
-            for (const endpoint of ENDPOINTS) {
-                try {
-                    const response = await fetch(`${endpoint}?data=${encodeURIComponent(query)}`);
-                    if (response.ok) {
-                        data = await response.json();
-                        success = true;
-                        break;
-                    } else {
-                        console.warn(`[OSM] Endpoint ${endpoint} returned ${response.status}. Mencoba server berikutnya...`);
-                    }
-                } catch (e) {
-                    console.warn(`[OSM] Endpoint ${endpoint} failed. Mencoba server berikutnya...`);
-                }
-            }
-
-            if (!success || !data) {
-                throw new Error("Semua server publik Overpass API sedang sibuk. Silakan coba lagi nanti.");
-            }
-
-            const mapped = (data.elements || [])
-                .filter(el => el.type === 'node')
-                .map(mapOsmToPlace)
-                .filter(Boolean);
-            setOsmPlaces(mapped);
+            const params = new URLSearchParams({
+                south, west, north, east, zoom, categories: cats,
+            });
+            const res = await fetch(`/jelajah/titik?${params.toString()}`, {
+                signal: controller.signal,
+                headers: { Accept: 'application/json' },
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            const points = data.points || [];
+            mapCacheRef.current.set(cacheKey, points);
+            setMapPoints(points);
         } catch (err) {
-            console.error('[OSM Error]:', err.message);
+            if (controller.signal.aborted) return; // dibatalkan request baru → abaikan
+            console.error('[Map] Gagal memuat titik peta:', err.message);
         } finally {
-            setOsmLoading(false);
+            // Hanya request terakhir yang boleh mematikan indikator loading
+            if (mapAbortRef.current === controller) {
+                mapAbortRef.current = null;
+                setMapLoading(false);
+            }
         }
-    }, []);
+    }, [activeFilters]);
 
     const handleBoundsChange = useCallback((bounds) => {
         currentBoundsRef.current = bounds;
-        if (osmFetchTimeoutRef.current) clearTimeout(osmFetchTimeoutRef.current);
-        osmFetchTimeoutRef.current = setTimeout(() => {
-            fetchOsmData(bounds);
-        }, 1500);
-    }, [fetchOsmData]);
+        if (mapFetchTimeoutRef.current) clearTimeout(mapFetchTimeoutRef.current);
+        mapFetchTimeoutRef.current = setTimeout(() => fetchMapPoints(bounds), 500);
+    }, [fetchMapPoints]);
+
+    // Muat ulang saat filter kategori berubah (pakai viewport terakhir)
+    useEffect(() => {
+        if (currentBoundsRef.current) fetchMapPoints(currentBoundsRef.current);
+    }, [fetchMapPoints]);
 
     useEffect(() => {
         return () => {
-            if (osmFetchTimeoutRef.current) clearTimeout(osmFetchTimeoutRef.current);
+            if (mapFetchTimeoutRef.current) clearTimeout(mapFetchTimeoutRef.current);
+            if (mapAbortRef.current) mapAbortRef.current.abort();
         };
     }, []);
 
@@ -507,32 +403,15 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         });
     };
 
-    // ── Filtered Places ──
-    const filteredPlaces = useMemo(() => {
-        return places.filter((place) => {
-            if (activeTab === 'Dua Titik' && routeData && routeData.coordinates) {
-                const isNear = isPointNearRoute(parseFloat(place.latitude), parseFloat(place.longitude), routeData.coordinates, routeRadius);
-                if (!isNear) return false;
-            }
-            const matchesSearch = searchQuery === '' ||
-                place.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (place.address && place.address.toLowerCase().includes(searchQuery.toLowerCase()));
-            const matchesFilter = activeFilters.length === 0 ||
-                (place.categories && place.categories.some(cat => activeFilters.includes(cat.name)));
-            return matchesSearch && matchesFilter;
-        });
-    }, [places, searchQuery, activeFilters, activeTab, routeData, routeRadius]);
-
-    const filteredOsmPlaces = useMemo(() => {
-        return osmPlaces.filter(place => {
-            if (activeTab === 'Dua Titik' && routeData && routeData.coordinates) {
-                const isNear = isPointNearRoute(place.latitude, place.longitude, routeData.coordinates, routeRadius);
-                if (!isNear) return false;
-            }
-            const matchesFilter = activeFilters.length === 0 || activeFilters.includes(place.category);
-            return matchesFilter;
-        });
-    }, [osmPlaces, activeFilters, activeTab, routeData, routeRadius]);
+    // ── Tab switch: bersihkan rute saat kembali ke "Satu Titik" ──
+    const handleTabChange = useCallback((tab) => {
+        setActiveTab(tab);
+        if (tab === 'Satu Titik') {
+            setRouteData(null);
+            setOrigin(null);
+            setDestination(null);
+        }
+    }, []);
 
     const searchSuggestions = useMemo(() => {
         if (searchQuery.trim() === '') return [];
@@ -548,27 +427,16 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
     // ── Render ──
     return (
         <div className="min-h-screen flex flex-col mt-4">
-            {/* ── Map Section ── */}
-            <section className="relative w-full" style={{ height: '520px' }}>
-                <div className="absolute inset-0 min-h-screen">
-                    <ExploreMap
-                        places={filteredPlaces}
-                        selectedPlace={selectedPlace}
-                        onVisit={handleVisit}
-                        routeData={routeData}
-                        origin={origin}
-                        destination={destination}
-                        osmPlaces={filteredOsmPlaces}
-                        onBoundsChange={handleBoundsChange}
-                    />
-                </div>
-
-                {/* ── Top Area (Panels) ── */}
-                <div className="absolute inset-0 pointer-events-none z-[400] pt-4">
-                    <div className="container mx-auto px-4 md:px-6 lg:px-8 grid grid-cols-12 items-start gap-5 w-full">
-                        <div className="col-start-1 col-end-4 pointer-events-auto relative">
+            {/* ── Map Section ──
+                Mobile/tablet: panels stack vertically in normal flow (control → map → secondary panel).
+                Desktop (lg+): panels are absolutely positioned overlays on top of a full-bleed map. */}
+            <section className="relative w-full flex flex-col gap-4 lg:block lg:gap-0 lg:h-[520px]">
+                {/* ── Control Panel (top on mobile, left overlay on desktop) ── */}
+                <div className="order-1 lg:order-none w-full z-[400] lg:absolute lg:inset-x-0 lg:top-4 lg:pointer-events-none">
+                    <div className="w-full lg:container lg:mx-auto lg:px-4 xl:px-8 lg:grid lg:grid-cols-12">
+                        <div className="w-full lg:col-start-1 lg:col-end-4 lg:pointer-events-auto relative">
                             <ExplorePanel
-                                activeTab={activeTab} setActiveTab={setActiveTab}
+                                activeTab={activeTab} setActiveTab={handleTabChange}
                                 searchQuery={searchQuery} setSearchQuery={setSearchQuery}
                                 activeFilters={activeFilters} setActiveFilters={setActiveFilters}
                                 categories={categories}
@@ -576,12 +444,31 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                                 onSuggestionClick={handleVisit}
                                 setOrigin={setOrigin}
                                 setDestination={setDestination}
-                                osmLoading={osmLoading}
-                                osmCount={filteredOsmPlaces.length}
+                                osmLoading={mapLoading}
+                                osmCount={mapPoints.length}
                             />
                         </div>
-                        <div className="col-start-4 col-end-10" />
-                        <div className="col-start-10 col-end-13 pointer-events-auto">
+                    </div>
+                </div>
+
+                {/* ── Map ── */}
+                <div className="order-2 lg:order-none relative w-full h-[380px] sm:h-[460px] rounded-2xl overflow-hidden shadow-md lg:rounded-none lg:shadow-none lg:absolute lg:inset-0 lg:h-auto z-0">
+                    <ExploreMap
+                        places={places}
+                        points={mapPoints}
+                        selectedPlace={selectedPlace}
+                        onVisit={handleVisit}
+                        routeData={routeData}
+                        origin={origin}
+                        destination={destination}
+                        onBoundsChange={handleBoundsChange}
+                    />
+                </div>
+
+                {/* ── Secondary Panel (bottom on mobile, right overlay on desktop) ── */}
+                <div className="order-3 lg:order-none w-full z-[390] lg:absolute lg:inset-x-0 lg:top-4 lg:pointer-events-none">
+                    <div className="w-full lg:container lg:mx-auto lg:px-4 xl:px-8 lg:grid lg:grid-cols-12">
+                        <div className="w-full lg:col-start-10 lg:col-end-13 lg:pointer-events-auto">
                             {activeTab === 'Satu Titik' ? (
                                 <RecentlyVisitedPanel recentlyVisited={recentlyVisited} onVisit={handleVisit} />
                             ) : (
@@ -600,8 +487,8 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                     </div>
                 </div>
 
-                {/* ── Bottom Area (Tooltip) ── */}
-                <div className="absolute bottom-6 left-0 right-0 pointer-events-none z-[400]">
+                {/* ── Bottom Area (Tooltip) — desktop only ── */}
+                <div className="hidden lg:block absolute bottom-6 left-0 right-0 pointer-events-none z-[400]">
                     <div className="container mx-auto px-4 md:px-6 lg:px-8 grid grid-cols-12 gap-5 w-full">
                         <div className="col-start-10 col-end-13 pointer-events-auto flex justify-end">
                             <MapTooltip isVisible={!hasInteracted} />
@@ -610,13 +497,14 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                 </div>
             </section>
 
-            {/* ── Trending Section ── */}
+            {/* ── Trending Section (hanya tampil bila ada place "ramai") ── */}
+            {trendingPlaces.length > 0 && (
             <section id="trending-section" className="w-full py-10">
                 <div className="overflow-hidden">
                     <div className="container mx-auto px-4 md:px-6 lg:px-8 my-5">
                         <div className="grid grid-cols-12 gap-5">
-                            <div className="col-start-2 col-end-12 flex items-center gap-4 mb-6">
-                                <div className="w-40 flex-shrink-0 scale-x-[-1]">
+                            <div className="col-span-12 sm:col-start-2 sm:col-end-12 flex flex-col sm:flex-row items-center gap-4 mb-6 text-center sm:text-left">
+                                <div className="w-28 sm:w-32 lg:w-40 flex-shrink-0 scale-x-[-1]">
                                     <img
                                         src="/images/mascots/map-v2.png"
                                         alt="mascot"
@@ -625,7 +513,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                                     />
                                 </div>
                                 <div>
-                                    <h2 className="font-heading text-title font-bold text-primary leading-tight">
+                                    <h2 className="font-heading text-subtitle sm:text-title font-bold text-primary leading-tight">
                                         Ramai Dikunjungi oleh Nuravers
                                     </h2>
                                     <p className="font-body text-body text-gray-50 mt-1 max-w-[28rem]">
@@ -635,11 +523,11 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                                 </div>
                             </div>
                             <div
-                                className="col-start-2 col-end-12 flex flex-row gap-5 hide-scrollbar"
+                                className="col-span-12 sm:col-start-2 sm:col-end-12 flex flex-row gap-4 sm:gap-5 hide-scrollbar"
                                 style={{ overflowX: 'auto', overflowY: 'hidden', paddingBottom: '0.75rem', scrollSnapType: 'x mandatory' }}
                             >
                                 {trendingPlaces.map((place) => (
-                                    <div key={place.id} className="flex-shrink-0" style={{ width: '24rem', scrollSnapAlign: 'start' }}>
+                                    <div key={place.id} className="flex-shrink-0 w-[80vw] sm:w-[22rem] lg:w-96" style={{ scrollSnapAlign: 'start' }}>
                                         <PlaceCard
                                             place={place}
                                             onVisit={handleVisit}
@@ -653,6 +541,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                     </div>
                 </div>
             </section>
+            )}
         </div>
     );
 }
