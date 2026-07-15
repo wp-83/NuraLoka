@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiMapPin, FiBookmark } from 'react-icons/fi';
+import { FiMapPin, FiBookmark, FiUsers, FiCamera } from 'react-icons/fi';
 import { FaBookmark } from 'react-icons/fa';
 
 export default function PlaceCard({ place, onVisit, isSaved = false, onToggleSave }) {
@@ -44,8 +44,22 @@ export default function PlaceCard({ place, onVisit, isSaved = false, onToggleSav
                         </span>
                     ))}
                 </div>
-                <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-gray-500">Ramai disimpan Nuravers</span>
+                <div className="flex items-center gap-3 text-xs text-gray-500">
+                    {Number(place.visitors_count) > 0 && (
+                        <span className="flex items-center gap-1">
+                            <FiUsers size={13} className="text-accent" />
+                            {Number(place.visitors_count).toLocaleString('id-ID')} pengunjung
+                        </span>
+                    )}
+                    {Number(place.album_posters_count) > 0 && (
+                        <span className="flex items-center gap-1">
+                            <FiCamera size={13} className="text-accent" />
+                            {Number(place.album_posters_count).toLocaleString('id-ID')} album
+                        </span>
+                    )}
+                    {!(Number(place.visitors_count) > 0) && !(Number(place.album_posters_count) > 0) && (
+                        <span>Ramai disimpan Nuravers</span>
+                    )}
                 </div>
             </div>
 

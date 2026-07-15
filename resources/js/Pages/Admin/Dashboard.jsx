@@ -76,8 +76,6 @@ export default function Dashboard({ stats }) {
 
     return (
         <>
-            <Head title="Admin | Dasbor Utama" />
-
             <div
                 className="
                     mx-auto flex w-full max-w-[1200px]

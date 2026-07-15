@@ -39,10 +39,15 @@ export const adminMenuItems = [
         icon: FaRegNewspaper,
     },
     // {
-    //     label: 'Pengguna',
-    //     route: 'users',
-    //     icon: TiGroupOutline,
+    //     label: 'Wawasan Wisata',
+    //     route: 'insights',
+    //     icon: FaRegNewspaper,
     // },
+    {
+        label: 'Pengguna',
+        route: 'users',
+        icon: TiGroupOutline,
+    },
     // {
     //     label: 'Preferensi Bahasa',
     //     route: 'languages',
