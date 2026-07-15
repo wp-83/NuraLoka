@@ -1,8 +1,9 @@
-import { Link, Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { FaArrowLeft } from 'react-icons/fa';
-// import '@css/Init.css';
-import '@css/Admin/News.css';
-import '@css/Admin/Place.css';
+import Button from '@components/Forms/Button';
+import Input from '@components/Forms/Input';
+import Checkbox from '@components/Forms/Checkbox';
+import AdminLayout from '../../../Layouts/AdminLayout';
 
 export default function Create({ categories }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -32,157 +33,135 @@ export default function Create({ categories }) {
                 <title>Admin | Tambah Destinasi Wisata</title>
             </Head>
 
-            <div className="admin-form-container">
+            <div className="mx-auto w-full max-w-3xl">
                 {/* Back button */}
-                <div className="back-navigation" style={{ marginBottom: '2rem' }}>
-                    <Link href={route('admin.places.index')} className="back-to-home-link">
-                        <FaArrowLeft style={{ fontSize: '0.9rem', marginRight: '0.5rem' }} /> Kembali ke Daftar Destinasi
-                    </Link>
+                <div className="mb-6">
+                    <Button
+                        variant="primary"
+                        size="btn-sm"
+                        iconLeft={<FaArrowLeft />}
+                        onClick={() => router.get(route('admin.places.index'))}
+                    >
+                        Kembali ke Daftar Destinasi
+                    </Button>
                 </div>
 
-                <div className="admin-form-card">
-                    <h2 className="admin-form-title">Tambah Destinasi Wisata Baru</h2>
+                <h2 className="mb-6 border-b border-primary-10 pb-4 font-heading text-subtitle font-bold text-primary-100">
+                    Tambah Destinasi Wisata Baru
+                </h2>
 
-                    <form onSubmit={handleSubmit} className="admin-crud-form">
-                        {/* Name */}
-                        <div className="input-group">
-                            <label htmlFor="name"><b>Nama Destinasi</b></label>
-                            <div className={`input-wrapper ${errors.name ? 'input-error' : ''}`}>
-                                <input
-                                    id="name"
-                                    type="text"
-                                    placeholder="Contoh: Pantai Bira, Taman Nasional Baluran..."
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    required
-                                />
-                            </div>
-                            {errors.name && <span className="error-message">{errors.name}</span>}
-                        </div>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                        <Input
+                            label="Nama Destinasi"
+                            name="name"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                            placeholder="Contoh: Pantai Bira, Taman Nasional Baluran..."
+                            error={errors.name}
+                            required
+                        />
 
-                        {/* Address */}
-                        <div className="input-group" style={{ marginTop: '1.5rem' }}>
-                            <label htmlFor="address"><b>Alamat Lengkap</b></label>
-                            <div className={`input-wrapper ${errors.address ? 'input-error' : ''}`}>
-                                <input
-                                    id="address"
-                                    type="text"
-                                    placeholder="Contoh: Jl. Pantai Bira, Kab. Bulukumba, Sulawesi Selatan"
-                                    value={data.address}
-                                    onChange={(e) => setData('address', e.target.value)}
-                                    required
-                                />
-                            </div>
-                            {errors.address && <span className="error-message">{errors.address}</span>}
-                        </div>
+                        <Input
+                            label="Alamat Lengkap"
+                            name="address"
+                            value={data.address}
+                            onChange={(e) => setData('address', e.target.value)}
+                            placeholder="Contoh: Jl. Pantai Bira, Kab. Bulukumba, Sulawesi Selatan"
+                            error={errors.address}
+                            required
+                        />
 
-                        {/* Latitude & Longitude side by side */}
-                        <div className="coord-row">
-                            <div className="input-group">
-                                <label htmlFor="latitude"><b>Latitude</b></label>
-                                <div className={`input-wrapper ${errors.latitude ? 'input-error' : ''}`}>
-                                    <input
-                                        id="latitude"
-                                        type="number"
-                                        step="any"
-                                        placeholder="-5.68432"
-                                        value={data.latitude}
-                                        onChange={(e) => setData('latitude', e.target.value)}
-                                        required
-                                    />
-                                </div>
-                                {errors.latitude && <span className="error-message">{errors.latitude}</span>}
-                            </div>
-                            <div className="input-group">
-                                <label htmlFor="longitude"><b>Longitude</b></label>
-                                <div className={`input-wrapper ${errors.longitude ? 'input-error' : ''}`}>
-                                    <input
-                                        id="longitude"
-                                        type="number"
-                                        step="any"
-                                        placeholder="120.43281"
-                                        value={data.longitude}
-                                        onChange={(e) => setData('longitude', e.target.value)}
-                                        required
-                                    />
-                                </div>
-                                {errors.longitude && <span className="error-message">{errors.longitude}</span>}
-                            </div>
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                            <Input
+                                label="Latitude"
+                                name="latitude"
+                                type="number"
+                                step="any"
+                                value={data.latitude}
+                                onChange={(e) => setData('latitude', e.target.value)}
+                                placeholder="-5.68432"
+                                error={errors.latitude}
+                                required
+                            />
+                            <Input
+                                label="Longitude"
+                                name="longitude"
+                                type="number"
+                                step="any"
+                                value={data.longitude}
+                                onChange={(e) => setData('longitude', e.target.value)}
+                                placeholder="120.43281"
+                                error={errors.longitude}
+                                required
+                            />
                         </div>
 
                         {/* Categories */}
-                        <div className="input-group" style={{ marginTop: '1.5rem' }}>
-                            <label><b>Kategori Destinasi</b></label>
-                            <p style={{ fontSize: 'var(--text-small)', color: 'var(--gray-70)', marginBottom: '0.5rem', marginTop: '0.25rem' }}>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="font-heading text-paragraph text-primary-100">
+                                Kategori Destinasi
+                            </label>
+                            <p className="text-small text-gray-70">
                                 Pilih satu atau lebih kategori yang sesuai untuk destinasi ini.
                             </p>
+
                             {categories && categories.length > 0 ? (
-                                <div className="category-checkbox-grid">
-                                    {categories.map((cat) => {
-                                        const isChecked = data.categories.includes(cat.id);
-                                        return (
-                                            <div
-                                                key={cat.id}
-                                                className={`category-checkbox-item ${isChecked ? 'checked' : ''}`}
-                                                onClick={() => toggleCategory(cat.id)}
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    id={`cat-${cat.id}`}
-                                                    checked={isChecked}
-                                                    onChange={() => toggleCategory(cat.id)}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                />
-                                                <label htmlFor={`cat-${cat.id}`}>{cat.name}</label>
-                                            </div>
-                                        );
-                                    })}
+                                <div className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-primary-10 bg-gray-10 p-4 sm:grid-cols-2 lg:grid-cols-3">
+                                    {categories.map((cat) => (
+                                        <Checkbox
+                                            key={cat.id}
+                                            id={`cat-${cat.id}`}
+                                            label={cat.name}
+                                            checked={data.categories.includes(cat.id)}
+                                            onChange={() => toggleCategory(cat.id)}
+                                        />
+                                    ))}
                                 </div>
                             ) : (
-                                <p style={{ color: 'var(--gray-50)', fontStyle: 'italic', fontSize: 'var(--text-small)' }}>
+                                <p className="text-small italic text-gray-50">
                                     Belum ada kategori tersedia.{' '}
-                                    <Link href={route('admin.categories.create')} style={{ color: 'var(--primary-100)' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => router.get(route('admin.categories.create'))}
+                                        className="font-semibold text-primary-100 underline"
+                                    >
                                         Tambah kategori dulu
-                                    </Link>
+                                    </button>
                                 </p>
                             )}
-                            {errors.categories && <span className="error-message">{errors.categories}</span>}
+                            {errors.categories && (
+                                <p className="text-small italic text-error-dark">{errors.categories}</p>
+                            )}
                         </div>
 
-                        {/* Description */}
-                        <div className="input-group" style={{ marginTop: '1.5rem' }}>
-                            <label htmlFor="description"><b>Deskripsi Destinasi</b></label>
-                            <div className={`textarea-wrapper ${errors.description ? 'input-error' : ''}`}>
-                                <textarea
-                                    id="description"
-                                    placeholder="Tuliskan deskripsi lengkap tentang destinasi wisata ini..."
-                                    value={data.description}
-                                    onChange={(e) => setData('description', e.target.value)}
-                                    required
-                                />
-                            </div>
-                            {errors.description && <span className="error-message">{errors.description}</span>}
-                        </div>
+                        <Input
+                            label="Deskripsi Destinasi"
+                            name="description"
+                            type="textarea"
+                            rows={5}
+                            value={data.description}
+                            onChange={(e) => setData('description', e.target.value)}
+                            placeholder="Tuliskan deskripsi lengkap tentang destinasi wisata ini..."
+                            error={errors.description}
+                            required
+                        />
 
                         {/* Actions */}
-                        <div className="form-actions">
-                            <Link
-                                href={route('admin.places.index')}
-                                className="btn-white btn-link-cancel"
+                        <div className="mt-2 flex justify-end gap-3 border-t border-primary-10 pt-5">
+                            <Button
+                                variant="white"
+                                onClick={() => router.get(route('admin.places.index'))}
                             >
                                 Batal
-                            </Link>
-                            <button
-                                type="submit"
-                                className="btn-success"
-                                disabled={processing}
-                            >
+                            </Button>
+                            <Button variant="success" type="submit" loading={processing}>
                                 {processing ? 'Menyimpan...' : 'Simpan Destinasi'}
-                            </button>
+                            </Button>
                         </div>
-                    </form>
-                </div>
+                </form>
             </div>
         </>
     );
 }
+
+Create.layout = (page) => <AdminLayout content={page}></AdminLayout>;

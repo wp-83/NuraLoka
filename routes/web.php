@@ -76,8 +76,10 @@ Route::middleware('auth')->group(function () {
     // Explore
     Route::prefix('/jelajah')->name('explore.')->controller(ExploreController::class)->group(function () {
         Route::get('/', 'index')->name('index');
-        Route::get('/{slug}', 'show')->name('show');
+        Route::get('/titik', 'points')->name('points');   // API peta — sebelum /{slug} agar tidak tertangkap
         Route::post('/lacak', 'trackVisit')->name('track');
+        Route::post('/checkin', 'checkIn')->name('checkin'); // check-in kunjungan (verifikasi lokasi)
+        Route::get('/{slug}', 'show')->name('show');
     });
 
     // Challenges
@@ -124,7 +126,7 @@ Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(fu
     });
 
     // Place Management
-    Route::prefix('/places')->name('admin.places.')->group(function () {
+    Route::prefix('/places')->name('places.')->group(function () {
         Route::get('/', [AdminPlaceController::class, 'index'])->name('index');
         Route::get('/create', [AdminPlaceController::class, 'create'])->name('create');
         Route::post('/', [AdminPlaceController::class, 'store'])->name('store');
