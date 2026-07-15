@@ -69,7 +69,6 @@ class LoginController extends Controller
          */
         $request->session()->regenerate();
 
-
         // // Redirect the main administrator to the admin dashboard.
         // if (
         //     Auth::user()->is_admin &&

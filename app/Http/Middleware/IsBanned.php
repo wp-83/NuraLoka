@@ -15,7 +15,7 @@ class IsBanned
      */
     public function handle(Request $request, Closure $next)
     {
-        if($request->user()->is_banned == 1){
+        if ($request->user()->is_banned == 1) {
             return inertia('Auth/Banned');
         }
 
