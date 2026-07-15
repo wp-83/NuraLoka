@@ -1,7 +1,9 @@
-import AdminLayout from '@js/Layouts/AdminLayout';
+import Modal from '@components/Common/Modal';
+import UserStatisticCard from '@components/Features/UserStatisticCard';
 import Button from '@components/Forms/Button';
 import Dropdown from '@components/Forms/Dropdown';
 import Input from '@components/Forms/Input';
+import AdminLayout from '@js/Layouts/AdminLayout';
 
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
@@ -19,14 +21,11 @@ import {
     FiUsers,
 } from 'react-icons/fi';
 
-import UserStatisticCard from '@components/Features/UserStatisticCard';
-
 export default function Index({
     users,
     filters = {},
     statistics = {},
 }) {
-
     const authUser = usePage().props.auth.user;
 
     const [search, setSearch] = useState(
@@ -44,6 +43,21 @@ export default function Index({
     const [status, setStatus] = useState(
         filters.status ?? '',
     );
+
+    const [modal, setModal] = useState({
+        isOpen: false,
+        action: null,
+        user: null,
+    });
+
+    const [processing, setProcessing] =
+        useState(false);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filter
+    |--------------------------------------------------------------------------
+    */
 
     const handleFilter = (e) => {
         e.preventDefault();
@@ -81,87 +95,176 @@ export default function Index({
         );
     };
 
-    const handleBan = (user) => {
-        const confirmed = window.confirm(
-            `Apakah kamu yakin ingin memblokir akun "${user.username}"?`,
-        );
+    /*
+    |--------------------------------------------------------------------------
+    | Modal
+    |--------------------------------------------------------------------------
+    */
 
-        if (!confirmed) {
+    const openModal = (action, user) => {
+        setModal({
+            isOpen: true,
+            action,
+            user,
+        });
+    };
+
+    const resetModal = () => {
+        setModal({
+            isOpen: false,
+            action: null,
+            user: null,
+        });
+    };
+
+    const closeModal = () => {
+        if (processing) {
             return;
         }
 
-        router.patch(
-            route(
-                'admin.users.ban',
-                user.id,
-            ),
-            {},
-            {
-                preserveScroll: true,
-            },
-        );
+        resetModal();
     };
 
-    const handleUnban = (user) => {
-        const confirmed = window.confirm(
-            `Apakah kamu yakin ingin membuka blokir akun "${user.username}"?`,
-        );
+    /*
+    |--------------------------------------------------------------------------
+    | User Actions
+    |--------------------------------------------------------------------------
+    */
 
-        if (!confirmed) {
+    const handleConfirm = () => {
+        if (
+            !modal.action ||
+            !modal.user ||
+            processing
+        ) {
             return;
         }
 
-        router.patch(
-            route(
-                'admin.users.unban',
-                user.id,
-            ),
-            {},
-            {
-                preserveScroll: true,
+        setProcessing(true);
+
+        const options = {
+            preserveScroll: true,
+
+            onSuccess: () => {
+                resetModal();
             },
-        );
-    };
 
-    const handleDelete = (user) => {
-        const confirmed = window.confirm(
-            `Apakah kamu yakin ingin menghapus akun "${user.username}" secara permanen?`,
-        );
+            onFinish: () => {
+                setProcessing(false);
+            },
+        };
 
-        if (!confirmed) {
+        if (modal.action === 'ban') {
+            router.patch(
+                route(
+                    'admin.users.ban',
+                    modal.user.id,
+                ),
+                {},
+                options,
+            );
+
             return;
         }
 
-        router.delete(
-            route(
-                'admin.users.destroy',
-                user.id,
-            ),
-            {
-                preserveScroll: true,
-            },
-        );
+        if (modal.action === 'unban') {
+            router.patch(
+                route(
+                    'admin.users.unban',
+                    modal.user.id,
+                ),
+                {},
+                options,
+            );
+
+            return;
+        }
+
+        if (modal.action === 'delete') {
+            router.delete(
+                route(
+                    'admin.users.destroy',
+                    modal.user.id,
+                ),
+                options,
+            );
+        }
     };
+
+    /*
+    |--------------------------------------------------------------------------
+    | Modal Configuration
+    |--------------------------------------------------------------------------
+    */
+
+    const modalConfig = {
+        ban: {
+            type: 'warning',
+            title: 'Blokir Pengguna',
+            message: (
+                <>
+                    Apakah kamu yakin ingin memblokir akun{' '}
+                    <span className="font-semibold">
+                        @{modal.user?.username}
+                    </span>
+                    ?
+                </>
+            ),
+            confirmLabel: 'Blokir',
+            confirmVariant: 'warning',
+        },
+
+        unban: {
+            type: 'success',
+            title: 'Buka Blokir Pengguna',
+            message: (
+                <>
+                    Apakah kamu yakin ingin membuka blokir akun{' '}
+                    <span className="font-semibold">
+                        @{modal.user?.username}
+                    </span>
+                    ?
+                </>
+            ),
+            confirmLabel: 'Buka Blokir',
+            confirmVariant: 'success',
+        },
+
+        delete: {
+            type: 'error',
+            title: 'Hapus Pengguna',
+            message: (
+                <>
+                    Apakah kamu yakin ingin menghapus akun{' '}
+                    <span className="font-semibold">
+                        @{modal.user?.username}
+                    </span>{' '}
+                    secara permanen?
+                </>
+            ),
+            confirmLabel: 'Hapus',
+            confirmVariant: 'error',
+        },
+    };
+
+    const activeModal =
+        modalConfig[modal.action];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Helpers
+    |--------------------------------------------------------------------------
+    */
 
     const getGenderLabel = (gender) => {
         const labels = {
             male: 'Laki-laki',
             female: 'Perempuan',
-            unspecified: 'Tidak ingin memberi tahu',
+            unspecified:
+                'Tidak ingin memberi tahu',
         };
 
         return labels[gender] ?? '-';
-    };
-
-    const getInitial = (user) => {
-        const name =
-            user.user_detail?.fullname ||
-            user.username ||
-            'U';
-
-        return name
-            .charAt(0)
-            .toUpperCase();
     };
 
     return (
@@ -192,9 +295,10 @@ export default function Index({
 
                 <UserStatisticCard
                     title="Pengguna Biasa"
-                    variant='green'
+                    variant="green"
                     value={
-                        statistics.total_regular_users ?? 0
+                        statistics.total_regular_users ??
+                        0
                     }
                     icon={
                         <FiUserCheck size={24} />
@@ -203,7 +307,7 @@ export default function Index({
 
                 <UserStatisticCard
                     title="Admin"
-                    variant='yellow'
+                    variant="yellow"
                     value={
                         statistics.total_admins ?? 0
                     }
@@ -214,9 +318,10 @@ export default function Index({
 
                 <UserStatisticCard
                     title="Pengguna Diblokir"
-                    variant='red'
+                    variant="red"
                     value={
-                        statistics.total_banned_users ?? 0
+                        statistics.total_banned_users ??
+                        0
                     }
                     icon={
                         <FiSlash size={24} />
@@ -230,7 +335,6 @@ export default function Index({
                     onSubmit={handleFilter}
                     className="flex flex-col gap-4"
                 >
-                    {/* Search */}
                     <Input
                         label="Cari Pengguna"
                         name="search"
@@ -239,17 +343,20 @@ export default function Index({
                             setSearch(e.target.value)
                         }
                         placeholder="Cari nama, username, atau email..."
-                        icon={<FiSearch size={20} />}
+                        icon={
+                            <FiSearch size={20} />
+                        }
                     />
 
-                    {/* Filters */}
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <Dropdown
                             label="Role"
                             name="role"
                             value={role}
                             onChange={(e) =>
-                                setRole(e.target.value)
+                                setRole(
+                                    e.target.value,
+                                )
                             }
                             placeholder="Semua role"
                             options={[
@@ -269,7 +376,9 @@ export default function Index({
                             name="gender"
                             value={gender}
                             onChange={(e) =>
-                                setGender(e.target.value)
+                                setGender(
+                                    e.target.value,
+                                )
                             }
                             placeholder="Semua jenis kelamin"
                             options={[
@@ -283,7 +392,8 @@ export default function Index({
                                 },
                                 {
                                     value: 'unspecified',
-                                    label: 'Tidak ingin memberi tahu',
+                                    label:
+                                        'Tidak ingin memberi tahu',
                                 },
                             ]}
                         />
@@ -293,7 +403,9 @@ export default function Index({
                             name="status"
                             value={status}
                             onChange={(e) =>
-                                setStatus(e.target.value)
+                                setStatus(
+                                    e.target.value,
+                                )
                             }
                             placeholder="Semua status"
                             options={[
@@ -309,7 +421,6 @@ export default function Index({
                         />
                     </div>
 
-                    {/* Actions */}
                     <div className="flex flex-wrap justify-end gap-3">
                         <Button
                             type="button"
@@ -331,7 +442,9 @@ export default function Index({
                 <Button
                     onClick={() =>
                         router.get(
-                            route('admin.users.create'),
+                            route(
+                                'admin.users.create',
+                            ),
                         )
                     }
                 >
@@ -344,7 +457,7 @@ export default function Index({
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-primary-100 font-heading text-body text-white">
-                            <tr className='text-center'>
+                            <tr className="text-center">
                                 <th className="min-w-72 whitespace-nowrap px-5 py-4">
                                     Pengguna
                                 </th>
@@ -385,126 +498,158 @@ export default function Index({
 
                         <tbody>
                             {users.data.length > 0 ? (
-                                users.data.map((user) => (
-                                    <tr
-                                        key={user.id}
-                                        className={`border-b border-gray-20 transition-colors last:border-b-0 ${(user.id == authUser.id) ? 'bg-accent-10' : 'hover:bg-primary-10'}`}
-                                    >
-                                        {/* Pengguna */}
-                                        <td className="px-5 py-4 font-body text-body text-gray-100">
-                                            <div className="flex items-center gap-3">
-                                                <img
-                                                    src={user.public_profile_photo}
-                                                    alt={user.username}
-                                                    className="h-12 w-12 rounded-full object-cover"
-                                                />
+                                users.data.map((user) => {
+                                    const isActionDisabled =
+                                        user.id == authUser.id ||
+                                        user.is_admin;
 
-                                                <div>
-                                                    <p className="font-heading text-body text-gray-100">
-                                                        {user.user_detail?.fullname ?? '-'}
-                                                        {(user.id == authUser.id) ? (<span className='font-bold text-small'> (Kamu)</span>) : ""}
-                                                    </p>
+                                    return (
+                                        <tr
+                                            key={user.id}
+                                            className={`
+                                                border-b
+                                                border-gray-20
+                                                transition-colors
+                                                last:border-b-0
+                                                ${
+                                                    user.id == authUser.id
+                                                        ? 'bg-accent-10'
+                                                        : 'hover:bg-primary-10'
+                                                }
+                                            `}
+                                        >
+                                            {/* Pengguna */}
+                                            <td className="px-5 py-4 font-body text-body text-gray-100">
+                                                <div className="flex items-center gap-3">
+                                                    <img
+                                                        src={
+                                                            user.public_profile_photo
+                                                        }
+                                                        alt={user.username}
+                                                        className="h-12 w-12 rounded-full object-cover"
+                                                    />
 
-                                                    <p className="font-body text-small text-gray-50">
-                                                        ID: {user.id}
-                                                    </p>
+                                                    <div>
+                                                        <p className="font-heading text-body text-gray-100">
+                                                            {user.user_detail
+                                                                ?.fullname ?? '-'}
+
+                                                            {user.id ==
+                                                                authUser.id && (
+                                                                <span className="font-bold text-small text-primary-70">
+                                                                    {' '}
+                                                                    (Kamu)
+                                                                </span>
+                                                            )}
+                                                        </p>
+
+                                                        <p className="font-body text-small text-gray-50">
+                                                            ID: {user.id}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
+                                            </td>
 
-                                        {/* Username */}
-                                        <td className="px-5 py-4 font-body text-body text-gray-100">
-                                            @{user.username}
-                                        </td>
+                                            {/* Username */}
+                                            <td className="px-5 py-4 font-body text-body text-gray-100">
+                                                @{user.username}
+                                            </td>
 
-                                        {/* Email */}
-                                        <td className="px-5 py-4 font-body text-body text-gray-100">
-                                            {user.email}
-                                        </td>
+                                            {/* Email */}
+                                            <td className="px-5 py-4 font-body text-body text-gray-100">
+                                                {user.email}
+                                            </td>
 
-                                        {/* Jenis Kelamin */}
-                                        <td className="px-5 py-4 font-body text-body text-gray-100">
-                                            {getGenderLabel(
-                                                user.user_detail?.gender,
-                                            )}
-                                        </td>
+                                            {/* Jenis Kelamin */}
+                                            <td className="px-5 py-4 font-body text-body text-gray-100">
+                                                {getGenderLabel(
+                                                    user.user_detail?.gender,
+                                                )}
+                                            </td>
 
-                                        {/* Provinsi */}
-                                        <td className="px-5 py-4 font-body text-body text-gray-100">
-                                            {user.user_detail?.province?.name ?? '-'}
-                                        </td>
+                                            {/* Provinsi */}
+                                            <td className="px-5 py-4 font-body text-body text-gray-100">
+                                                {user.user_detail
+                                                    ?.province?.name ?? '-'}
+                                            </td>
 
-                                        {/* Poin */}
-                                        <td className="px-5 py-4 font-body text-body text-gray-100">
-                                            {(
-                                                user.user_detail?.total_points ?? 0
-                                            ).toLocaleString('id-ID')}
-                                        </td>
+                                            {/* Poin */}
+                                            <td className="px-5 py-4 font-body text-body text-gray-100">
+                                                {(
+                                                    user.user_detail
+                                                        ?.total_points ?? 0
+                                                ).toLocaleString('id-ID')}
+                                            </td>
 
-                                        {/* Role */}
-                                        <td className="px-5 py-4 font-body text-body text-center text-gray-100">
-                                            <span
-                                                className={[
-                                                    'inline-flex rounded-md px-3 py-1 font-body text-small',
-                                                    user.is_admin
-                                                        ? 'text-secondary-10 bg-secondary-100'
-                                                        : 'text-accent-10 bg-accent-100',
-                                                ]
-                                                    .filter(Boolean)
-                                                    .join(' ')}
-                                            >
-                                                {user.is_admin
-                                                    ? 'Admin'
-                                                    : 'Pengguna'}
-                                            </span>
-                                        </td>
+                                            {/* Role */}
+                                            <td className="px-5 py-4 text-center font-body text-body text-gray-100">
+                                                <span
+                                                    className={[
+                                                        'inline-flex rounded-md px-3 py-1 font-body text-small',
+                                                        user.is_admin
+                                                            ? 'bg-secondary-100 text-secondary-10'
+                                                            : 'bg-accent-100 text-accent-10',
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(' ')}
+                                                >
+                                                    {user.is_admin
+                                                        ? 'Admin'
+                                                        : 'Pengguna'}
+                                                </span>
+                                            </td>
 
-                                        {/* Status */}
-                                        <td className="px-5 py-4 font-body text-body text-center text-gray-100">
-                                            <span
-                                                className={[
-                                                    'inline-flex rounded-md px-3 py-1 font-body text-small',
-                                                    user.is_banned
-                                                        ? 'text-error-light bg-error-dark'
-                                                        : 'text-success-light bg-success-dark',
-                                                ]
-                                                    .filter(Boolean)
-                                                    .join(' ')}
-                                            >
-                                                {user.is_banned
-                                                    ? 'Diblokir'
-                                                    : 'Aktif'}
-                                            </span>
-                                        </td>
+                                            {/* Status */}
+                                            <td className="px-5 py-4 text-center font-body text-body text-gray-100">
+                                                <span
+                                                    className={[
+                                                        'inline-flex rounded-md px-3 py-1 font-body text-small',
+                                                        user.is_banned
+                                                            ? 'bg-error-dark text-error-light'
+                                                            : 'bg-success-dark text-success-light',
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(' ')}
+                                                >
+                                                    {user.is_banned
+                                                        ? 'Diblokir'
+                                                        : 'Aktif'}
+                                                </span>
+                                            </td>
 
-                                        {/* Aksi */}
-                                        <td className="px-5 py-4 text-center">
-                                            <div className="flex items-center justify-center gap-2">
-                                                {/* Edit */}
-                                                <Button
-                                                    variant="info"
-                                                    size="btn-sm"
-                                                    className="h-9 w-9 p-0"
-                                                    iconLeft={
-                                                        <FiEdit2 size={17} />
-                                                    }
-                                                    onClick={() =>
-                                                        router.get(
-                                                            route(
-                                                                'admin.users.edit',
-                                                                user.id,
-                                                            ),
-                                                        )
-                                                    }
-                                                    title="Edit pengguna"
-                                                    aria-label="Edit pengguna"
-                                                />
+                                            {/* Aksi */}
+                                            <td className="px-5 py-4 text-center">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    {/* Edit */}
+                                                    <Button
+                                                        variant="info"
+                                                        size="btn-sm"
+                                                        className="h-9 w-9 p-0"
+                                                        iconLeft={
+                                                            <FiEdit2
+                                                                size={17}
+                                                            />
+                                                        }
+                                                        onClick={() =>
+                                                            router.get(
+                                                                route(
+                                                                    'admin.users.edit',
+                                                                    user.id,
+                                                                ),
+                                                            )
+                                                        }
+                                                        title="Edit pengguna"
+                                                        aria-label="Edit pengguna"
+                                                    />
 
-                                                {/* Ban / Unban */}
-                                                {!user.is_admin &&
-                                                    (user.is_banned ? (
+                                                    {/* Ban / Unban */}
+                                                    {user.is_banned ? (
                                                         <Button
-                                                            variant="success"
+                                                            variant={
+                                                                isActionDisabled
+                                                                    ? 'disabled'
+                                                                    : 'success'
+                                                            }
                                                             size="btn-sm"
                                                             className="h-9 w-9 p-0"
                                                             iconLeft={
@@ -513,14 +658,31 @@ export default function Index({
                                                                 />
                                                             }
                                                             onClick={() =>
-                                                                handleUnban(user)
+                                                                openModal(
+                                                                    'unban',
+                                                                    user,
+                                                                )
                                                             }
-                                                            title="Buka blokir pengguna"
+                                                            disabled={
+                                                                isActionDisabled
+                                                            }
+                                                            title={
+                                                                user.id ==
+                                                                authUser.id
+                                                                    ? 'Tidak dapat membuka blokir akun sendiri'
+                                                                    : user.is_admin
+                                                                    ? 'Admin tidak dapat diblokir'
+                                                                    : 'Buka blokir pengguna'
+                                                            }
                                                             aria-label="Buka blokir pengguna"
                                                         />
                                                     ) : (
                                                         <Button
-                                                            variant="warning"
+                                                            variant={
+                                                                isActionDisabled
+                                                                    ? 'disabled'
+                                                                    : 'warning'
+                                                            }
                                                             size="btn-sm"
                                                             className="h-9 w-9 p-0"
                                                             iconLeft={
@@ -529,52 +691,86 @@ export default function Index({
                                                                 />
                                                             }
                                                             onClick={() =>
-                                                                handleBan(user)
+                                                                openModal(
+                                                                    'ban',
+                                                                    user,
+                                                                )
                                                             }
-                                                            title="Blokir pengguna"
+                                                            disabled={
+                                                                isActionDisabled
+                                                            }
+                                                            title={
+                                                                user.id ==
+                                                                authUser.id
+                                                                    ? 'Tidak dapat memblokir akun sendiri'
+                                                                    : user.is_admin
+                                                                    ? 'Admin tidak dapat diblokir'
+                                                                    : 'Blokir pengguna'
+                                                            }
                                                             aria-label="Blokir pengguna"
                                                         />
-                                                    ))}
+                                                    )}
 
-                                                {/* Delete */}
-                                                {!user.is_admin && (
+                                                    {/* Delete */}
                                                     <Button
-                                                        variant="error"
+                                                        variant={
+                                                            isActionDisabled
+                                                                ? 'disabled'
+                                                                : 'error'
+                                                        }
                                                         size="btn-sm"
                                                         className="h-9 w-9 p-0"
                                                         iconLeft={
-                                                            <FiTrash2 size={17} />
+                                                            <FiTrash2
+                                                                size={17}
+                                                            />
                                                         }
                                                         onClick={() =>
-                                                            handleDelete(user)
+                                                            openModal(
+                                                                'delete',
+                                                                user,
+                                                            )
                                                         }
-                                                        title="Hapus pengguna"
+                                                        disabled={
+                                                            isActionDisabled
+                                                        }
+                                                        title={
+                                                            user.id ==
+                                                            authUser.id
+                                                                ? 'Tidak dapat menghapus akun sendiri'
+                                                                : user.is_admin
+                                                                ? 'Admin tidak dapat dihapus'
+                                                                : 'Hapus pengguna'
+                                                        }
                                                         aria-label="Hapus pengguna"
                                                     />
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             ) : (
                                 <tr>
                                     <td
                                         colSpan={9}
-                                        className="px-6 py-16 text-center"
+                                        className="px-6 py-8"
                                     >
-                                        <FiUsers
-                                            size={42}
-                                            className="mx-auto text-gray-30"
-                                        />
+                                        <div className="flex w-full flex-col items-center justify-center text-center">
+                                            <img
+                                                src="/images/mascots/wait.png"
+                                                alt="Mascot"
+                                                className="w-28"
+                                            />
 
-                                        <p className="mt-3 font-heading text-paragraph text-gray-100">
-                                            Pengguna tidak ditemukan
-                                        </p>
+                                            <p className="mt-3 font-heading text-paragraph text-gray-100">
+                                                Pengguna tidak ditemukan
+                                            </p>
 
-                                        <p className="mt-1 font-body text-body text-gray-50">
-                                            Coba ubah kata kunci atau filter
-                                            pencarian.
-                                        </p>
+                                            <p className="mt-1 font-body text-body text-gray-50">
+                                                Coba ubah kata kunci atau filter
+                                                pencarian.
+                                            </p>
+                                        </div>
                                     </td>
                                 </tr>
                             )}
@@ -583,58 +779,115 @@ export default function Index({
                 </div>
 
                 {/* Pagination */}
-                {users.links && users.links.length > 3 && (
-                    <div className="flex flex-col gap-4 border-t border-gray-20 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="font-body text-small text-gray-50">
-                            Menampilkan {users.from ?? 0}–{users.to ?? 0} dari{' '}
-                            {users.total ?? 0} pengguna
-                        </p>
+                {users.links &&
+                    users.links.length > 3 && (
+                        <div className="flex flex-col gap-4 border-t border-gray-20 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                            <p className="font-body text-small text-gray-50">
+                                Menampilkan{' '}
+                                {users.from ?? 0}–
+                                {users.to ?? 0} dari{' '}
+                                {users.total ?? 0}{' '}
+                                pengguna
+                            </p>
 
-                        <div className="flex items-center gap-2">
-                            {users.links.map((link, index) => {
-                                const isPrevious = index === 0;
-                                const isNext =
-                                    index === users.links.length - 1;
+                            <div className="flex items-center gap-2">
+                                {users.links.map(
+                                    (
+                                        link,
+                                        index,
+                                    ) => {
+                                        const isPrevious =
+                                            index ===
+                                            0;
 
-                                return (
-                                    <Button
-                                        key={`${link.label}-${index}`}
-                                        type="button"
-                                        variant={
-                                            link.active
-                                                ? 'primary'
-                                                : 'white'
-                                        }
-                                        size="btn-sm"
-                                        disabled={!link.url}
-                                        className="h-9 min-w-9 px-3"
-                                        onClick={() => {
-                                            if (link.url) {
-                                                router.get(
-                                                    link.url,
-                                                    {},
-                                                    {
-                                                        preserveState: true,
-                                                        preserveScroll: true,
-                                                    },
-                                                );
-                                            }
-                                        }}
-                                    >
-                                        {isPrevious ? (
-                                            <FiChevronLeft size={18} />
-                                        ) : isNext ? (
-                                            <FiChevronRight size={18} />
-                                        ) : (
-                                            link.label
-                                        )}
-                                    </Button>
-                                );
-                            })}
+                                        const isNext =
+                                            index ===
+                                            users
+                                                .links
+                                                .length -
+                                                1;
+
+                                        return (
+                                            <Button
+                                                key={`${link.label}-${index}`}
+                                                type="button"
+                                                variant={
+                                                    link.active
+                                                        ? 'primary'
+                                                        : 'white'
+                                                }
+                                                size="btn-sm"
+                                                disabled={
+                                                    !link.url
+                                                }
+                                                className="h-9 min-w-9 px-3"
+                                                onClick={() => {
+                                                    if (
+                                                        link.url
+                                                    ) {
+                                                        router.get(
+                                                            link.url,
+                                                            {},
+                                                            {
+                                                                preserveState: true,
+                                                                preserveScroll: true,
+                                                            },
+                                                        );
+                                                    }
+                                                }}
+                                            >
+                                                {isPrevious ? (
+                                                    <FiChevronLeft
+                                                        size={
+                                                            18
+                                                        }
+                                                    />
+                                                ) : isNext ? (
+                                                    <FiChevronRight
+                                                        size={
+                                                            18
+                                                        }
+                                                    />
+                                                ) : (
+                                                    link.label
+                                                )}
+                                            </Button>
+                                        );
+                                    },
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
             </div>
+
+            {/* Confirmation Modal */}
+            {activeModal && (
+                <Modal
+                    isOpen={modal.isOpen}
+                    onClose={closeModal}
+                    type={activeModal.type}
+                    title={activeModal.title}
+                    actions={[
+                        {
+                            label: 'Batal',
+                            variant: 'white',
+                            onClick: closeModal,
+                            disabled: processing,
+                        },
+                        {
+                            label:
+                                activeModal.confirmLabel,
+                            variant:
+                                activeModal.confirmVariant,
+                            onClick: handleConfirm,
+                            loading: processing,
+                            disabled: processing,
+                        },
+                    ]}
+                >
+                    {activeModal.message}
+                </Modal>
+            )}
         </div>
     );
 }
