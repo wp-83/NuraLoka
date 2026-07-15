@@ -85,6 +85,14 @@ class User extends Authenticatable
         return $this->hasOne(UserDetail::class);
     }
 
+    /**
+     * Alias for userDetail relationship (plural form).
+     */
+    public function userDetails()
+    {
+        return $this->userDetail();
+    }
+
     public function missions()
     {
         return $this->belongsToMany(Mission::class)
