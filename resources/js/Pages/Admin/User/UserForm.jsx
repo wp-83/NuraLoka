@@ -177,20 +177,19 @@ export default function UserForm({
                     </h2>
 
                     <p className="mt-1 font-body text-body text-gray-50">
-                        Unggah foto profil pengguna.
-                        Maksimal 2 MB.
+                        Unggah foto profil pengguna. Maksimal 2 MB.
                     </p>
                 </div>
 
                 <div className="flex flex-col items-center gap-4 sm:flex-row">
-                    <img
-                        src={
-                            photoPreview ??
-                            '/images/default-profile.png'
-                        }
-                        alt="Preview foto profil"
-                        className="h-32 w-32 rounded-full object-cover"
-                    />
+                    {/* Preview hanya muncul jika ada foto */}
+                    {photoPreview && (
+                        <img
+                            src={photoPreview}
+                            alt="Preview foto profil"
+                            className="h-32 w-32 rounded-full p-0.5 border-3 border-secondary object-cover"
+                        />
+                    )}
 
                     <div className="flex flex-col gap-2">
                         <label
@@ -216,24 +215,21 @@ export default function UserForm({
                         >
                             <FiCamera size={18} />
 
-                            Pilih Foto
+                            {photoPreview
+                                ? 'Ganti Foto'
+                                : 'Pilih Foto'}
                         </label>
 
                         <input
                             id="profile_photo"
                             name="profile_photo"
                             type="file"
-                            accept="
-                                image/jpeg,
-                                image/png,
-                                image/webp
-                            "
+                            accept="image/jpeg,image/png,image/webp"
                             className="hidden"
                             onChange={(e) =>
                                 setData(
                                     'profile_photo',
-                                    e.target
-                                        .files?.[0] ??
+                                    e.target.files?.[0] ??
                                         null,
                                 )
                             }
@@ -241,19 +237,13 @@ export default function UserForm({
 
                         {data.profile_photo && (
                             <p className="max-w-64 truncate font-body text-small text-gray-50">
-                                {
-                                    data
-                                        .profile_photo
-                                        .name
-                                }
+                                {data.profile_photo.name}
                             </p>
                         )}
 
                         {errors.profile_photo && (
                             <p className="font-body text-small italic text-error-dark">
-                                {
-                                    errors.profile_photo
-                                }
+                                {errors.profile_photo}
                             </p>
                         )}
                     </div>
@@ -513,7 +503,7 @@ export default function UserForm({
                     loading={processing}
                     iconLeft={
                         !processing && (
-                            <FiSave size={18} />
+                            <FiSave size={20} />
                         )
                     }
                 >

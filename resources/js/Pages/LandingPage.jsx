@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import Button from "@components/Forms/Button";
 import Footer from "@components/Layouts/User/Footer";
-import { Link, usePage } from "@inertiajs/react";
+import { Head, Link, usePage } from "@inertiajs/react";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 const FEATURES = [
@@ -45,29 +45,29 @@ const FEATURES = [
 
 const TEAM_MEMBERS = [
     {
-        name: "Fellicia Wijaya",
+        name: "Felicia Wijaya",
         role: "Product Owner",
-        image: "/images/team/fellicia.png",
+        image: "/images/devs/felicia.png",
     },
     {
         name: "William Pratama",
         role: "Scrum Master",
-        image: "/images/team/william.png",
+        image: "/images/devs/william.png",
     },
     {
         name: "Agnes G. F. Sukma",
         role: "Developer",
-        image: "/images/team/agnes.png",
+        image: "/images/devs/agnes.png",
     },
     {
         name: "Andi Zulfikar",
         role: "Developer",
-        image: "/images/team/andi.png",
+        image: "/images/devs/andi.png",
     },
     {
-        name: "Steven J. Wijayanto",
+        name: "Steven J. Wiyanto",
         role: "Developer",
-        image: "/images/team/steven.png",
+        image: "/images/devs/steven.png",
     },
 ];
 
@@ -158,14 +158,38 @@ export default function LandingPage() {
 
     return (
         <>
+            <Head>
+                <title>NuraLoka | Temukan destinasi wisata, kuliner, dan pengalaman perjalanan terbaik di Indonesia.</title>
+
+                <meta
+                    name="keywords"
+                    content="wisata, destinasi, kuliner, perjalanan, Indonesia, tempat menarik, hidden gem, NuraLoka"
+                />
+
+                <meta
+                    property="og:title"
+                    content="NuraLoka: Temukan destinasi wisata, kuliner, dan pengalaman perjalanan terbaik di Indonesia."
+                />
+
+                <meta
+                    property="og:description"
+                    content="NuraLoka membantu kamu menemukan destinasi wisata, kuliner, dan pengalaman perjalanan terbaik di Indonesia."
+                />
+
+                <meta
+                    property="og:type"
+                    content="website"
+                />
+            </Head>
+
             {/* ==================== NAVBAR ==================== */}
-            <header className="fixed left-0 top-0 z-50 w-full bg-white shadow-sm">
+            <header className="fixed left-0 top-0 z-50 w-full bg-white shadow-md">
                 <div className="container flex h-16 items-center justify-between">
                     <Link href="/">
                         <img
-                            src="/images/logo/logo.png"
+                            src="/images/logo/with-tagline.png"
                             alt="NuraLoka"
-                            className="h-9 w-auto object-contain"
+                            className="h-14 w-auto object-contain"
                         />
                     </Link>
 
@@ -186,15 +210,15 @@ export default function LandingPage() {
                 <section
                     className="
                         relative
-                        flex min-h-[680px] items-center
+                        flex items-center
                         overflow-hidden
                         bg-cover bg-center
                         pt-16
-                        md:min-h-[720px]
+                        min-h-[110vh]
                     "
                     style={{
                         backgroundImage:
-                            "url('/images/backgrounds/landing-hero.jpg')",
+                            "url('/images/backgrounds/landing-page.jpg')",
                     }}
                 >
                     {/* Dark Overlay */}
@@ -509,9 +533,9 @@ export default function LandingPage() {
                     <div
                         className="
                             mt-12
-                            grid grid-cols-2
+                            grid grid-cols-1
                             gap-x-6 gap-y-10
-                            sm:grid-cols-3
+                            sm:grid-cols-2
                             lg:grid-cols-5
                         "
                     >
@@ -525,12 +549,11 @@ export default function LandingPage() {
                                     className="
                                         mx-auto
                                         aspect-square
-                                        w-28
+                                        w-52
                                         overflow-hidden
                                         rounded-full
                                         bg-gray-10
-                                        sm:w-32
-                                        lg:w-36
+                                        sm:w-44
                                     "
                                 >
                                     <img
@@ -548,8 +571,8 @@ export default function LandingPage() {
                                     className="
                                         mt-4
                                         font-heading
-                                        text-small
-                                        font-semibold
+                                        text-paragraph
+                                        font-bold
                                         text-primary
                                     "
                                 >
@@ -558,9 +581,9 @@ export default function LandingPage() {
 
                                 <p
                                     className="
-                                        mt-1
                                         font-body
-                                        text-micro
+                                        text-body
+                                        italic
                                         text-secondary
                                     "
                                 >
