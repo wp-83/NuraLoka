@@ -159,7 +159,7 @@ export default function Navbar() {
             {/* ========================================================
                 DESKTOP NAVBAR
             ======================================================== */}
-            <nav className="sticky top-0 z-50 hidden bg-white shadow-md md:block">
+            <nav className="sticky top-0 z-[1000] hidden bg-white shadow-md md:block">
                 <div className="container w-full">
                     <div className="flex items-center justify-between py-1">
                         {/* Logo */}
@@ -236,7 +236,7 @@ export default function Navbar() {
             {/* ========================================================
                 MOBILE HEADER
             ======================================================== */}
-            <nav className="sticky top-0 z-50 bg-white shadow-md md:hidden">
+            <nav className="sticky top-0 z-[1000] bg-white shadow-md md:hidden">
                 <div className="container flex w-full items-center justify-between py-1">
                     {/* Logo */}
                     <Link href={route('home.index')}>
@@ -337,7 +337,7 @@ export default function Navbar() {
             ======================================================== */}
             <nav
                 className="
-                    fixed bottom-0 left-0 right-0 z-50
+                    fixed bottom-0 left-0 right-0 z-[1000]
                     bg-white
                     shadow-[0_-4px_6px_-1px_rgb(0_0_0/0.1),0_-2px_4px_-2px_rgb(0_0_0/0.1)]
                     md:hidden

@@ -39,10 +39,10 @@ class LoginController extends Controller
         $request->session()->regenerate();
 
         if (Auth::user()->is_admin && (Auth::user()->email === 'admin@nuraloka.id' || Auth::user()->username === 'admin_nuraloka')) {
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('admin.dashboard.index');
         }
 
-        return redirect()->route('home');
+        return redirect()->route('home.index');
     }
 
     /**
