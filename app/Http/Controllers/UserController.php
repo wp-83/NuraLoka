@@ -19,70 +19,70 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $users = User::query()
-                ->with([
-                    'userDetail.province',
-                ])
-                ->when($request->search, function ($query, $search) {
-                    $query->where(function ($query) use ($search) {
-                        $query
-                            ->where(
-                                'username',
-                                'like',
-                                "%{$search}%"
-                            )
-                            ->orWhere(
-                                'email',
-                                'like',
-                                "%{$search}%"
-                            )
-                            ->orWhereHas(
-                                'userDetail',
-                                function ($query) use ($search) {
-                                    $query->where(
-                                        'fullname',
-                                        'like',
-                                        "%{$search}%"
-                                    );
-                                }
-                            );
-                    });
-                })
-                ->when($request->role, function ($query, $role) {
-                    $query->where(
-                        'is_admin',
-                        $role === 'admin'
-                    );
-                })
-                ->when($request->gender, function ($query, $gender) {
-                    $query->whereHas(
-                        'userDetail',
-                        function ($query) use ($gender) {
-                            $query->where(
-                                'gender',
-                                $gender
-                            );
-                        }
-                    );
-                })
-                ->when($request->status, function ($query, $status) {
-                    $query->where(
-                        'is_banned',
-                        $status === 'banned'
-                    );
-                })
-                ->orderByRaw(
-                    'CASE WHEN users.id = ? THEN 0 ELSE 1 END',
-                    [auth()->id()]
-                )
-                ->orderBy(
-                    UserDetail::select('fullname')
-                        ->whereColumn(
-                            'user_details.user_id',
-                            'users.id'
+            ->with([
+                'userDetail.province',
+            ])
+            ->when($request->search, function ($query, $search) {
+                $query->where(function ($query) use ($search) {
+                    $query
+                        ->where(
+                            'username',
+                            'like',
+                            "%{$search}%"
                         )
-                )
-                ->paginate(10)
-                ->withQueryString();
+                        ->orWhere(
+                            'email',
+                            'like',
+                            "%{$search}%"
+                        )
+                        ->orWhereHas(
+                            'userDetail',
+                            function ($query) use ($search) {
+                                $query->where(
+                                    'fullname',
+                                    'like',
+                                    "%{$search}%"
+                                );
+                            }
+                        );
+                });
+            })
+            ->when($request->role, function ($query, $role) {
+                $query->where(
+                    'is_admin',
+                    $role === 'admin'
+                );
+            })
+            ->when($request->gender, function ($query, $gender) {
+                $query->whereHas(
+                    'userDetail',
+                    function ($query) use ($gender) {
+                        $query->where(
+                            'gender',
+                            $gender
+                        );
+                    }
+                );
+            })
+            ->when($request->status, function ($query, $status) {
+                $query->where(
+                    'is_banned',
+                    $status === 'banned'
+                );
+            })
+            ->orderByRaw(
+                'CASE WHEN users.id = ? THEN 0 ELSE 1 END',
+                [auth()->id()]
+            )
+            ->orderBy(
+                UserDetail::select('fullname')
+                    ->whereColumn(
+                        'user_details.user_id',
+                        'users.id'
+                    )
+            )
+            ->paginate(10)
+            ->withQueryString();
 
         return inertia(
             'Admin/User/Index',
@@ -97,32 +97,28 @@ class UserController extends Controller
                 ]),
 
                 'statistics' => [
-                    'total_users' =>
-                        User::count(),
+                    'total_users' => User::count(),
 
-                    'total_regular_users' =>
-                        User::where(
-                            'is_admin',
-                            false
-                        )->count(),
+                    'total_regular_users' => User::where(
+                        'is_admin',
+                        false
+                    )->count(),
 
-                    'total_admins' =>
-                        User::where(
-                            'is_admin',
-                            true
-                        )->count(),
+                    'total_admins' => User::where(
+                        'is_admin',
+                        true
+                    )->count(),
 
-                    'total_banned_users' =>
-                        User::where(
-                            'is_banned',
-                            true
-                        )->count(),
+                    'total_banned_users' => User::where(
+                        'is_banned',
+                        true
+                    )->count(),
                 ],
             ]
         );
     }
 
-        /**
+    /**
      * Display the create user page.
      */
     public function create()
@@ -146,108 +142,98 @@ class UserController extends Controller
      * Store a newly created user.
      */
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'username' => [
-            'required',
-            'string',
-            'lowercase',
-            'max:40',
-            'unique:users,username',
-        ],
+    {
+        $validated = $request->validate([
+            'username' => [
+                'required',
+                'string',
+                'lowercase',
+                'max:40',
+                'unique:users,username',
+            ],
 
-        'email' => [
-            'required',
-            'email',
-            'max:255',
-            'unique:users,email',
-        ],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email',
+            ],
 
-        'password' => [
-            'required',
-            'string',
-            'min:10',
-            'max:50',
-            'regex:/^(?=.*[A-Z])(?=.*[!@#$%])[A-Za-z0-9!@#$%]+$/',
-            'confirmed',
-        ],
+            'password' => [
+                'required',
+                'string',
+                'min:10',
+                'max:50',
+                'regex:/^(?=.*[A-Z])(?=.*[!@#$%])[A-Za-z0-9!@#$%]+$/',
+                'confirmed',
+            ],
 
-        'is_admin' => [
-            'required',
-            'boolean',
-        ],
+            'is_admin' => [
+                'required',
+                'boolean',
+            ],
 
-        'fullname' => [
-            'required',
-            'string',
-            'max:255',
-        ],
+            'fullname' => [
+                'required',
+                'string',
+                'max:255',
+            ],
 
-        'dob' => [
-            'required',
-            'date',
-        ],
+            'dob' => [
+                'required',
+                'date',
+            ],
 
-        'gender' => [
-            'required',
-            Rule::in([
-                'male',
-                'female',
-                'unspecified',
-            ]),
-        ],
+            'gender' => [
+                'required',
+                Rule::in([
+                    'male',
+                    'female',
+                    'unspecified',
+                ]),
+            ],
 
-        'province_id' => [
-            'required',
-            'exists:provinces,id',
-        ],
-    ], [
-        'password.regex' =>
-            'Kata sandi harus mengandung minimal 1 huruf kapital dan 1 simbol di antara !,@,#,$,%.',
-    ]);
+            'province_id' => [
+                'required',
+                'exists:provinces,id',
+            ],
+        ], [
+            'password.regex' => 'Kata sandi harus mengandung minimal 1 huruf kapital dan 1 simbol di antara !,@,#,$,%.',
+        ]);
 
-    DB::transaction(
-        function () use ($validated) {
-            $user = User::create([
-                'username' =>
-                    $validated['username'],
+        DB::transaction(
+            function () use ($validated) {
+                $user = User::create([
+                    'username' => $validated['username'],
 
-                'email' =>
-                    $validated['email'],
+                    'email' => $validated['email'],
 
-                'password' =>
-                    Hash::make(
+                    'password' => Hash::make(
                         $validated['password']
                     ),
 
-                'is_admin' =>
-                    $validated['is_admin'],
+                    'is_admin' => $validated['is_admin'],
+                ]);
+
+                $user->userDetail()->create([
+                    'fullname' => $validated['fullname'],
+
+                    'dob' => $validated['dob'],
+
+                    'gender' => $validated['gender'],
+
+                    'province_id' => $validated['province_id'],
+                ]);
+            }
+        );
+
+        return redirect()
+            ->route('admin.users.index')
+            ->with([
+                'flash.type' => 'success',
+                'flash.message' => 'Pengguna baru berhasil ditambahkan.',
             ]);
-
-            $user->userDetail()->create([
-                'fullname' =>
-                    $validated['fullname'],
-
-                'dob' =>
-                    $validated['dob'],
-
-                'gender' =>
-                    $validated['gender'],
-
-                'province_id' =>
-                    $validated['province_id'],
-            ]);
-        }
-    );
-
-    return redirect()
-        ->route('admin.users.index')
-        ->with([
-            'flash.type' => 'success',
-            'flash.message' =>
-                'Pengguna baru berhasil ditambahkan.',
-        ]);
-}
+    }
 
     /**
      * Display the edit user page.
@@ -342,8 +328,7 @@ class UserController extends Controller
                 'exists:provinces,id',
             ],
         ], [
-            'password.regex' =>
-                'Kata sandi harus mengandung minimal 1 huruf kapital dan 1 simbol di antara !,@,#,$,%.',
+            'password.regex' => 'Kata sandi harus mengandung minimal 1 huruf kapital dan 1 simbol di antara !,@,#,$,%.',
         ]);
 
         DB::transaction(
@@ -352,14 +337,11 @@ class UserController extends Controller
                 $validated
             ) {
                 $userData = [
-                    'username' =>
-                        $validated['username'],
+                    'username' => $validated['username'],
 
-                    'email' =>
-                        $validated['email'],
+                    'email' => $validated['email'],
 
-                    'is_admin' =>
-                        $validated['is_admin'],
+                    'is_admin' => $validated['is_admin'],
                 ];
 
                 if (! empty($validated['password'])) {
@@ -375,17 +357,13 @@ class UserController extends Controller
                         'user_id' => $user->id,
                     ],
                     [
-                        'fullname' =>
-                            $validated['fullname'],
+                        'fullname' => $validated['fullname'],
 
-                        'dob' =>
-                            $validated['dob'],
+                        'dob' => $validated['dob'],
 
-                        'gender' =>
-                            $validated['gender'],
+                        'gender' => $validated['gender'],
 
-                        'province_id' =>
-                            $validated['province_id'],
+                        'province_id' => $validated['province_id'],
                     ]
                 );
             }
@@ -395,8 +373,7 @@ class UserController extends Controller
             ->route('admin.users.index')
             ->with([
                 'flash.type' => 'success',
-                'flash.message' =>
-                    'Data pengguna berhasil diperbarui.',
+                'flash.message' => 'Data pengguna berhasil diperbarui.',
             ]);
     }
 
@@ -408,24 +385,21 @@ class UserController extends Controller
         if ($user->id === Auth::id()) {
             return back()->with([
                 'flash.type' => 'error',
-                'flash.message' =>
-                    'Anda tidak dapat memblokir akun sendiri.',
+                'flash.message' => 'Anda tidak dapat memblokir akun sendiri.',
             ]);
         }
 
         if ($user->is_admin) {
             return back()->with([
                 'flash.type' => 'error',
-                'flash.message' =>
-                    'Akun admin tidak dapat diblokir.',
+                'flash.message' => 'Akun admin tidak dapat diblokir.',
             ]);
         }
 
         if ($user->is_banned) {
             return back()->with([
                 'flash.type' => 'error',
-                'flash.message' =>
-                    'Pengguna sudah diblokir.',
+                'flash.message' => 'Pengguna sudah diblokir.',
             ]);
         }
 
@@ -446,8 +420,7 @@ class UserController extends Controller
 
         return back()->with([
             'flash.type' => 'success',
-            'flash.message' =>
-                'Pengguna berhasil diblokir.',
+            'flash.message' => 'Pengguna berhasil diblokir.',
         ]);
     }
 
@@ -459,8 +432,7 @@ class UserController extends Controller
         if (! $user->is_banned) {
             return back()->with([
                 'flash.type' => 'error',
-                'flash.message' =>
-                    'Pengguna tidak sedang diblokir.',
+                'flash.message' => 'Pengguna tidak sedang diblokir.',
             ]);
         }
 
@@ -470,8 +442,7 @@ class UserController extends Controller
 
         return back()->with([
             'flash.type' => 'success',
-            'flash.message' =>
-                'Blokir pengguna berhasil dicabut.',
+            'flash.message' => 'Blokir pengguna berhasil dicabut.',
         ]);
     }
 
@@ -483,16 +454,14 @@ class UserController extends Controller
         if ($user->id === Auth::id()) {
             return back()->with([
                 'flash.type' => 'error',
-                'flash.message' =>
-                    'Anda tidak dapat menghapus akun sendiri.',
+                'flash.message' => 'Anda tidak dapat menghapus akun sendiri.',
             ]);
         }
 
         if ($user->is_admin) {
             return back()->with([
                 'flash.type' => 'error',
-                'flash.message' =>
-                    'Akun admin tidak dapat dihapus.',
+                'flash.message' => 'Akun admin tidak dapat dihapus.',
             ]);
         }
 
@@ -516,8 +485,7 @@ class UserController extends Controller
             ->route('admin.users.index')
             ->with([
                 'flash.type' => 'success',
-                'flash.message' =>
-                    'Pengguna berhasil dihapus.',
+                'flash.message' => 'Pengguna berhasil dihapus.',
             ]);
     }
 }
