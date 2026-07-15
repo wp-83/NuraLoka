@@ -46,17 +46,7 @@ class UserSeeder extends Seeder
             $this->attachBadgesAndMissions($user, $this->randomBadgeNames(rand(1, 3)), rand(1, 4));
         });
 
-        // ── 4. PENGGUNA BARU (5 users belum verifikasi) ───────────────────────
-        User::factory(5)->unverified()->create()->each(function (User $user) {
-            $this->attachDetails($user, points: 0);
-        });
-
-        // ── 5. PENGGUNA GOOGLE AUTH (5 users via Google) ─────────────────────
-        User::factory(5)->googleAuth()->create()->each(function (User $user) {
-            $this->attachDetails($user);
-        });
-
-        // ── 6. TOP LEADERBOARD USERS (3 users poin tinggi) ────────────────────
+        // ── 4. TOP LEADERBOARD USERS (3 users poin tinggi) ────────────────────
         collect(['Budi Santoso', 'Siti Rahayu', 'Ahmad Fauzi'])->each(function ($name, $i) {
             $user = User::factory()->create([
                 'username' => Str::slug($name).'_'.($i + 1),
