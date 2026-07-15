@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Album;
+use App\Models\Place;
 use App\Models\Trip;
 use App\Models\TripPhoto;
 use App\Models\User;
@@ -424,6 +425,7 @@ class AlbumController extends Controller
             'author_profile' => $trip->user?->userDetails?->profile_path,
         ];
     }
+
     /**
      * Cari lokasi (untuk autocomplete)
      */
@@ -435,7 +437,7 @@ class AlbumController extends Controller
             return response()->json([]);
         }
 
-        $places = \App\Models\Place::where('name', 'like', "%{$query}%")
+        $places = Place::where('name', 'like', "%{$query}%")
             ->orWhere('address', 'like', "%{$query}%")
             ->select('id', 'name', 'address')
             ->limit(5)
