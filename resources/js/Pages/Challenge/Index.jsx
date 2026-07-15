@@ -136,13 +136,24 @@ export default function ChallengeIndex({
     const rest = (leaderboard ?? []).slice(3);
 
     // Show 5 specific badges for the homepage preview based on the design
-    const previewBadges = allBadges?.filter(b => [
+    // Find highest tier for category or just use specific badges
+    let previewBadges = allBadges?.filter(b => [
         'Sahabat Nuka',
         'Si Paling Kuliner (Perunggu)',
         'Si Paling Kuliner (Perak)',
         'Si Paling Kuliner (Emas)',
         'Si Paling Kuliner (Berlian)'
-    ].includes(b.name)).slice(0, 5) || [];
+    ].includes(b.name))
+    .sort((a, b) => {
+        const order = ['Sahabat Nuka', 'Si Paling Kuliner (Perunggu)', 'Si Paling Kuliner (Perak)', 'Si Paling Kuliner (Emas)', 'Si Paling Kuliner (Berlian)'];
+        return order.indexOf(a.name) - order.indexOf(b.name);
+    }).slice(0, 5) || [];
+
+    // Fallback: If admin deleted these default badges, show other available badges
+    if (previewBadges.length < 5 && allBadges) {
+        const others = allBadges.filter(b => !previewBadges.find(pb => pb.id === b.id)).slice(0, 5 - previewBadges.length);
+        previewBadges = [...previewBadges, ...others];
+    }
 
     return (
         <>

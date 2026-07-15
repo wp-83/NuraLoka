@@ -39,44 +39,65 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
                             </svg>
 
                             {/* Level Markers */}
-                            <div className="absolute top-[40px] left-[50px]">
-                                <span className="font-medium text-primary text-lg">Pemula</span>
-                            </div>
-
-                            <div className="absolute top-[210px] left-[580px] bg-white bg-opacity-80 px-2 py-1 rounded">
-                                <div className="font-medium text-primary text-lg">Penjelajah Muda</div>
-                                <div className="text-xs text-secondary font-bold">≥ 1.000 Poin Nura</div>
-                            </div>
-
-                            <div className="absolute top-[380px] left-[400px] bg-white bg-opacity-80 px-2 py-1 rounded">
-                                <div className="font-medium text-primary text-lg">Petualang</div>
-                                <div className="text-xs text-secondary font-bold">≥ 2.000 Poin Nura</div>
-                            </div>
-
-                            <div className="absolute top-[470px] left-[150px] bg-white bg-opacity-80 px-2 py-1 rounded">
-                                <div className="font-medium text-primary text-lg">Eksplorer Nusantara</div>
-                                <div className="text-xs text-secondary font-bold">≥ 6.000 Poin Nura</div>
-                            </div>
-
-                            <div className="absolute top-[580px] left-[350px] bg-white bg-opacity-80 px-2 py-1 rounded">
-                                <div className="font-medium text-primary text-lg">Master Eksplorer</div>
-                                <div className="text-xs text-secondary font-bold">≥ 10.000 Poin Nura</div>
-                            </div>
-
-                            <div className="absolute top-[670px] left-[550px] bg-white bg-opacity-80 px-2 py-1 rounded">
-                                <div className="font-medium text-primary text-lg">Legenda Nuravers</div>
-                                <div className="text-xs text-secondary font-bold">≥ 15.000 Poin Nura</div>
-                            </div>
+                            {allLevels.map((level, idx) => {
+                                const positions = [
+                                    { top: 40, left: 50 },
+                                    { top: 210, left: 580 },
+                                    { top: 380, left: 400 },
+                                    { top: 470, left: 150 },
+                                    { top: 580, left: 350 },
+                                    { top: 670, left: 550 },
+                                ];
+                                const pos = positions[idx] || positions[0];
+                                
+                                return (
+                                    <div key={idx} className="absolute bg-white bg-opacity-80 px-2 py-1 rounded" style={{ top: pos.top + 'px', left: pos.left + 'px' }}>
+                                        <div className="font-medium text-primary text-lg">{level.name}</div>
+                                        {level.min > 0 && <div className="text-xs text-secondary font-bold">≥ {level.min.toLocaleString('id-ID')} Poin Nura</div>}
+                                    </div>
+                                );
+                            })}
 
                             {/* Current Position Mascot */}
-                            <div className="absolute top-[50px] left-[260px] flex flex-col items-center">
-                                <div className="mb-1 text-center">
-                                    <div className="font-bold text-primary text-sm">Posisi Kamu</div>
-                                    <div className="text-[10px] text-secondary font-bold">{totalPoints.toLocaleString('id-ID')} Poin Nura</div>
-                                </div>
-                                <img src="/images/mascots/car.png" alt="Mascot Car" className="w-24 h-24 object-contain drop-shadow-lg" />
-                            </div>
-
+                            {(() => {
+                                // Find current level index
+                                const currentIdx = allLevels.findIndex(l => l.name === currentLevel.name);
+                                const nextIdx = currentIdx < allLevels.length - 1 ? currentIdx + 1 : currentIdx;
+                                
+                                const positions = [
+                                    { top: 40, left: 50 },
+                                    { top: 210, left: 580 },
+                                    { top: 380, left: 400 },
+                                    { top: 470, left: 150 },
+                                    { top: 580, left: 350 },
+                                    { top: 670, left: 550 },
+                                ];
+                                
+                                const p1 = positions[currentIdx] || positions[0];
+                                const p2 = positions[nextIdx] || positions[0];
+                                
+                                const min = allLevels[currentIdx]?.min || 0;
+                                const max = allLevels[nextIdx]?.min || min;
+                                
+                                let percent = 0;
+                                if (max > min) {
+                                    percent = Math.min(1, Math.max(0, (totalPoints - min) / (max - min)));
+                                }
+                                
+                                // Simple linear interpolation for car position
+                                const carTop = p1.top + (p2.top - p1.top) * percent;
+                                const carLeft = p1.left + (p2.left - p1.left) * percent;
+                                
+                                return (
+                                    <div className="absolute flex flex-col items-center z-10 transition-all duration-1000" style={{ top: (carTop - 20) + 'px', left: (carLeft + 80) + 'px' }}>
+                                        <div className="mb-1 text-center bg-white/90 px-3 py-1 rounded-xl shadow-sm border border-gray-100">
+                                            <div className="font-bold text-primary text-sm">Posisi Kamu</div>
+                                            <div className="text-[10px] text-secondary font-bold">{totalPoints.toLocaleString('id-ID')} Poin Nura</div>
+                                        </div>
+                                        <img src="/images/mascots/car.png" alt="Mascot Car" className="w-24 h-24 object-contain drop-shadow-lg" />
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </div>
                 </main>
