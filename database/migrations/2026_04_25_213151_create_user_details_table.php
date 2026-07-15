@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('user_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('province_id')->constrained();
+            $table->foreignId('province_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('fullname');
             $table->date('dob');
             $table->enum('gender', ['male', 'female', 'unspecified']);

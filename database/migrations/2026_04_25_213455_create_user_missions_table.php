@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('user_missions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained();
-            $table->foreignId('mission_id')->constrained();
+            $table->foreignId('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('mission_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->enum('status', ['on_going', 'completed']);
             $table->timestamps();
         });

@@ -33,11 +33,11 @@ export const adminMenuItems = [
     //     route: 'levels',
     //     icon: GiStairsGoal,
     // },
-    {
-        label: 'Wawasan Wisata',
-        route: 'news',
-        icon: FaRegNewspaper,
-    },
+    // {
+    //     label: 'Wawasan Wisata',
+    //     route: 'news',
+    //     icon: FaRegNewspaper,
+    // },
     // {
     //     label: 'Wawasan Wisata',
     //     route: 'insights',
