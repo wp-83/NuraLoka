@@ -44,4 +44,9 @@ class Place extends Model
         return $this->belongsToMany(User::class, 'saved_places')
             ->withTimestamps();
     }
+
+    public function visits()
+    {
+        return $this->hasMany(PlaceVisit::class);
+    }
 }
