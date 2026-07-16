@@ -24,59 +24,111 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
                         <div className="relative w-full max-w-[800px] h-[900px]">
                             {/* Winding road SVG */}
                             <svg width="100%" height="100%" viewBox="0 0 800 900" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute top-0 left-0 w-full h-full drop-shadow-md">
-                                {/* Base path shadow */}
-                                <path d="M 120 80 Q 200 40, 300 120 T 500 150 T 650 250 T 600 400 T 300 350 T 200 550 T 400 650 T 650 600 T 700 800" stroke="#000000" strokeOpacity="0.1" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round" />
+                                <defs>
+                                    <path id="mainPath" d="M 120 80 Q 200 40, 300 120 T 500 150 T 650 250 T 600 400 T 300 350 T 200 550 T 400 650 T 650 600 T 700 800" />
+                                    {(() => {
+                                        // Calculate total progress across the whole 5-segment path
+                                        const currentIdx = allLevels.findIndex(l => l.name === currentLevel.name) || 0;
+                                        const nextIdx = currentIdx < allLevels.length - 1 ? currentIdx + 1 : currentIdx;
+                                        const min = allLevels[currentIdx]?.min || 0;
+                                        const max = allLevels[nextIdx]?.min || min;
+                                        let percent = 0;
+                                        if (max > min) {
+                                            percent = Math.min(1, Math.max(0, (totalPoints - min) / (max - min)));
+                                        }
+                                        const globalPercent = Math.min(1, (currentIdx + percent) / (allLevels.length - 1 || 1));
+                                        
+                                        // Path length is roughly 2500 for this specific SVG path
+                                        // We use strokeDasharray to fill it up to the percentage
+                                        const pathLength = 2600; 
+                                        const fillLength = pathLength * globalPercent;
+                                        
+                                        return (
+                                            <style>
+                                                {`
+                                                .path-bg { stroke: #B3B3B3; }
+                                                .path-fill { stroke: #724633; stroke-dasharray: ${pathLength}; stroke-dashoffset: ${pathLength - fillLength}; transition: stroke-dashoffset 1s ease-in-out; }
+                                                .path-dash-bg { stroke: white; stroke-dasharray: 12 12; }
+                                                .path-dash-fill { stroke: white; stroke-dasharray: 12 12 ${pathLength}; stroke-dashoffset: 0; }
+                                                `}
+                                            </style>
+                                        );
+                                    })()}
+                                </defs>
                                 
-                                {/* Completed path (Brown) */}
-                                <path d="M 120 80 Q 200 40, 300 120 T 500 150 T 650 250" stroke="#724633" strokeWidth="24" strokeLinecap="round" strokeLinejoin="round" />
-                                {/* Dashed center line for completed */}
-                                <path d="M 120 80 Q 200 40, 300 120 T 500 150 T 650 250" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="12 12" />
+                                {/* Base path shadow */}
+                                <use href="#mainPath" stroke="#000000" strokeOpacity="0.1" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round" />
                                 
                                 {/* Incomplete path (Gray) */}
-                                <path d="M 650 250 T 600 400 T 300 350 T 200 550 T 400 650 T 650 600 T 700 800" stroke="#B3B3B3" strokeWidth="24" strokeLinecap="round" strokeLinejoin="round" />
-                                {/* Dashed center line for incomplete */}
-                                <path d="M 650 250 T 600 400 T 300 350 T 200 550 T 400 650 T 650 600 T 700 800" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="12 12" />
+                                <use href="#mainPath" className="path-bg" strokeWidth="24" strokeLinecap="round" strokeLinejoin="round" />
+                                
+                                {/* Completed path (Brown) */}
+                                <use href="#mainPath" className="path-fill" strokeWidth="24" strokeLinecap="round" strokeLinejoin="round" />
+                                
+                                {/* Dashed center line */}
+                                <use href="#mainPath" className="path-dash-bg" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
 
                             {/* Level Markers */}
-                            <div className="absolute top-[40px] left-[50px]">
-                                <span className="font-medium text-primary text-lg">Pemula</span>
-                            </div>
-
-                            <div className="absolute top-[210px] left-[580px] bg-white bg-opacity-80 px-2 py-1 rounded">
-                                <div className="font-medium text-primary text-lg">Penjelajah Muda</div>
-                                <div className="text-xs text-secondary font-bold">≥ 1.000 Poin Nura</div>
-                            </div>
-
-                            <div className="absolute top-[380px] left-[400px] bg-white bg-opacity-80 px-2 py-1 rounded">
-                                <div className="font-medium text-primary text-lg">Petualang</div>
-                                <div className="text-xs text-secondary font-bold">≥ 2.000 Poin Nura</div>
-                            </div>
-
-                            <div className="absolute top-[470px] left-[150px] bg-white bg-opacity-80 px-2 py-1 rounded">
-                                <div className="font-medium text-primary text-lg">Eksplorer Nusantara</div>
-                                <div className="text-xs text-secondary font-bold">≥ 6.000 Poin Nura</div>
-                            </div>
-
-                            <div className="absolute top-[580px] left-[350px] bg-white bg-opacity-80 px-2 py-1 rounded">
-                                <div className="font-medium text-primary text-lg">Master Eksplorer</div>
-                                <div className="text-xs text-secondary font-bold">≥ 10.000 Poin Nura</div>
-                            </div>
-
-                            <div className="absolute top-[670px] left-[550px] bg-white bg-opacity-80 px-2 py-1 rounded">
-                                <div className="font-medium text-primary text-lg">Legenda Nuravers</div>
-                                <div className="text-xs text-secondary font-bold">≥ 15.000 Poin Nura</div>
-                            </div>
+                            {allLevels.map((level, idx) => {
+                                const positions = [
+                                    { top: 40, left: 50 },
+                                    { top: 210, left: 580 },
+                                    { top: 380, left: 400 },
+                                    { top: 470, left: 150 },
+                                    { top: 580, left: 350 },
+                                    { top: 670, left: 550 },
+                                ];
+                                const pos = positions[idx] || positions[0];
+                                
+                                return (
+                                    <div key={idx} className="absolute bg-white bg-opacity-80 px-2 py-1 rounded" style={{ top: pos.top + 'px', left: pos.left + 'px' }}>
+                                        <div className="font-medium text-primary text-lg">{level.name}</div>
+                                        {level.min > 0 && <div className="text-xs text-secondary font-bold">≥ {level.min.toLocaleString('id-ID')} Poin Nura</div>}
+                                    </div>
+                                );
+                            })}
 
                             {/* Current Position Mascot */}
-                            <div className="absolute top-[50px] left-[260px] flex flex-col items-center">
-                                <div className="mb-1 text-center">
-                                    <div className="font-bold text-primary text-sm">Posisi Kamu</div>
-                                    <div className="text-[10px] text-secondary font-bold">{totalPoints.toLocaleString('id-ID')} Poin Nura</div>
-                                </div>
-                                <img src="/images/mascots/car.png" alt="Mascot Car" className="w-24 h-24 object-contain drop-shadow-lg" />
-                            </div>
-
+                            {(() => {
+                                const currentIdx = allLevels.findIndex(l => l.name === currentLevel.name);
+                                const nextIdx = currentIdx < allLevels.length - 1 ? currentIdx + 1 : currentIdx;
+                                
+                                const positions = [
+                                    { top: 40, left: 50 },
+                                    { top: 210, left: 580 },
+                                    { top: 380, left: 400 },
+                                    { top: 470, left: 150 },
+                                    { top: 580, left: 350 },
+                                    { top: 670, left: 550 },
+                                ];
+                                
+                                const p1 = positions[currentIdx] || positions[0];
+                                const p2 = positions[nextIdx] || positions[0];
+                                
+                                const min = allLevels[currentIdx]?.min || 0;
+                                const max = allLevels[nextIdx]?.min || min;
+                                
+                                let percent = 0;
+                                if (max > min) {
+                                    percent = Math.min(1, Math.max(0, (totalPoints - min) / (max - min)));
+                                }
+                                
+                                // Interpolate position along straight line between the level markers for the mascot
+                                // (A more accurate approach would use getPointAtLength on the SVG path, but this is acceptable for the mascot)
+                                const carTop = p1.top + (p2.top - p1.top) * percent;
+                                const carLeft = p1.left + (p2.left - p1.left) * percent;
+                                
+                                return (
+                                    <div className="absolute flex flex-col items-center z-10 transition-all duration-1000" style={{ top: (carTop - 20) + 'px', left: (carLeft + 80) + 'px' }}>
+                                        <div className="mb-1 text-center bg-white/90 px-3 py-1 rounded-xl shadow-sm border border-gray-100">
+                                            <div className="font-bold text-primary text-sm">Posisi Kamu</div>
+                                            <div className="text-[10px] text-secondary font-bold">{totalPoints.toLocaleString('id-ID')} Poin Nura</div>
+                                        </div>
+                                        <img src="/images/mascots/car.png" alt="Mascot Car" className="w-24 h-24 object-contain drop-shadow-lg" />
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </div>
                 </main>
