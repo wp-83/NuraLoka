@@ -28,6 +28,10 @@ class ExploreController extends Controller
     // Radius maksimal (meter) agar check-in dianggap sah (verifikasi lokasi).
     private const CHECKIN_RADIUS_M = 300;
 
+    // Radius default (km) untuk section "Ramai Dikunjungi": hanya place di sekitar
+    // lokasi user login. Tempat yang jauh dari daerah user tidak ikut direkomendasikan.
+    private const TRENDING_RADIUS_KM = 100;
+
     /**
      * Endpoint peta: GET /jelajah/titik?south=&west=&north=&east=&zoom=&categories=
      *
@@ -107,6 +111,78 @@ class ExploreController extends Controller
             ]);
     }
 
+    /**
+     * Endpoint pencarian saran (autocomplete): GET /jelajah/cari?q=
+     *
+     * Mencari di DUA sumber sekaligus namun tetap ringan:
+     *  - places (kurasi admin)  → diprioritaskan di atas
+     *  - osm_places (bisa ribuan) → dibatasi limit, hanya field yang perlu.
+     * Hanya field ringkas yang dikirim (bukan seluruh baris) agar payload kecil.
+     */
+    public function search(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+
+        // Minimal 2 karakter agar tidak memindai seluruh tabel untuk 1 huruf.
+        if (mb_strlen($q) < 2) {
+            return response()->json(['suggestions' => []]);
+        }
+
+        // Susun ekspresi boolean FULLTEXT: tiap kata jadi prefix (kata*) & operator
+        // boolean dibersihkan agar aman. FULLTEXT butuh token >= ft_min_token_size
+        // (default 3). Untuk kueri pendek, pakai fallback LIKE.
+        $like = '%'.$q.'%';
+        $tokens = collect(preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY))
+            ->map(fn ($t) => preg_replace('/[+\-><()~*"@]/', '', $t))
+            ->filter(fn ($t) => mb_strlen($t) >= 3);
+        $useFulltext = $tokens->isNotEmpty();
+        $boolean = $tokens->map(fn ($t) => $t.'*')->implode(' ');
+
+        // Filter nama dipakai untuk kedua tabel: FULLTEXT bila memungkinkan, jika tidak LIKE.
+        $nameFilter = function ($builder) use ($useFulltext, $boolean, $like) {
+            if ($useFulltext) {
+                $builder->whereFullText('name', $boolean, ['mode' => 'boolean']);
+            } else {
+                $builder->where('name', 'like', $like);
+            }
+        };
+
+        $admin = Place::with('categories:id,name')
+            ->where($nameFilter)
+            ->limit(6)
+            ->get()
+            ->map(fn ($p) => [
+                'id' => 'admin-'.$p->id,
+                'placeId' => $p->id,
+                'source' => 'admin',
+                'name' => $p->name,
+                'slug' => $p->slug,
+                'address' => $p->address,
+                'latitude' => (float) $p->latitude,
+                'longitude' => (float) $p->longitude,
+                'categories' => $p->categories->map(fn ($c) => ['id' => $c->id, 'name' => $c->name])->values(),
+            ]);
+
+        $osm = OsmPlace::query()
+            ->select('osm_id', 'name', 'address', 'latitude', 'longitude', 'category')
+            ->where($nameFilter)
+            ->limit(6)
+            ->get()
+            ->map(fn ($p) => [
+                'id' => 'osm-'.$p->osm_id,
+                'osmId' => $p->osm_id,
+                'source' => 'osm',
+                'name' => $p->name,
+                'address' => $p->address,
+                'latitude' => (float) $p->latitude,
+                'longitude' => (float) $p->longitude,
+                'category' => $p->category,
+            ]);
+
+        // Titik admin (kurasi) tampil lebih dulu, disusul titik OSM.
+        return response()->json(['suggestions' => $admin->concat($osm)->values()]);
+    }
+
     public function index(Request $request)
     {
         // 1. Ambil semua places beserta kategorinya
@@ -118,6 +194,9 @@ class ExploreController extends Controller
         // 3. Trending Places ("Ramai Dikunjungi") — skor berbobot dari data realtime:
         //    pengunjung (check-in) ×3 + pemosting album unik ×2 + saves ×1.
         //    Semua dihitung langsung dari DB tiap request (tidak di-cache).
+        //    Daftar ini adalah FALLBACK global: dipakai bila user menolak/ tidak
+        //    memberi izin lokasi. Bila lokasi tersedia, frontend memanggil endpoint
+        //    trending() agar hasil dibatasi pada radius sekitar user.
         $trendingPlaces = $this->trendingPlaces(10);
 
         // 4. Recently Visited: ambil array place_id dari session, misal maksimal 5
@@ -233,10 +312,40 @@ class ExploreController extends Controller
     }
 
     /**
+     * Endpoint JSON: GET /jelajah/trending?lat=&lng=&radius=
+     *
+     * Mengembalikan daftar "Ramai Dikunjungi" yang DIBATASI pada radius sekitar lokasi
+     * user (dari Geolocation browser) — supaya rekomendasi tidak memunculkan place yang
+     * jauh dari daerah user (mis. user di Sulawesi tidak melihat rekomendasi di Jawa).
+     * Bila lat/lng tidak dikirim, hasilnya sama dengan fallback global.
+     */
+    public function trending(Request $request)
+    {
+        $v = $request->validate([
+            'lat' => 'nullable|numeric|between:-90,90',
+            'lng' => 'nullable|numeric|between:-180,180',
+            'radius' => 'nullable|numeric|min:1|max:2000',
+        ]);
+
+        $lat = isset($v['lat']) ? (float) $v['lat'] : null;
+        $lng = isset($v['lng']) ? (float) $v['lng'] : null;
+        $radiusKm = isset($v['radius']) ? (float) $v['radius'] : self::TRENDING_RADIUS_KM;
+
+        return response()->json([
+            'trendingPlaces' => $this->trendingPlaces(10, $lat, $lng, $radiusKm),
+            'radiusKm' => $radiusKm,
+            'located' => $lat !== null && $lng !== null,
+        ]);
+    }
+
+    /**
      * Ambil top-N place berdasarkan skor "ramai": pengunjung unik, pemosting album unik,
      * dan jumlah saves — masing-masing diberi bobot. Dihitung live dari DB.
+     *
+     * Bila $lat & $lng diberikan, hasil dibatasi hanya place dalam radius $radiusKm
+     * (haversine) dari lokasi user, lalu diurutkan berdasar skor & dibatasi $limit.
      */
-    private function trendingPlaces(int $limit)
+    private function trendingPlaces(int $limit, ?float $lat = null, ?float $lng = null, ?float $radiusKm = null)
     {
         // Ekspresi skor dipakai untuk ORDER BY. Bobot berupa konstanta int (aman diinterpolasi).
         $scoreSql =
@@ -247,7 +356,7 @@ class ExploreController extends Controller
             .'WHERE trip_photos.place_id = places.id) * '.self::WEIGHT_ALBUM.') + '
             .'((SELECT COUNT(*) FROM saved_places WHERE saved_places.place_id = places.id) * '.self::WEIGHT_SAVE.')';
 
-        return Place::with('categories')
+        $query = Place::with('categories')
             ->select('places.*')
             ->selectRaw("$scoreSql as trending_score")
             ->selectSub(
@@ -265,7 +374,21 @@ class ExploreController extends Controller
             ->selectSub(
                 DB::table('saved_places')->selectRaw('COUNT(*)')->whereColumn('saved_places.place_id', 'places.id'),
                 'saves_count'
-            )
+            );
+
+        // Filter jarak: hanya place dalam radius (km) dari lokasi user (rumus haversine).
+        // least(1, ...) mencegah NaN dari acos akibat pembulatan floating point.
+        if ($lat !== null && $lng !== null) {
+            $radiusKm ??= self::TRENDING_RADIUS_KM;
+            $haversineKm = '(6371 * acos(least(1, '
+                .'cos(radians(?)) * cos(radians(places.latitude)) * cos(radians(places.longitude) - radians(?)) '
+                .'+ sin(radians(?)) * sin(radians(places.latitude)))))';
+
+            $query->selectRaw("$haversineKm as distance_km", [$lat, $lng, $lat])
+                ->whereRaw("$haversineKm <= ?", [$lat, $lng, $lat, $radiusKm]);
+        }
+
+        return $query
             ->orderByDesc('trending_score')
             ->limit($limit)
             ->get()

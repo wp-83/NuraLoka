@@ -1,4 +1,5 @@
 import { BiMapPin } from "react-icons/bi";
+import { BiDownload } from "react-icons/bi";
 import { FaRegNewspaper } from "react-icons/fa6";
 import { GiStairsGoal } from "react-icons/gi";
 import { IoLanguage } from "react-icons/io5";
@@ -17,6 +18,11 @@ export const adminMenuItems = [
         label: 'Tempat Wisata',
         route: 'places',
         icon: BiMapPin,
+    },
+    {
+        label: 'Impor Titik OSM',
+        route: 'osm-import',
+        icon: BiDownload,
     },
     {
         label: 'Kategori Tempat',

@@ -55,6 +55,7 @@ class AdminMissionController extends Controller
             'title' => 'required|string|max:255|unique:missions,title',
             'description' => 'required|string',
             'points_reward' => 'required|integer|min:0',
+            'target' => 'required|integer|min:1',
             'badge_id' => 'required|exists:badges,id',
         ]);
 
@@ -62,6 +63,7 @@ class AdminMissionController extends Controller
             'title' => $request->title,
             'description' => $request->description,
             'points_reward' => $request->points_reward,
+            'target' => $request->target,
             'badge_id' => $request->badge_id,
         ]);
 
@@ -96,6 +98,7 @@ class AdminMissionController extends Controller
             'title' => 'required|string|max:255|unique:missions,title,'.$id,
             'description' => 'required|string',
             'points_reward' => 'required|integer|min:0',
+            'target' => 'required|integer|min:1',
             'badge_id' => 'required|exists:badges,id',
         ]);
 
@@ -103,6 +106,7 @@ class AdminMissionController extends Controller
             'title' => $request->title,
             'description' => $request->description,
             'points_reward' => $request->points_reward,
+            'target' => $request->target,
             'badge_id' => $request->badge_id,
         ]);
 
