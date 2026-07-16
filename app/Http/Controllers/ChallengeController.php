@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Badge;
+use App\Models\Level;
 use App\Models\Mission;
 use App\Models\UserDetail;
 use App\Models\UserMission;
@@ -14,14 +15,9 @@ class ChallengeController extends Controller
 {
     private function getLevels()
     {
-        return [
-            ['name' => 'Pemula', 'min' => 0],
-            ['name' => 'Penjelajah Muda', 'min' => 1000],
-            ['name' => 'Petualang', 'min' => 2000],
-            ['name' => 'Eksplorer Nusantara', 'min' => 6000],
-            ['name' => 'Master Eksplorer', 'min' => 10000],
-            ['name' => 'Legenda Nuravers', 'min' => 15000],
-        ];
+        return Level::orderBy('order')->get()->map(function ($level) {
+            return ['name' => $level->name, 'min' => $level->min_points];
+        })->toArray();
     }
 
     private function calculateLevel($totalPoints)
@@ -105,11 +101,15 @@ class ChallengeController extends Controller
                     'missions.points_reward as points',
                     'badges.icon_path as badge_icon',
                     'badges.name as badge',
+                    'badges.tier_level',
                     \DB::raw('COALESCE(user_missions.progress, 0) as progress'),
                     'missions.target'
                 )
-                ->orderByRaw('(COALESCE(user_missions.progress, 0) / missions.target) DESC')
-                ->take(6)
+                // Prioritaskan: 1) misi yang hampir selesai (>= 50%), 2) misi termudah berdasarkan tier badge
+                ->orderByRaw('CASE WHEN COALESCE(user_missions.progress, 0) >= (missions.target * 0.5) AND COALESCE(user_missions.progress, 0) > 0 THEN 0 ELSE 1 END ASC')
+                ->orderBy('badges.tier_level', 'asc')
+                ->orderBy('missions.target', 'asc')
+                ->take(1)
                 ->get()
                 ->map(function ($mission) {
                     $mission->percent = $mission->target > 0 ? min(100, round(($mission->progress / $mission->target) * 100)) : 0;
@@ -137,7 +137,7 @@ class ChallengeController extends Controller
                     'name' => $detail->fullname,
                     'username' => $detail->user->username ?? '',
                     'points' => $detail->total_points,
-                    'profile_path' => $detail->profile_path,
+                    'profile_path' => $detail->user->public_profile_photo ?? null,
                     'level' => $levelName,
                     'is_current' => $user && $user->id === $detail->user_id,
                 ];
@@ -288,8 +288,9 @@ class ChallengeController extends Controller
                 'rank' => $rank,
                 'name' => $detail->fullname,
                 'username' => $detail->user->username ?? '',
+                'user_id' => $detail->user_id,
                 'points' => $detail->total_points,
-                'profile_path' => $detail->profile_path,
+                'profile_path' => $detail->user->public_profile_photo ?? null,
                 'level' => $levelName,
                 'is_current' => $user && $user->id === $detail->user_id,
                 'badge_icons' => $badges,

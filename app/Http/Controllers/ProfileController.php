@@ -50,11 +50,77 @@ class ProfileController extends Controller
             })
             ->count() + 1;
 
+        $statistics = [
+            'badges' => $user->badges()->count(),
+            'albums' => $user->albums()->count(),
+        ];
+
+        $recentBadges = $user->badges()->orderBy('pivot_created_at', 'desc')->take(4)->get();
+
         return inertia('Profile/Index', [
             'user' => $user,
             'rank' => $rank,
             'totalUser' => $totalUser,
             'totalBadge' => $totalBadges,
+            'statistics' => $statistics,
+            'recentBadges' => $recentBadges,
+        ]);
+    }
+
+    /**
+     * Menampilkan profil publik user lain.
+     */
+    public function show($username)
+    {
+        $currentUser = auth()->user();
+
+        // Jika user melihat profil sendiri, redirect ke halaman profil pribadi
+        if ($currentUser && $currentUser->username === $username) {
+            return redirect()->route('profile.index');
+        }
+
+        $targetUser = User::where('username', $username)->firstOrFail();
+        $targetUser->load('userDetail.province');
+
+        $userDetail = $targetUser->userDetail;
+
+        $totalUser = User::count();
+
+        $totalBadges = Badge::count();
+
+        $rank = UserDetail::where(
+            'total_points',
+            '>',
+            $userDetail->total_points
+        )
+            ->orWhere(function ($query) use ($userDetail) {
+                $query
+                    ->where(
+                        'total_points',
+                        $userDetail->total_points
+                    )
+                    ->where(
+                        'fullname',
+                        '<',
+                        $userDetail->fullname
+                    );
+            })
+            ->count() + 1;
+
+        $statistics = [
+            'badges' => $targetUser->badges()->count(),
+            'albums' => $targetUser->albums()->count(),
+        ];
+
+        $recentBadges = $targetUser->badges()->orderBy('pivot_created_at', 'desc')->take(4)->get();
+
+        return inertia('Profile/Show', [
+            'targetUser' => $targetUser,
+            'rank' => $rank,
+            'totalUser' => $totalUser,
+            'totalBadge' => $totalBadges,
+            'statistics' => $statistics,
+            'recentBadges' => $recentBadges,
         ]);
     }
 
