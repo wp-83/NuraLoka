@@ -51,9 +51,9 @@ class AlbumController extends Controller
         $popularAlbums = Album::with(['trip.user.userDetails', 'tripPhotos'])
             ->whereHas('trip', function ($q) {
                 $q->where('is_public', true)
-                  ->whereHas('user', function ($uq) {
-                      $uq->where('is_banned', false);
-                  });
+                    ->whereHas('user', function ($uq) {
+                        $uq->where('is_banned', false);
+                    });
             })
             ->where('created_at', '>=', now()->startOfWeek())
             ->orderByDesc('view_count')
