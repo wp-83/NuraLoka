@@ -35,6 +35,7 @@ class AlbumController extends Controller
                 ->with(['userDetails.province'])
                 ->where('id', '!=', $user->id)
                 ->where('is_admin', false)
+                ->where('is_banned', false)
                 ->get()
                 ->map(function ($u) {
                     return [
@@ -49,7 +50,10 @@ class AlbumController extends Controller
         // Album populer minggu ini (publik, dari semua user, sorted by view_count, constraint seminggu)
         $popularAlbums = Album::with(['trip.user.userDetails', 'tripPhotos'])
             ->whereHas('trip', function ($q) {
-                $q->where('is_public', true);
+                $q->where('is_public', true)
+                  ->whereHas('user', function ($uq) {
+                      $uq->where('is_banned', false);
+                  });
             })
             ->where('created_at', '>=', now()->startOfWeek())
             ->orderByDesc('view_count')
@@ -294,6 +298,10 @@ class AlbumController extends Controller
     public function userAlbums($userId)
     {
         $targetUser = User::with('userDetails')->findOrFail($userId);
+
+        if ($targetUser->is_banned) {
+            abort(404);
+        }
 
         $albums = Album::with(['trip', 'tripPhotos'])
             ->whereHas('trip', function ($q) use ($userId) {
