@@ -52,41 +52,34 @@ class LoginController extends Controller
                 ]);
         }
 
-        /*
-         * Prevent banned users from logging in.
-         */
-        if (Auth::user()->is_banned) {
-            Auth::logout();
+        // /*
+        //  * Prevent banned users from logging in.
+        //  */
+        // if (Auth::user()->is_banned) {
+        //     Auth::logout();
 
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+        //     $request->session()->invalidate();
+        //     $request->session()->regenerateToken();
 
-            return redirect()
-                ->route('auth.login.index')
-                ->with([
-                    'flash.type' => 'error',
-                    'flash.message' => 'Akun Anda telah diblokir.',
-                ]);
-        }
+        //     return inertia('Auth/Banned');
+        // }
 
         /*
          * Regenerate the session ID after successful authentication.
          */
         $request->session()->regenerate();
 
-        /*
-         * Redirect the main administrator to the admin dashboard.
-         */
-        if (
-            Auth::user()->is_admin &&
-            (
-                Auth::user()->email === 'admin@nuraloka.id' ||
-                Auth::user()->username === 'admin_nuraloka'
-            )
-        ) {
-            return redirect()
-                ->route('admin.dashboard.index');
-        }
+        // // Redirect the main administrator to the admin dashboard.
+        // if (
+        //     Auth::user()->is_admin &&
+        //     (
+        //         Auth::user()->email === 'admin@nuraloka.id' ||
+        //         Auth::user()->username === 'admin_nuraloka'
+        //     )
+        // ) {
+        //     return redirect()
+        //         ->route('admin.dashboard.index');
+        // }
 
         return redirect()
             ->route('home.index');

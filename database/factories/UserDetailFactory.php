@@ -17,7 +17,6 @@ class UserDetailFactory extends Factory
             'user_id' => User::factory(),
             'province_id' => Province::inRandomOrder('')->first()?->id,
             'fullname' => $this->faker->name(),
-            'profile_path' => 'profiles/'.$this->faker->uuid().'.jpg',
             'dob' => $this->faker->dateTimeBetween('-50 years', '-18 years')->format('Y-m-d'),
             'gender' => $this->faker->randomElement(['male', 'female', 'unspecified']),
             'total_points' => $this->faker->numberBetween(0, 5000),
