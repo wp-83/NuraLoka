@@ -61,7 +61,7 @@ export default function MainLayout({
 
     const image =
         pageImage ||
-        '/images/og-default.jpg';
+        '/images/logo/with-tagline.jpg';
 
     const canonicalUrl =
         pageUrl ||

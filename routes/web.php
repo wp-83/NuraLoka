@@ -70,7 +70,7 @@ Route::prefix('/auth')->name('auth.')->group(function () {
 });
 
 // User Features
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'unbanned'])->group(function () {
     // Home
     Route::prefix('/beranda')->name('home.')->controller(HomeController::class)->group(function () {
         Route::get('/', 'index')->name('index');
@@ -132,7 +132,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Admin Features
-Route::middleware(['auth', 'admin'])->prefix('/admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'unbanned'])->prefix('/admin')->name('admin.')->group(function () {
     // Dashboard
     Route::prefix('/dasbor')->name('dashboard.')->controller(DashboardController::class)->group(function () {
         Route::get('/', 'index')->name('index');
