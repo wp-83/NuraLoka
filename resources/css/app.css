@@ -104,3 +104,77 @@
         animation: fadeIn 0.4s ease-out;
     }
 }
+
+/* ── Titik POI peta jelajah (ala Google Maps): pin ikon kategori + label nama ──
+   Pin & label berada dalam satu divIcon (.nl-pin) → keduanya interaktif. */
+.nl-pin {
+    background: transparent;
+    border: none;
+}
+
+.nl-pin__wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+/* Bentuk pin peta (lingkaran + ekor segitiga di bawah) */
+.nl-pin__pin {
+    position: relative;
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    background: #ffffff;
+    border: 2px solid #239A90; /* accent (tailwind.config) */
+    border-radius: 9999px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nl-pin__pin::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -6px;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid #239A90; /* accent (tailwind.config) */
+}
+
+.nl-pin__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+}
+
+.nl-pin__icon img {
+    width: 13px;
+    height: 13px;
+    object-fit: contain;
+}
+
+.nl-pin__emoji {
+    font-size: 12px;
+    line-height: 1;
+}
+
+/* Label nama tempat di samping pin */
+.nl-pin__label {
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    padding: 1px 5px;
+    font-family: "Carlito", sans-serif; /* font-body (tailwind.config) */
+    font-size: 11px;
+    font-weight: 700;
+    color: #262626; /* gray-85 (tailwind.config) */
+}

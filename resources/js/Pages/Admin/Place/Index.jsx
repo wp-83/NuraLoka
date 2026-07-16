@@ -10,12 +10,25 @@ import AdminLayout from '../../../Layouts/AdminLayout';
 export default function Index({ places, filters }) {
     const { flash } = usePage().props;
     const [search, setSearch] = useState(filters.search || '');
+    const [source, setSource] = useState(filters.source || '');
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [deleting, setDeleting] = useState(false);
 
+    const applyFilters = (overrides = {}) => {
+        const params = { search, source, ...overrides };
+        // Buang parameter kosong agar URL tetap bersih.
+        Object.keys(params).forEach((k) => params[k] === '' && delete params[k]);
+        router.get(route('admin.places.index'), params, { preserveState: true, replace: true });
+    };
+
     const handleSearch = (e) => {
         e.preventDefault();
-        router.get(route('admin.places.index'), { search }, { preserveState: true, replace: true });
+        applyFilters();
+    };
+
+    const handleSourceChange = (value) => {
+        setSource(value);
+        applyFilters({ source: value });
     };
 
     const confirmDelete = () => {
@@ -60,15 +73,28 @@ export default function Index({ places, filters }) {
 
                 {/* Toolbar */}
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <form onSubmit={handleSearch} className="w-full sm:max-w-md">
-                        <Input
-                            name="search"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Cari destinasi berdasarkan nama atau alamat..."
-                            icon={<FaSearch />}
-                        />
-                    </form>
+                    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+                        <form onSubmit={handleSearch} className="w-full sm:max-w-md">
+                            <Input
+                                name="search"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Cari destinasi berdasarkan nama atau alamat..."
+                                icon={<FaSearch />}
+                            />
+                        </form>
+
+                        {/* Filter sumber data (internal admin / hasil impor OSM) */}
+                        <select
+                            value={source}
+                            onChange={(e) => handleSourceChange(e.target.value)}
+                            className="w-full rounded-lg border border-primary-10 bg-white px-3 py-2 font-body text-small text-primary-100 outline-none focus:border-secondary-100 sm:w-48"
+                        >
+                            <option value="">Semua Sumber</option>
+                            <option value="internal">Internal (NuraLoka)</option>
+                            <option value="osm">OSM (Impor)</option>
+                        </select>
+                    </div>
 
                     <Button
                         variant="primary"
@@ -89,6 +115,7 @@ export default function Index({ places, filters }) {
                                 <th className="px-4 py-3 font-heading text-small font-semibold">Alamat</th>
                                 <th className="px-4 py-3 font-heading text-small font-semibold">Koordinat</th>
                                 <th className="px-4 py-3 font-heading text-small font-semibold">Kategori</th>
+                                <th className="px-4 py-3 font-heading text-small font-semibold">Sumber</th>
                                 <th className="px-4 py-3 text-center font-heading text-small font-semibold">Aksi</th>
                             </tr>
                         </thead>
@@ -106,7 +133,9 @@ export default function Index({ places, filters }) {
                                             </span>
                                         </td>
                                         <td className="px-4 py-3 text-small text-gray-70">
-                                            {place.address}
+                                            {place.address || (
+                                                <span className="italic text-gray-50">Alamat belum tersedia</span>
+                                            )}
                                         </td>
                                         <td className="px-4 py-3">
                                             <span className="inline-block rounded-md bg-gray-10 px-2 py-1 font-body text-micro text-gray-70">
@@ -130,6 +159,17 @@ export default function Index({ places, filters }) {
                                                     </span>
                                                 )}
                                             </div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            {place.source === 'osm' ? (
+                                                <span className="inline-flex rounded-full bg-info-light px-2.5 py-1 text-micro font-semibold text-info-dark">
+                                                    OSM
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex rounded-full bg-secondary-10 px-2.5 py-1 text-micro font-semibold text-secondary-100">
+                                                    Internal
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="flex items-center justify-center gap-2">
@@ -157,7 +197,7 @@ export default function Index({ places, filters }) {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="5" className="px-4 py-12 text-center text-body text-gray-50">
+                                    <td colSpan="6" className="px-4 py-12 text-center text-body text-gray-50">
                                         {search
                                             ? 'Tidak ada destinasi yang cocok dengan pencarian Anda.'
                                             : 'Belum ada data destinasi wisata.'}

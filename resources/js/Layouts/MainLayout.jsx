@@ -1,9 +1,10 @@
 import Flash from '@components/Common/Flash';
 import Footer from '@components/Layouts/User/Footer';
 import Navbar from '@components/Layouts/User/Navbar';
+import { FlashContext } from '@js/Contexts/FlashContext';
 
 import { Head, usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function MainLayout({
     pageTitle = '',
@@ -14,12 +15,11 @@ export default function MainLayout({
 }) {
     const { flash } = usePage().props;
 
-    const [currentFlash, setCurrentFlash] = useState(
-        flash ?? {
-            type: null,
-            message: null,
-        }
-    );
+    const [currentFlash, setCurrentFlash] = useState({
+        type: flash?.type ?? null,
+        message: flash?.message ?? null,
+        id: flash?.type && flash?.message ? Date.now() : 0,
+    });
 
     /*
     |--------------------------------------------------------------------------
@@ -32,9 +32,21 @@ export default function MainLayout({
             setCurrentFlash({
                 type: flash.type,
                 message: flash.message,
+                id: Date.now(),
             });
         }
     }, [flash?.type, flash?.message]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Show Flash (client-side, dipakai halaman via FlashContext)
+    |--------------------------------------------------------------------------
+    */
+
+    const showFlash = useCallback((type, message) => {
+        // id memaksa remount Flash agar animasi berjalan ulang tiap dipanggil.
+        setCurrentFlash({ type, message, id: Date.now() });
+    }, []);
 
     /*
     |--------------------------------------------------------------------------
@@ -43,13 +55,12 @@ export default function MainLayout({
     */
 
     const clearFlash = () => {
-        setCurrentFlash({
-            type: null,
-            message: null,
-        });
+        setCurrentFlash({ type: null, message: null, id: 0 });
 
-        flash.type = null;
-        flash.message = null;
+        if (flash) {
+            flash.type = null;
+            flash.message = null;
+        }
     };
 
     const title =
@@ -134,13 +145,26 @@ export default function MainLayout({
                 )}
             </Head>
 
-            <Navbar />
+            <FlashContext.Provider value={showFlash}>
+                <Navbar />
 
-            <main className='container min-h-80'>
-                {content}
-            </main>
+                <main className='container min-h-80'>
+                    {content}
+                </main>
 
-            <Footer />
+                <Footer />
+
+                {/* Flash terpusat: dipakai pesan server (Inertia) & client (via showFlash).
+                    Dirender di root layout agar tampil di atas Navbar. */}
+                {currentFlash.type && currentFlash.message && (
+                    <Flash
+                        key={currentFlash.id}
+                        type={currentFlash.type}
+                        message={currentFlash.message}
+                        onClose={clearFlash}
+                    />
+                )}
+            </FlashContext.Provider>
         </>
     );
 }

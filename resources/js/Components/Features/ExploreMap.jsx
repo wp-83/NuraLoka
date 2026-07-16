@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap, useMapEvents, Polyline, CircleMarker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -29,6 +29,53 @@ const createMarkerIcon = (iconPath) => {
     iconSize: [32, 32],
     iconAnchor: [16, 32],
     popupAnchor: [0, -32],
+  });
+};
+
+// Escape teks agar aman disisipkan ke HTML divIcon (nama tempat bisa mengandung < " dll).
+const escapeHtml = (s) =>
+  String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// Ikon default per-kategori (dipakai bila kategori belum punya icon_path di DB).
+// Emoji dipilih agar ringan & tanpa aset; fallback terakhir 📍.
+const CATEGORY_EMOJI = {
+  'Wisata Alam': '🌿',
+  'Wisata Budaya': '🏛️',
+  'Wisata Sejarah': '🏯',
+  'Wisata Gunung': '⛰️',
+  'Wisata Edukasi': '📚',
+  'Kuliner': '🍽️',
+  'Wisata Kuliner': '🍽️',
+  'Museum': '🏛️',
+  'Taman Hiburan': '🎡',
+  'Belanja': '🛍️',
+  'Religi': '🕌',
+  'Wisata Religi': '🕌',
+  'Hidden Gem': '💎',
+  'Pantai': '🏖️',
+  'Wisata Pantai': '🏖️',
+  'Air Terjun': '💧',
+};
+
+// Ikon POI: pin peta (teardrop) berisi ikon kategori + label nama menempel di
+// sampingnya. Pin & label berada dalam SATU divIcon sehingga keduanya sama-sama
+// bisa diinteraksikan (hover/klik memicu event marker yang sama).
+const createPlaceIcon = (place) => {
+  const category = place.categories?.[0];
+  const inner = category?.icon_path
+    ? `<img src="${escapeHtml(category.icon_path)}" alt="" />`
+    : `<span class="nl-pin__emoji">${CATEGORY_EMOJI[category?.name] || '📍'}</span>`;
+
+  return L.divIcon({
+    className: 'nl-pin',
+    html:
+      `<div class="nl-pin__wrap">` +
+        `<div class="nl-pin__pin"><span class="nl-pin__icon">${inner}</span></div>` +
+        `<span class="nl-pin__label">${escapeHtml(place.name)}</span>` +
+      `</div>`,
+    iconSize: null,       // biarkan konten (pin + label) menentukan ukuran
+    iconAnchor: [11, 31], // ujung bawah pin sebagai titik jangkar koordinat
+    popupAnchor: [0, -30],
   });
 };
 
@@ -96,51 +143,36 @@ const BoundsWatcher = ({ onBoundsChange, onZoomChange, onSettle }) => {
   return null;
 };
 
-// Color palette for OSM category circle markers
-const OSM_COLORS = {
-  'Kuliner':        '#f59e0b',
-  'Museum':         '#8b5cf6',
-  'Pantai':         '#06b6d4',
-  'Air Terjun':     '#3b82f6',
-  'Wisata Alam':    '#22c55e',
-  'Taman Hiburan':  '#f97316',
-  'Wisata Budaya':  '#a855f7',
-  'Religi':         '#ec4899',
-  'Belanja':        '#14b8a6',
-  'Lainnya':        '#64748b',
-};
-
-// Marker satuan untuk satu place lokal (dipakai saat titik tidak terklaster)
-function LocalPlaceMarker({ place, showLabel, onVisit }) {
+// Marker satuan untuk satu place (peta sisi user membaca satu sumber; tidak ada
+// pembedaan asal data OSM/internal di UI).
+function LocalPlaceMarker({ place, onVisit }) {
   return (
     <Marker
       position={[parseFloat(place.latitude), parseFloat(place.longitude)]}
-      icon={createMarkerIcon(place.categories?.[0]?.icon_path)}
+      icon={createPlaceIcon(place)}
+      // Laptop: overlay muncul saat hover. Mobile: muncul saat tap (event click).
+      // Pin & label satu divIcon → keduanya memicu event yang sama.
+      eventHandlers={{
+        mouseover: (e) => e.target.openPopup(),
+        click: (e) => e.target.openPopup(),
+      }}
     >
-      {showLabel && (
-        <Tooltip direction="top" offset={[0, -32]} permanent opacity={0.9} className="font-bold text-xs" style={{ whiteSpace: 'nowrap', backgroundColor: 'rgba(255,255,255,0.85)', border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', padding: '4px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {place.img && (
-              <img src={place.img} alt={place.name} style={{ width: '24px', height: '24px', objectFit: 'cover', borderRadius: '4px' }} />
-            )}
-            <span>{place.name}</span>
-          </div>
-        </Tooltip>
-      )}
       <Popup>
         <div style={{ maxWidth: '220px', fontFamily: 'sans-serif' }}>
           <div style={{ marginBottom: '7px' }}>
-            <span style={{ background: '#6B4B3A', color: 'white', fontSize: '9px', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold', letterSpacing: '0.3px' }}>
+            <span style={{ background: '#5A3812', color: 'white', fontSize: '9px', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold', letterSpacing: '0.3px' }}>
               ✦ NuraLoka
             </span>
           </div>
-          <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 'bold', color: '#1a1a1a' }}>
+          <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 'bold', color: '#262626' }}>
             {place.name}
           </h4>
-          <p style={{ margin: '0 0 6px 0', fontSize: '11px', color: '#777' }}>{place.address}</p>
+          <p style={{ margin: '0 0 6px 0', fontSize: '11px', color: place.address ? '#4D4D4D' : '#808080', fontStyle: place.address ? 'normal' : 'italic' }}>
+            {place.address || 'Lokasi menanti untuk dijelajahi ✨'}
+          </p>
           {place.categories?.length > 0 && (
             <div style={{ marginBottom: '8px' }}>
-              <span style={{ background: '#fef3c7', color: '#92400e', fontSize: '10px', padding: '2px 7px', borderRadius: '8px', fontWeight: '600' }}>
+              <span style={{ background: '#E9F7F6', color: '#239A90', fontSize: '10px', padding: '2px 7px', borderRadius: '8px', fontWeight: '600' }}>
                 {place.categories[0].name}
               </span>
             </div>
@@ -150,7 +182,7 @@ function LocalPlaceMarker({ place, showLabel, onVisit }) {
               e.stopPropagation();
               if (onVisit) onVisit(place);
             }}
-            style={{ display: 'block', width: '100%', padding: '6px 0', background: '#d97706', color: 'white', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginTop: '4px' }}
+            style={{ display: 'block', width: '100%', padding: '6px 0', background: '#239A90', color: 'white', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginTop: '4px' }}
           >
             Lihat Detail
           </button>
@@ -160,73 +192,82 @@ function LocalPlaceMarker({ place, showLabel, onVisit }) {
   );
 }
 
-// Marker satuan untuk titik OSM (dari API) — lingkaran berwarna sesuai kategori
-function OsmPlaceMarker({ place, showLabel }) {
-  const color = OSM_COLORS[place.category] || OSM_COLORS['Lainnya'];
-  return (
-    <CircleMarker
-      center={[place.latitude, place.longitude]}
-      radius={7}
-      pathOptions={{ color: 'white', weight: 2, fillColor: color, fillOpacity: 0.9 }}
-    >
-      {showLabel && (
-        <Tooltip direction="top" offset={[0, -7]} permanent opacity={0.9} className="font-bold text-xs" style={{ whiteSpace: 'nowrap', backgroundColor: 'rgba(255,255,255,0.85)', border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', padding: '4px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {place.img && (
-              <img src={place.img} alt={place.name} style={{ width: '24px', height: '24px', objectFit: 'cover', borderRadius: '4px' }} />
-            )}
-            <span>{place.name}</span>
-          </div>
-        </Tooltip>
-      )}
-      <Popup>
-        <div style={{ maxWidth: '220px', fontFamily: 'sans-serif' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '7px', flexWrap: 'wrap' }}>
-            <span style={{ background: '#0ea5e9', color: 'white', fontSize: '9px', padding: '2px 7px', borderRadius: '10px', fontWeight: 'bold' }}>
-              🌐 OpenStreetMap
-            </span>
-            {place.category && (
-              <span style={{ background: color, color: 'white', fontSize: '9px', padding: '2px 7px', borderRadius: '10px', fontWeight: 'bold' }}>
-                {place.category}
-              </span>
-            )}
-          </div>
-          <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 'bold', color: '#1a1a1a' }}>
-            {place.name}
-          </h4>
-          {place.address && (
-            <p style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#777' }}>{place.address}</p>
-          )}
-          {place.subtype && (
-            <p style={{ margin: '0 0 7px 0', fontSize: '10px', color: '#aaa', textTransform: 'capitalize' }}>
-              {String(place.subtype).replace(/_/g, ' ')}
-            </p>
-          )}
-          <a
-            href={`https://www.openstreetmap.org/node/${place.osmId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ fontSize: '10px', color: '#0ea5e9', fontWeight: '600', textDecoration: 'none' }}
-          >
-            Lihat di OpenStreetMap ↗
-          </a>
-        </div>
-      </Popup>
-    </CircleMarker>
-  );
-}
+// Render titik individual dari server (endpoint /jelajah/titik), dengan DECLUTTER
+// ala Google Maps: titik yang saling berdekatan (berpotensi menumpuk) dijarangkan —
+// hanya yang berprioritas lebih tinggi (urutan dari server) yang tampil, sisanya
+// baru muncul saat diperbesar; pada zoom PALING BESAR semua titik ditampilkan.
+// `excludeId` menyingkirkan titik yang sedang ditampilkan sebagai marker pencarian
+// agar tidak dobel.
+const MARKER_MIN_PX = 40; // jarak minimal antar pin (px) agar tidak menumpuk
 
-// Render titik individual dari server (endpoint /jelajah/titik). Tanpa klaster:
-// titik hanya muncul saat zoom cukup dekat, jadi peta bersih ketika zoom jauh.
-function MapMarkers({ points = [], currentZoom = 5, onVisit }) {
+function MapMarkers({ points = [], onVisit, excludeId = null, excludeLat = null, excludeLng = null }) {
+  const map = useMap();
+  const [tick, setTick] = React.useState(0);
+
+  // Recompute declutter tiap kali zoom/geser peta (proyeksi piksel berubah).
+  useMapEvents({
+    zoomend: () => setTick((t) => t + 1),
+    moveend: () => setTick((t) => t + 1),
+  });
+
+  const visible = React.useMemo(() => {
+    // Singkirkan titik yang sedang tampil sebagai marker pencarian agar tidak dobel:
+    // cocok berdasarkan id (toleran tipe), ATAU koordinat yang praktis sama (~5 m),
+    // untuk menangani duplikat baris (mis. dua node OSM di lokasi yang sama).
+    const hasExclude = excludeId != null || (excludeLat != null && excludeLng != null);
+    const base = hasExclude
+      ? points.filter((p) => {
+          if (excludeId != null && Number(p.id) === Number(excludeId)) return false;
+          if (excludeLat != null && excludeLng != null) {
+            if (Math.abs(parseFloat(p.latitude) - excludeLat) < 5e-5 &&
+                Math.abs(parseFloat(p.longitude) - excludeLng) < 5e-5) return false;
+          }
+          return true;
+        })
+      : points;
+    if (!map) return base;
+
+    const maxZoom = map.getMaxZoom ? map.getMaxZoom() : 19;
+    // Zoom paling besar → tampilkan semua (tidak ada yang disembunyikan).
+    if (map.getZoom() >= maxZoom) return base;
+
+    // Grid hash berbasis piksel agar deteksi tumpang tindih tetap O(n).
+    const cell = MARKER_MIN_PX;
+    const grid = new Map();
+    const kept = [];
+
+    for (const p of base) {
+      const pt = map.latLngToContainerPoint([parseFloat(p.latitude), parseFloat(p.longitude)]);
+      const cx = Math.floor(pt.x / cell);
+      const cy = Math.floor(pt.y / cell);
+      let collide = false;
+
+      for (let dx = -1; dx <= 1 && !collide; dx++) {
+        for (let dy = -1; dy <= 1 && !collide; dy++) {
+          const bucket = grid.get(`${cx + dx},${cy + dy}`);
+          if (bucket) {
+            for (const q of bucket) {
+              if ((pt.x - q.x) ** 2 + (pt.y - q.y) ** 2 < cell * cell) { collide = true; break; }
+            }
+          }
+        }
+      }
+
+      if (!collide) {
+        kept.push(p);
+        const key = `${cx},${cy}`;
+        if (!grid.has(key)) grid.set(key, []);
+        grid.get(key).push(pt);
+      }
+    }
+
+    return kept;
+  }, [points, excludeId, excludeLat, excludeLng, map, tick]);
+
   return (
     <>
-      {points.map((p) => (
-        p.source === 'osm' ? (
-          <OsmPlaceMarker key={`osm-${p.id}`} place={p} showLabel={currentZoom >= 19} />
-        ) : (
-          <LocalPlaceMarker key={`admin-${p.id}`} place={p} showLabel={currentZoom >= 19} onVisit={onVisit} />
-        )
+      {visible.map((p) => (
+        <LocalPlaceMarker key={`place-${p.id}`} place={p} onVisit={onVisit} />
       ))}
     </>
   );
@@ -263,61 +304,36 @@ function SelectedPlaceMarker({ place, onVisit }) {
 
   if (!place || !place.latitude || !place.longitude) return null;
 
-  const isOsm = place.source === 'osm';
-  const color = OSM_COLORS[place.category] || OSM_COLORS['Lainnya'];
-
   return (
     <Marker
       ref={markerRef}
       position={[parseFloat(place.latitude), parseFloat(place.longitude)]}
-      icon={createMarkerIcon(!isOsm ? place.categories?.[0]?.icon_path : undefined)}
+      icon={createPlaceIcon(place)}
     >
       <Popup>
         <div style={{ maxWidth: '220px', fontFamily: 'sans-serif' }}>
-          {isOsm ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '7px', flexWrap: 'wrap' }}>
-              <span style={{ background: '#0ea5e9', color: 'white', fontSize: '9px', padding: '2px 7px', borderRadius: '10px', fontWeight: 'bold' }}>
-                🌐 OpenStreetMap
-              </span>
-              {place.category && (
-                <span style={{ background: color, color: 'white', fontSize: '9px', padding: '2px 7px', borderRadius: '10px', fontWeight: 'bold' }}>
-                  {place.category}
-                </span>
-              )}
-            </div>
-          ) : (
-            <div style={{ marginBottom: '7px' }}>
-              <span style={{ background: '#6B4B3A', color: 'white', fontSize: '9px', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold', letterSpacing: '0.3px' }}>
-                ✦ NuraLoka
-              </span>
-            </div>
-          )}
-          <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 'bold', color: '#1a1a1a' }}>
+          <div style={{ marginBottom: '7px' }}>
+            <span style={{ background: '#5A3812', color: 'white', fontSize: '9px', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold', letterSpacing: '0.3px' }}>
+              ✦ NuraLoka
+            </span>
+          </div>
+          <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 'bold', color: '#262626' }}>
             {place.name}
           </h4>
-          {place.address && (
-            <p style={{ margin: '0 0 6px 0', fontSize: '11px', color: '#777' }}>{place.address}</p>
-          )}
-          {!isOsm && place.categories?.length > 0 && (
+          <p style={{ margin: '0 0 6px 0', fontSize: '11px', color: place.address ? '#4D4D4D' : '#808080', fontStyle: place.address ? 'normal' : 'italic' }}>
+            {place.address || 'Lokasi menanti untuk dijelajahi ✨'}
+          </p>
+          {place.categories?.length > 0 && (
             <div style={{ marginBottom: '8px' }}>
-              <span style={{ background: '#fef3c7', color: '#92400e', fontSize: '10px', padding: '2px 7px', borderRadius: '8px', fontWeight: '600' }}>
+              <span style={{ background: '#E9F7F6', color: '#239A90', fontSize: '10px', padding: '2px 7px', borderRadius: '8px', fontWeight: '600' }}>
                 {place.categories[0].name}
               </span>
             </div>
           )}
-          {isOsm ? (
-            <a
-              href={`https://www.openstreetmap.org/node/${place.osmId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ fontSize: '10px', color: '#0ea5e9', fontWeight: '600', textDecoration: 'none' }}
-            >
-              Lihat di OpenStreetMap ↗
-            </a>
-          ) : (
+          {place.slug && (
             <button
               onClick={(e) => { e.stopPropagation(); if (onVisit) onVisit(place); }}
-              style={{ display: 'block', width: '100%', padding: '6px 0', background: '#d97706', color: 'white', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginTop: '4px' }}
+              style={{ display: 'block', width: '100%', padding: '6px 0', background: '#239A90', color: 'white', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginTop: '4px' }}
             >
               Lihat Detail
             </button>
@@ -384,7 +400,7 @@ export default function ExploreMap({
         {routeData && routeData.coordinates && (
           <Polyline
             positions={routeData.coordinates}
-            color="#6B4B3A"
+            color="#5A3812"
             weight={6}
             opacity={0.8}
           />
@@ -404,11 +420,14 @@ export default function ExploreMap({
           </Marker>
         )}
 
-        {/* ── Titik dari server (DB admin + OSM), muncul saat zoom cukup dekat ── */}
+        {/* ── Titik dari server (satu jenis), kepadatan diatur level-of-detail + declutter.
+            excludeId: hindari dobel dengan marker hasil pencarian yang sedang tampil. ── */}
         <MapMarkers
           points={points}
-          currentZoom={currentZoom}
           onVisit={onVisit}
+          excludeId={!routeData && selectedPlace ? (selectedPlace.placeId ?? selectedPlace.id) : null}
+          excludeLat={!routeData && selectedPlace?.latitude != null ? parseFloat(selectedPlace.latitude) : null}
+          excludeLng={!routeData && selectedPlace?.longitude != null ? parseFloat(selectedPlace.longitude) : null}
         />
       </MapContainer>
     </div>

@@ -2,17 +2,26 @@
 
 namespace App\Services;
 
-use App\Models\OsmPlace;
+use App\Models\Category;
+use App\Models\Place;
+use App\Models\PlaceOsmRef;
 use Illuminate\Support\Facades\Http;
 
 /**
- * Logika inti impor POI dari Overpass (OSM) ke tabel osm_places.
+ * Logika inti impor POI dari Overpass (OSM) ke tabel `places` (source='osm').
+ * Setiap node OSM disimpan sebagai satu Place; identitas & metadata asal OSM
+ * (osm_id, subtype) disimpan terpisah di `place_osm_refs` agar `places` tetap
+ * bersih dan impor idempotent (re-impor node yang sama = update, bukan duplikat).
+ *
  * Dipakai bersama oleh:
  *  - Command CLI  App\Console\Commands\ImportOsmPlaces  (sekali jalan, manual)
  *  - Job antrean  App\Jobs\ImportOsmPlacesJob           (dipicu dari panel admin)
  */
 class OsmImportService
 {
+    /** Cache id kategori per nama (dibuat sekali per proses impor). */
+    private array $categoryIdCache = [];
+
     // Preset area: key (slug) => ['label' => nama tampil, 'bbox' => [south, west, north, east]].
     // Mencakup 38 provinsi Indonesia (selaras ProvinceSeeder) + opsi "Seluruh Indonesia".
     // bbox bersifat perkiraan (cukup untuk membatasi area impor Overpass).
@@ -167,11 +176,17 @@ class OsmImportService
         return null;
     }
 
-    /** Simpan/perbarui elements ke osm_places; kembalikan jumlah baris valid. */
+    /**
+     * Simpan/perbarui elements ke tabel `places` (source='osm') + `place_osm_refs`.
+     * Kembalikan jumlah node valid yang diproses.
+     *
+     * Idempotent lewat place_osm_refs.osm_id: node yang sudah pernah diimpor akan
+     * memperbarui Place terkait, bukan membuat baris baru. Atribut place yang tidak
+     * tersedia pada data OSM (mis. description) diisi null sesuai ketentuan.
+     */
     private function storeElements(array $elements): int
     {
-        $rows = [];
-        $now = now();
+        $processed = 0;
 
         foreach ($elements as $el) {
             if (($el['type'] ?? null) !== 'node') {
@@ -179,40 +194,57 @@ class OsmImportService
             }
             $tags = $el['tags'] ?? [];
             $name = $tags['name'] ?? $tags['name:id'] ?? $tags['name:en'] ?? null;
-            $category = $this->categorize($tags);
-            if (! $name || ! $category) {
+            $categoryName = $this->categorize($tags);
+            if (! $name || ! $categoryName) {
                 continue;
             }
 
-            $rows[] = [
-                'osm_id' => $el['id'],
+            $osmId = (int) $el['id'];
+            $subtype = $tags['amenity'] ?? $tags['tourism'] ?? $tags['natural']
+                ?? $tags['leisure'] ?? $tags['historic'] ?? $tags['waterway']
+                ?? $tags['shop'] ?? null;
+
+            $attributes = [
                 'name' => mb_substr($name, 0, 255),
                 'latitude' => $el['lat'],
                 'longitude' => $el['lon'],
                 'address' => $tags['addr:full'] ?? $tags['addr:street'] ?? null,
-                'category' => $category,
-                'subtype' => $tags['amenity'] ?? $tags['tourism'] ?? $tags['natural']
-                    ?? $tags['leisure'] ?? $tags['historic'] ?? $tags['waterway']
-                    ?? $tags['shop'] ?? null,
-                'created_at' => $now,
-                'updated_at' => $now,
+                // Atribut place yang tak ada padanannya di OSM → default null.
+                'description' => null,
+                'source' => 'osm',
             ];
+
+            $ref = PlaceOsmRef::where('osm_id', $osmId)->first();
+
+            if ($ref) {
+                // Node sudah pernah diimpor → perbarui place & metadata OSM.
+                $place = Place::find($ref->place_id);
+                if ($place) {
+                    $place->fill($attributes)->save();
+                    $ref->update(['subtype' => $subtype]);
+                    $place->categories()->syncWithoutDetaching([$this->categoryId($categoryName)]);
+                }
+            } else {
+                // Node baru → buat place (slug unik otomatis via HasSlug) + referensi OSM.
+                $place = Place::create($attributes);
+                PlaceOsmRef::create([
+                    'place_id' => $place->id,
+                    'osm_id' => $osmId,
+                    'subtype' => $subtype,
+                ]);
+                $place->categories()->attach($this->categoryId($categoryName));
+            }
+
+            $processed++;
         }
 
-        if (empty($rows)) {
-            return 0;
-        }
+        return $processed;
+    }
 
-        // Idempotent: baris dengan osm_id sama akan di-update, bukan diduplikasi.
-        foreach (array_chunk($rows, 500) as $chunk) {
-            OsmPlace::upsert(
-                $chunk,
-                ['osm_id'],
-                ['name', 'latitude', 'longitude', 'address', 'category', 'subtype', 'updated_at']
-            );
-        }
-
-        return count($rows);
+    /** Resolusi (dan cache) id Category berdasarkan nama; dibuat bila belum ada. */
+    private function categoryId(string $name): int
+    {
+        return $this->categoryIdCache[$name] ??= Category::firstOrCreate(['name' => $name])->id;
     }
 
     private function categorize(array $tags): ?string

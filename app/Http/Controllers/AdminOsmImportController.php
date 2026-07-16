@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\ImportOsmPlacesJob;
 use App\Models\OsmImportRun;
-use App\Models\OsmPlace;
+use App\Models\Place;
 use App\Services\OsmImportService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -20,7 +20,7 @@ class AdminOsmImportController extends Controller
         return Inertia::render('Admin/OsmImport/Index', [
             'regions' => $this->regionOptions(),
             'runs' => $this->recentRuns(),
-            'osmTotal' => OsmPlace::count(),
+            'osmTotal' => Place::where('source', 'osm')->count(),
         ]);
     }
 
@@ -29,7 +29,7 @@ class AdminOsmImportController extends Controller
     {
         return response()->json([
             'runs' => $this->recentRuns(),
-            'osmTotal' => OsmPlace::count(),
+            'osmTotal' => Place::where('source', 'osm')->count(),
         ]);
     }
 
