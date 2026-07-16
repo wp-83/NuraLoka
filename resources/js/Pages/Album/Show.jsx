@@ -231,31 +231,32 @@ export default function AlbumShow({
                                 {/* Toggle */}
                                 <span
                                     className={`
-                                        relative
+                                        relative inline-flex
                                         h-6 w-11
+                                        items-center
                                         rounded-full
+                                        border-2
                                         transition-colors
-                                        duration-200
+                                        duration-300
 
                                         ${album.is_public
-                                            ? 'bg-primary-100'
-                                            : 'bg-gray-30'
+                                            ? 'border-primary-100 bg-primary-30'
+                                            : 'border-gray-30 bg-gray-10'
                                         }
                                     `}
                                 >
                                     <span
                                         className={`
-                                            absolute top-0.5
-                                            h-5 w-5
+                                            inline-block
+                                            h-4 w-4
                                             rounded-full
-                                            bg-white
-                                            shadow
-                                            transition-transform
-                                            duration-200
+                                            shadow-md
+                                            transition-all
+                                            duration-300
 
                                             ${album.is_public
-                                                ? 'translate-x-[22px]'
-                                                : 'translate-x-0.5'
+                                                ? 'translate-x-[22px] bg-primary-100'
+                                                : 'translate-x-[3px] bg-gray-50'
                                             }
                                         `}
                                     />
