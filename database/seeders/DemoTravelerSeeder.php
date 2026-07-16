@@ -2,18 +2,19 @@
 
 namespace Database\Seeders;
 
+use App\Models\Badge;
+use App\Models\Mission;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\Mission;
-use App\Models\Badge;
 
 class DemoTravelerSeeder extends Seeder
 {
     public function run(): void
     {
         $user = DB::table('users')->where('username', 'demo_traveler')->first();
-        if (!$user) {
-            $this->command->info("User demo_traveler not found. Please run UserSeeder first.");
+        if (! $user) {
+            $this->command->info('User demo_traveler not found. Please run UserSeeder first.');
+
             return;
         }
 
@@ -56,6 +57,6 @@ class DemoTravelerSeeder extends Seeder
         }
         DB::table('user_missions')->insert($userMissionsData);
 
-        $this->command->info("User demo_traveler has completed all missions and earned all badges!");
+        $this->command->info('User demo_traveler has completed all missions and earned all badges!');
     }
 }
