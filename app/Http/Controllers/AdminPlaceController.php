@@ -7,9 +7,9 @@ use App\Models\Photo;
 use App\Models\Place;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
-use Inertia\Inertia;
 
 class AdminPlaceController extends Controller
 {
