@@ -15,6 +15,11 @@ class Badge extends Model
         'requirement_description',
         'icon_path',
         'slug',
+        'type',
+        'category',
+        'points',
+        'tier_level',
+        'tier_target',
     ];
 
     public function getSlugOptions(): SlugOptions
