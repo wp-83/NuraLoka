@@ -10,6 +10,7 @@ export default function Create({ badges }) {
         title: '',
         description: '',
         points_reward: 0,
+        target: 1,
         badge_id: '',
     });
 
@@ -81,6 +82,18 @@ export default function Create({ badges }) {
                             placeholder="Contoh: 100"
                             error={errors.points_reward}
                             min="0"
+                            required
+                        />
+
+                        <Input
+                            type="number"
+                            label="Target Misi (Jumlah yang harus diselesaikan)"
+                            name="target"
+                            value={data.target}
+                            onChange={(e) => setData('target', e.target.value)}
+                            placeholder="Contoh: 5"
+                            error={errors.target}
+                            min="1"
                             required
                         />
 

@@ -136,15 +136,7 @@ export default function MainLayout({
 
             <Navbar />
 
-            {currentFlash.type && currentFlash.message && (
-                <Flash
-                    type={currentFlash.type}
-                    message={currentFlash.message}
-                    onClose={clearFlash}
-                />
-            )}
-
-            <main className="container min-h-80">
+            <main className='container min-h-80'>
                 {content}
             </main>
 

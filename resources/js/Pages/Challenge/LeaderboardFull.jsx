@@ -68,15 +68,16 @@ export default function LeaderboardFull({ leaderboard = [], search = '', totalRe
                                 let bgClass = "bg-[#EEF5F0]";
                                 let rowBorder = "";
                                 if (search && user.is_current) {
-                                    bgClass = "bg-[#E3F2E9]";
+                                    bgClass = "bg-[#FFF8F3] border-[#FDBA74]";
+                                    rowBorder = "border";
                                 } else if (!search) {
-                                    if (user.rank === 1) bgClass = "bg-[#FEF08A]";
-                                    else if (user.rank === 2) bgClass = "bg-[#FEF9C3]";
-                                    else if (user.rank === 3) bgClass = "bg-[#FFEDD5]";
+                                    if (user.rank === 1) bgClass = "bg-gradient-to-r from-[#FDE68A] to-[#FEF3C7] border-[#FCD34D] border";
+                                    else if (user.rank === 2) bgClass = "bg-gradient-to-r from-[#E5E7EB] to-[#F3F4F6] border-[#D1D5DB] border";
+                                    else if (user.rank === 3) bgClass = "bg-gradient-to-r from-[#FFEDD5] to-[#FFF7ED] border-[#FDBA74] border";
                                 }
 
                                 return (
-                                    <div key={user.rank} className={`flex items-center p-4 rounded-xl ${bgClass} ${rowBorder} transition-colors relative overflow-hidden shadow-sm border border-black/5`}>
+                                    <div key={user.rank} className={`flex items-center p-4 rounded-xl ${bgClass} ${rowBorder} transition-colors relative overflow-hidden shadow-sm ${!rowBorder ? 'border border-black/5' : ''}`}>
                                         
                                         {/* Avatar */}
                                         <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-amber-100 mr-4 border border-white/50">

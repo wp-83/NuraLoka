@@ -14,6 +14,7 @@ class Mission extends Model
         'title',
         'description',
         'points_reward',
+        'target',
         'badge_id',
         'slug',
     ];
