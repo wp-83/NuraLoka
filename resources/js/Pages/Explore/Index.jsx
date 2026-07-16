@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import MainLayout from '@js/Layouts/MainLayout';
 import ExploreMap from '@components/Features/ExploreMap';
 import LocationSearchInput from '@components/Features/LocationSearchInput';
@@ -81,17 +81,21 @@ function ExplorePanel({
                                 {searchSuggestions.map((place) => (
                                     <div
                                         key={place.id}
-                                        onClick={() => {
-                                            setSearchQuery(place.name);
-                                            onSuggestionClick(place);
-                                        }}
+                                        onClick={() => onSuggestionClick(place)}
                                         className="flex items-center gap-3 px-4 py-2 hover:bg-accent-10 cursor-pointer transition-colors"
                                     >
                                         <FiMapPin className="text-gray-50 flex-shrink-0" size={14} />
-                                        <div className="min-w-0">
+                                        <div className="min-w-0 flex-grow">
                                             <p className="font-body text-small font-bold text-primary truncate">{place.name}</p>
                                             <p className="font-body text-micro text-gray-50 truncate">{place.address}</p>
                                         </div>
+                                        <span
+                                            className={`flex-shrink-0 rounded-full px-2 py-0.5 text-micro font-semibold ${
+                                                place.source === 'osm' ? 'bg-info-light text-info-dark' : 'bg-accent-10 text-accent'
+                                            }`}
+                                        >
+                                            {place.source === 'osm' ? 'OSM' : 'NuraLoka'}
+                                        </span>
                                     </div>
                                 ))}
                             </div>
@@ -266,6 +270,40 @@ function MapTooltip({ isVisible }) {
     );
 }
 
+// ── Loading Overlay (flashscreen saat mencari lokasi / menyusun rute) ──
+function SearchLoadingOverlay({ show, isRoute = false }) {
+    if (!show) return null;
+
+    const message = isRoute
+        ? 'sedang menyusun rute perjalanan terbaik untukmu!'
+        : 'sedang mencarikan lokasi yang akurat dan sesuai untukmu!';
+
+    return (
+        <div className="fixed inset-0 z-[3000] flex flex-col items-center justify-center bg-gray-10/95 backdrop-blur-sm">
+            <img
+                src="/images/gif/run.gif"
+                alt="Memuat"
+                className="w-32 h-32 sm:w-40 sm:h-40 object-contain"
+                onError={(e) => { e.target.style.display = 'none'; }}
+            />
+            <p className="mt-4 font-body text-body text-primary-100 text-center px-6 max-w-md">
+                <span className="font-heading font-bold">
+                    <span style={{ color: '#E1740A' }}>Nura</span>
+                    <span className="text-secondary-100">Loka</span>
+                </span>{' '}
+                {message}
+            </p>
+            <div className="mt-6 h-1.5 w-72 max-w-[80vw] overflow-hidden rounded-full" style={{ backgroundColor: '#E8EEFB' }}>
+                <div
+                    className="h-full rounded-full"
+                    style={{ width: '35%', backgroundColor: '#1D4ED8', animation: 'nl-loading-bar 1.2s ease-in-out infinite' }}
+                />
+            </div>
+            <style>{`@keyframes nl-loading-bar { 0% { transform: translateX(-120%); } 100% { transform: translateX(320%); } }`}</style>
+        </div>
+    );
+}
+
 // ─────────────────────────────────────────────
 // MAIN PAGE
 // ─────────────────────────────────────────────
@@ -275,6 +313,9 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilters, setActiveFilters] = useState([]);
     const [selectedPlace, setSelectedPlace] = useState(null);
+    const [searchSuggestions, setSearchSuggestions] = useState([]);
+    const [searchLoading, setSearchLoading] = useState(false); // overlay fullscreen — pencarian satu titik
+    const [routeLoading, setRouteLoading] = useState(false);   // overlay fullscreen — rute dua titik
     const [origin, setOrigin] = useState(null);
     const [destination, setDestination] = useState(null);
     const [routeData, setRouteData] = useState(null);
@@ -282,11 +323,63 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
     const [mapPoints, setMapPoints] = useState([]);
     const [mapLoading, setMapLoading] = useState(false);
 
+    // ── Trending "Ramai Dikunjungi" — dibatasi radius sekitar lokasi user ──
+    // null = belum terselesaikan (masih menunggu izin lokasi / fetch).
+    const [trending, setTrending] = useState(null);
+    const [trendingLoading, setTrendingLoading] = useState(true);
+
+    // Saat halaman dimuat: minta lokasi user, lalu ambil rekomendasi di sekitarnya.
+    // Bila izin lokasi ditolak / tidak tersedia → pakai daftar global (prop server).
+    useEffect(() => {
+        let cancelled = false;
+
+        const useFallback = () => {
+            if (cancelled) return;
+            setTrending(trendingPlaces);
+            setTrendingLoading(false);
+        };
+
+        if (typeof navigator === 'undefined' || !navigator.geolocation) {
+            useFallback();
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                try {
+                    const { latitude, longitude } = pos.coords;
+                    const params = new URLSearchParams({ lat: latitude, lng: longitude });
+                    const res = await fetch(`/jelajah/trending?${params.toString()}`, {
+                        headers: { Accept: 'application/json' },
+                    });
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    const data = await res.json();
+                    if (cancelled) return;
+                    setTrending(data.trendingPlaces || []);
+                    setTrendingLoading(false);
+                } catch (err) {
+                    console.error('[Trending] Gagal memuat rekomendasi sekitar:', err.message);
+                    useFallback();
+                }
+            },
+            () => useFallback(), // ditolak / gagal / timeout → fallback global
+            { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+        );
+
+        return () => { cancelled = true; };
+    }, [trendingPlaces]);
+
     // ── Refs ──
     const currentBoundsRef = useRef(null);
     const mapFetchTimeoutRef = useRef(null);
     const mapAbortRef = useRef(null);       // membatalkan request yang masih berjalan
     const mapCacheRef = useRef(new Map());  // cache per (zoom+filter+area) → pan/zoom balik instan
+    const searchLoadingRef = useRef(false); // cermin state searchLoading untuk dibaca di event peta
+    const skipSearchRef = useRef(false);    // lewati refetch dropdown setelah memilih saran
+    const searchSafetyRef = useRef(null);   // timeout pengaman agar loading tidak macet
+
+    // Sinkronkan ref dengan state agar bisa dibaca dari handler event peta.
+    useEffect(() => { searchLoadingRef.current = searchLoading; }, [searchLoading]);
 
     // ── Ambil titik/klaster dari server sendiri (DB admin + OSM), tanpa rate-limit ──
     const fetchMapPoints = useCallback(async (bounds) => {
@@ -355,6 +448,8 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
     // ── OSRM Route Fetch ──
     const fetchRoute = useCallback(async () => {
         if (!origin || !destination) return;
+        setSelectedPlace(null); // hindari popup titik tunggal muncul saat menampilkan rute
+        setRouteLoading(true); // tampilkan overlay flashscreen
         try {
             const url = `https://router.project-osrm.org/route/v1/driving/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?overview=full&geometries=geojson`;
             const response = await fetch(url);
@@ -370,6 +465,8 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
             }
         } catch (error) {
             console.error('Gagal mengambil rute dari OSRM:', error);
+        } finally {
+            setRouteLoading(false);
         }
     }, [origin, destination]);
 
@@ -381,18 +478,15 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
 
     // ── Visit / Click handler ──
     const handleVisit = (place) => {
-        if (place && place.slug) {
-            if (place.id && !String(place.id).startsWith('osm-')) {
-                router.post(route('explore.track'), { place_id: place.id }, {
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        router.visit(route('explore.show', place.slug));
-                    }
-                });
-            } else {
-                router.visit(route('explore.show', place.slug));
-            }
-        }
+        if (!place || !place.slug) return;
+        // Titik OSM tidak punya halaman detail internal.
+        if (place.source === 'osm') return;
+        // Saran pencarian membawa placeId numerik; place lain (trending/point) pakai id.
+        const placeId = place.placeId ?? place.id;
+        router.post(route('explore.track'), { place_id: placeId }, {
+            preserveScroll: true,
+            onSuccess: () => router.visit(route('explore.show', place.slug)),
+        });
     };
 
     const handleToggleSave = (place) => {
@@ -406,6 +500,8 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
     // ── Tab switch: bersihkan rute saat kembali ke "Satu Titik" ──
     const handleTabChange = useCallback((tab) => {
         setActiveTab(tab);
+        setSelectedPlace(null);   // bersihkan titik terpilih agar popup lama tak muncul di tab lain
+        setSearchLoading(false);  // pastikan flashscreen tidak nyangkut saat pindah tab
         if (tab === 'Satu Titik') {
             setRouteData(null);
             setOrigin(null);
@@ -413,12 +509,54 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         }
     }, []);
 
-    const searchSuggestions = useMemo(() => {
-        if (searchQuery.trim() === '') return [];
-        return places
-            .filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
-            .slice(0, 5);
-    }, [places, searchQuery]);
+    // ── Pencarian saran (admin + OSM) via backend, dengan debounce 300ms ──
+    useEffect(() => {
+        // Setelah user memilih saran, query diisi nama tempat → jangan refetch dropdown.
+        if (skipSearchRef.current) {
+            skipSearchRef.current = false;
+            setSearchSuggestions([]);
+            return;
+        }
+        const q = searchQuery.trim();
+        if (q === '') { setSearchSuggestions([]); return; }
+
+        const controller = new AbortController();
+        const t = setTimeout(async () => {
+            try {
+                const res = await fetch(`/jelajah/cari?q=${encodeURIComponent(q)}`, {
+                    signal: controller.signal,
+                    headers: { Accept: 'application/json' },
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                setSearchSuggestions(data.suggestions || []);
+            } catch (err) {
+                if (!controller.signal.aborted) console.error('[Search] gagal memuat saran:', err.message);
+            }
+        }, 300);
+
+        return () => { clearTimeout(t); controller.abort(); };
+    }, [searchQuery]);
+
+    // Klik saran → zoom ke titik + buka overlay di peta (bukan langsung ke detail).
+    const handleSuggestionSelect = useCallback((place) => {
+        skipSearchRef.current = true;
+        setSearchQuery(place.name);
+        setSearchSuggestions([]);
+        setSelectedPlace(place);   // memicu flyTo + popup otomatis di ExploreMap
+        setSearchLoading(true);    // tampilkan flashscreen
+        // Pengaman: sembunyikan paksa bila peta tak mengirim sinyal selesai.
+        if (searchSafetyRef.current) clearTimeout(searchSafetyRef.current);
+        searchSafetyRef.current = setTimeout(() => setSearchLoading(false), 4000);
+    }, []);
+
+    // Peta selesai bergerak (flyTo) → sembunyikan flashscreen pencarian satu titik.
+    const handleMapSettle = useCallback(() => {
+        if (searchLoadingRef.current) {
+            // beri jeda kecil agar titik & popup sempat tampil
+            setTimeout(() => setSearchLoading(false), 300);
+        }
+    }, []);
 
     const hasInteracted =
         (activeTab === 'Satu Titik' && (searchQuery.trim() !== '' || activeFilters.length > 0 || selectedPlace !== null)) ||
@@ -427,6 +565,9 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
     // ── Render ──
     return (
         <div className="min-h-screen flex flex-col mt-4">
+            {/* ── Flashscreen loading: pencarian satu titik / rute dua titik ── */}
+            <SearchLoadingOverlay show={searchLoading || routeLoading} isRoute={routeLoading} />
+
             {/* ── Map Section ──
                 Mobile/tablet: panels stack vertically in normal flow (control → map → secondary panel).
                 Desktop (lg+): panels are absolutely positioned overlays on top of a full-bleed map. */}
@@ -441,7 +582,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                                 activeFilters={activeFilters} setActiveFilters={setActiveFilters}
                                 categories={categories}
                                 searchSuggestions={searchSuggestions}
-                                onSuggestionClick={handleVisit}
+                                onSuggestionClick={handleSuggestionSelect}
                                 setOrigin={setOrigin}
                                 setDestination={setDestination}
                                 osmLoading={mapLoading}
@@ -462,6 +603,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                         origin={origin}
                         destination={destination}
                         onBoundsChange={handleBoundsChange}
+                        onSettle={handleMapSettle}
                     />
                 </div>
 
@@ -497,8 +639,10 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                 </div>
             </section>
 
-            {/* ── Trending Section (hanya tampil bila ada place "ramai") ── */}
-            {trendingPlaces.length > 0 && (
+            {/* ── Trending Section — hanya tempat "ramai" di sekitar lokasi user ──
+                Tampil saat masih memuat (spinner) atau saat ada hasil. Bila selesai
+                memuat tapi kosong, section disembunyikan. */}
+            {(trendingLoading || (trending && trending.length > 0)) && (
             <section id="trending-section" className="w-full py-10">
                 <div className="overflow-hidden">
                     <div className="container mx-auto px-4 md:px-6 lg:px-8 my-5">
@@ -514,29 +658,37 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                                 </div>
                                 <div>
                                     <h2 className="font-heading text-subtitle sm:text-title font-bold text-primary leading-tight">
-                                        Ramai Dikunjungi oleh Nuravers
+                                        Ramai Dikunjungi di Sekitarmu
                                     </h2>
                                     <p className="font-body text-body text-gray-50 mt-1 max-w-[28rem]">
-                                        Sedang tren di kalangan Nuravers! Temukan tempat-tempat yang ramai dikunjungi
-                                        dan layak masuk daftar perjalananmu
+                                        Sedang tren di kalangan Nuravers di sekitar daerahmu! Temukan tempat-tempat
+                                        ramai dikunjungi yang layak masuk daftar perjalananmu
                                     </p>
                                 </div>
                             </div>
-                            <div
-                                className="col-span-12 sm:col-start-2 sm:col-end-12 flex flex-row gap-4 sm:gap-5 hide-scrollbar"
-                                style={{ overflowX: 'auto', overflowY: 'hidden', paddingBottom: '0.75rem', scrollSnapType: 'x mandatory' }}
-                            >
-                                {trendingPlaces.map((place) => (
-                                    <div key={place.id} className="flex-shrink-0 w-[80vw] sm:w-[22rem] lg:w-96" style={{ scrollSnapAlign: 'start' }}>
-                                        <PlaceCard
-                                            place={place}
-                                            onVisit={handleVisit}
-                                            isSaved={savedPlaceIds.includes(place.id)}
-                                            onToggleSave={handleToggleSave}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
+                            {trendingLoading ? (
+                                <div className="col-span-12 sm:col-start-2 sm:col-end-12 flex items-center justify-center py-10">
+                                    <span className="font-body text-small text-accent animate-pulse font-medium">
+                                        Mencari tempat ramai di sekitarmu...
+                                    </span>
+                                </div>
+                            ) : (
+                                <div
+                                    className="col-span-12 sm:col-start-2 sm:col-end-12 flex flex-row gap-4 sm:gap-5 hide-scrollbar"
+                                    style={{ overflowX: 'auto', overflowY: 'hidden', paddingBottom: '0.75rem', scrollSnapType: 'x mandatory' }}
+                                >
+                                    {trending.map((place) => (
+                                        <div key={place.id} className="flex-shrink-0 w-[80vw] sm:w-[22rem] lg:w-96" style={{ scrollSnapAlign: 'start' }}>
+                                            <PlaceCard
+                                                place={place}
+                                                onVisit={handleVisit}
+                                                isSaved={savedPlaceIds.includes(place.id)}
+                                                onToggleSave={handleToggleSave}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
