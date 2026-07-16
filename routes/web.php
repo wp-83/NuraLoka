@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminMissionController;
 use App\Http\Controllers\AdminNewsController;
+use App\Http\Controllers\AdminOsmImportController;
 use App\Http\Controllers\AdminPlaceController;
 use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\Auth\ForgetPasswordController;
@@ -87,6 +88,8 @@ Route::middleware(['auth', 'unbanned'])->group(function () {
     Route::prefix('/jelajah')->name('explore.')->controller(ExploreController::class)->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/titik', 'points')->name('points');   // API peta — sebelum /{slug} agar tidak tertangkap
+        Route::get('/cari', 'search')->name('search');     // autocomplete pencarian (admin + OSM)
+        Route::get('/trending', 'trending')->name('trending'); // Ramai dikunjungi sekitar user (radius lokasi)
         Route::post('/lacak', 'trackVisit')->name('track');
         Route::post('/checkin', 'checkIn')->name('checkin'); // check-in kunjungan (verifikasi lokasi)
         Route::get('/{slug}', 'show')->name('show');
@@ -146,6 +149,13 @@ Route::middleware(['auth', 'unbanned'])->prefix('/admin')->name('admin.')->group
         Route::get('/{id}/edit', [AdminPlaceController::class, 'edit'])->name('edit');
         Route::post('/{id}', [AdminPlaceController::class, 'update'])->name('update');
         Route::delete('/{id}', [AdminPlaceController::class, 'destroy'])->name('destroy');
+    });
+
+    // OSM Import (impor data titik OSM dinamis dari panel admin)
+    Route::prefix('/impor-osm')->name('osm-import.')->controller(AdminOsmImportController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/status', 'status')->name('status');
+        Route::post('/', 'store')->name('store');
     });
 
     // Category Management
