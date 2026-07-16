@@ -213,7 +213,6 @@ export default function LandingPage() {
                         flex items-center
                         overflow-hidden
                         bg-cover bg-center
-                        pt-16
                         min-h-[110vh]
                     "
                     style={{
@@ -242,13 +241,11 @@ export default function LandingPage() {
                             {/* Mascot + Heading */}
                             <div className="flex items-center gap-4 md:gap-6">
                                 <img
-                                    src="/images/mascots/hero.png"
+                                    src="/images/mascots/map.png"
                                     alt="Maskot NuraLoka"
                                     className="
-                                        w-24 shrink-0
+                                        w-48 shrink-0
                                         object-contain
-                                        sm:w-28
-                                        md:w-36
                                     "
                                 />
 
@@ -294,7 +291,6 @@ export default function LandingPage() {
                                 className="
                                     mt-14
                                     max-w-2xl
-                                    md:ml-[calc(9rem+1.5rem)]
                                     md:mt-16
                                 "
                             >
