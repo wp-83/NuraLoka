@@ -40,20 +40,28 @@ export default function Badges({ generalBadges = [], specialBadges = [] }) {
                                             <td className="py-6 px-4 text-gray-600 w-1/4 align-top pt-8 text-xs leading-relaxed">{cat.description}</td>
                                             <td className="py-6 px-4 w-1/5 align-top pt-8">
                                                 <div className="flex flex-col items-center justify-center">
-                                                    <div className="relative w-16 h-16 flex items-center justify-center rounded-full border-4 border-gray-200">
-                                                        <div 
-                                                            className="absolute inset-0 rounded-full border-4 border-primary"
-                                                            style={{
-                                                                clipPath: `polygon(0 0, 100% 0, 100% 100%, 0% 100%)`, // Just a visual placeholder, real circular progress would need SVG
-                                                                opacity: cat.progress > 0 ? 1 : 0
-                                                            }}
-                                                        ></div>
-                                                        <div className="text-center">
-                                                            <div className="font-bold text-primary">{cat.progress}%</div>
-                                                            <div className="text-[9px] text-gray-500">{cat.progressCount}/{cat.progressTarget}</div>
+                                                    <div className="relative w-16 h-16 flex items-center justify-center">
+                                                        {/* Circular Progress SVG */}
+                                                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                                            {/* Background Circle */}
+                                                            <circle cx="18" cy="18" r="16" fill="none" className="stroke-gray-200" strokeWidth="3" />
+                                                            {/* Progress Circle */}
+                                                            <circle 
+                                                                cx="18" cy="18" r="16" fill="none" 
+                                                                className="stroke-primary" strokeWidth="3" 
+                                                                strokeDasharray="100 100" 
+                                                                strokeDashoffset={100 - (cat.progress || 0)} 
+                                                                strokeLinecap="round"
+                                                            />
+                                                        </svg>
+                                                        <div className="absolute flex flex-col items-center justify-center text-center">
+                                                            <div className="font-bold text-primary text-xs">{cat.progress}%</div>
+                                                            <div className="text-[8px] font-bold text-gray-500">{cat.progressCount}/{cat.progressTarget}</div>
                                                         </div>
                                                     </div>
-                                                    <div className="text-xs text-primary font-medium mt-2">menuju {cat.nextTier.toLowerCase()}</div>
+                                                    <div className="text-[10px] text-primary font-bold mt-2 text-center uppercase tracking-wider">
+                                                        menuju {cat.nextTier.toLowerCase()}
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td className="py-6 px-4 w-2/5">
