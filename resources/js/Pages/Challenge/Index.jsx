@@ -54,11 +54,14 @@ function UserAvatar({ path, name, className = "w-12 h-12" }) {
         ? name.split(' ').slice(0, 2).map(w => w[0]).join('')
         : '?';
 
+    // Detect if path is already a full URL (from public_profile_photo) or relative
+    const imgSrc = path && (path.startsWith('http') || path.startsWith('/')) ? path : (path ? `/storage/${path}` : null);
+
     return (
         <div className={`${className} rounded-full overflow-hidden bg-amber-100 flex-shrink-0 flex items-center justify-center border border-gray-200`}>
-            {path && !failed ? (
+            {imgSrc && !failed ? (
                 <img
-                    src={`/storage/${path}`}
+                    src={imgSrc}
                     alt={name}
                     className="w-full h-full object-cover"
                     onError={() => setFailed(true)}
@@ -100,12 +103,15 @@ function PodiumColumn({ entry }) {
     }[rank];
 
     return (
-        <div className={`flex flex-col items-center flex-1 relative ${config.containerClass}`}>
+        <Link
+            href={route('profile.show', { username: entry.username })}
+            className={`flex flex-col items-center flex-1 relative ${config.containerClass} cursor-pointer group`}
+        >
             <div className="absolute -top-8 sm:-top-10 left-1/2 -translate-x-1/2 z-10">
-                <UserAvatar path={entry.profile_path} name={entry.name} className={`${config.avatarClass} shadow-md`} />
+                <UserAvatar path={entry.profile_path} name={entry.name} className={`${config.avatarClass} shadow-md group-hover:ring-2 ring-secondary transition-all`} />
             </div>
 
-            <div className={`w-full ${config.bg} ${config.height} rounded-t-3xl pt-14 sm:pt-16 pb-4 px-2 flex flex-col items-center justify-start shadow-sm border border-black/5`}>
+            <div className={`w-full ${config.bg} ${config.height} rounded-t-3xl pt-14 sm:pt-16 pb-4 px-2 flex flex-col items-center justify-start shadow-sm border border-black/5 group-hover:shadow-md transition-shadow`}>
                 <div className={`font-black text-sm sm:text-base ${config.pointColor}`}>
                     {entry.points?.toLocaleString('id-ID')} Poin
                 </div>
@@ -116,7 +122,7 @@ function PodiumColumn({ entry }) {
                     {entry.name}
                 </div>
             </div>
-        </div>
+        </Link>
     );
 }
 
@@ -283,11 +289,15 @@ export default function ChallengeIndex({
                             </div>
 
                             {ongoingMissions && ongoingMissions.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4">
                                     {ongoingMissions.map((mission) => (
-                                        <div key={mission.id} className="bg-[#EEF5F0] rounded-xl p-4 border border-green-100 shadow-sm flex flex-col justify-between relative overflow-hidden">
+                                        <Link 
+                                            key={mission.id} 
+                                            href={route('challenge.badges')}
+                                            className="bg-[#EEF5F0] rounded-xl p-4 border border-green-100 shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md hover:bg-[#E2ECE5] transition-all cursor-pointer"
+                                        >
                                             <div className="flex items-start gap-3 mb-4 z-10 relative">
-                                                <div className="w-14 h-14 flex-shrink-0">
+                                                <div className="w-14 h-14 flex-shrink-0 group-hover:scale-105 transition-transform">
                                                     {mission.badge_icon ? (
                                                         <img
                                                             src={`/${mission.badge_icon}`}
@@ -297,7 +307,7 @@ export default function ChallengeIndex({
                                                     ) : null}
                                                 </div>
                                                 <div className="flex-1">
-                                                    <div className="font-bold text-base text-primary leading-tight">{mission.title}</div>
+                                                    <div className="font-bold text-base text-primary leading-tight group-hover:text-secondary transition-colors">{mission.title}</div>
                                                     <div className="text-xs text-secondary font-bold mt-0.5">
                                                         {mission.points} poin Nura
                                                     </div>
@@ -311,7 +321,7 @@ export default function ChallengeIndex({
                                                 </div>
                                                 <ProgressBar percent={mission.percent} color="bg-secondary" />
                                             </div>
-                                        </div>
+                                        </Link>
                                     ))}
                                 </div>
                             ) : (
@@ -347,9 +357,10 @@ export default function ChallengeIndex({
                                     {rest.length > 0 && (
                                         <div className="space-y-3">
                                             {rest.map((entry) => (
-                                                <div
+                                                <Link
                                                     key={entry.username ?? entry.rank}
-                                                    className="flex items-center gap-3 p-4 rounded-2xl bg-[#EEF5F0] border border-green-100 hover:bg-[#E2ECE5] transition-colors"
+                                                    href={route('profile.show', { username: entry.username })}
+                                                    className="flex items-center gap-3 p-4 rounded-2xl bg-[#EEF5F0] border border-green-100 hover:bg-[#E2ECE5] hover:shadow-md transition-all cursor-pointer"
                                                 >
                                                     <UserAvatar path={entry.profile_path} name={entry.name} className="w-12 h-12" />
                                                     <div className="flex-1 min-w-0">
@@ -360,7 +371,7 @@ export default function ChallengeIndex({
                                                     <div className="text-xl font-black text-primary pr-2">
                                                         #{entry.rank}
                                                     </div>
-                                                </div>
+                                                </Link>
                                             ))}
                                         </div>
                                     )}
