@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\OsmImportRun;
 use App\Services\OsmImportService;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;

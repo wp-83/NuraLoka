@@ -379,9 +379,9 @@ class ExploreController extends Controller
      * Memproyeksikan titik ke tiap ruas (segmen) lalu mengambil yang terdekat.
      *
      * @param  callable  $toXY  konversi (lat,lng) → [x,y] meter (proyeksi lokal)
-     * @param  array<int, array{0:float,1:float}>  $xy   XY tiap titik path
+     * @param  array<int, array{0:float,1:float}>  $xy  XY tiap titik path
      * @param  array<int, float>  $cum  panjang kumulatif path di tiap titik
-     * @return array{0:float, 1:float}  [jarak_meter, posisi_sepanjang_rute_meter]
+     * @return array{0:float, 1:float} [jarak_meter, posisi_sepanjang_rute_meter]
      */
     private function snapToPath(callable $toXY, array $xy, array $cum, float $pLat, float $pLng): array
     {
