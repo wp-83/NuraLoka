@@ -48,7 +48,7 @@ class AdminCategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:categories,name',
-            'icon_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:1024',
+            'icon_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
         ]);
 
         $iconPath = null;
@@ -103,7 +103,7 @@ class AdminCategoryController extends Controller
 
         if ($request->hasFile('icon_path')) {
             $request->validate([
-                'icon_path' => 'image|mimes:jpeg,png,jpg,gif,webp,svg|max:1024',
+                'icon_path' => 'image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
             ]);
         }
 

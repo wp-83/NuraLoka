@@ -3,6 +3,7 @@ import { Link, router } from '@inertiajs/react';
 
 import MainLayout from '@js/Layouts/MainLayout';
 import PlaceMiniMap from '@components/Features/PlaceMiniMap';
+import { useFlash } from '@js/Contexts/FlashContext';
 
 import {
     FiBookmark,
@@ -26,23 +27,21 @@ function getCookie(name) {
 
 export default function Show({
     place,
+    gallery = [],
     isSaved: initialSaved = false,
     totalSaves = 0,
 }) {
     const [isSaved, setIsSaved] = useState(initialSaved);
     const [checkingIn, setCheckingIn] = useState(false);
-    const [checkinStatus, setCheckinStatus] = useState(null); // { ok, message }
+    const showFlash = useFlash();
 
-    const gallery = [
-        { id: 1, height: 'h-[28rem]' },
-        { id: 2, height: 'h-64' },
-        { id: 3, height: 'h-80' },
-        { id: 4, height: 'h-[32rem]' },
-        { id: 5, height: 'h-96' },
-        { id: 6, height: 'h-64' },
-        { id: 7, height: 'h-80' },
-        { id: 8, height: 'h-64' },
-    ];
+    // Salurkan hasil check-in ke Flash terpusat milik layout (sama seperti flash admin).
+    const flashCheckin = (ok, message) =>
+        showFlash(ok ? 'success' : 'error', message);
+
+    // Tinggi kartu bergilir agar tata letak masonry tetap bervariasi.
+    const galleryHeights = ['h-[28rem]', 'h-64', 'h-80', 'h-[32rem]', 'h-96', 'h-64', 'h-80', 'h-64'];
+    const coverImage = gallery[0]?.url || '/images/placeholders/default.jpg';
 
     const handleToggleSave = () => {
         if (!place?.id) return;
@@ -65,11 +64,10 @@ export default function Show({
     const handleCheckIn = () => {
         if (!place?.id) return;
         if (!navigator.geolocation) {
-            setCheckinStatus({ ok: false, message: 'Perangkat tidak mendukung deteksi lokasi.' });
+            flashCheckin(false, 'Perangkat tidak mendukung deteksi lokasi.');
             return;
         }
         setCheckingIn(true);
-        setCheckinStatus(null);
         navigator.geolocation.getCurrentPosition(
             async (pos) => {
                 try {
@@ -88,16 +86,16 @@ export default function Show({
                         }),
                     });
                     const data = await res.json();
-                    setCheckinStatus({ ok: res.ok && data.ok, message: data.message || 'Check-in gagal.' });
+                    flashCheckin(res.ok && data.ok, data.message || 'Check-in gagal.');
                 } catch (e) {
-                    setCheckinStatus({ ok: false, message: 'Gagal terhubung ke server. Coba lagi.' });
+                    flashCheckin(false, 'Gagal terhubung ke server. Coba lagi.');
                 } finally {
                     setCheckingIn(false);
                 }
             },
             () => {
                 setCheckingIn(false);
-                setCheckinStatus({ ok: false, message: 'Izin lokasi ditolak atau lokasi tidak terdeteksi.' });
+                flashCheckin(false, 'Izin lokasi ditolak atau lokasi tidak terdeteksi.');
             },
             { enableHighAccuracy: true, timeout: 10000 }
         );
@@ -119,10 +117,7 @@ export default function Show({
                         bg-cover bg-center
                     "
                     style={{
-                        backgroundImage: `url(${
-                            place?.img ||
-                            '/images/placeholders/default.jpg'
-                        })`,
+                        backgroundImage: `url(${coverImage})`,
                     }}
                 />
 
@@ -244,15 +239,6 @@ export default function Show({
                         </button>
                     </div>
 
-                    {checkinStatus && (
-                        <p
-                            className={`mt-2 font-body text-small font-medium ${
-                                checkinStatus.ok ? 'text-success-dark' : 'text-error-dark'
-                            }`}
-                        >
-                            {checkinStatus.message}
-                        </p>
-                    )}
 
                     {/* Main Content */}
                     <div
@@ -371,7 +357,7 @@ export default function Show({
                                         "
                                     >
                                         {place?.address ||
-                                            'Alamat belum tersedia.'}
+                                            'Alamatnya masih jadi rahasia — temukan langsung pesonanya di lokasi ✨'}
                                     </span>
                                 </div>
 
@@ -496,74 +482,88 @@ export default function Show({
                 </div>
 
                 {/* Masonry Gallery */}
-                <div
-                    className="
-                        columns-1 gap-4
-                        space-y-4
+                {gallery.length > 0 ? (
+                    <div
+                        className="
+                            columns-1 gap-4
+                            space-y-4
 
-                        sm:columns-2
-                        lg:columns-3
-                    "
-                >
-                    {gallery.map((item, index) => (
-                        <div
-                            key={item.id}
-                            className="
-                                group relative
-                                break-inside-avoid
-                                cursor-pointer
-                                overflow-hidden
-                                rounded-2xl
-                                shadow-md
-                                transition-all duration-300
-
-                                hover:shadow-xl
-                            "
-                        >
+                            sm:columns-2
+                            lg:columns-3
+                        "
+                    >
+                        {gallery.map((item, index) => (
                             <div
-                                className={`
-                                    w-full
-                                    bg-gray-30
-                                    ${item.height}
-                                `}
+                                key={item.id}
+                                className="
+                                    group relative
+                                    break-inside-avoid
+                                    cursor-pointer
+                                    overflow-hidden
+                                    rounded-2xl
+                                    shadow-md
+                                    transition-all duration-300
+
+                                    hover:shadow-xl
+                                "
                             >
-                                <img
-                                    src={
-                                        place?.img ||
-                                        '/images/placeholders/default.jpg'
-                                    }
-                                    alt={`${place?.name} potret ${index + 1}`}
+                                <div
                                     className={`
-                                        h-full w-full
-                                        object-cover
-                                        transition-transform
-                                        duration-700
-
-                                        group-hover:scale-105
-
-                                        ${
-                                            index % 3 === 1
-                                                ? 'grayscale'
-                                                : ''
-                                        }
+                                        w-full
+                                        bg-gray-30
+                                        ${galleryHeights[index % galleryHeights.length]}
                                     `}
+                                >
+                                    <img
+                                        src={item.url}
+                                        alt={`${place?.name} potret ${index + 1}`}
+                                        loading="lazy"
+                                        onError={(e) => {
+                                            e.target.src = '/images/placeholders/default.jpg';
+                                        }}
+                                        className="
+                                            h-full w-full
+                                            object-cover
+                                            transition-transform
+                                            duration-700
+
+                                            group-hover:scale-105
+                                        "
+                                    />
+                                </div>
+
+                                <div
+                                    className="
+                                        pointer-events-none
+                                        absolute inset-0
+                                        bg-black/0
+                                        transition-colors
+                                        duration-300
+
+                                        group-hover:bg-black/10
+                                    "
                                 />
                             </div>
-
-                            <div
-                                className="
-                                    pointer-events-none
-                                    absolute inset-0
-                                    bg-black/0
-                                    transition-colors
-                                    duration-300
-
-                                    group-hover:bg-black/10
-                                "
-                            />
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div
+                        className="
+                            flex flex-col items-center justify-center gap-3
+                            rounded-2xl border border-dashed border-gray-30
+                            bg-gray-10 py-16 text-center
+                        "
+                    >
+                        <FiMapPin size={32} className="text-gray-50" />
+                        <p className="font-body text-body font-medium text-gray-70">
+                            Belum ada foto untuk tempat ini.
+                        </p>
+                        <p className="font-body text-small text-gray-50 max-w-md">
+                            Foto akan muncul dari album populer Nuravers yang menandai lokasi ini,
+                            atau saat admin mengunggah foto.
+                        </p>
+                    </div>
+                )}
             </section>
         </>
     );

@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import MainLayout from '@js/Layouts/MainLayout';
 import ExploreMap from '@components/Features/ExploreMap';
 import LocationSearchInput from '@components/Features/LocationSearchInput';
@@ -8,6 +8,7 @@ import { FiMapPin, FiSearch } from 'react-icons/fi';
 import { MdRestaurant, MdBeachAccess, MdDiamond, MdMuseum, MdWaterDrop, MdSportsHandball } from 'react-icons/md';
 import { FaMountain } from 'react-icons/fa6';
 
+// Ikon fallback per-nama kategori (dipakai bila kategori tidak punya icon_path di DB).
 const filterIconMap = {
     'Kuliner': <MdRestaurant size={15} />,
     'Wisata Alam': <FaMountain size={13} />,
@@ -20,6 +21,56 @@ const filterIconMap = {
     'Belanja': <MdDiamond size={15} />,
     'Religi': <MdMuseum size={15} />,
 };
+
+// Ikon kategori: pakai icon_path dari DB bila ada; jika null → ikon default per-nama,
+// terakhir jatuh ke ikon pin generik.
+function CategoryIcon({ category }) {
+    if (category?.icon_path) {
+        return (
+            <img
+                src={category.icon_path}
+                alt=""
+                className="w-4 h-4 object-contain"
+                onError={(e) => { e.target.style.display = 'none'; }}
+            />
+        );
+    }
+    return filterIconMap[category?.name] || <FiMapPin size={13} />;
+}
+
+// Format estimasi waktu tempuh dalam satuan jam (mis. "1 jam 30 menit").
+function formatDuration(minutes) {
+    if (minutes == null || Number.isNaN(minutes)) return '-';
+    const h = Math.floor(minutes / 60);
+    const m = Math.round(minutes % 60);
+    if (h === 0) return `${m} menit`;
+    if (m === 0) return `${h} jam`;
+    return `${h} jam ${m} menit`;
+}
+
+// Jarak haversine (km) antara dua koordinat.
+function haversineKm(lat1, lng1, lat2, lng2) {
+    const R = 6371;
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLng = ((lng2 - lng1) * Math.PI) / 180;
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Saring titik agar hanya menyisakan yang berada dalam radius (km) dari garis rute.
+// Koordinat rute di-sampling agar perhitungan tetap ringan pada rute panjang.
+function filterPointsNearRoute(points, routeCoords, radiusKm) {
+    if (!routeCoords || routeCoords.length === 0) return points;
+    const step = Math.max(1, Math.floor(routeCoords.length / 150));
+    const sampled = routeCoords.filter((_, i) => i % step === 0);
+    return points.filter((p) => {
+        const plat = parseFloat(p.latitude);
+        const plng = parseFloat(p.longitude);
+        return sampled.some(([rlat, rlng]) => haversineKm(plat, plng, rlat, rlng) <= radiusKm);
+    });
+}
 
 // ── ExplorePanel Sub-Component ──
 function ExplorePanel({
@@ -87,15 +138,13 @@ function ExplorePanel({
                                         <FiMapPin className="text-gray-50 flex-shrink-0" size={14} />
                                         <div className="min-w-0 flex-grow">
                                             <p className="font-body text-small font-bold text-primary truncate">{place.name}</p>
-                                            <p className="font-body text-micro text-gray-50 truncate">{place.address}</p>
+                                            <p className="font-body text-micro text-gray-50 truncate">{place.address || 'Lokasi menanti untuk dijelajahi ✨'}</p>
                                         </div>
-                                        <span
-                                            className={`flex-shrink-0 rounded-full px-2 py-0.5 text-micro font-semibold ${
-                                                place.source === 'osm' ? 'bg-info-light text-info-dark' : 'bg-accent-10 text-accent'
-                                            }`}
-                                        >
-                                            {place.source === 'osm' ? 'OSM' : 'NuraLoka'}
-                                        </span>
+                                        {place.categories?.[0]?.name && (
+                                            <span className="flex-shrink-0 rounded-full px-2 py-0.5 text-micro font-semibold bg-accent-10 text-accent">
+                                                {place.categories[0].name}
+                                            </span>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -115,7 +164,7 @@ function ExplorePanel({
                                         : 'bg-white text-primary border-gray-30 hover:border-accent hover:text-accent'
                                 }`}
                             >
-                                {filterIconMap[cat.name] || <FiMapPin size={13} />}{cat.name}
+                                <CategoryIcon category={cat} />{cat.name}
                             </div>
                         ))}
                     </div>
@@ -175,7 +224,7 @@ function RecentlyVisitedPanel({ recentlyVisited = [], onVisit }) {
                         </div>
                         <div className="min-w-0">
                             <p className="font-body text-micro font-bold text-primary truncate">{place.name}</p>
-                            <p className="font-body text-micro text-gray-50 truncate">{place.address}</p>
+                            <p className="font-body text-micro text-gray-50 truncate">{place.address || 'Lokasi menanti untuk dijelajahi ✨'}</p>
                         </div>
                     </div>
                 ))}
@@ -229,7 +278,7 @@ function RouteFilterPanel({ routeData, categories, activeFilters, toggleFilter, 
                         <span className="text-accent">🛣</span> ± {routeData.distance} km
                     </div>
                     <div className="flex items-center gap-2 font-body text-small font-bold text-primary">
-                        <span className="text-accent">⏱</span> ± {routeData.duration} menit
+                        <span className="text-accent">⏱</span> ± {formatDuration(routeData.duration)}
                     </div>
                 </div>
             )}
@@ -477,16 +526,12 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
     }, [origin, destination, fetchRoute]);
 
     // ── Visit / Click handler ──
+    // Navigasi LANGSUNG ke halaman detail (SPA). Pencatatan "baru dikunjungi"
+    // dilakukan server saat halaman detail dibuka — tidak lagi lewat POST
+    // redirect-back yang memicu reload halaman Jelajah.
     const handleVisit = (place) => {
         if (!place || !place.slug) return;
-        // Titik OSM tidak punya halaman detail internal.
-        if (place.source === 'osm') return;
-        // Saran pencarian membawa placeId numerik; place lain (trending/point) pakai id.
-        const placeId = place.placeId ?? place.id;
-        router.post(route('explore.track'), { place_id: placeId }, {
-            preserveScroll: true,
-            onSuccess: () => router.visit(route('explore.show', place.slug)),
-        });
+        router.visit(route('explore.show', place.slug));
     };
 
     const handleToggleSave = (place) => {
@@ -558,6 +603,15 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         }
     }, []);
 
+    // Saat mode rute aktif, hanya tampilkan titik yang berada dalam radius (km) dari
+    // garis rute — sesuai pilihan "± X KM Rute". Di luar mode rute, tampilkan semua.
+    const displayedPoints = useMemo(() => {
+        if (routeData && routeData.coordinates) {
+            return filterPointsNearRoute(mapPoints, routeData.coordinates, routeRadius);
+        }
+        return mapPoints;
+    }, [mapPoints, routeData, routeRadius]);
+
     const hasInteracted =
         (activeTab === 'Satu Titik' && (searchQuery.trim() !== '' || activeFilters.length > 0 || selectedPlace !== null)) ||
         (activeTab === 'Dua Titik' && (origin !== null || destination !== null));
@@ -596,7 +650,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                 <div className="order-2 lg:order-none relative w-full h-[380px] sm:h-[460px] rounded-2xl overflow-hidden shadow-md lg:rounded-none lg:shadow-none lg:absolute lg:inset-0 lg:h-auto z-0">
                     <ExploreMap
                         places={places}
-                        points={mapPoints}
+                        points={displayedPoints}
                         selectedPlace={selectedPlace}
                         onVisit={handleVisit}
                         routeData={routeData}
