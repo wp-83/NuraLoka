@@ -11,7 +11,7 @@ return [
     // ── Index ──
     'meta_title' => 'Nuravers 챌린지',
     'title' => 'Nuravers 챌린지',
-    'subtitle' => 'Tetandingan Nuravers',
+    // 지역어 부제는 별도의 'daerah' 시스템으로 이동했습니다.
     'total_points' => '총 Nura 포인트',
     'points_suffix' => '포인트',
     'level_current' => '현재 내 레벨',
@@ -41,7 +41,6 @@ return [
     // ── Badges ──
     'badges_meta_title' => 'Nuravers 배지',
     'badges_page_title' => 'Nuravers 배지',
-    'badges_subtitle' => 'Tandha Penggali Nuravers',
     'back_to_challenge' => '챌린지로 돌아가기',
     'general_badges' => '일반 배지',
     'special_badges' => '특별 배지',
@@ -55,14 +54,12 @@ return [
     // ── Levels ──
     'levels_meta_title' => '나의 레벨 여정',
     'levels_page_title' => '나의 레벨 여정',
-    'levels_subtitle' => 'Lelampahan Tingkat Panjenengan',
     'your_position' => '내 위치',
     'min_points' => '≥ :points Nura 포인트',
 
     // ── 전체 리더보드 ──
     'leaderboard_meta_title' => '리더보드',
     'leaderboard_page_title' => 'Nuravers 리더보드',
-    'leaderboard_subtitle' => 'Papan Undhakan Para Nuraver',
     'found_users' => '사용자 :count명 검색됨',
     'leaderboard_search_placeholder' => '리더보드에서 내 이름이나 다른 사람의 이름을 찾아보세요...',
     'you' => '(나)',

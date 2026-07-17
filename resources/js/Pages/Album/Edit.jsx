@@ -10,6 +10,7 @@ import {
     FiX,
     FiSearch,
     FiMapPin,
+    FiLock,
 } from 'react-icons/fi';
 
 // ============================================================
@@ -21,6 +22,10 @@ export default function AlbumEdit({
 }) {
     const [photos, setPhotos] = useState(initialPhotos);
     const fileInputRef = useRef(null);
+
+    // Album sistem (perjalanan 2 titik): dibuat otomatis — judul, lokasi, dan
+    // tanggal terkunci. User hanya boleh menambah/menghapus foto.
+    const isSystem = album?.is_system ?? false;
 
     const [locationSuggestions, setLocationSuggestions] = useState([]);
     const [showLocationDropdown, setShowLocationDropdown] = useState(false);
@@ -89,6 +94,8 @@ export default function AlbumEdit({
 
     const handleSubmit = (event) => {
         event.preventDefault();
+
+        if (isSystem) return; // info album sistem terkunci
 
         put(
             route(
@@ -326,6 +333,35 @@ export default function AlbumEdit({
                         Informasi Album
                     </h2>
 
+                    {/* Locked notice for system-generated (2-point journey) albums */}
+                    {isSystem && (
+                        <div
+                            className="
+                                mb-5 flex items-start gap-3
+                                rounded-xl
+                                border border-primary-30
+                                bg-primary-10/50
+                                px-4 py-3
+                            "
+                        >
+                            <FiLock
+                                size={16}
+                                className="mt-0.5 shrink-0 text-primary-100"
+                            />
+                            <p
+                                className="
+                                    font-body text-micro
+                                    text-gray-70
+                                "
+                            >
+                                Album ini dibuat otomatis oleh sistem dari
+                                perjalanan 2 titik. Judul, lokasi, dan tanggal
+                                terkunci dan tidak dapat diubah — kamu hanya dapat
+                                menambah atau menghapus foto.
+                            </p>
+                        </div>
+                    )}
+
                     {/* Title */}
                     <div className="mb-5">
                         <label
@@ -353,13 +389,13 @@ export default function AlbumEdit({
                                     event.target.value
                                 )
                             }
-                            required
+                            required={!isSystem}
+                            disabled={isSystem}
                             placeholder="Masukkan judul album..."
-                            className="
+                            className={`
                                 w-full
                                 rounded-lg
                                 border border-gray-30
-                                bg-white
                                 px-4 py-2.5
                                 font-body text-small
                                 text-gray-85
@@ -371,7 +407,13 @@ export default function AlbumEdit({
                                 focus:border-primary-85
                                 focus:ring-2
                                 focus:ring-primary-30
-                            "
+
+                                ${
+                                    isSystem
+                                        ? 'cursor-not-allowed bg-gray-10 text-gray-50'
+                                        : 'bg-white'
+                                }
+                            `}
                         />
 
                         {errors.title && (
@@ -425,15 +467,15 @@ export default function AlbumEdit({
                                         setData('location', event.target.value);
                                         setShowLocationDropdown(true);
                                     }}
-                                    onFocus={() => setShowLocationDropdown(true)}
+                                    onFocus={() => !isSystem && setShowLocationDropdown(true)}
                                     onBlur={() => setTimeout(() => setShowLocationDropdown(false), 200)}
-                                    required
+                                    required={!isSystem}
+                                    disabled={isSystem}
                                     placeholder="Cari lokasi..."
-                                    className="
+                                    className={`
                                         w-full
                                         rounded-full
                                         border-2 border-primary-30
-                                        bg-white
                                         pl-11 pr-4 py-2.5
                                         font-body text-small
                                         text-gray-85
@@ -444,11 +486,17 @@ export default function AlbumEdit({
 
                                         focus:border-primary-100
                                         focus:ring-0
-                                    "
+
+                                        ${
+                                            isSystem
+                                                ? 'cursor-not-allowed bg-gray-10 text-gray-50'
+                                                : 'bg-white'
+                                        }
+                                    `}
                                 />
 
                                 {/* Dropdown Suggestions */}
-                                {showLocationDropdown && locationSuggestions.length > 0 && (
+                                {!isSystem && showLocationDropdown && locationSuggestions.length > 0 && (
                                     <div className="
                                         absolute z-20 w-full mt-2
                                         bg-white rounded-2xl
@@ -530,12 +578,12 @@ export default function AlbumEdit({
                                         event.target.value
                                     )
                                 }
-                                required
-                                className="
+                                required={!isSystem}
+                                disabled={isSystem}
+                                className={`
                                     w-full
                                     rounded-lg
                                     border border-gray-30
-                                    bg-white
                                     px-4 py-2.5
                                     font-body text-small
                                     text-gray-85
@@ -545,7 +593,13 @@ export default function AlbumEdit({
                                     focus:border-primary-85
                                     focus:ring-2
                                     focus:ring-primary-30
-                                "
+
+                                    ${
+                                        isSystem
+                                            ? 'cursor-not-allowed bg-gray-10 text-gray-50'
+                                            : 'bg-white'
+                                    }
+                                `}
                             />
 
                             {errors.date && (
@@ -794,25 +848,27 @@ export default function AlbumEdit({
                 </div>
 
                 {/* ====================================================
-                    SUBMIT
+                    SUBMIT — hanya untuk album non-sistem (info dapat diubah)
                 ==================================================== */}
-                <div
-                    className="
-                        flex justify-end
-                        border-t border-gray-10
-                        pt-6
-                    "
-                >
-                    <Button
-                        type="submit"
-                        variant="primary"
-                        size="btn-md"
-                        loading={processing}
-                        disabled={processing}
+                {!isSystem && (
+                    <div
+                        className="
+                            flex justify-end
+                            border-t border-gray-10
+                            pt-6
+                        "
                     >
-                        Simpan Perubahan
-                    </Button>
-                </div>
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            size="btn-md"
+                            loading={processing}
+                            disabled={processing}
+                        >
+                            Simpan Perubahan
+                        </Button>
+                    </div>
+                )}
             </form>
         </section>
     );

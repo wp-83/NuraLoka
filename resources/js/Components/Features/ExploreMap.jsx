@@ -344,6 +344,53 @@ function SelectedPlaceMarker({ place, onVisit }) {
   );
 }
 
+// Ikon mobil untuk animasi perjalanan.
+const journeyCarIcon = L.divIcon({
+  className: 'nl-journey-car',
+  html: '<div style="font-size:24px;line-height:34px;text-align:center;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))">🚗</div>',
+  iconSize: [34, 34],
+  iconAnchor: [17, 17],
+});
+
+// Marker mobil: mode demo → animasi menyusuri garis rute (panggil onComplete saat habis);
+// mode real → mengikuti posisi GPS user.
+function JourneyCar({ routeData, running, demo, userPosition, onComplete }) {
+  const [pos, setPos] = React.useState(null);
+  const rafRef = React.useRef(null);
+  const onCompleteRef = React.useRef(onComplete);
+  React.useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
+
+  React.useEffect(() => {
+    if (!running || !demo) { setPos(null); return; }
+    const coords = routeData?.coordinates;
+    if (!coords || coords.length === 0) return;
+
+    const DURATION = 8000; // durasi animasi demo (ms)
+    let start = null;
+    let done = false;
+    const step = (ts) => {
+      if (start == null) start = ts;
+      const t = Math.min(1, (ts - start) / DURATION);
+      const idx = Math.min(coords.length - 1, Math.floor(t * (coords.length - 1)));
+      setPos(coords[idx]);
+      if (t < 1) {
+        rafRef.current = requestAnimationFrame(step);
+      } else if (!done) {
+        done = true;
+        onCompleteRef.current?.();
+      }
+    };
+    rafRef.current = requestAnimationFrame(step);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [running, demo, routeData]);
+
+  if (!running) return null;
+  const carPos = demo ? pos : (userPosition ? [userPosition.lat, userPosition.lng] : routeData?.coordinates?.[0]);
+  if (!carPos) return null;
+
+  return <Marker position={carPos} icon={journeyCarIcon} zIndexOffset={1000} />;
+}
+
 export default function ExploreMap({
   places = [],            // hanya dipakai untuk menghitung center awal peta
   points = [],            // titik individual dari server
@@ -354,6 +401,10 @@ export default function ExploreMap({
   destination,
   onBoundsChange,
   onSettle,
+  journeyRunning = false, // perjalanan 2 titik sedang berjalan
+  journeyDemo = true,     // true = animasi mobil; false = ikuti GPS user
+  userPosition = null,    // posisi GPS user (mode real)
+  onJourneyComplete,      // dipanggil saat animasi demo selesai
 }) {
   const defaultCenter = [-8.0, 113.0];
   const [center, setCenter] = React.useState(defaultCenter);
@@ -405,6 +456,15 @@ export default function ExploreMap({
             opacity={0.8}
           />
         )}
+
+        {/* Mobil perjalanan (animasi demo / ikuti GPS real) */}
+        <JourneyCar
+          routeData={routeData}
+          running={journeyRunning}
+          demo={journeyDemo}
+          userPosition={userPosition}
+          onComplete={onJourneyComplete}
+        />
 
         {/* Origin Marker */}
         {origin && (

@@ -7,6 +7,7 @@ use App\Models\Place;
 use App\Models\Trip;
 use App\Models\TripPhoto;
 use App\Models\User;
+use App\Services\GamificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -185,6 +186,9 @@ class AlbumController extends Controller
             }
         }
 
+        // Gamifikasi: catat aksi membuat album (aksi tanpa filter kategori).
+        app(GamificationService::class)->record($user, 'create_album');
+
         return redirect()->route('album.index')->with('success', 'Album berhasil dibuat!');
     }
 
@@ -223,6 +227,15 @@ class AlbumController extends Controller
 
         if ($album->trip->user_id !== $user->id) {
             abort(403);
+        }
+
+        // Album sistem (perjalanan 2 titik): judul/lokasi/tanggal dibuat otomatis
+        // dan tidak boleh diubah. Blokir upaya edit info dari sisi server.
+        if ($album->trip->is_system) {
+            session()->flash('flash.type', 'error');
+            session()->flash('flash.message', 'Album perjalanan dibuat otomatis oleh sistem — hanya foto yang dapat diubah.');
+
+            return redirect()->route('album.show', $album->slug);
         }
 
         $request->validate([
@@ -424,6 +437,7 @@ class AlbumController extends Controller
             'location' => $trip->destination_name,
             'date' => $trip->trip_date,
             'is_public' => (bool) $trip->is_public,
+            'is_system' => (bool) $trip->is_system,
             'view_count' => $album->view_count,
             'caption' => $album->caption,
             'thumbnail' => $firstPhoto?->photo_path,

@@ -8,6 +8,12 @@ import { FiMapPin, FiSearch } from 'react-icons/fi';
 import { MdRestaurant, MdBeachAccess, MdDiamond, MdMuseum, MdWaterDrop, MdSportsHandball } from 'react-icons/md';
 import { FaMountain } from 'react-icons/fa6';
 
+// Ambil nilai cookie (untuk header CSRF pada fetch non-Inertia).
+function getCookie(name) {
+    const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return m ? decodeURIComponent(m.pop()) : '';
+}
+
 // Ikon fallback per-nama kategori (dipakai bila kategori tidak punya icon_path di DB).
 const filterIconMap = {
     'Kuliner': <MdRestaurant size={15} />,
@@ -72,6 +78,89 @@ function filterPointsNearRoute(points, routeCoords, radiusKm) {
     });
 }
 
+// ── JourneyPanel: konten tab "Dua Titik" (state machine input → fixed → running) ──
+function JourneyPanel({
+    state, origin, destination, routeData,
+    setOrigin, setDestination,
+    onStart, onCancel, onFinish, demoMode, finishReady, msg, saving,
+}) {
+    // State 1 — input: dua pencarian lokasi.
+    if (state === 'input') {
+        return (
+            <div className="flex flex-col mt-2">
+                <span className="block font-body text-micro font-semibold text-gray-70 mb-1">Tempat Keberangkatan</span>
+                <LocationSearchInput placeholder="Cari lokasi awal..." onSelectLocation={(loc) => setOrigin(loc)} />
+
+                <span className="block font-body text-micro font-semibold text-gray-70 mb-1">Tempat Tujuan</span>
+                <LocationSearchInput placeholder="Cari lokasi tujuan..." onSelectLocation={(loc) => setDestination(loc)} />
+            </div>
+        );
+    }
+
+    // State 2/3 — 2 titik terkunci (fixed / running).
+    return (
+        <div className="flex flex-col mt-2 gap-3">
+            <div className="rounded-xl border border-gray-30 overflow-hidden">
+                <div className="flex items-center gap-2 px-3 py-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-secondary shrink-0" />
+                    <div className="min-w-0">
+                        <p className="text-micro text-gray-50">Keberangkatan</p>
+                        <p className="text-small font-semibold text-primary truncate">{origin?.name}</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-2 border-t border-gray-20">
+                    <span className="w-2.5 h-2.5 rounded-full bg-accent shrink-0" />
+                    <div className="min-w-0">
+                        <p className="text-micro text-gray-50">Tujuan</p>
+                        <p className="text-small font-semibold text-primary truncate">{destination?.name}</p>
+                    </div>
+                </div>
+            </div>
+
+            {routeData && (
+                <div className="flex items-center gap-4 text-micro font-semibold text-gray-70">
+                    <span><span className="text-accent">🛣</span> ± {routeData.distance} km</span>
+                    <span><span className="text-accent">⏱</span> ± {formatDuration(routeData.duration)}</span>
+                </div>
+            )}
+
+            {state === 'fixed' && (
+                <>
+                    <button onClick={onStart}
+                        className="w-full rounded-xl bg-accent text-white font-body text-btn-sm font-semibold py-2.5 shadow-sm transition-all hover:bg-accent-85 active:scale-[0.98]">
+                        Mulai Perjalanan
+                    </button>
+                    <button onClick={onCancel} className="text-micro text-gray-50 hover:text-primary self-center">
+                        Ganti titik
+                    </button>
+                </>
+            )}
+
+            {state === 'running' && (
+                <div className="flex flex-col gap-2">
+                    {demoMode ? (
+                        <div className="flex items-center justify-center gap-2 rounded-xl bg-accent-10 py-2.5 text-small font-semibold text-accent">
+                            <span className="animate-pulse">🚗 Perjalanan sedang berlangsung…</span>
+                        </div>
+                    ) : (
+                        <button onClick={onFinish} disabled={!finishReady || saving}
+                            className={`w-full rounded-xl font-body text-btn-sm font-semibold py-2.5 transition-all ${
+                                finishReady && !saving ? 'bg-secondary text-white hover:bg-secondary-85 active:scale-[0.98]' : 'bg-gray-30 text-gray-50 cursor-not-allowed'
+                            }`}>
+                            {saving ? 'Menyimpan…' : (finishReady ? 'Selesaikan Perjalanan' : 'Mendekatlah ke tujuan…')}
+                        </button>
+                    )}
+                    {msg && <p className="text-micro text-center text-gray-70">{msg}</p>}
+                    <button onClick={onCancel}
+                        className="w-full rounded-xl border border-gray-30 text-gray-70 font-body text-btn-sm font-semibold py-2 hover:bg-gray-10">
+                        Batal
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+}
+
 // ── ExplorePanel Sub-Component ──
 function ExplorePanel({
     activeTab, setActiveTab,
@@ -81,7 +170,8 @@ function ExplorePanel({
     searchSuggestions = [],
     onSuggestionClick,
     setOrigin, setDestination,
-    osmLoading, osmCount
+    osmLoading, osmCount,
+    journey,
 }) {
     const toggleFilter = (label) => {
         setActiveFilters((prev) => prev.includes(label) ? prev.filter((f) => f !== label) : [...prev, label]);
@@ -177,21 +267,23 @@ function ExplorePanel({
                 </>
             )}
 
-            {/* ── Konten Tab Dua Titik ── */}
+            {/* ── Konten Tab Dua Titik: alur perjalanan ── */}
             {activeTab === 'Dua Titik' && (
-                <div className="flex flex-col mt-2">
-                    <span className="block font-body text-micro font-semibold text-gray-70 mb-1">Tempat Keberangkatan</span>
-                    <LocationSearchInput
-                        placeholder="Cari lokasi awal..."
-                        onSelectLocation={(loc) => setOrigin(loc)}
-                    />
-
-                    <span className="block font-body text-micro font-semibold text-gray-70 mb-1">Tempat Tujuan</span>
-                    <LocationSearchInput
-                        placeholder="Cari lokasi tujuan..."
-                        onSelectLocation={(loc) => setDestination(loc)}
-                    />
-                </div>
+                <JourneyPanel
+                    state={journey.state}
+                    origin={journey.origin}
+                    destination={journey.destination}
+                    routeData={journey.routeData}
+                    setOrigin={setOrigin}
+                    setDestination={setDestination}
+                    onStart={journey.onStart}
+                    onCancel={journey.onCancel}
+                    onFinish={journey.onFinish}
+                    demoMode={journey.demoMode}
+                    finishReady={journey.finishReady}
+                    msg={journey.msg}
+                    saving={journey.saving}
+                />
             )}
         </div>
     );
@@ -356,7 +448,7 @@ function SearchLoadingOverlay({ show, isRoute = false }) {
 // ─────────────────────────────────────────────
 // MAIN PAGE
 // ─────────────────────────────────────────────
-export default function Index({ places = [], categories = [], trendingPlaces = [], recentlyVisited = [], auth, savedPlaceIds = [] }) {
+export default function Index({ places = [], categories = [], trendingPlaces = [], recentlyVisited = [], auth, savedPlaceIds = [], journeyDemoMode = true }) {
     // ── State ──
     const [activeTab, setActiveTab] = useState('Satu Titik');
     const [searchQuery, setSearchQuery] = useState('');
@@ -371,6 +463,15 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
     const [routeRadius, setRouteRadius] = useState(5);
     const [mapPoints, setMapPoints] = useState([]);
     const [mapLoading, setMapLoading] = useState(false);
+
+    // ── Perjalanan 2 titik (state machine): 'input' → 'fixed' → 'running' ──
+    const [journeyState, setJourneyState] = useState('input');
+    const [journeyMsg, setJourneyMsg] = useState(null);      // pesan status/error saat berjalan
+    const [journeySaving, setJourneySaving] = useState(false);
+    const [completedAlbum, setCompletedAlbum] = useState(null); // slug album → tampilkan modal selesai
+    const [userPos, setUserPos] = useState(null);            // posisi GPS user (mode real)
+    const [finishReady, setFinishReady] = useState(false);   // mode real: sudah dekat tujuan?
+    const geoWatchRef = useRef(null);
 
     // ── Trending "Ramai Dikunjungi" — dibatasi radius sekitar lokasi user ──
     // null = belum terselesaikan (masih menunggu izin lokasi / fetch).
@@ -494,36 +595,142 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         };
     }, []);
 
-    // ── OSRM Route Fetch ──
-    const fetchRoute = useCallback(async () => {
+    // ── Rute WAJIB lewat titik admin (internal) di sepanjang koridor asal→tujuan ──
+    const fetchJourneyRoute = useCallback(async () => {
         if (!origin || !destination) return;
-        setSelectedPlace(null); // hindari popup titik tunggal muncul saat menampilkan rute
-        setRouteLoading(true); // tampilkan overlay flashscreen
+        setSelectedPlace(null);
+        setRouteLoading(true);
         try {
-            const url = `https://router.project-osrm.org/route/v1/driving/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?overview=full&geometries=geojson`;
+            // 1. Ambil waypoint wajib (place internal se-rute) dari server.
+            const wpParams = new URLSearchParams({
+                origin_lat: origin.lat, origin_lng: origin.lng,
+                dest_lat: destination.lat, dest_lng: destination.lng,
+            });
+            let waypoints = [];
+            try {
+                const wpRes = await fetch(`/jelajah/rute-titik?${wpParams.toString()}`, { headers: { Accept: 'application/json' } });
+                if (wpRes.ok) waypoints = (await wpRes.json()).waypoints || [];
+            } catch { /* kalau gagal, rute langsung tanpa waypoint */ }
+
+            // 2. Bangun rute OSRM: asal → [titik wajib] → tujuan.
+            const coordsSeq = [
+                [origin.lng, origin.lat],
+                ...waypoints.map((w) => [w.longitude, w.latitude]),
+                [destination.lng, destination.lat],
+            ].map((c) => c.join(',')).join(';');
+
+            const url = `https://router.project-osrm.org/route/v1/driving/${coordsSeq}?overview=full&geometries=geojson`;
             const response = await fetch(url);
             const data = await response.json();
             if (data.code === 'Ok' && data.routes.length > 0) {
                 const route = data.routes[0];
-                const latLngs = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
-                const distanceKm = (route.distance / 1000).toFixed(1);
-                const durationMin = Math.round(route.duration / 60);
-                setRouteData({ coordinates: latLngs, distance: distanceKm, duration: durationMin });
+                const latLngs = route.geometry.coordinates.map((coord) => [coord[1], coord[0]]);
+                setRouteData({
+                    coordinates: latLngs,
+                    distance: (route.distance / 1000).toFixed(1),
+                    duration: Math.round(route.duration / 60),
+                    waypoints,
+                });
+                setJourneyState('fixed'); // 2 titik terkunci → siap "Mulai Perjalanan"
             } else {
                 console.warn('Rute tidak ditemukan.');
             }
         } catch (error) {
-            console.error('Gagal mengambil rute dari OSRM:', error);
+            console.error('Gagal mengambil rute:', error);
         } finally {
             setRouteLoading(false);
         }
     }, [origin, destination]);
 
+    // Begitu kedua titik terisi (saat input) → susun rute & kunci panel.
     useEffect(() => {
-        if (origin && destination) {
-            fetchRoute();
+        if (origin && destination && journeyState === 'input') {
+            fetchJourneyRoute();
         }
-    }, [origin, destination, fetchRoute]);
+    }, [origin, destination, journeyState, fetchJourneyRoute]);
+
+    // Bersihkan seluruh state perjalanan (dipakai Batal & pindah tab).
+    const resetJourney = useCallback(() => {
+        if (geoWatchRef.current != null && navigator.geolocation) {
+            navigator.geolocation.clearWatch(geoWatchRef.current);
+            geoWatchRef.current = null;
+        }
+        setJourneyState('input');
+        setJourneyMsg(null);
+        setJourneySaving(false);
+        setUserPos(null);
+        setFinishReady(false);
+        setRouteData(null);
+        setOrigin(null);
+        setDestination(null);
+    }, []);
+
+    // Simpan trip + album (dipanggil saat perjalanan selesai).
+    const completeJourney = useCallback(async (userLatLng = null) => {
+        if (!origin || !destination || journeySaving) return;
+        setJourneySaving(true);
+        setJourneyMsg('Menyimpan perjalanan…');
+        try {
+            const res = await fetch('/jelajah/perjalanan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-XSRF-TOKEN': getCookie('XSRF-TOKEN'),
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    origin_name: origin.name, origin_lat: origin.lat, origin_lng: origin.lng,
+                    destination_name: destination.name, destination_lat: destination.lat, destination_lng: destination.lng,
+                    user_lat: userLatLng?.lat ?? null, user_lng: userLatLng?.lng ?? null,
+                }),
+            });
+            const data = await res.json();
+            if (res.ok && data.ok) {
+                setCompletedAlbum(data.album_slug);   // tampilkan modal selesai
+            } else {
+                setJourneyMsg(data.message || 'Gagal menyelesaikan perjalanan.');
+            }
+        } catch (e) {
+            setJourneyMsg('Gagal terhubung ke server. Coba lagi.');
+        } finally {
+            setJourneySaving(false);
+        }
+    }, [origin, destination, journeySaving]);
+
+    // Klik "Mulai Perjalanan".
+    const handleStartJourney = useCallback(() => {
+        setJourneyState('running');
+        setJourneyMsg(null);
+        if (journeyDemoMode) {
+            // Demo: animasi mobil berjalan (ExploreMap memanggil onJourneyComplete saat selesai).
+            return;
+        }
+        // Mode real: pantau lokasi user, aktifkan "Selesaikan" saat dekat tujuan.
+        setJourneyMsg('Menuju tujuan… tombol Selesai aktif saat kamu dekat.');
+        if (navigator.geolocation) {
+            geoWatchRef.current = navigator.geolocation.watchPosition(
+                (pos) => {
+                    const p = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    setUserPos(p);
+                    const d = haversineKm(p.lat, p.lng, destination.lat, destination.lng) * 1000;
+                    setFinishReady(d <= 300);
+                },
+                () => setJourneyMsg('Izin lokasi ditolak. Aktifkan lokasi untuk menyelesaikan perjalanan.'),
+                { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+            );
+        }
+    }, [journeyDemoMode, destination]);
+
+    // Demo: animasi mobil selesai → simpan.
+    const handleJourneyAnimationDone = useCallback(() => {
+        completeJourney(null);
+    }, [completeJourney]);
+
+    // Mode real: klik "Selesaikan Perjalanan" (aktif saat dekat tujuan).
+    const handleFinishReal = useCallback(() => {
+        completeJourney(userPos);
+    }, [completeJourney, userPos]);
 
     // ── Visit / Click handler ──
     // Navigasi LANGSUNG ke halaman detail (SPA). Pencatatan "baru dikunjungi"
@@ -548,11 +755,9 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         setSelectedPlace(null);   // bersihkan titik terpilih agar popup lama tak muncul di tab lain
         setSearchLoading(false);  // pastikan flashscreen tidak nyangkut saat pindah tab
         if (tab === 'Satu Titik') {
-            setRouteData(null);
-            setOrigin(null);
-            setDestination(null);
+            resetJourney();
         }
-    }, []);
+    }, [resetJourney]);
 
     // ── Pencarian saran (admin + OSM) via backend, dengan debounce 300ms ──
     useEffect(() => {
@@ -641,6 +846,15 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                                 setDestination={setDestination}
                                 osmLoading={mapLoading}
                                 osmCount={mapPoints.length}
+                                journey={{
+                                    state: journeyState,
+                                    origin, destination, routeData,
+                                    onStart: handleStartJourney,
+                                    onCancel: resetJourney,
+                                    onFinish: handleFinishReal,
+                                    demoMode: journeyDemoMode,
+                                    finishReady, msg: journeyMsg, saving: journeySaving,
+                                }}
                             />
                         </div>
                     </div>
@@ -658,6 +872,10 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                         destination={destination}
                         onBoundsChange={handleBoundsChange}
                         onSettle={handleMapSettle}
+                        journeyRunning={journeyState === 'running'}
+                        journeyDemo={journeyDemoMode}
+                        userPosition={userPos}
+                        onJourneyComplete={handleJourneyAnimationDone}
                     />
                 </div>
 
@@ -747,6 +965,26 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                     </div>
                 </div>
             </section>
+            )}
+
+            {/* ── Modal: perjalanan selesai & album dibuat sistem ── */}
+            {completedAlbum && (
+                <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/50 p-4">
+                    <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
+                        <img src="/images/mascots/car.png" alt="" className="mx-auto mb-3 h-24 w-24 object-contain"
+                            onError={(e) => { e.target.style.display = 'none'; }} />
+                        <h3 className="font-heading text-title font-bold text-primary">Perjalanan Selesai!</h3>
+                        <p className="mt-2 font-body text-body text-gray-70">
+                            Kamu telah menyelesaikan perjalanan dan album telah berhasil dibuat oleh sistem.
+                        </p>
+                        <button
+                            onClick={() => router.visit(route('album.show', completedAlbum))}
+                            className="mt-5 w-full rounded-xl bg-accent py-2.5 font-body text-btn-sm font-semibold text-white transition-all hover:bg-accent-85 active:scale-[0.98]"
+                        >
+                            Lihat Album Perjalanan
+                        </button>
+                    </div>
+                </div>
             )}
         </div>
     );

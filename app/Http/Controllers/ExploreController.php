@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Place;
 use App\Models\PlaceVisit;
 use App\Models\TripPhoto;
+use App\Services\GamificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -213,7 +214,169 @@ class ExploreController extends Controller
             'trendingPlaces' => $trendingPlaces,
             'recentlyVisited' => $recentlyVisited,
             'savedPlaceIds' => $savedPlaceIds,
+            // Mode demo: animasi cukup (tanpa validasi lokasi). false = validasi lokasi real.
+            'journeyDemoMode' => (bool) config('nuraloka.journey_demo_mode'),
         ]);
+    }
+
+    // Lebar koridor (meter) dari garis rute: place internal dalam koridor ini dianggap "se-rute".
+    private const ROUTE_CORRIDOR_M = 5000;
+
+    // Jarak minimal (meter) antar waypoint agar tidak menumpuk titik yang berdekatan.
+    private const ROUTE_MIN_SPACING_M = 1500;
+
+    // Batas jumlah waypoint agar OSRM tetap ringan.
+    private const ROUTE_MAX_WAYPOINTS = 12;
+
+    /**
+     * Endpoint: GET /jelajah/rute-titik — daftar titik WAJIB (place internal, bukan OSM)
+     * yang berada di sepanjang koridor garis asal→tujuan, diurutkan sepanjang rute &
+     * dijarangkan agar tidak terlalu berdekatan. Dipakai frontend sebagai waypoint OSRM.
+     */
+    public function routeWaypoints(Request $request)
+    {
+        $v = $request->validate([
+            'origin_lat' => 'required|numeric|between:-90,90',
+            'origin_lng' => 'required|numeric|between:-180,180',
+            'dest_lat' => 'required|numeric|between:-90,90',
+            'dest_lng' => 'required|numeric|between:-180,180',
+        ]);
+
+        $oLat = (float) $v['origin_lat'];
+        $oLng = (float) $v['origin_lng'];
+        $dLat = (float) $v['dest_lat'];
+        $dLng = (float) $v['dest_lng'];
+
+        // Hanya place INTERNAL (buatan admin), bukan hasil impor OSM.
+        $candidates = Place::where('source', 'internal')
+            ->get(['id', 'name', 'latitude', 'longitude'])
+            ->map(function ($p) use ($oLat, $oLng, $dLat, $dLng) {
+                [$t, $perp] = $this->projectOnLine($oLat, $oLng, $dLat, $dLng, (float) $p->latitude, (float) $p->longitude);
+                $p->t = $t;
+                $p->perp = $perp;
+
+                return $p;
+            })
+            // Berada di antara asal & tujuan (sepanjang garis) dan dalam koridor.
+            ->filter(fn ($p) => $p->t > 0.02 && $p->t < 0.98 && $p->perp <= self::ROUTE_CORRIDOR_M)
+            ->sortBy('t')
+            ->values();
+
+        // Jarangkan: lewati titik yang terlalu dekat dengan waypoint sebelumnya.
+        $waypoints = [];
+        foreach ($candidates as $p) {
+            $last = end($waypoints);
+            if ($last && $this->haversineMeters($last['latitude'], $last['longitude'], (float) $p->latitude, (float) $p->longitude) < self::ROUTE_MIN_SPACING_M) {
+                continue;
+            }
+            $waypoints[] = [
+                'id' => $p->id,
+                'name' => $p->name,
+                'latitude' => (float) $p->latitude,
+                'longitude' => (float) $p->longitude,
+            ];
+            if (count($waypoints) >= self::ROUTE_MAX_WAYPOINTS) {
+                break;
+            }
+        }
+
+        return response()->json(['waypoints' => $waypoints]);
+    }
+
+    /**
+     * Endpoint: POST /jelajah/perjalanan — user menekan "Mulai Perjalanan" & menyelesaikannya.
+     * Mengisi tabel trips (2 titik) + membuat album SPECIAL otomatis (tanpa foto).
+     *
+     * Mode real (journey_demo_mode=false): validasi lokasi user harus dalam radius
+     * CHECKIN_RADIUS_M dari titik tujuan (seperti check-in) — otoritatif di server.
+     */
+    public function startJourney(Request $request)
+    {
+        $data = $request->validate([
+            'origin_name' => 'required|string|max:255',
+            'origin_lat' => 'required|numeric|between:-90,90',
+            'origin_lng' => 'required|numeric|between:-180,180',
+            'destination_name' => 'required|string|max:255',
+            'destination_lat' => 'required|numeric|between:-90,90',
+            'destination_lng' => 'required|numeric|between:-180,180',
+            'user_lat' => 'nullable|numeric|between:-90,90',
+            'user_lng' => 'nullable|numeric|between:-180,180',
+        ]);
+
+        if (! config('nuraloka.journey_demo_mode')) {
+            if (! isset($data['user_lat'], $data['user_lng'])) {
+                return response()->json(['ok' => false, 'message' => 'Lokasi kamu diperlukan untuk menyelesaikan perjalanan.'], 422);
+            }
+            $distance = $this->haversineMeters(
+                (float) $data['user_lat'], (float) $data['user_lng'],
+                (float) $data['destination_lat'], (float) $data['destination_lng']
+            );
+            if ($distance > self::CHECKIN_RADIUS_M) {
+                return response()->json([
+                    'ok' => false,
+                    'distance' => round($distance),
+                    'message' => 'Kamu masih ~'.round($distance).' m dari tujuan. Mendekatlah (≤ '.self::CHECKIN_RADIUS_M.' m) untuk menyelesaikan perjalanan.',
+                ], 422);
+            }
+        }
+
+        $title = 'Trip '.mb_substr($data['origin_name'], 0, 100).' → '.mb_substr($data['destination_name'], 0, 100);
+
+        $trip = \App\Models\Trip::create([
+            'user_id' => auth()->id(),
+            'title' => $title,
+            'origin_name' => $data['origin_name'],
+            'origin_latitude' => $data['origin_lat'],
+            'origin_longitude' => $data['origin_lng'],
+            'destination_name' => $data['destination_name'],
+            'destination_latitude' => $data['destination_lat'],
+            'destination_longitude' => $data['destination_lng'],
+            'trip_date' => now()->toDateString(),
+            'is_public' => false,
+            'is_system' => true, // album otomatis sistem: judul/lokasi/tanggal terkunci
+        ]);
+
+        // Album SPECIAL dibuat sistem (tanpa foto). Reuse struktur album yang ada.
+        $album = \App\Models\Album::create([
+            'trip_id' => $trip->id,
+            'caption' => $title,
+            'view_count' => 0,
+        ]);
+
+        // Gamifikasi: menyelesaikan perjalanan 2 titik dihitung sebagai membuat album.
+        app(GamificationService::class)->record(auth()->user(), 'create_album');
+
+        return response()->json([
+            'ok' => true,
+            'album_slug' => $album->slug,
+            'message' => 'Perjalanan selesai! Album berhasil dibuat oleh sistem.',
+        ]);
+    }
+
+    /**
+     * Proyeksikan titik ke garis asal→tujuan (equirectangular lokal).
+     * Kembalikan [t, perp]: t = posisi 0..1 sepanjang garis, perp = jarak tegak lurus (meter).
+     */
+    private function projectOnLine(float $oLat, float $oLng, float $dLat, float $dLng, float $pLat, float $pLng): array
+    {
+        $R = 6371000;
+        $latRef = deg2rad($oLat);
+        $toXY = fn (float $lat, float $lng) => [
+            deg2rad($lng - $oLng) * cos($latRef) * $R,
+            deg2rad($lat - $oLat) * $R,
+        ];
+
+        [$dx, $dy] = $toXY($dLat, $dLng);
+        [$px, $py] = $toXY($pLat, $pLng);
+
+        $len2 = $dx * $dx + $dy * $dy;
+        $t = $len2 > 0 ? (($px * $dx + $py * $dy) / $len2) : 0.0;
+
+        $projX = $t * $dx;
+        $projY = $t * $dy;
+        $perp = sqrt(($px - $projX) ** 2 + ($py - $projY) ** 2);
+
+        return [$t, $perp];
     }
 
     public function show(Request $request, string $slug)
@@ -329,10 +492,16 @@ class ExploreController extends Controller
         }
 
         // updateOrCreate → unik per (user, place); check-in ulang hanya memperbarui waktu.
-        PlaceVisit::updateOrCreate(
+        $visit = PlaceVisit::updateOrCreate(
             ['user_id' => auth()->id(), 'place_id' => $place->id],
             ['latitude' => $data['latitude'], 'longitude' => $data['longitude'], 'visited_at' => now()]
         );
+
+        // Gamifikasi: hanya hitung untuk KUNJUNGAN BARU (tahan-farm; check-in ulang
+        // ke tempat sama tidak menambah progres misi).
+        if ($visit->wasRecentlyCreated) {
+            app(GamificationService::class)->record(auth()->user(), 'checkin', $place);
+        }
 
         return response()->json([
             'ok' => true,
