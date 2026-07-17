@@ -221,19 +221,31 @@ class ExploreController extends Controller
         ]);
     }
 
-    // Lebar koridor (meter) dari garis rute: place internal dalam koridor ini dianggap "se-rute".
-    private const ROUTE_CORRIDOR_M = 5000;
+    // Koridor SEMPIT (meter) untuk via-point WAJIB: hanya tempat yang benar-benar di
+    // jalur yang dipaksa dilewati OSRM, agar rute nyaris tak berbelok. Sengaja jauh lebih
+    // ketat dari radius tampilan marker "dekat rute" di frontend.
+    private const ROUTE_VIA_CORRIDOR_M = 800;
 
-    // Jarak minimal (meter) antar waypoint agar tidak menumpuk titik yang berdekatan.
+    // Jarak minimal (meter) antar via-point agar menyebar (tak menumpuk berdekatan).
     private const ROUTE_MIN_SPACING_M = 1500;
 
-    // Batas jumlah waypoint agar OSRM tetap ringan.
-    private const ROUTE_MAX_WAYPOINTS = 12;
+    // Batas via-point WAJIB. Sengaja sedikit: makin banyak titik dipaksa dilewati =
+    // makin banyak belokan/detour.
+    private const ROUTE_MAX_VIA = 3;
+
+    // Jarak maksimal (meter) titik OSM ke JALAN rute nyata agar dianggap "di jalur" dan
+    // boleh jadi via-point fallback (dipakai endpoint snap 2-pass). Kecil → dipaksa
+    // mampir nyaris tanpa menambah belokan.
+    private const ROUTE_SNAP_M = 300;
 
     /**
-     * Endpoint: GET /jelajah/rute-titik — daftar titik WAJIB (place internal, bukan OSM)
-     * yang berada di sepanjang koridor garis asal→tujuan, diurutkan sepanjang rute &
-     * dijarangkan agar tidak terlalu berdekatan. Dipakai frontend sebagai waypoint OSRM.
+     * Endpoint: GET /jelajah/rute-titik — via-point WAJIB untuk membentuk rute OSRM.
+     *
+     * HANYA place kurasi admin (source=internal) yang benar-benar dekat jalur (koridor
+     * sempit ROUTE_VIA_CORRIDOR_M) dan dibatasi sedikit (ROUTE_MAX_VIA), agar rute tidak
+     * zigzag. Titik OSM SENGAJA tidak dipaksa dilewati — cukup ditampilkan sebagai marker
+     * "dekat rute" oleh frontend lewat sistem titik peta biasa. Bila tak ada tempat admin
+     * di jalur, waypoints kosong → rute jadi jalur alami A→B (mulus), OSM tetap terlihat.
      */
     public function routeWaypoints(Request $request)
     {
@@ -249,9 +261,169 @@ class ExploreController extends Controller
         $dLat = (float) $v['dest_lat'];
         $dLng = (float) $v['dest_lng'];
 
-        // Hanya place INTERNAL (buatan admin), bukan hasil impor OSM.
-        $candidates = Place::where('source', 'internal')
-            ->get(['id', 'name', 'latitude', 'longitude'])
+        // Kotak pembatas A→B diperlebar selebar koridor via, dipakai untuk prefilter SQL.
+        $latPad = self::ROUTE_VIA_CORRIDOR_M / 111320;
+        $lngPad = self::ROUTE_VIA_CORRIDOR_M / (111320 * max(0.01, cos(deg2rad($oLat))));
+        $bbox = [
+            'south' => min($oLat, $dLat) - $latPad,
+            'north' => max($oLat, $dLat) + $latPad,
+            'west' => min($oLng, $dLng) - $lngPad,
+            'east' => max($oLng, $dLng) + $lngPad,
+        ];
+
+        // Via-point: HANYA place admin (internal) dalam koridor sempit, diurut sepanjang
+        // garis A→B. Dengan koridor 800m & ≤3 titik, titik nyaris kolinear dengan garis
+        // sehingga urutan garis ≈ urutan rute (tak mundur-maju).
+        $candidates = $this->corridorCandidates('internal', $bbox, $oLat, $oLng, $dLat, $dLng, self::ROUTE_VIA_CORRIDOR_M);
+
+        // Jarangkan: lewati titik yang terlalu dekat dengan via-point sebelumnya.
+        $waypoints = [];
+        foreach ($candidates as $p) {
+            $last = end($waypoints);
+            if ($last && $this->haversineMeters($last['latitude'], $last['longitude'], (float) $p->latitude, (float) $p->longitude) < self::ROUTE_MIN_SPACING_M) {
+                continue;
+            }
+            // Bentuk seragam dengan titik peta (slug + kategori) agar marker via-point
+            // tampil identik: ikon kategori & tombol "Lihat Detail" berfungsi.
+            $waypoints[] = $this->mapPoint($p);
+            if (count($waypoints) >= self::ROUTE_MAX_VIA) {
+                break;
+            }
+        }
+
+        return response()->json(['waypoints' => $waypoints]);
+    }
+
+    /**
+     * Endpoint: POST /jelajah/rute-osm — via-point OSM FALLBACK yang "di-snap" ke rute nyata.
+     *
+     * Dipakai frontend HANYA bila tak ada via-point admin (2-pass): frontend menghitung
+     * rute alami A→B dulu, mengirim geometri jalannya (`path`), lalu endpoint ini memilih
+     * titik OSM yang benar-benar dekat JALAN (≤ ROUTE_SNAP_M meter dari polyline rute),
+     * diurut sepanjang rute & dibatasi sedikit. Karena titik sudah di pinggir jalan yang
+     * dilalui, memaksanya jadi via-point nyaris tak menambah belokan (anti-zigzag).
+     */
+    public function routeOsmWaypoints(Request $request)
+    {
+        $v = $request->validate([
+            'path' => 'required|array|min:2|max:400',
+            'path.*' => 'array|size:2',
+            'path.*.*' => 'required|numeric',
+        ]);
+
+        $path = $v['path']; // [[lat, lng], ...] geometri rute alami dari OSRM.
+
+        // Proyeksi lokal (equirectangular) berpusat di titik awal path → jarak dalam meter.
+        $R = 6371000;
+        $baseLat = (float) $path[0][0];
+        $baseLng = (float) $path[0][1];
+        $latRef = deg2rad($baseLat);
+        $toXY = fn (float $lat, float $lng) => [
+            deg2rad($lng - $baseLng) * cos($latRef) * $R,
+            deg2rad($lat - $baseLat) * $R,
+        ];
+
+        // Precompute XY tiap titik path + panjang kumulatif (untuk posisi sepanjang rute).
+        $xy = [];
+        $cum = [0.0];
+        foreach ($path as $i => $pt) {
+            $xy[$i] = $toXY((float) $pt[0], (float) $pt[1]);
+            if ($i > 0) {
+                $dx = $xy[$i][0] - $xy[$i - 1][0];
+                $dy = $xy[$i][1] - $xy[$i - 1][1];
+                $cum[$i] = $cum[$i - 1] + sqrt($dx * $dx + $dy * $dy);
+            }
+        }
+
+        // Kotak pembatas dari rentang path + pad snap (prefilter SQL).
+        $lats = array_map(fn ($p) => (float) $p[0], $path);
+        $lngs = array_map(fn ($p) => (float) $p[1], $path);
+        $latPad = self::ROUTE_SNAP_M / 111320;
+        $lngPad = self::ROUTE_SNAP_M / (111320 * max(0.01, cos($latRef)));
+
+        $candidates = Place::with('categories:id,name,icon_path')
+            ->where('source', 'osm')
+            ->whereBetween('latitude', [min($lats) - $latPad, max($lats) + $latPad])
+            ->whereBetween('longitude', [min($lngs) - $lngPad, max($lngs) + $lngPad])
+            ->get(['id', 'name', 'slug', 'latitude', 'longitude', 'address'])
+            ->map(function ($p) use ($toXY, $xy, $cum) {
+                [$dist, $arc] = $this->snapToPath($toXY, $xy, $cum, (float) $p->latitude, (float) $p->longitude);
+                $p->snap_dist = $dist;
+                $p->arc = $arc;
+
+                return $p;
+            })
+            // Hanya titik yang benar-benar menempel jalan rute; urut sepanjang rute.
+            ->filter(fn ($p) => $p->snap_dist <= self::ROUTE_SNAP_M)
+            ->sortBy('arc')
+            ->values();
+
+        // Jarangkan + batasi jumlah (sama seperti via-point admin).
+        $waypoints = [];
+        foreach ($candidates as $p) {
+            $last = end($waypoints);
+            if ($last && $this->haversineMeters($last['latitude'], $last['longitude'], (float) $p->latitude, (float) $p->longitude) < self::ROUTE_MIN_SPACING_M) {
+                continue;
+            }
+            $waypoints[] = $this->mapPoint($p);
+            if (count($waypoints) >= self::ROUTE_MAX_VIA) {
+                break;
+            }
+        }
+
+        return response()->json(['waypoints' => $waypoints]);
+    }
+
+    /**
+     * Jarak tegak lurus (meter) titik ke polyline rute + posisi sepanjang rute (meter).
+     * Memproyeksikan titik ke tiap ruas (segmen) lalu mengambil yang terdekat.
+     *
+     * @param  callable  $toXY  konversi (lat,lng) → [x,y] meter (proyeksi lokal)
+     * @param  array<int, array{0:float,1:float}>  $xy   XY tiap titik path
+     * @param  array<int, float>  $cum  panjang kumulatif path di tiap titik
+     * @return array{0:float, 1:float}  [jarak_meter, posisi_sepanjang_rute_meter]
+     */
+    private function snapToPath(callable $toXY, array $xy, array $cum, float $pLat, float $pLng): array
+    {
+        [$px, $py] = $toXY($pLat, $pLng);
+        $bestDist = INF;
+        $bestArc = 0.0;
+        $n = count($xy);
+
+        for ($i = 1; $i < $n; $i++) {
+            [$ax, $ay] = $xy[$i - 1];
+            [$bx, $by] = $xy[$i];
+            $dx = $bx - $ax;
+            $dy = $by - $ay;
+            $len2 = $dx * $dx + $dy * $dy;
+            $t = $len2 > 0 ? max(0.0, min(1.0, (($px - $ax) * $dx + ($py - $ay) * $dy) / $len2)) : 0.0;
+            $cx = $ax + $t * $dx;
+            $cy = $ay + $t * $dy;
+            $d = sqrt(($px - $cx) ** 2 + ($py - $cy) ** 2);
+            if ($d < $bestDist) {
+                $bestDist = $d;
+                $bestArc = $cum[$i - 1] + $t * sqrt($len2);
+            }
+        }
+
+        return [$bestDist, $bestArc];
+    }
+
+    /**
+     * Kandidat via-point dari satu $source ('internal'/'osm') di sepanjang koridor rute:
+     * di-prefilter kotak pembatas $bbox (SQL) lalu diproyeksikan ke garis asal→tujuan,
+     * disaring hanya yang berada di antara A & B dan dalam koridor selebar $corridorM,
+     * diurut sepanjang garis (nilai t).
+     *
+     * @param  array{south:float,north:float,west:float,east:float}  $bbox
+     */
+    private function corridorCandidates(string $source, array $bbox, float $oLat, float $oLng, float $dLat, float $dLng, float $corridorM)
+    {
+        return Place::with('categories:id,name,icon_path')
+            ->where('source', $source)
+            ->whereBetween('latitude', [$bbox['south'], $bbox['north']])
+            ->whereBetween('longitude', [$bbox['west'], $bbox['east']])
+            ->get(['id', 'name', 'slug', 'latitude', 'longitude', 'address'])
             ->map(function ($p) use ($oLat, $oLng, $dLat, $dLng) {
                 [$t, $perp] = $this->projectOnLine($oLat, $oLng, $dLat, $dLng, (float) $p->latitude, (float) $p->longitude);
                 $p->t = $t;
@@ -260,29 +432,9 @@ class ExploreController extends Controller
                 return $p;
             })
             // Berada di antara asal & tujuan (sepanjang garis) dan dalam koridor.
-            ->filter(fn ($p) => $p->t > 0.02 && $p->t < 0.98 && $p->perp <= self::ROUTE_CORRIDOR_M)
+            ->filter(fn ($p) => $p->t > 0.02 && $p->t < 0.98 && $p->perp <= $corridorM)
             ->sortBy('t')
             ->values();
-
-        // Jarangkan: lewati titik yang terlalu dekat dengan waypoint sebelumnya.
-        $waypoints = [];
-        foreach ($candidates as $p) {
-            $last = end($waypoints);
-            if ($last && $this->haversineMeters($last['latitude'], $last['longitude'], (float) $p->latitude, (float) $p->longitude) < self::ROUTE_MIN_SPACING_M) {
-                continue;
-            }
-            $waypoints[] = [
-                'id' => $p->id,
-                'name' => $p->name,
-                'latitude' => (float) $p->latitude,
-                'longitude' => (float) $p->longitude,
-            ];
-            if (count($waypoints) >= self::ROUTE_MAX_WAYPOINTS) {
-                break;
-            }
-        }
-
-        return response()->json(['waypoints' => $waypoints]);
     }
 
     /**

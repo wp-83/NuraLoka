@@ -95,7 +95,8 @@ Route::middleware(['auth', 'unbanned'])->group(function () {
         Route::get('/trending', 'trending')->name('trending'); // Ramai dikunjungi sekitar user (radius lokasi)
         Route::post('/lacak', 'trackVisit')->name('track');
         Route::post('/checkin', 'checkIn')->name('checkin'); // check-in kunjungan (verifikasi lokasi)
-        Route::get('/rute-titik', 'routeWaypoints')->name('route-waypoints'); // waypoint wajib rute 2 titik
+        Route::get('/rute-titik', 'routeWaypoints')->name('route-waypoints'); // via-point admin rute 2 titik
+        Route::post('/rute-osm', 'routeOsmWaypoints')->name('route-osm'); // fallback OSM di-snap ke rute nyata
         Route::post('/perjalanan', 'startJourney')->name('journey'); // mulai/selesaikan perjalanan 2 titik
         Route::get('/{slug}', 'show')->name('show');
     });

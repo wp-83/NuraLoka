@@ -595,13 +595,26 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         };
     }, []);
 
-    // ── Rute WAJIB lewat titik admin (internal) di sepanjang koridor asal→tujuan ──
+    // ── Rute 2 titik: via-point admin dulu; bila kosong, fallback OSM di-snap ke rute ──
     const fetchJourneyRoute = useCallback(async () => {
         if (!origin || !destination) return;
         setSelectedPlace(null);
         setRouteLoading(true);
         try {
-            // 1. Ambil waypoint wajib (place internal se-rute) dari server.
+            // Bangun rute OSRM: asal → [via-point] → tujuan. Kembalikan objek route OSRM.
+            const buildOsrm = async (viaPoints) => {
+                const seq = [
+                    [origin.lng, origin.lat],
+                    ...viaPoints.map((w) => [w.longitude, w.latitude]),
+                    [destination.lng, destination.lat],
+                ].map((c) => c.join(',')).join(';');
+                const url = `https://router.project-osrm.org/route/v1/driving/${seq}?overview=full&geometries=geojson`;
+                const res = await fetch(url);
+                const data = await res.json();
+                return data.code === 'Ok' && data.routes.length > 0 ? data.routes[0] : null;
+            };
+
+            // 1. Via-point WAJIB dari tempat admin (internal) yang tepat di jalur.
             const wpParams = new URLSearchParams({
                 origin_lat: origin.lat, origin_lng: origin.lng,
                 dest_lat: destination.lat, dest_lng: destination.lng,
@@ -610,20 +623,41 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
             try {
                 const wpRes = await fetch(`/jelajah/rute-titik?${wpParams.toString()}`, { headers: { Accept: 'application/json' } });
                 if (wpRes.ok) waypoints = (await wpRes.json()).waypoints || [];
-            } catch { /* kalau gagal, rute langsung tanpa waypoint */ }
+            } catch { /* gagal → rute tanpa via-point admin */ }
 
-            // 2. Bangun rute OSRM: asal → [titik wajib] → tujuan.
-            const coordsSeq = [
-                [origin.lng, origin.lat],
-                ...waypoints.map((w) => [w.longitude, w.latitude]),
-                [destination.lng, destination.lat],
-            ].map((c) => c.join(',')).join(';');
+            // 2. Rute pertama (alami bila belum ada via-point admin).
+            let route = await buildOsrm(waypoints);
 
-            const url = `https://router.project-osrm.org/route/v1/driving/${coordsSeq}?overview=full&geometries=geojson`;
-            const response = await fetch(url);
-            const data = await response.json();
-            if (data.code === 'Ok' && data.routes.length > 0) {
-                const route = data.routes[0];
+            // 3. Fallback OSM (2-pass): bila tak ada via-point admin, cari titik OSM yang
+            //    ≤300m dari JALAN rute nyata, lalu bangun ulang rute melewatinya. Karena
+            //    titik sudah menempel jalan, bentuk rute nyaris tak berubah (anti-zigzag).
+            if (waypoints.length === 0 && route) {
+                const path = route.geometry.coordinates.map((c) => [c[1], c[0]]); // [lat, lng]
+                // Kecilkan payload: ambil maksimal ~200 titik yang mewakili rute.
+                const step = Math.ceil(path.length / 200);
+                const slim = step > 1 ? path.filter((_, i) => i % step === 0 || i === path.length - 1) : path;
+                try {
+                    const osmRes = await fetch('/jelajah/rute-osm', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                            'X-XSRF-TOKEN': getCookie('XSRF-TOKEN'),
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({ path: slim }),
+                    });
+                    if (osmRes.ok) {
+                        const osmWps = (await osmRes.json()).waypoints || [];
+                        if (osmWps.length > 0) {
+                            const route2 = await buildOsrm(osmWps);
+                            if (route2) { route = route2; waypoints = osmWps; }
+                        }
+                    }
+                } catch { /* gagal → pakai rute alami */ }
+            }
+
+            if (route) {
                 const latLngs = route.geometry.coordinates.map((coord) => [coord[1], coord[0]]);
                 setRouteData({
                     coordinates: latLngs,

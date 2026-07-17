@@ -200,7 +200,7 @@ function LocalPlaceMarker({ place, onVisit }) {
 // agar tidak dobel.
 const MARKER_MIN_PX = 40; // jarak minimal antar pin (px) agar tidak menumpuk
 
-function MapMarkers({ points = [], onVisit, excludeId = null, excludeLat = null, excludeLng = null }) {
+function MapMarkers({ points = [], onVisit, excludeId = null, excludeLat = null, excludeLng = null, excludeIds = null }) {
   const map = useMap();
   const [tick, setTick] = React.useState(0);
 
@@ -214,10 +214,12 @@ function MapMarkers({ points = [], onVisit, excludeId = null, excludeLat = null,
     // Singkirkan titik yang sedang tampil sebagai marker pencarian agar tidak dobel:
     // cocok berdasarkan id (toleran tipe), ATAU koordinat yang praktis sama (~5 m),
     // untuk menangani duplikat baris (mis. dua node OSM di lokasi yang sama).
-    const hasExclude = excludeId != null || (excludeLat != null && excludeLng != null);
+    // excludeIds: id waypoint rute (dirender sebagai layer sendiri) agar tak dobel.
+    const hasExclude = excludeId != null || (excludeLat != null && excludeLng != null) || (excludeIds && excludeIds.size > 0);
     const base = hasExclude
       ? points.filter((p) => {
           if (excludeId != null && Number(p.id) === Number(excludeId)) return false;
+          if (excludeIds && excludeIds.has(Number(p.id))) return false;
           if (excludeLat != null && excludeLng != null) {
             if (Math.abs(parseFloat(p.latitude) - excludeLat) < 5e-5 &&
                 Math.abs(parseFloat(p.longitude) - excludeLng) < 5e-5) return false;
@@ -262,7 +264,7 @@ function MapMarkers({ points = [], onVisit, excludeId = null, excludeLat = null,
     }
 
     return kept;
-  }, [points, excludeId, excludeLat, excludeLng, map, tick]);
+  }, [points, excludeId, excludeLat, excludeLng, excludeIds, map, tick]);
 
   return (
     <>
@@ -480,14 +482,23 @@ export default function ExploreMap({
           </Marker>
         )}
 
+        {/* ── Waypoint rute: SELALU tampil begitu rute muncul, tanpa bergantung pada
+            budget zoom server maupun declutter. Inilah titik "wajib/rekomendasi" yang
+            dilewati rute, jadi harus terlihat langsung meski peta masih zoom-out. ── */}
+        {routeData?.waypoints?.map((w) => (
+          <LocalPlaceMarker key={`wp-${w.id}`} place={w} onVisit={onVisit} />
+        ))}
+
         {/* ── Titik dari server (satu jenis), kepadatan diatur level-of-detail + declutter.
-            excludeId: hindari dobel dengan marker hasil pencarian yang sedang tampil. ── */}
+            excludeId: hindari dobel dengan marker hasil pencarian yang sedang tampil.
+            excludeIds: hindari dobel dengan waypoint rute yang sudah dirender di atas. ── */}
         <MapMarkers
           points={points}
           onVisit={onVisit}
           excludeId={!routeData && selectedPlace ? (selectedPlace.placeId ?? selectedPlace.id) : null}
           excludeLat={!routeData && selectedPlace?.latitude != null ? parseFloat(selectedPlace.latitude) : null}
           excludeLng={!routeData && selectedPlace?.longitude != null ? parseFloat(selectedPlace.longitude) : null}
+          excludeIds={routeData?.waypoints?.length ? new Set(routeData.waypoints.map((w) => Number(w.id))) : null}
         />
       </MapContainer>
     </div>
