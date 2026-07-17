@@ -77,12 +77,16 @@ export default function LeaderboardFull({ leaderboard = [], search = '', totalRe
                                 }
 
                                 return (
-                                    <div key={user.rank} className={`flex items-center p-4 rounded-xl ${bgClass} ${rowBorder} transition-colors relative overflow-hidden shadow-sm ${!rowBorder ? 'border border-black/5' : ''}`}>
+                                    <Link
+                                        key={user.rank}
+                                        href={route('profile.show', { username: user.username })}
+                                        className={`flex items-center p-4 rounded-xl ${bgClass} ${rowBorder} transition-colors relative overflow-hidden shadow-sm ${!rowBorder ? 'border border-black/5' : ''} cursor-pointer hover:shadow-md`}
+                                    >
                                         
                                         {/* Avatar */}
                                         <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-amber-100 mr-4 border border-white/50">
                                             {user.profile_path ? (
-                                                <img src={`/storage/${user.profile_path}`} alt={user.name} className="w-full h-full object-cover" />
+                                                <img src={user.profile_path} alt={user.name} className="w-full h-full object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center font-bold text-amber-800 uppercase text-lg">
                                                     {user.name.charAt(0)}
@@ -127,7 +131,7 @@ export default function LeaderboardFull({ leaderboard = [], search = '', totalRe
                                         <div className="text-2xl font-black text-primary min-w-[3rem] text-right">
                                             #{user.rank}
                                         </div>
-                                    </div>
+                                    </Link>
                                 );
                             })
                         ) : (

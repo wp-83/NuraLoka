@@ -117,7 +117,7 @@ export default function Index({ user, totalUser, rank, recentBadges, totalBadge,
                             {recentBadges.map((badge) => (
                                 <img
                                     key={badge.id}
-                                    src={`/storage/${badge.image}`}
+                                    src={`/${badge.icon_path}`}
                                     alt={badge.name}
                                     title={badge.name}
                                     className="h-14 w-14 object-contain sm:h-16 sm:w-16"
