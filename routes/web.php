@@ -82,6 +82,7 @@ Route::middleware(['auth', 'unbanned'])->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/ubah', 'edit')->name('edit');
         Route::put('/', 'update')->name('update');
+        Route::get('/{username}', 'show')->name('show');
     });
 
     // Explore
