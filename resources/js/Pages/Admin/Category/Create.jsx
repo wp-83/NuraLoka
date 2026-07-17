@@ -140,7 +140,7 @@ export default function Create() {
                                     </span>
                                 </div>
                                 <span className="text-micro text-gray-50">
-                                    Format: JPG, PNG, WEBP, SVG, atau GIF (Maks. 1MB). Opsional.
+                                    Format: JPG, PNG, WEBP, SVG, atau GIF (Maks. 2MB). Opsional.
                                 </span>
                             </div>
                         </div>

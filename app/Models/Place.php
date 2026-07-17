@@ -21,7 +21,7 @@ class Place extends Model
 
     protected $fillable = [
         'name', 'slug', 'description',
-        'latitude', 'longitude', 'address',
+        'latitude', 'longitude', 'address', 'source',
     ];
 
     // Relationships
@@ -48,5 +48,24 @@ class Place extends Model
     public function visits()
     {
         return $this->hasMany(PlaceVisit::class);
+    }
+
+    /** Foto yang dilampirkan admin ke tempat ini (pivot photo_place). */
+    public function photos()
+    {
+        return $this->belongsToMany(Photo::class, 'photo_place')
+            ->withTimestamps();
+    }
+
+    /** Referensi asal OSM (hanya ada bila source = 'osm'). */
+    public function osmRef()
+    {
+        return $this->hasOne(PlaceOsmRef::class);
+    }
+
+    /** Foto trip yang ditandai berada di tempat ini (dari album pengguna). */
+    public function tripPhotos()
+    {
+        return $this->hasMany(TripPhoto::class);
     }
 }

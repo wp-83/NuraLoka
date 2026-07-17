@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\OsmImportRun;
-use App\Models\OsmPlace;
+use App\Models\Place;
 use App\Services\OsmImportService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -33,7 +33,7 @@ class ImportOsmPlacesJob implements ShouldQueue
         $run->update([
             'status' => 'running',
             'started_at' => now(),
-            'places_before' => OsmPlace::count(),
+            'places_before' => Place::where('source', 'osm')->count(),
         ]);
 
         try {
@@ -57,14 +57,14 @@ class ImportOsmPlacesJob implements ShouldQueue
                 'imported' => $result['imported'],
                 'failed_tiles' => $result['failedTiles'],
                 'total_tiles' => $result['totalTiles'],
-                'places_after' => OsmPlace::count(),
+                'places_after' => Place::where('source', 'osm')->count(),
                 'finished_at' => now(),
             ]);
         } catch (\Throwable $e) {
             $run->update([
                 'status' => 'failed',
                 'message' => mb_substr($e->getMessage(), 0, 1000),
-                'places_after' => OsmPlace::count(),
+                'places_after' => Place::where('source', 'osm')->count(),
                 'finished_at' => now(),
             ]);
 

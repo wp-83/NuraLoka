@@ -1,11 +1,11 @@
 import { Head, useForm, router } from '@inertiajs/react';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaTimes } from 'react-icons/fa';
 import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
 import Checkbox from '@components/Forms/Checkbox';
 import AdminLayout from '../../../Layouts/AdminLayout';
 
-export default function Edit({ place, categories }) {
+export default function Edit({ place, categories, photos = [] }) {
     // Pre-fill selected category IDs from the existing place data
     const existingCategoryIds = place.categories ? place.categories.map((c) => c.id) : [];
 
@@ -16,6 +16,8 @@ export default function Edit({ place, categories }) {
         longitude: place.longitude || '',
         address: place.address || '',
         categories: existingCategoryIds,
+        photos: [],
+        deleted_photos: [],
     });
 
     const toggleCategory = (id) => {
@@ -23,6 +25,17 @@ export default function Edit({ place, categories }) {
             ? data.categories.filter((c) => c !== id)
             : [...data.categories, id];
         setData('categories', selected);
+    };
+
+    const handlePhotos = (e) => {
+        setData('photos', Array.from(e.target.files || []));
+    };
+
+    const toggleRemoveExisting = (id) => {
+        const marked = data.deleted_photos.includes(id)
+            ? data.deleted_photos.filter((p) => p !== id)
+            : [...data.deleted_photos, id];
+        setData('deleted_photos', marked);
     };
 
     const handleSubmit = (e) => {
@@ -141,6 +154,67 @@ export default function Edit({ place, categories }) {
                             error={errors.description}
                             required
                         />
+
+                        {/* Photos */}
+                        <div className="flex flex-col gap-1.5">
+                            <label className="font-heading text-paragraph text-primary-100">
+                                Foto Destinasi
+                            </label>
+                            <p className="text-small text-gray-70">
+                                Kelola foto yang tampil di galeri detail. Klik tanda silang untuk
+                                menandai foto yang akan dihapus saat disimpan.
+                            </p>
+
+                            {photos.length > 0 && (
+                                <div className="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-4">
+                                    {photos.map((photo) => {
+                                        const marked = data.deleted_photos.includes(photo.id);
+                                        return (
+                                            <div key={photo.id} className="relative">
+                                                <img
+                                                    src={photo.url}
+                                                    alt="Foto destinasi"
+                                                    className={`h-24 w-full rounded-lg object-cover transition ${marked ? 'opacity-30 grayscale' : ''}`}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => toggleRemoveExisting(photo.id)}
+                                                    title={marked ? 'Batalkan hapus' : 'Tandai untuk dihapus'}
+                                                    className={`absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full text-white shadow ${marked ? 'bg-gray-50' : 'bg-error-dark'}`}
+                                                >
+                                                    <FaTimes size={11} />
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/jpg,image/webp"
+                                multiple
+                                onChange={handlePhotos}
+                                className="mt-3 block w-full cursor-pointer rounded-xl border border-primary-10 bg-gray-10 px-3 py-2 font-body text-small text-gray-70 file:mr-3 file:rounded-lg file:border-0 file:bg-primary-100 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-primary-85"
+                            />
+                            {data.photos.length > 0 && (
+                                <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4">
+                                    {data.photos.map((file, i) => (
+                                        <img
+                                            key={i}
+                                            src={URL.createObjectURL(file)}
+                                            alt={`Pratinjau ${i + 1}`}
+                                            className="h-24 w-full rounded-lg object-cover ring-2 ring-success-dark"
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                            {(errors.photos || errors['photos.0']) && (
+                                <p className="text-small italic text-error-dark">
+                                    {errors.photos || errors['photos.0']}
+                                </p>
+                            )}
+                        </div>
 
                         {/* Actions */}
                         <div className="mt-2 flex justify-end gap-3 border-t border-primary-10 pt-5">
