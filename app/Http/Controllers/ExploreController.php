@@ -3,20 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
-use App\Models\OsmPlace;
 use App\Models\Place;
 use App\Models\PlaceVisit;
+use App\Models\TripPhoto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ExploreController extends Controller
 {
-    // Titik OSM sangat padat → hanya ditampilkan mulai zoom ini agar tidak menumpuk.
-    // Place admin (kurasi, jumlahnya sedikit) TIDAK digate → selalu tampil.
-    private const OSM_MIN_ZOOM = 14;
-
-    // Batas jumlah titik per response agar payload tetap ringan.
-    private const POINT_CAP = 1500;
+    // Jumlah titik maksimal yang dikirim per zoom (level-of-detail ala Google Maps).
+    // Titik muncul BERTAHAP: sedikit saat zoom jauh, makin banyak saat mendekat —
+    // sehingga peta tidak langsung penuh. Berlaku SAMA untuk internal & OSM (satu
+    // jenis titik). Di bawah zoom terkecil pada peta ini → tidak ada titik.
+    private const ZOOM_BUDGET = [
+        16 => 1500,
+        15 => 400,
+        14 => 200,
+        13 => 90,
+        12 => 40,
+        11 => 18,
+    ];
 
     // Bobot skor "Ramai Dikunjungi": pengunjung > pemosting album > saves.
     private const WEIGHT_VISIT = 3;
@@ -35,9 +41,11 @@ class ExploreController extends Controller
     /**
      * Endpoint peta: GET /jelajah/titik?south=&west=&north=&east=&zoom=&categories=
      *
-     * Menggabungkan titik admin (tabel places) + titik OSM (tabel osm_places):
-     *  - Place ADMIN → SELALU tampil (jumlahnya sedikit & tersebar, tidak menumpuk).
-     *  - Titik OSM   → hanya saat zoom >= OSM_MIN_ZOOM (padat → cegah menumpuk).
+     * Membaca dari SATU sumber (tabel places), semua titik diperlakukan seragam.
+     * Kepadatan diatur level-of-detail (ala Google Maps): jumlah titik dibatasi per
+     * zoom & diprioritaskan (kurasi internal + terpopuler lebih dulu) supaya titik
+     * "penting" muncul lebih awal dan sisanya menyusul saat diperbesar. 'source'
+     * tidak dikirim ke client.
      */
     public function points(Request $request)
     {
@@ -51,73 +59,68 @@ class ExploreController extends Controller
         ]);
 
         $zoom = (int) $v['zoom'];
+        $budget = $this->pointBudget($zoom);
+
+        // Zoom masih terlalu jauh → belum ada titik (peta bersih).
+        if ($budget <= 0) {
+            return response()->json(['points' => []]);
+        }
+
         $south = (float) $v['south'];
         $west = (float) $v['west'];
         $north = (float) $v['north'];
         $east = (float) $v['east'];
         $categories = array_values(array_filter(array_map('trim', explode(',', $v['categories'] ?? ''))));
 
-        // Place admin: selalu ditampilkan di semua zoom.
-        $points = $this->adminPoints($south, $west, $north, $east, $categories);
-
-        // OSM: hanya saat zoom cukup dekat.
-        if ($zoom >= self::OSM_MIN_ZOOM) {
-            $points = $points->concat($this->osmPoints($south, $west, $north, $east, $categories));
-        }
+        $points = Place::with('categories:id,name,icon_path')
+            ->withCount('visits')
+            ->whereBetween('latitude', [$south, $north])
+            ->whereBetween('longitude', [$west, $east])
+            ->when($categories, fn ($q) => $q->whereHas('categories', fn ($c) => $c->whereIn('name', $categories)))
+            // Prioritas kemunculan: kurasi internal dulu, lalu terpopuler (kunjungan).
+            ->orderByRaw("FIELD(source, 'internal', 'osm')")
+            ->orderByDesc('visits_count')
+            ->orderBy('id')
+            ->limit($budget)
+            ->get()
+            ->map(fn ($p) => $this->mapPoint($p));
 
         return response()->json(['points' => $points->values()]);
     }
 
-    /** Titik place admin (tabel places) di dalam viewport. */
-    private function adminPoints(float $south, float $west, float $north, float $east, array $categories)
+    /** Anggaran jumlah titik untuk suatu zoom (level-of-detail progresif). */
+    private function pointBudget(int $zoom): int
     {
-        return Place::with('categories')
-            ->whereBetween('latitude', [$south, $north])
-            ->whereBetween('longitude', [$west, $east])
-            ->when($categories, fn ($q) => $q->whereHas('categories', fn ($c) => $c->whereIn('name', $categories)))
-            ->limit(self::POINT_CAP)
-            ->get()
-            ->map(fn ($p) => [
-                'id' => $p->id,
-                'source' => 'admin',
-                'name' => $p->name,
-                'slug' => $p->slug,
-                'latitude' => (float) $p->latitude,
-                'longitude' => (float) $p->longitude,
-                'address' => $p->address,
-                'categories' => $p->categories->map(fn ($c) => ['id' => $c->id, 'name' => $c->name])->values(),
-            ]);
+        foreach (self::ZOOM_BUDGET as $minZoom => $cap) {
+            if ($zoom >= $minZoom) {
+                return $cap;
+            }
+        }
+
+        return 0;
     }
 
-    /** Titik OSM (tabel osm_places) di dalam viewport. */
-    private function osmPoints(float $south, float $west, float $north, float $east, array $categories)
+    /** Bentuk seragam satu titik peta untuk sisi user (tanpa membocorkan source). */
+    private function mapPoint(Place $p): array
     {
-        return OsmPlace::query()
-            ->whereBetween('latitude', [$south, $north])
-            ->whereBetween('longitude', [$west, $east])
-            ->when($categories, fn ($q) => $q->whereIn('category', $categories))
-            ->limit(self::POINT_CAP)
-            ->get()
-            ->map(fn ($p) => [
-                'id' => $p->osm_id,
-                'osmId' => $p->osm_id,
-                'source' => 'osm',
-                'name' => $p->name,
-                'latitude' => (float) $p->latitude,
-                'longitude' => (float) $p->longitude,
-                'address' => $p->address,
-                'category' => $p->category,
-                'subtype' => $p->subtype,
-            ]);
+        return [
+            'id' => $p->id,
+            'name' => $p->name,
+            'slug' => $p->slug,
+            'latitude' => (float) $p->latitude,
+            'longitude' => (float) $p->longitude,
+            'address' => $p->address,
+            'categories' => $p->categories
+                ->map(fn ($c) => ['id' => $c->id, 'name' => $c->name, 'icon_path' => $c->icon_path])
+                ->values(),
+        ];
     }
 
     /**
      * Endpoint pencarian saran (autocomplete): GET /jelajah/cari?q=
      *
-     * Mencari di DUA sumber sekaligus namun tetap ringan:
-     *  - places (kurasi admin)  → diprioritaskan di atas
-     *  - osm_places (bisa ribuan) → dibatasi limit, hanya field yang perlu.
-     * Hanya field ringkas yang dikirim (bukan seluruh baris) agar payload kecil.
+     * Membaca dari satu sumber (tabel places). Hanya field ringkas yang dikirim
+     * (bukan seluruh baris) agar payload kecil; tanpa membocorkan asal data.
      */
     public function search(Request $request)
     {
@@ -138,7 +141,6 @@ class ExploreController extends Controller
         $useFulltext = $tokens->isNotEmpty();
         $boolean = $tokens->map(fn ($t) => $t.'*')->implode(' ');
 
-        // Filter nama dipakai untuk kedua tabel: FULLTEXT bila memungkinkan, jika tidak LIKE.
         $nameFilter = function ($builder) use ($useFulltext, $boolean, $like) {
             if ($useFulltext) {
                 $builder->whereFullText('name', $boolean, ['mode' => 'boolean']);
@@ -147,48 +149,36 @@ class ExploreController extends Controller
             }
         };
 
-        $admin = Place::with('categories:id,name')
+        $suggestions = Place::with('categories:id,name,icon_path')
             ->where($nameFilter)
-            ->limit(6)
+            // Utamakan tempat kurasi (internal) di atas hasil OSM.
+            ->orderByRaw("FIELD(source, 'internal', 'osm')")
+            ->limit(10)
             ->get()
             ->map(fn ($p) => [
-                'id' => 'admin-'.$p->id,
+                'id' => $p->id,
                 'placeId' => $p->id,
-                'source' => 'admin',
                 'name' => $p->name,
                 'slug' => $p->slug,
                 'address' => $p->address,
                 'latitude' => (float) $p->latitude,
                 'longitude' => (float) $p->longitude,
-                'categories' => $p->categories->map(fn ($c) => ['id' => $c->id, 'name' => $c->name])->values(),
+                'categories' => $p->categories
+                    ->map(fn ($c) => ['id' => $c->id, 'name' => $c->name, 'icon_path' => $c->icon_path])
+                    ->values(),
             ]);
 
-        $osm = OsmPlace::query()
-            ->select('osm_id', 'name', 'address', 'latitude', 'longitude', 'category')
-            ->where($nameFilter)
-            ->limit(6)
-            ->get()
-            ->map(fn ($p) => [
-                'id' => 'osm-'.$p->osm_id,
-                'osmId' => $p->osm_id,
-                'source' => 'osm',
-                'name' => $p->name,
-                'address' => $p->address,
-                'latitude' => (float) $p->latitude,
-                'longitude' => (float) $p->longitude,
-                'category' => $p->category,
-            ]);
-
-        // Titik admin (kurasi) tampil lebih dulu, disusul titik OSM.
-        return response()->json(['suggestions' => $admin->concat($osm)->values()]);
+        return response()->json(['suggestions' => $suggestions->values()]);
     }
 
     public function index(Request $request)
     {
-        // 1. Ambil semua places beserta kategorinya
-        $places = Place::with('categories')->get();
+        // 1. Titik untuk kalkulasi center awal peta — cukup tempat kurasi (internal)
+        //    agar payload tetap ringan meski tabel places berisi ribuan titik OSM.
+        $places = Place::where('source', 'internal')
+            ->get(['id', 'latitude', 'longitude']);
 
-        // 2. Ambil semua kategori untuk filter
+        // 2. Ambil semua kategori untuk filter (beserta icon_path dari DB)
         $categories = Category::all();
 
         // 3. Trending Places ("Ramai Dikunjungi") — skor berbobot dari data realtime:
@@ -226,9 +216,13 @@ class ExploreController extends Controller
         ]);
     }
 
-    public function show(string $slug)
+    public function show(Request $request, string $slug)
     {
-        $place = Place::with('categories')->where('slug', $slug)->firstOrFail();
+        $place = Place::with(['categories', 'photos'])->where('slug', $slug)->firstOrFail();
+
+        // Catat "baru saja dikunjungi" saat detail dibuka (sebelumnya lewat POST
+        // terpisah yang me-redirect-back → memicu reload halaman Jelajah).
+        $this->pushRecentlyVisited($request, $place->id);
 
         $isSaved = false;
         if (auth()->check()) {
@@ -239,9 +233,42 @@ class ExploreController extends Controller
 
         return inertia('Explore/Show', [
             'place' => $place,
+            'gallery' => $this->galleryFor($place),
             'isSaved' => $isSaved,
             'totalSaves' => $totalSaves,
         ]);
+    }
+
+    /**
+     * Galeri foto untuk halaman detail place, gabungan dari:
+     *  1. Foto yang diunggah admin (relasi photos → pivot photo_place).
+     *  2. Foto milik user dari album POPULER yang menandai tempat ini
+     *     (reuse logika "populer": album publik, user tak dibanned, urut view_count).
+     */
+    private function galleryFor(Place $place): array
+    {
+        $adminPhotos = $place->photos
+            ->map(fn ($ph) => [
+                'id' => 'admin-'.$ph->id,
+                'url' => '/storage/'.$ph->path,
+            ]);
+
+        $albumPhotos = TripPhoto::query()
+            ->join('albums', 'albums.id', '=', 'trip_photos.album_id')
+            ->join('trips', 'trips.id', '=', 'albums.trip_id')
+            ->join('users', 'users.id', '=', 'trips.user_id')
+            ->where('trip_photos.place_id', $place->id)
+            ->where('trips.is_public', true)
+            ->where('users.is_banned', false)
+            ->orderByDesc('albums.view_count')
+            ->limit(20)
+            ->get(['trip_photos.id', 'trip_photos.photo_path'])
+            ->map(fn ($ph) => [
+                'id' => 'album-'.$ph->id,
+                'url' => '/storage/'.$ph->photo_path,
+            ]);
+
+        return $adminPhotos->concat($albumPhotos)->values()->all();
     }
 
     public function trackVisit(Request $request)
@@ -250,26 +277,28 @@ class ExploreController extends Controller
             'place_id' => 'required|exists:places,id',
         ]);
 
-        $placeId = $request->place_id;
+        $this->pushRecentlyVisited($request, (int) $request->place_id);
 
-        // Ambil array dari session
+        return redirect()->back();
+    }
+
+    /**
+     * Simpan place_id ke daftar "baru saja dikunjungi" di session (paling depan,
+     * unik, maksimal 5). Dipakai saat membuka halaman detail.
+     */
+    private function pushRecentlyVisited(Request $request, int $placeId): void
+    {
         $recent = $request->session()->get('recently_visited_places', []);
 
-        // Hapus jika sudah ada (agar bisa dipindah ke paling depan)
+        // Pindahkan ke paling depan bila sudah ada.
         if (($key = array_search($placeId, $recent)) !== false) {
             unset($recent[$key]);
         }
 
-        // Tambah ke paling depan (paling baru)
         array_unshift($recent, $placeId);
-
-        // Batasi maksimal 5 atau 10 tempat
         $recent = array_slice($recent, 0, 5);
 
-        // Simpan kembali ke session
         $request->session()->put('recently_visited_places', $recent);
-
-        return redirect()->back();
     }
 
     /**

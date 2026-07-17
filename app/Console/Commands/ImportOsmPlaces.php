@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\OsmPlace;
+use App\Models\Place;
 use App\Services\OsmImportService;
 use Illuminate\Console\Command;
 
@@ -23,7 +23,7 @@ class ImportOsmPlaces extends Command
         {--tile=0.5 : Ukuran petak (derajat) per query Overpass}
         {--sleep=2 : Jeda detik antar petak (hormati rate-limit)}';
 
-    protected $description = 'Impor POI dari Overpass (OSM) ke tabel osm_places (server-side, sekali jalan).';
+    protected $description = 'Impor POI dari Overpass (OSM) ke tabel places (source=osm), server-side sekali jalan.';
 
     public function handle(OsmImportService $service): int
     {
@@ -49,7 +49,7 @@ class ImportOsmPlaces extends Command
         $bar->finish();
         $this->newLine(2);
         $this->info("Selesai. Titik tersimpan/diperbarui: {$result['imported']}. Petak gagal: {$result['failedTiles']}.");
-        $this->line('Total osm_places sekarang: '.OsmPlace::count());
+        $this->line('Total places bersumber OSM sekarang: '.Place::where('source', 'osm')->count());
 
         return self::SUCCESS;
     }

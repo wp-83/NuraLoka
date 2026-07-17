@@ -12,8 +12,11 @@ class DatabaseSeeder extends Seeder
             ProvinceSeeder::class,
             BadgeSeeder::class,
             MissionSeeder::class,
-            CategorySeeder::class,
-            PlaceSeeder::class,
+            // Kategori & tempat REAL Jabodetabek (menggantikan seeder dummy factory).
+            // XullCategorySeeder harus lebih dulu: XullPlaceSeeder memetakan kategori
+            // berdasarkan urutan insert kategori.
+            XullCategorySeeder::class,
+            XullPlaceSeeder::class,
             UserSeeder::class,
             ChallengeSeeder::class, // Added ChallengeSeeder
             PlaceVisitSeeder::class,

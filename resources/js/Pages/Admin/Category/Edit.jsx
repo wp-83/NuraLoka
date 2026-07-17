@@ -142,7 +142,7 @@ export default function Edit({ category }) {
                                     </span>
                                 </div>
                                 <span className="text-micro text-gray-50">
-                                    Biarkan kosong jika tidak ingin mengganti icon. Maks. 1MB.
+                                    Biarkan kosong jika tidak ingin mengganti icon. Maks. 2MB.
                                 </span>
                             </div>
                         </div>
