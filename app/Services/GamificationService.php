@@ -35,7 +35,7 @@ class GamificationService
      * Catat satu aksi user & perbarui semua misi yang cocok.
      *
      * @param  Place|null  $place  tempat terkait (untuk aksi berbasis tempat & filter kategori)
-     * @return Mission[]  daftar misi yang BARU selesai pada pemanggilan ini
+     * @return Mission[] daftar misi yang BARU selesai pada pemanggilan ini
      */
     public function record(User $user, string $action, ?Place $place = null): array
     {

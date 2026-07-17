@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Album;
 use App\Models\Category;
 use App\Models\Place;
 use App\Models\PlaceVisit;
+use App\Models\Trip;
 use App\Models\TripPhoto;
 use App\Services\GamificationService;
 use Illuminate\Http\Request;
@@ -322,7 +324,7 @@ class ExploreController extends Controller
 
         $title = 'Trip '.mb_substr($data['origin_name'], 0, 100).' → '.mb_substr($data['destination_name'], 0, 100);
 
-        $trip = \App\Models\Trip::create([
+        $trip = Trip::create([
             'user_id' => auth()->id(),
             'title' => $title,
             'origin_name' => $data['origin_name'],
@@ -337,7 +339,7 @@ class ExploreController extends Controller
         ]);
 
         // Album SPECIAL dibuat sistem (tanpa foto). Reuse struktur album yang ada.
-        $album = \App\Models\Album::create([
+        $album = Album::create([
             'trip_id' => $trip->id,
             'caption' => $title,
             'view_count' => 0,

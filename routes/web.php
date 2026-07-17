@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminBadgeController;
+use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminLevelController;
 use App\Http\Controllers\AdminMissionController;
 use App\Http\Controllers\AdminNewsController;
