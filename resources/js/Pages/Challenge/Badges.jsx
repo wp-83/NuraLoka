@@ -1,36 +1,38 @@
 import { Head, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import MainLayout from '@js/Layouts/MainLayout';
+import { useTranslation } from '@js/i18n';
 
 export default function Badges({ generalBadges = [], specialBadges = [] }) {
+    const { t } = useTranslation();
     return (
         <>
-            <Head title="Lencana Nuravers | NuraLoka" />
+            <Head title={`${t('challenge.badges_meta_title')} | NuraLoka`} />
             <div className="w-full min-h-screen bg-[#FAF8F4]">
                 <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-8">
                     {/* Header */}
                     <div className="mb-8">
-                        <h1 className="font-heading text-3xl font-bold text-primary">Lencana Nuravers</h1>
+                        <h1 className="font-heading text-3xl font-bold text-primary">{t('challenge.badges_page_title')}</h1>
                         <p className="text-sm text-info font-medium mt-0.5 italic text-[#1B86FF]">Tandha Penggali Nuravers</p>
                         <div className="h-0.5 w-16 bg-[#1B86FF] mt-1 mb-6" />
-                        
+
                         <Link href={route('challenge.index')} className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-85 transition-colors font-medium text-sm">
-                            <span className="mr-2">‹</span> Kembali ke Tantangan
+                            <span className="mr-2">‹</span> {t('challenge.back_to_challenge')}
                         </Link>
                     </div>
 
                     {/* Lencana Umum */}
                     <div className="mb-10">
-                        <h2 className="text-xl font-bold text-primary mb-4">Lencana Umum</h2>
-                        
+                        <h2 className="text-xl font-bold text-primary mb-4">{t('challenge.general_badges')}</h2>
+
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm text-left">
                                 <thead className="border-b-2 border-gray-200">
                                     <tr>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">Nama</th>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">Deskripsi</th>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">Progress Kamu</th>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">Lencana</th>
+                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_name')}</th>
+                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_desc')}</th>
+                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_progress')}</th>
+                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_badge')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -60,7 +62,7 @@ export default function Badges({ generalBadges = [], specialBadges = [] }) {
                                                         </div>
                                                     </div>
                                                     <div className="text-[10px] text-primary font-bold mt-2 text-center uppercase tracking-wider">
-                                                        menuju {cat.nextTier.toLowerCase()}
+                                                        {t('challenge.toward_tier', { tier: cat.nextTier.toLowerCase() })}
                                                     </div>
                                                 </div>
                                             </td>
@@ -76,7 +78,7 @@ export default function Badges({ generalBadges = [], specialBadges = [] }) {
                                                                     className={`w-full h-full object-contain ${tier.earned ? '' : 'grayscale opacity-50'}`}
                                                                 />
                                                             </div>
-                                                            <div className={`text-[10px] font-bold ${tier.earned ? 'text-secondary' : 'text-gray-400'}`}>{tier.points} Poin</div>
+                                                            <div className={`text-[10px] font-bold ${tier.earned ? 'text-secondary' : 'text-gray-400'}`}>{t('challenge.podium_points', { points: tier.points })}</div>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -90,16 +92,16 @@ export default function Badges({ generalBadges = [], specialBadges = [] }) {
 
                     {/* Lencana Khusus */}
                     <div>
-                        <h2 className="text-xl font-bold text-primary mb-4">Lencana Khusus</h2>
-                        
+                        <h2 className="text-xl font-bold text-primary mb-4">{t('challenge.special_badges')}</h2>
+
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm text-left">
                                 <thead className="border-b-2 border-gray-200">
                                     <tr>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">Nama</th>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">Deskripsi</th>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">Cara Mendapatkan</th>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">Lencana</th>
+                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_name')}</th>
+                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_desc')}</th>
+                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_how_to')}</th>
+                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_badge')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>

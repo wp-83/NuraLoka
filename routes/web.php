@@ -17,11 +17,15 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExploreController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
+
+// Ganti bahasa (id/en/ko) — dapat diakses semua pengunjung (tamu & login).
+Route::get('/bahasa/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
 
 // Landing Page
 Route::prefix('/')->name('landing-page.')->controller(LandingPageController::class)->group(function () {

@@ -2,8 +2,10 @@ import { Head, Link } from '@inertiajs/react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { route } from 'ziggy-js';
 import MainLayout from '@js/Layouts/MainLayout';
+import { useTranslation } from '@js/i18n';
 
 export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels = [] }) {
+    const { t } = useTranslation();
     const pathRef = useRef(null);
     const [carPos, setCarPos] = useState({ x: 0, y: 0 });
     const [labelVisible, setLabelVisible] = useState(false);
@@ -96,17 +98,17 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
 
     return (
         <>
-            <Head title="Perjalanan Level Kamu | NuraLoka" />
+            <Head title={`${t('challenge.levels_meta_title')} | NuraLoka`} />
             <div className="w-full min-h-screen bg-[#FAF8F4]">
                 <main className="mx-auto w-full max-w-5xl px-4 py-8 md:px-8 relative">
                     {/* Header */}
                     <div className="mb-8">
-                        <h1 className="font-heading text-3xl font-bold text-primary">Perjalanan Level Kamu</h1>
+                        <h1 className="font-heading text-3xl font-bold text-primary">{t('challenge.levels_page_title')}</h1>
                         <p className="text-sm text-info font-medium mt-0.5 italic text-[#1B86FF]">Lelampahan Tingkat Panjenengan</p>
                         <div className="h-0.5 w-16 bg-[#1B86FF] mt-1 mb-6" />
 
                         <Link href={route('challenge.index')} className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-85 transition-colors font-medium text-sm">
-                            <span className="mr-2">‹</span> Kembali ke Tantangan
+                            <span className="mr-2">‹</span> {t('challenge.back_to_challenge')}
                         </Link>
                     </div>
 
@@ -174,7 +176,7 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
                                 return (
                                     <div key={idx} className="absolute bg-white bg-opacity-80 px-2 py-1 rounded" style={{ top: pos.top + 'px', left: pos.left + 'px' }}>
                                         <div className="font-medium text-primary text-lg">{level.name}</div>
-                                        {level.min > 0 && <div className="text-xs text-secondary font-bold">≥ {level.min.toLocaleString('id-ID')} Poin Nura</div>}
+                                        {level.min > 0 && <div className="text-xs text-secondary font-bold">{t('challenge.min_points', { points: level.min.toLocaleString('id-ID') })}</div>}
                                     </div>
                                 );
                             })}
@@ -199,6 +201,7 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
 
 // ─── Car component that positions itself based on SVG coordinates ─────────────
 function CarOnPath({ x, y, totalPoints, isDriving, labelVisible }) {
+    const { t } = useTranslation();
     // The SVG viewBox is 0 0 800 900, and the container is max-w-[800px] h-[900px]
     // We need to convert SVG coordinates to percentage positions
     const leftPercent = (x / 800) * 100;
@@ -216,8 +219,8 @@ function CarOnPath({ x, y, totalPoints, isDriving, labelVisible }) {
             <div
                 className={`mb-1 text-center bg-white/90 px-3 py-1 rounded-xl shadow-sm border border-gray-100 transition-all duration-500 ${labelVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}
             >
-                <div className="font-bold text-primary text-sm whitespace-nowrap">Posisi Kamu</div>
-                <div className="text-[10px] text-secondary font-bold whitespace-nowrap">{totalPoints.toLocaleString('id-ID')} Poin Nura</div>
+                <div className="font-bold text-primary text-sm whitespace-nowrap">{t('challenge.your_position')}</div>
+                <div className="text-[10px] text-secondary font-bold whitespace-nowrap">{t('challenge.points_nura', { points: totalPoints.toLocaleString('id-ID') })}</div>
             </div>
             <img
                 src="/images/mascots/car.png"

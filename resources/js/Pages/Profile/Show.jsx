@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import MainLayout from '@js/Layouts/MainLayout';
 import ProfileStatisticCard from '@components/Features/ProfileStatisticCard';
+import { useTranslation } from '@js/i18n';
 import { FiMapPin, FiCalendar, FiUser } from 'react-icons/fi';
 import { FaGenderless, FaMars, FaVenus } from 'react-icons/fa6';
 
@@ -21,6 +22,7 @@ const formatDate = (date) => {
 // MAIN COMPONENT
 // =========================================================
 export default function Show({ targetUser, totalUser, rank, totalBadge, statistics, recentBadges }) {
+    const { t } = useTranslation();
     return (
         <section className="w-full py-8">
             {/* BACK BUTTON */}
@@ -29,7 +31,7 @@ export default function Show({ targetUser, totalUser, rank, totalBadge, statisti
                     href={route('challenge.leaderboard')}
                     className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-85 transition-colors font-medium text-sm"
                 >
-                    <span className="mr-2">‹</span> Kembali ke Papan Peringkat
+                    <span className="mr-2">‹</span> {t('challenge.leaderboard_page_title')}
                 </Link>
             </div>
 
@@ -58,7 +60,7 @@ export default function Show({ targetUser, totalUser, rank, totalBadge, statisti
                             {targetUser.user_detail?.fullname}
                         </h2>
                         <p className="mt-1 font-heading text-body text-secondary">
-                            Nuravers
+                            {t('common.community')}
                         </p>
 
                         {/* PROFILE INFORMATION */}
@@ -86,11 +88,11 @@ export default function Show({ targetUser, totalUser, rank, totalBadge, statisti
 
                                 <span className="truncate">
                                     {targetUser.user_detail?.gender === 'male' ? (
-                                        "Laki-laki"
+                                        t('profile.gender_male')
                                     ) : targetUser.user_detail?.gender === 'female' ? (
-                                        "Perempuan"
+                                        t('profile.gender_female')
                                     ) : (
-                                        "Tidak ingin memberi tahu"
+                                        t('profile.gender_unspecified')
                                     )}
                                 </span>
                             </div>
@@ -106,7 +108,7 @@ export default function Show({ targetUser, totalUser, rank, totalBadge, statisti
                             #{rank}
                         </p>
                         <p className="font-body text-paragraph text-primary-100">
-                            dari {totalUser} Nuravers
+                            {t('profile.rank_of', { total: totalUser })}
                         </p>
                     </div>
 
@@ -116,14 +118,14 @@ export default function Show({ targetUser, totalUser, rank, totalBadge, statisti
                             {(targetUser.user_detail?.total_points ?? 0).toLocaleString('id-ID')}
                         </p>
                         <p className="font-body text-paragraph text-primary-100">
-                            Poin Nura
+                            {t('common.points_nura')}
                         </p>
                     </div>
 
                     {/* RECENT BADGES */}
                     <div className="text-right hidden lg:block">
                         <p className="mb-3 font-body text-body text-primary-100">
-                            Lencana Baru-Baru Ini
+                            {t('profile.recent_badges')}
                         </p>
 
                         {recentBadges?.length > 0 ? (
@@ -139,7 +141,7 @@ export default function Show({ targetUser, totalUser, rank, totalBadge, statisti
                                 ))}
                             </div>
                         ) : (
-                            <p className="font-body text-small text-gray-70 italic">Belum ada lencana</p>
+                            <p className="font-body text-small text-gray-70 italic">{t('profile.no_badges')}</p>
                         )}
                     </div>
                 </div>
@@ -147,7 +149,7 @@ export default function Show({ targetUser, totalUser, rank, totalBadge, statisti
                 {/* RECENT BADGES FOR MOBILE */}
                 <div className="mt-6 text-center block lg:hidden">
                     <p className="mb-3 font-body text-body text-primary-100">
-                        Lencana Baru-Baru Ini
+                        {t('profile.recent_badges')}
                     </p>
 
                     {recentBadges?.length > 0 ? (
@@ -163,7 +165,7 @@ export default function Show({ targetUser, totalUser, rank, totalBadge, statisti
                             ))}
                         </div>
                     ) : (
-                        <p className="font-body text-small text-gray-70 italic">Belum ada lencana</p>
+                        <p className="font-body text-small text-gray-70 italic">{t('profile.no_badges')}</p>
                     )}
                 </div>
             </div>
@@ -171,21 +173,21 @@ export default function Show({ targetUser, totalUser, rank, totalBadge, statisti
             {/* STATISTICS */}
             <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-3">
                 <ProfileStatisticCard
-                    title="Lencana Terkumpul"
+                    title={t('profile.stat_badges')}
                     value={statistics?.badges ?? 0}
-                    description={`dari ${totalBadge} lencana`}
+                    description={t('profile.stat_badges_desc', { total: totalBadge })}
                     image="/images/badges/siPalingBudaya/4.png"
                 />
                 <ProfileStatisticCard
-                    title="Album Kamu"
+                    title={t('profile.stat_albums')}
                     value={statistics?.albums ?? 0}
-                    description={`album hingga ${new Date().getFullYear()}`}
+                    description={t('profile.stat_albums_desc', { year: new Date().getFullYear() })}
                     image="/images/mascots/map-v2.png"
                 />
                 <ProfileStatisticCard
-                    title="Poin Nura Kamu"
+                    title={t('profile.stat_points')}
                     value={(targetUser.user_detail?.total_points ?? 0).toLocaleString('id-ID')}
-                    description="poin"
+                    description={t('profile.stat_points_desc')}
                     image="/images/mascots/telescope.png"
                     flipImage={true}
                 />

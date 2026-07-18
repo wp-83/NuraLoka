@@ -3,6 +3,7 @@ import { router, useForm } from '@inertiajs/react';
 
 import MainLayout from '@js/Layouts/MainLayout';
 import Button from '@components/Forms/Button';
+import { useTranslation } from '@js/i18n';
 
 import {
     FiChevronLeft,
@@ -20,6 +21,7 @@ export default function AlbumEdit({
     album,
     photos: initialPhotos = [],
 }) {
+    const { t } = useTranslation();
     const [photos, setPhotos] = useState(initialPhotos);
     const fileInputRef = useRef(null);
 
@@ -148,7 +150,7 @@ export default function AlbumEdit({
 
     const handleRemovePhoto = (photoId) => {
         const isConfirmed = window.confirm(
-            'Yakin ingin menghapus foto ini?'
+            t('album.delete_photo_confirm')
         );
 
         if (!isConfirmed) return;
@@ -197,7 +199,7 @@ export default function AlbumEdit({
                         <FiChevronLeft size={16} />
                     }
                 >
-                    Kembali
+                    {t('common.back')}
                 </Button>
 
                 {/* Visibility */}
@@ -215,7 +217,7 @@ export default function AlbumEdit({
                             font-semibold text-gray-70
                         "
                     >
-                        Visibilitas
+                        {t('album.field_visibility')}
                     </span>
 
                     <button
@@ -269,8 +271,8 @@ export default function AlbumEdit({
                             "
                         >
                             {data.is_public
-                                ? 'Publik'
-                                : 'Privat'}
+                                ? t('common.public')
+                                : t('common.private')}
                         </span>
                     </button>
                 </div>
@@ -289,7 +291,7 @@ export default function AlbumEdit({
                         md:text-hero
                     "
                 >
-                    Edit Album
+                    {t('album.edit_meta_title')}
                 </h1>
 
                 <p
@@ -372,7 +374,7 @@ export default function AlbumEdit({
                                 font-semibold text-gray-85
                             "
                         >
-                            Judul Album
+                            {t('album.field_title')}
 
                             <span className="ml-1 text-error-dark">
                                 *
@@ -391,7 +393,7 @@ export default function AlbumEdit({
                             }
                             required={!isSystem}
                             disabled={isSystem}
-                            placeholder="Masukkan judul album..."
+                            placeholder={t('album.field_title_placeholder')}
                             className={`
                                 w-full
                                 rounded-lg
@@ -448,7 +450,7 @@ export default function AlbumEdit({
                                     font-semibold text-gray-85
                                 "
                             >
-                                Lokasi
+                                {t('album.field_location')}
 
                                 <span className="ml-1 text-error-dark">
                                     *
@@ -471,7 +473,7 @@ export default function AlbumEdit({
                                     onBlur={() => setTimeout(() => setShowLocationDropdown(false), 200)}
                                     required={!isSystem}
                                     disabled={isSystem}
-                                    placeholder="Cari lokasi..."
+                                    placeholder={t('album.field_location_placeholder')}
                                     className={`
                                         w-full
                                         rounded-full
@@ -560,7 +562,7 @@ export default function AlbumEdit({
                                     font-semibold text-gray-85
                                 "
                             >
-                                Tanggal
+                                {t('album.field_date')}
 
                                 <span className="ml-1 text-error-dark">
                                     *
@@ -639,7 +641,7 @@ export default function AlbumEdit({
                                     font-semibold text-primary-100
                                 "
                             >
-                                Daftar Foto
+                                {t('album.photos_label')}
                             </h2>
 
                             <p
@@ -776,10 +778,10 @@ export default function AlbumEdit({
                                             hover:bg-error
                                             hover:text-white
                                         "
-                                        title="Hapus foto"
-                                        aria-label={`Hapus ${
+                                        title={t('album.delete_photo')}
+                                        aria-label={`${t('album.delete_photo')} ${
                                             photo.filename ||
-                                            'foto'
+                                            ''
                                         }`}
                                     >
                                         <FiX size={17} />
@@ -865,7 +867,7 @@ export default function AlbumEdit({
                             loading={processing}
                             disabled={processing}
                         >
-                            Simpan Perubahan
+                            {t('common.save_changes')}
                         </Button>
                     </div>
                 )}

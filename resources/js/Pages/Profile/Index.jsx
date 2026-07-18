@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import Button from '@components/Forms/Button';
 import ProfileStatisticCard from '@components/Features/ProfileStatisticCard';
 import MainLayout from '@js/Layouts/MainLayout';
+import { useTranslation } from '@js/i18n';
 import { FiMail, FiMapPin, FiCalendar, FiUser } from 'react-icons/fi';
 import { FaGenderless, FaMars, FaVenus } from 'react-icons/fa6';
 
@@ -23,11 +24,12 @@ const formatDate = (date) => {
 // MAIN COMPONENT
 // =========================================================
 export default function Index({ user, totalUser, rank, recentBadges, totalBadge, statistics }) {
+    const { t } = useTranslation();
     return (
         <section className="w-full py-8">
         {/* PAGE TITLE */}
         <h1 className="mb-8 font-heading text-title font-bold text-primary sm:text-hero">
-            Profil Kamu
+            {t('profile.title')}
         </h1>
 
         {/* PROFILE */}
@@ -82,11 +84,11 @@ export default function Index({ user, totalUser, rank, recentBadges, totalBadge,
 
                             <span className="truncate">
                                 {user.user_detail?.gender === 'male' ? (
-                                    "Laki-laki"
+                                    t('profile.gender_male')
                                 ) : user.user_detail?.gender === 'female' ? (
-                                    "Perempuan"
+                                    t('profile.gender_female')
                                 ) : (
-                                    "Tidak ingin memberi tahu"
+                                    t('profile.gender_unspecified')
                                 )}
                             </span>
                         </div>
@@ -102,14 +104,14 @@ export default function Index({ user, totalUser, rank, recentBadges, totalBadge,
                         #{rank}
                     </p>
                     <p className="font-body text-paragraph text-primary-100">
-                        dari {totalUser} Nuravers
+                        {t('profile.rank_of', { total: totalUser })}
                     </p>
                 </div>
 
                 {/* RECENT BADGES */}
                 <div className="text-right">
                     <p className="mb-3 font-body text-body text-primary-100">
-                        Lencana Baru-Baru Ini
+                        {t('profile.recent_badges')}
                     </p>
 
                     {recentBadges?.length > 0 ? (
@@ -125,7 +127,7 @@ export default function Index({ user, totalUser, rank, recentBadges, totalBadge,
                             ))}
                         </div>
                     ) : (
-                        <p className="font-body text-small text-gray-70 italic">Belum ada lencana</p>
+                        <p className="font-body text-small text-gray-70 italic">{t('profile.no_badges')}</p>
                     )}
                 </div>
             </div>
@@ -134,21 +136,21 @@ export default function Index({ user, totalUser, rank, recentBadges, totalBadge,
         {/* STATISTICS */}
         <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-3">
             <ProfileStatisticCard
-                title="Lencana Terkumpul"
+                title={t('profile.stat_badges')}
                 value={statistics?.badges ?? 0}
-                description={`dari ${totalBadge} lencana`}
+                description={t('profile.stat_badges_desc', { total: totalBadge })}
                 image="/images/badges/siPalingBudaya/4.png"
             />
             <ProfileStatisticCard
-                title="Album Kamu"
+                title={t('profile.stat_albums')}
                 value={statistics?.albums ?? 0}
-                description={`album hingga ${new Date().getFullYear()}`}
+                description={t('profile.stat_albums_desc', { year: new Date().getFullYear() })}
                 image="/images/mascots/map-v2.png"
             />
             <ProfileStatisticCard
-                title="Poin Nura Kamu"
+                title={t('profile.stat_points')}
                 value={(user.user_detail?.total_points ?? 0).toLocaleString('id-ID')}
-                description="poin"
+                description={t('profile.stat_points_desc')}
                 image="/images/mascots/telescope.png"
                 flipImage={true}
             />
@@ -158,7 +160,7 @@ export default function Index({ user, totalUser, rank, recentBadges, totalBadge,
         <div className="mt-8 flex justify-end">
             <Link href={route('profile.edit')} className="w-full sm:w-auto">
                 <Button type="button" className="w-full sm:min-w-52">
-                    Perbarui Data Profil
+                    {t('profile.update_profile')}
                 </Button>
             </Link>
         </div>

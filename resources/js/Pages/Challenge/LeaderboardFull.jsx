@@ -2,9 +2,11 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { route } from 'ziggy-js';
 import MainLayout from '@js/Layouts/MainLayout';
+import { useTranslation } from '@js/i18n';
 import { FiSearch, FiX } from 'react-icons/fi';
 
 export default function LeaderboardFull({ leaderboard = [], search = '', totalResults = null }) {
+    const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState(search || '');
 
     const handleSearch = (e) => {
@@ -19,22 +21,22 @@ export default function LeaderboardFull({ leaderboard = [], search = '', totalRe
 
     return (
         <>
-            <Head title="Papan Peringkat | NuraLoka" />
+            <Head title={`${t('challenge.leaderboard_meta_title')} | NuraLoka`} />
             <div className="w-full min-h-screen bg-[#FAF8F4]">
                 <main className="mx-auto w-full max-w-5xl px-4 py-8 md:px-8">
                     {/* Header */}
                     <div className="mb-6">
-                        <h1 className="font-heading text-3xl font-bold text-primary">Papan Peringkat Para Nuravers</h1>
+                        <h1 className="font-heading text-3xl font-bold text-primary">{t('challenge.leaderboard_page_title')}</h1>
                         <p className="text-sm text-info font-medium mt-0.5 italic text-[#1B86FF]">Papan Undhakan Para Nuraver</p>
                         <div className="h-0.5 w-16 bg-[#1B86FF] mt-1 mb-6" />
-                        
+
                         <div className="flex justify-between items-end">
                             <Link href={route('challenge.index')} className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-85 transition-colors font-medium text-sm">
-                                <span className="mr-2">‹</span> Kembali ke Tantangan
+                                <span className="mr-2">‹</span> {t('challenge.back_to_challenge')}
                             </Link>
 
                             {totalResults !== null && (
-                                <div className="text-sm text-gray-500 italic">Ditemukan {totalResults} pengguna</div>
+                                <div className="text-sm text-gray-500 italic">{t('challenge.found_users', { count: totalResults })}</div>
                             )}
                         </div>
                     </div>
@@ -48,7 +50,7 @@ export default function LeaderboardFull({ leaderboard = [], search = '', totalRe
                             <input
                                 type="text"
                                 className="block w-full pl-10 pr-10 py-3 bg-[#FEF0E6] border-none rounded-xl text-sm placeholder-gray-500 focus:ring-0 focus:outline-none"
-                                placeholder="Temukan namamu ataupun nama orang lain di papan peringkat..."
+                                placeholder={t('challenge.leaderboard_search_placeholder')}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -97,12 +99,12 @@ export default function LeaderboardFull({ leaderboard = [], search = '', totalRe
                                         {/* Info */}
                                         <div className="flex-1 min-w-0 mr-4">
                                             <div className="font-bold text-primary text-base">
-                                                {user.name} {user.is_current ? <span className="text-secondary">(Kamu)</span> : ''}
+                                                {user.name} {user.is_current ? <span className="text-secondary">{t('challenge.you')}</span> : ''}
                                             </div>
                                             <div className="flex items-center gap-1.5 mt-0.5 text-xs">
                                                 <span className="text-secondary font-bold">{user.level}</span>
                                                 <span className="text-gray-400">•</span>
-                                                <span className="text-gray-600 font-medium">{user.points.toLocaleString('id-ID')} Poin</span>
+                                                <span className="text-gray-600 font-medium">{t('challenge.podium_points', { points: user.points.toLocaleString('id-ID') })}</span>
                                             </div>
                                         </div>
 
@@ -136,7 +138,7 @@ export default function LeaderboardFull({ leaderboard = [], search = '', totalRe
                             })
                         ) : (
                             <div className="text-center py-10 text-gray-500">
-                                {search ? 'Tidak ada pengguna yang cocok dengan pencarian.' : 'Belum ada data peringkat.'}
+                                {search ? t('challenge.no_match') : t('challenge.no_data')}
                             </div>
                         )}
                     </div>
