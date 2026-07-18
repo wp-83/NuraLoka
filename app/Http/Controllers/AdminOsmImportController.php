@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\ImportOsmPlacesJob;
+use App\Jobs\ImportOsmTileJob;
 use App\Models\OsmImportRun;
 use App\Models\Place;
 use App\Services\OsmImportService;
+use Illuminate\Bus\Batch;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -67,22 +69,64 @@ class AdminOsmImportController extends Controller
             }
         }
 
+        $tileSize = (float) ($validated['tile'] ?? 0.5);
+        $sleep = (float) ($validated['sleep'] ?? 2);
+
+        // Pecah bbox jadi petak-petak; tiap petak menjadi satu job pendek.
+        $tiles = $this->service->tiles($south, $west, $north, $east, $tileSize);
+        if (empty($tiles)) {
+            return back()->withErrors(['mode' => 'Area terlalu kecil: tidak ada petak yang dihasilkan.']);
+        }
+
+        $before = Place::where('source', 'osm')->count();
+
         $run = OsmImportRun::create([
             'region' => $region,
             'south' => $south,
             'west' => $west,
             'north' => $north,
             'east' => $east,
-            'tile' => $validated['tile'] ?? 0.5,
-            'sleep' => $validated['sleep'] ?? 2,
-            'status' => 'pending',
+            'tile' => $tileSize,
+            'sleep' => $sleep,
+            'status' => 'running',
+            'total_tiles' => count($tiles),
+            'places_before' => $before,
+            'started_at' => now(),
             'triggered_by' => auth()->id(),
         ]);
 
-        ImportOsmPlacesJob::dispatch($run->id);
+        $runId = $run->id;
+        $jobs = array_map(
+            fn ($t) => new ImportOsmTileJob($runId, $t['south'], $t['west'], $t['north'], $t['east'], $sleep),
+            $tiles
+        );
+
+        // Batch: satu petak gagal tak menggagalkan seluruhnya (allowFailures). Status akhir
+        // ditetapkan di finally (jalan baik saat semua sukses maupun ada yang gagal).
+        $batch = Bus::batch($jobs)
+            ->name("osm-import-{$runId}")
+            ->allowFailures()
+            ->finally(function (Batch $batch) use ($runId) {
+                $r = OsmImportRun::find($runId);
+                if (! $r) {
+                    return;
+                }
+                $allFailed = $r->total_tiles > 0 && $r->failed_tiles >= $r->total_tiles;
+                $r->update([
+                    'status' => $allFailed ? 'failed' : 'success',
+                    'message' => $allFailed
+                        ? 'Semua petak gagal diambil dari Overpass. Coba lagi nanti.'
+                        : $r->message,
+                    'places_after' => Place::where('source', 'osm')->count(),
+                    'finished_at' => now(),
+                ]);
+            })
+            ->dispatch();
+
+        $run->update(['batch_id' => $batch->id]);
 
         session()->flash('flash.type', 'success');
-        session()->flash('flash.message', 'Impor dimulai di latar belakang. Pantau statusnya di tabel di bawah.');
+        session()->flash('flash.message', 'Impor dimulai di latar belakang ('.count($tiles).' petak). Pantau statusnya di tabel di bawah.');
 
         return redirect()->route('admin.osm-import.index');
     }

@@ -11,7 +11,7 @@ return [
     // ── Index ──
     'meta_title' => 'Nuravers Challenges',
     'title' => 'Nuravers Challenges',
-    'subtitle' => 'Tetandingan Nuravers',
+    // Regional-language subtitle moved to the separate 'daerah' system.
     'total_points' => 'Total Nura Points',
     'points_suffix' => 'POINTS',
     'level_current' => 'Your Current Level',
@@ -41,7 +41,6 @@ return [
     // ── Badges ──
     'badges_meta_title' => 'Nuravers Badges',
     'badges_page_title' => 'Nuravers Badges',
-    'badges_subtitle' => 'Tandha Penggali Nuravers',
     'back_to_challenge' => 'Back to Challenges',
     'general_badges' => 'General Badges',
     'special_badges' => 'Special Badges',
@@ -55,14 +54,12 @@ return [
     // ── Levels ──
     'levels_meta_title' => 'Your Level Journey',
     'levels_page_title' => 'Your Level Journey',
-    'levels_subtitle' => 'Lelampahan Tingkat Panjenengan',
     'your_position' => 'Your Position',
     'min_points' => '≥ :points Nura Points',
 
     // ── Full leaderboard ──
     'leaderboard_meta_title' => 'Leaderboard',
     'leaderboard_page_title' => 'Nuravers Leaderboard',
-    'leaderboard_subtitle' => 'Papan Undhakan Para Nuraver',
     'found_users' => ':count users found',
     'leaderboard_search_placeholder' => 'Find your name or others on the leaderboard...',
     'you' => '(You)',

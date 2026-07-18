@@ -111,9 +111,10 @@ export default function Index({ regions = [], runs = [], osmTotal = 0 }) {
                 <div className="mt-6 flex items-start gap-3 rounded-xl border border-info-dark/20 bg-info-dark/5 p-4">
                     <FaInfoCircle className="mt-0.5 shrink-0 text-info-dark" />
                     <p className="text-small text-gray-70">
-                        Impor dijalankan sebagai <b>antrean (queue)</b>. Pastikan worker aktif
-                        (<code className="rounded bg-gray-10 px-1">php artisan queue:work</code>) agar tugas diproses.
-                        Area luas seperti <b>Seluruh Indonesia</b> bisa memakan waktu lama — gunakan jeda (sleep) yang
+                        Impor dipecah menjadi <b>banyak job per-petak</b> di antrean (queue). Pastikan worker aktif
+                        (<code className="rounded bg-gray-10 px-1">php artisan queue:work --timeout=180</code>) agar tugas diproses.
+                        Tiap petak diproses & di-retry sendiri, jadi impor aman dilanjut meski worker sempat mati.
+                        Area luas seperti <b>Seluruh Indonesia</b> tetap memakan waktu — gunakan jeda (sleep) yang
                         cukup untuk menghormati batas Overpass.
                     </p>
                 </div>
@@ -262,12 +263,24 @@ export default function Index({ regions = [], runs = [], osmTotal = 0 }) {
                                         )}
                                     </td>
                                     <td className="px-4 py-3 text-small text-gray-70">
-                                        {run.failed_tiles > 0 ? (
-                                            <span className="text-error-dark">{run.failed_tiles} gagal</span>
+                                        {run.total_tiles > 0 ? (
+                                            <>
+                                                <span className="block">
+                                                    {Number(run.processed_tiles || 0).toLocaleString('id-ID')} / {Number(run.total_tiles).toLocaleString('id-ID')} petak
+                                                </span>
+                                                {run.status === 'running' && (
+                                                    <span className="mt-1 block h-1.5 w-24 overflow-hidden rounded-full bg-gray-10">
+                                                        <span
+                                                            className="block h-full rounded-full bg-info-dark transition-all"
+                                                            style={{ width: `${Math.min(100, Math.round(((run.processed_tiles || 0) / run.total_tiles) * 100))}%` }}
+                                                        />
+                                                    </span>
+                                                )}
+                                                {run.failed_tiles > 0 && (
+                                                    <span className="mt-0.5 block text-micro text-error-dark">{run.failed_tiles} petak gagal</span>
+                                                )}
+                                            </>
                                         ) : '—'}
-                                        {run.total_tiles > 0 && (
-                                            <span className="block text-micro text-gray-50">dari {run.total_tiles} petak</span>
-                                        )}
                                     </td>
                                     <td className="px-4 py-3 text-micro text-gray-70">
                                         <span className="block">Mulai: {formatTime(run.started_at)}</span>

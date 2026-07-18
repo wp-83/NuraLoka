@@ -3,6 +3,7 @@ import { router, useForm } from '@inertiajs/react';
 
 import MainLayout from '@js/Layouts/MainLayout';
 import Button from '@components/Forms/Button';
+import { useTranslation } from '@js/i18n';
 
 import {
     FiChevronLeft,
@@ -10,6 +11,7 @@ import {
     FiX,
     FiSearch,
     FiMapPin,
+    FiLock,
 } from 'react-icons/fi';
 
 // ============================================================
@@ -19,8 +21,13 @@ export default function AlbumEdit({
     album,
     photos: initialPhotos = [],
 }) {
+    const { t } = useTranslation();
     const [photos, setPhotos] = useState(initialPhotos);
     const fileInputRef = useRef(null);
+
+    // Album sistem (perjalanan 2 titik): dibuat otomatis — judul, lokasi, dan
+    // tanggal terkunci. User hanya boleh menambah/menghapus foto.
+    const isSystem = album?.is_system ?? false;
 
     const [locationSuggestions, setLocationSuggestions] = useState([]);
     const [showLocationDropdown, setShowLocationDropdown] = useState(false);
@@ -90,6 +97,8 @@ export default function AlbumEdit({
     const handleSubmit = (event) => {
         event.preventDefault();
 
+        if (isSystem) return; // info album sistem terkunci
+
         put(
             route(
                 'album.update',
@@ -141,7 +150,7 @@ export default function AlbumEdit({
 
     const handleRemovePhoto = (photoId) => {
         const isConfirmed = window.confirm(
-            'Yakin ingin menghapus foto ini?'
+            t('album.delete_photo_confirm')
         );
 
         if (!isConfirmed) return;
@@ -190,7 +199,7 @@ export default function AlbumEdit({
                         <FiChevronLeft size={16} />
                     }
                 >
-                    Kembali
+                    {t('common.back')}
                 </Button>
 
                 {/* Visibility */}
@@ -208,7 +217,7 @@ export default function AlbumEdit({
                             font-semibold text-gray-70
                         "
                     >
-                        Visibilitas
+                        {t('album.field_visibility')}
                     </span>
 
                     <button
@@ -262,8 +271,8 @@ export default function AlbumEdit({
                             "
                         >
                             {data.is_public
-                                ? 'Publik'
-                                : 'Privat'}
+                                ? t('common.public')
+                                : t('common.private')}
                         </span>
                     </button>
                 </div>
@@ -282,7 +291,7 @@ export default function AlbumEdit({
                         md:text-hero
                     "
                 >
-                    Edit Album
+                    {t('album.edit_meta_title')}
                 </h1>
 
                 <p
@@ -326,6 +335,35 @@ export default function AlbumEdit({
                         Informasi Album
                     </h2>
 
+                    {/* Locked notice for system-generated (2-point journey) albums */}
+                    {isSystem && (
+                        <div
+                            className="
+                                mb-5 flex items-start gap-3
+                                rounded-xl
+                                border border-primary-30
+                                bg-primary-10/50
+                                px-4 py-3
+                            "
+                        >
+                            <FiLock
+                                size={16}
+                                className="mt-0.5 shrink-0 text-primary-100"
+                            />
+                            <p
+                                className="
+                                    font-body text-micro
+                                    text-gray-70
+                                "
+                            >
+                                Album ini dibuat otomatis oleh sistem dari
+                                perjalanan 2 titik. Judul, lokasi, dan tanggal
+                                terkunci dan tidak dapat diubah — kamu hanya dapat
+                                menambah atau menghapus foto.
+                            </p>
+                        </div>
+                    )}
+
                     {/* Title */}
                     <div className="mb-5">
                         <label
@@ -336,7 +374,7 @@ export default function AlbumEdit({
                                 font-semibold text-gray-85
                             "
                         >
-                            Judul Album
+                            {t('album.field_title')}
 
                             <span className="ml-1 text-error-dark">
                                 *
@@ -353,13 +391,13 @@ export default function AlbumEdit({
                                     event.target.value
                                 )
                             }
-                            required
-                            placeholder="Masukkan judul album..."
-                            className="
+                            required={!isSystem}
+                            disabled={isSystem}
+                            placeholder={t('album.field_title_placeholder')}
+                            className={`
                                 w-full
                                 rounded-lg
                                 border border-gray-30
-                                bg-white
                                 px-4 py-2.5
                                 font-body text-small
                                 text-gray-85
@@ -371,7 +409,13 @@ export default function AlbumEdit({
                                 focus:border-primary-85
                                 focus:ring-2
                                 focus:ring-primary-30
-                            "
+
+                                ${
+                                    isSystem
+                                        ? 'cursor-not-allowed bg-gray-10 text-gray-50'
+                                        : 'bg-white'
+                                }
+                            `}
                         />
 
                         {errors.title && (
@@ -406,7 +450,7 @@ export default function AlbumEdit({
                                     font-semibold text-gray-85
                                 "
                             >
-                                Lokasi
+                                {t('album.field_location')}
 
                                 <span className="ml-1 text-error-dark">
                                     *
@@ -425,15 +469,15 @@ export default function AlbumEdit({
                                         setData('location', event.target.value);
                                         setShowLocationDropdown(true);
                                     }}
-                                    onFocus={() => setShowLocationDropdown(true)}
+                                    onFocus={() => !isSystem && setShowLocationDropdown(true)}
                                     onBlur={() => setTimeout(() => setShowLocationDropdown(false), 200)}
-                                    required
-                                    placeholder="Cari lokasi..."
-                                    className="
+                                    required={!isSystem}
+                                    disabled={isSystem}
+                                    placeholder={t('album.field_location_placeholder')}
+                                    className={`
                                         w-full
                                         rounded-full
                                         border-2 border-primary-30
-                                        bg-white
                                         pl-11 pr-4 py-2.5
                                         font-body text-small
                                         text-gray-85
@@ -444,11 +488,17 @@ export default function AlbumEdit({
 
                                         focus:border-primary-100
                                         focus:ring-0
-                                    "
+
+                                        ${
+                                            isSystem
+                                                ? 'cursor-not-allowed bg-gray-10 text-gray-50'
+                                                : 'bg-white'
+                                        }
+                                    `}
                                 />
 
                                 {/* Dropdown Suggestions */}
-                                {showLocationDropdown && locationSuggestions.length > 0 && (
+                                {!isSystem && showLocationDropdown && locationSuggestions.length > 0 && (
                                     <div className="
                                         absolute z-20 w-full mt-2
                                         bg-white rounded-2xl
@@ -512,7 +562,7 @@ export default function AlbumEdit({
                                     font-semibold text-gray-85
                                 "
                             >
-                                Tanggal
+                                {t('album.field_date')}
 
                                 <span className="ml-1 text-error-dark">
                                     *
@@ -530,12 +580,12 @@ export default function AlbumEdit({
                                         event.target.value
                                     )
                                 }
-                                required
-                                className="
+                                required={!isSystem}
+                                disabled={isSystem}
+                                className={`
                                     w-full
                                     rounded-lg
                                     border border-gray-30
-                                    bg-white
                                     px-4 py-2.5
                                     font-body text-small
                                     text-gray-85
@@ -545,7 +595,13 @@ export default function AlbumEdit({
                                     focus:border-primary-85
                                     focus:ring-2
                                     focus:ring-primary-30
-                                "
+
+                                    ${
+                                        isSystem
+                                            ? 'cursor-not-allowed bg-gray-10 text-gray-50'
+                                            : 'bg-white'
+                                    }
+                                `}
                             />
 
                             {errors.date && (
@@ -585,7 +641,7 @@ export default function AlbumEdit({
                                     font-semibold text-primary-100
                                 "
                             >
-                                Daftar Foto
+                                {t('album.photos_label')}
                             </h2>
 
                             <p
@@ -722,10 +778,10 @@ export default function AlbumEdit({
                                             hover:bg-error
                                             hover:text-white
                                         "
-                                        title="Hapus foto"
-                                        aria-label={`Hapus ${
+                                        title={t('album.delete_photo')}
+                                        aria-label={`${t('album.delete_photo')} ${
                                             photo.filename ||
-                                            'foto'
+                                            ''
                                         }`}
                                     >
                                         <FiX size={17} />
@@ -794,25 +850,27 @@ export default function AlbumEdit({
                 </div>
 
                 {/* ====================================================
-                    SUBMIT
+                    SUBMIT — hanya untuk album non-sistem (info dapat diubah)
                 ==================================================== */}
-                <div
-                    className="
-                        flex justify-end
-                        border-t border-gray-10
-                        pt-6
-                    "
-                >
-                    <Button
-                        type="submit"
-                        variant="primary"
-                        size="btn-md"
-                        loading={processing}
-                        disabled={processing}
+                {!isSystem && (
+                    <div
+                        className="
+                            flex justify-end
+                            border-t border-gray-10
+                            pt-6
+                        "
                     >
-                        Simpan Perubahan
-                    </Button>
-                </div>
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            size="btn-md"
+                            loading={processing}
+                            disabled={processing}
+                        >
+                            {t('common.save_changes')}
+                        </Button>
+                    </div>
+                )}
             </form>
         </section>
     );

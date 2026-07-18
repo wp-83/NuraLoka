@@ -5,13 +5,15 @@ import Dropdown from '@components/Forms/Dropdown';
 import Button from '@components/Forms/Button';
 import AdminLayout from '../../../Layouts/AdminLayout';
 
-export default function Edit({ mission, badges }) {
+export default function Edit({ mission, badges, categories = [], actions = [] }) {
     const { data, setData, post, processing, errors } = useForm({
         title: mission.title || '',
         description: mission.description || '',
         points_reward: mission.points_reward || 0,
         target: mission.target || 1,
         badge_id: mission.badge_id || '',
+        action_type: mission.action_type || '',
+        category_id: mission.category_id || '',
     });
 
     const submit = (e) => {
@@ -20,6 +22,10 @@ export default function Edit({ mission, badges }) {
     };
 
     const badgeOptions = badges ? badges.map(b => ({ label: b.name, value: b.id })) : [];
+    const actionOptions = actions.map(a => ({ label: a.label, value: a.value }));
+    const categoryOptions = categories.map(c => ({ label: c.name, value: c.id }));
+    const selectedAction = actions.find(a => String(a.value) === String(data.action_type));
+    const showCategory = selectedAction?.category;
 
     return (
         <>
@@ -84,6 +90,39 @@ export default function Edit({ mission, badges }) {
                             min="0"
                             required
                         />
+
+                        {/* ── Aksi pemicu otomatis (gamifikasi dinamis) ── */}
+                        <div className="rounded-xl border border-secondary-30 bg-secondary-10/50 p-4">
+                            <p className="mb-3 font-body text-small text-gray-70">
+                                Tautkan tantangan ke aksi user agar progres berjalan otomatis. Pilih
+                                <b> Manual</b> bila tantangan tidak dihubungkan ke aksi apa pun.
+                            </p>
+                            <Dropdown
+                                label="Aksi Pemicu"
+                                name="action_type"
+                                value={data.action_type}
+                                onChange={(e) => setData('action_type', e.target.value)}
+                                options={actionOptions}
+                                error={errors.action_type}
+                            />
+
+                            {showCategory && (
+                                <div className="mt-4">
+                                    <Dropdown
+                                        label="Kategori Tempat (opsional)"
+                                        name="category_id"
+                                        value={data.category_id}
+                                        onChange={(e) => setData('category_id', e.target.value)}
+                                        options={categoryOptions}
+                                        placeholder="Semua kategori"
+                                        error={errors.category_id}
+                                    />
+                                    <p className="mt-1 text-micro text-gray-50">
+                                        Kosongkan untuk menghitung semua kategori tempat.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
 
                         <Input
                             type="number"

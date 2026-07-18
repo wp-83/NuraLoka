@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AdminBadgeController;
 use App\Http\Controllers\AdminCategoryController;
+use App\Http\Controllers\AdminLevelController;
 use App\Http\Controllers\AdminMissionController;
 use App\Http\Controllers\AdminNewsController;
 use App\Http\Controllers\AdminOsmImportController;
@@ -15,11 +17,15 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExploreController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
+
+// Ganti bahasa (id/en/ko) — dapat diakses semua pengunjung (tamu & login).
+Route::get('/bahasa/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
 
 // Landing Page
 Route::prefix('/')->name('landing-page.')->controller(LandingPageController::class)->group(function () {
@@ -93,6 +99,9 @@ Route::middleware(['auth', 'unbanned'])->group(function () {
         Route::get('/trending', 'trending')->name('trending'); // Ramai dikunjungi sekitar user (radius lokasi)
         Route::post('/lacak', 'trackVisit')->name('track');
         Route::post('/checkin', 'checkIn')->name('checkin'); // check-in kunjungan (verifikasi lokasi)
+        Route::get('/rute-titik', 'routeWaypoints')->name('route-waypoints'); // via-point admin rute 2 titik
+        Route::post('/rute-osm', 'routeOsmWaypoints')->name('route-osm'); // fallback OSM di-snap ke rute nyata
+        Route::post('/perjalanan', 'startJourney')->name('journey'); // mulai/selesaikan perjalanan 2 titik
         Route::get('/{slug}', 'show')->name('show');
     });
 
@@ -136,7 +145,7 @@ Route::middleware(['auth', 'unbanned'])->group(function () {
 });
 
 // Admin Features
-Route::middleware(['auth', 'unbanned'])->prefix('/admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'unbanned', 'admin'])->prefix('/admin')->name('admin.')->group(function () {
     // Dashboard
     Route::prefix('/dasbor')->name('dashboard.')->controller(DashboardController::class)->group(function () {
         Route::get('/', 'index')->name('index');
@@ -179,10 +188,25 @@ Route::middleware(['auth', 'unbanned'])->prefix('/admin')->name('admin.')->group
         Route::delete('/{id}', [AdminMissionController::class, 'destroy'])->name('destroy');
     });
 
-    // Level
-    // Route::prefix('/level')->name('level.')->group(function(){
+    // Badge Management
+    Route::prefix('/lencana')->name('badges.')->group(function () {
+        Route::get('/', [AdminBadgeController::class, 'index'])->name('index');
+        Route::get('/create', [AdminBadgeController::class, 'create'])->name('create');
+        Route::post('/', [AdminBadgeController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [AdminBadgeController::class, 'edit'])->name('edit');
+        Route::post('/{id}', [AdminBadgeController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdminBadgeController::class, 'destroy'])->name('destroy');
+    });
 
-    // });
+    // Level Management
+    Route::prefix('/level')->name('levels.')->group(function () {
+        Route::get('/', [AdminLevelController::class, 'index'])->name('index');
+        Route::get('/create', [AdminLevelController::class, 'create'])->name('create');
+        Route::post('/', [AdminLevelController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [AdminLevelController::class, 'edit'])->name('edit');
+        Route::post('/{id}', [AdminLevelController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdminLevelController::class, 'destroy'])->name('destroy');
+    });
 
     // News Management
     Route::prefix('/wawasan-wisata')->name('news.')->group(function () {

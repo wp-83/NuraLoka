@@ -14,8 +14,8 @@ use Illuminate\Support\Facades\Http;
  * bersih dan impor idempotent (re-impor node yang sama = update, bukan duplikat).
  *
  * Dipakai bersama oleh:
- *  - Command CLI  App\Console\Commands\ImportOsmPlaces  (sekali jalan, manual)
- *  - Job antrean  App\Jobs\ImportOsmPlacesJob           (dipicu dari panel admin)
+ *  - Command CLI  App\Console\Commands\ImportOsmPlaces  (sekali jalan, sinkron via import())
+ *  - Job antrean  App\Jobs\ImportOsmTileJob             (satu job per petak, dipicu panel admin)
  */
 class OsmImportService
 {
@@ -102,6 +102,43 @@ class OsmImportService
     }
 
     /**
+     * Pecah bbox menjadi daftar petak berukuran $tile derajat.
+     *
+     * @return array<int, array{south:float, west:float, north:float, east:float}>
+     */
+    public function tiles(float $south, float $west, float $north, float $east, float $tile = 0.5): array
+    {
+        $tiles = [];
+        for ($lat = $south; $lat < $north; $lat += $tile) {
+            for ($lng = $west; $lng < $east; $lng += $tile) {
+                $tiles[] = [
+                    'south' => $lat,
+                    'west' => $lng,
+                    'north' => min($lat + $tile, $north),
+                    'east' => min($lng + $tile, $east),
+                ];
+            }
+        }
+
+        return $tiles;
+    }
+
+    /**
+     * Impor SATU petak: ambil dari Overpass lalu simpan. Kembalikan jumlah node valid.
+     * Melempar exception bila semua mirror Overpass gagal, agar pemanggil (job antrean)
+     * bisa me-retry petak ini tanpa menggagalkan seluruh impor.
+     */
+    public function importTile(float $south, float $west, float $north, float $east): int
+    {
+        $elements = $this->fetchTile($south, $west, $north, $east);
+        if ($elements === null) {
+            throw new \RuntimeException('Overpass gagal untuk petak ['."$south,$west,$north,$east".'].');
+        }
+
+        return $this->storeElements($elements);
+    }
+
+    /**
      * Jalankan impor untuk bbox tertentu, dibagi menjadi petak berukuran $tile derajat.
      *
      * @param  callable|null  $onProgress  fn(int $tileIndex, int $totalTiles, int $importedSoFar): void
@@ -116,33 +153,26 @@ class OsmImportService
         float $sleep = 2,
         ?callable $onProgress = null
     ): array {
-        $totalTiles = $this->totalTiles($south, $west, $north, $east, $tile);
+        $tiles = $this->tiles($south, $west, $north, $east, $tile);
+        $totalTiles = count($tiles);
         $imported = 0;
         $failedTiles = 0;
         $tileIndex = 0;
 
-        for ($lat = $south; $lat < $north; $lat += $tile) {
-            for ($lng = $west; $lng < $east; $lng += $tile) {
-                $tSouth = $lat;
-                $tNorth = min($lat + $tile, $north);
-                $tWest = $lng;
-                $tEast = min($lng + $tile, $east);
+        foreach ($tiles as $t) {
+            try {
+                $imported += $this->importTile($t['south'], $t['west'], $t['north'], $t['east']);
+            } catch (\Throwable $e) {
+                $failedTiles++;
+            }
 
-                $elements = $this->fetchTile($tSouth, $tWest, $tNorth, $tEast);
-                if ($elements === null) {
-                    $failedTiles++;
-                } else {
-                    $imported += $this->storeElements($elements);
-                }
+            $tileIndex++;
+            if ($onProgress) {
+                $onProgress($tileIndex, $totalTiles, $imported);
+            }
 
-                $tileIndex++;
-                if ($onProgress) {
-                    $onProgress($tileIndex, $totalTiles, $imported);
-                }
-
-                if ($sleep > 0) {
-                    usleep((int) ($sleep * 1_000_000));
-                }
+            if ($sleep > 0) {
+                usleep((int) ($sleep * 1_000_000));
             }
         }
 

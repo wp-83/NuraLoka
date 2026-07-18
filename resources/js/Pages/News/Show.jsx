@@ -1,24 +1,29 @@
 import { Link, Head } from '@inertiajs/react';
+import { useTranslation } from '@js/i18n';
 import '@css/News/Show.css';
 
+const LOCALE_TAG = { id: 'id-ID', en: 'en-US', ko: 'ko-KR' };
+
 export default function Show({ newsItem }) {
+    const { t, locale } = useTranslation();
+
     // Determine the author's display name safely
     const authorName = newsItem.user?.userDetails?.fullname
         || newsItem.user?.user_details?.fullname
         || newsItem.user?.username
-        || 'Admin NuraLoka';
+        || t('news.default_author');
 
     // Format absolute date
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('id-ID', {
+        return date.toLocaleDateString(LOCALE_TAG[locale] || 'id-ID', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
-        }) + ' WIB';
+        }) + ' ' + t('news.time_suffix');
     };
 
     // Parse the content text into paragraphs
@@ -43,7 +48,7 @@ export default function Show({ newsItem }) {
                 {/* Back Button */}
                 <div className="back-navigation">
                     <Link href={route('news.index')} className="back-link">
-                        &larr; Kembali ke Semua Wawasan Wisata
+                        &larr; {t('news.show_back')}
                     </Link>
                 </div>
 
@@ -52,12 +57,12 @@ export default function Show({ newsItem }) {
                     <h1 className="news-detail-title">{newsItem.title}</h1>
                     <div className="news-detail-meta">
                         <div className="meta-author">
-                            <span className="meta-label">Penulis:</span>
+                            <span className="meta-label">{t('news.author_label')}</span>
                             <span className="meta-value">{authorName}</span>
                         </div>
                         <div className="meta-divider">|</div>
                         <div className="meta-date">
-                            <span className="meta-label">Diterbitkan:</span>
+                            <span className="meta-label">{t('news.published_label')}</span>
                             <span className="meta-value">{formatDate(newsItem.publish_date)}</span>
                         </div>
                     </div>
@@ -80,7 +85,7 @@ export default function Show({ newsItem }) {
                 {/* Footer Back Link */}
                 <footer className="news-detail-footer">
                     <Link href={route('news.index')} className="btn-primary back-btn-bottom">
-                        Kembali ke Wawasan Wisata
+                        {t('news.back_bottom')}
                     </Link>
                 </footer>
             </article>

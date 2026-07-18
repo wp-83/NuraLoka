@@ -1,8 +1,13 @@
 import { Link } from '@inertiajs/react';
+import { useTranslation } from '@js/i18n';
+
+const LOCALE_TAG = { id: 'id-ID', en: 'en-US', ko: 'ko-KR' };
 
 export default function NewsCard({
     news,
 }) {
+    const { t, locale } = useTranslation();
+
     /*
     |--------------------------------------------------------------------------
     | Relative Time
@@ -23,7 +28,7 @@ export default function NewsCard({
             );
 
         if (diffInSeconds < 60) {
-            return 'Baru saja';
+            return t('news.just_now');
         }
 
         const diffInMinutes =
@@ -32,7 +37,7 @@ export default function NewsCard({
             );
 
         if (diffInMinutes < 60) {
-            return `${diffInMinutes} menit yang lalu`;
+            return t('news.minutes_ago', { count: diffInMinutes });
         }
 
         const diffInHours =
@@ -41,7 +46,7 @@ export default function NewsCard({
             );
 
         if (diffInHours < 24) {
-            return `${diffInHours} jam yang lalu`;
+            return t('news.hours_ago', { count: diffInHours });
         }
 
         const diffInDays =
@@ -50,11 +55,11 @@ export default function NewsCard({
             );
 
         if (diffInDays < 30) {
-            return `${diffInDays} hari yang lalu`;
+            return t('news.days_ago', { count: diffInDays });
         }
 
         return date.toLocaleDateString(
-            'id-ID',
+            LOCALE_TAG[locale] || 'id-ID',
             {
                 year: 'numeric',
                 month: 'long',
@@ -137,7 +142,7 @@ export default function NewsCard({
                         )}
                         className="inline-flex rounded-lg bg-primary-100 px-3 py-2 font-body text-btn-sm text-white transition-all duration-200 hover:-translate-y-0.5 hover:opacity-70"
                     >
-                        Baca Selengkapnya
+                        {t('news.read_more')}
                     </Link>
                 </div>
             </div>

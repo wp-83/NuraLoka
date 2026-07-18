@@ -1,8 +1,16 @@
 import { FiMapPin, FiMail, FiPhone } from "react-icons/fi";
 import { FaInstagram, FaYoutube, FaTiktok, FaXTwitter, FaFacebook} from "react-icons/fa6";
+import { useTranslation } from "@js/i18n";
 
 export default function Footer() {
+    const { t } = useTranslation();
     const year = new Date().getFullYear();
+
+    // CTA maskot dua warna: kata pertama .nura, sisanya .loka (dari footer.mascot_cta).
+    const cta = t("footer.mascot_cta");
+    const ctaSpace = cta.indexOf(" ");
+    const ctaFirst = ctaSpace === -1 ? cta : cta.slice(0, ctaSpace + 1);
+    const ctaRest = ctaSpace === -1 ? "" : cta.slice(ctaSpace + 1);
 
     return (
         <footer
@@ -28,8 +36,7 @@ export default function Footer() {
                         <span className="font-bold nuraloka-text">
                             <span className="nura">Nura</span><span className="loka">Loka</span>
                         </span>{" "}
-                        hadir menjadi teman perjalanan Anda dalam eksplorasi di
-                        seluruh wilayah Nusantara.
+                        {t("footer.tagline")}
                     </p>
 
                 </div>
@@ -39,7 +46,7 @@ export default function Footer() {
                     {/* Contact */}
                     <div className="-mb-5 md:mb-0">
                         <h3 className="mb-1 font-heading text-paragraph font-bold text-primary">
-                            Kontak Kami
+                            {t("footer.contact_title")}
                         </h3>
 
                         <div className="space-y-2 font-body text-small text-primary-85">
@@ -50,9 +57,7 @@ export default function Footer() {
                                     size={22}
                                 />
                                 <p className="text-small">
-                                    Jl. Pakuan No. 3, Sumur Batu, Kec. Babakan Madang,
-                                    <br />
-                                    Kabupaten Bogor, Jawa Barat 16810, Indonesia
+                                    {t("footer.address")}
                                 </p>
                             </div>
 
@@ -90,8 +95,8 @@ export default function Footer() {
                         />
 
                         <span className="font-heading text-small nuraloka-text -mt-4">
-                            <span className="nura">Mantapkan </span>
-                            <span className="loka">Langkahmu!</span>
+                            <span className="nura">{ctaFirst}</span>
+                            <span className="loka">{ctaRest}</span>
                         </span>
 
                     </div>
@@ -99,7 +104,7 @@ export default function Footer() {
                     {/* Social */}
                     <div>
                         <h3 className="mb-1 font-heading text-paragraph font-bold text-primary">
-                            Sosial Media Kami
+                            {t("footer.social_title")}
                         </h3>
 
                         <div className="grid grid-cols-2 gap-x-8 gap-y-3 font-body text-small">
@@ -163,7 +168,7 @@ export default function Footer() {
                             <span className="nura">Nura</span>
                             <span className="loka">Loka</span>
                         </span>
-                        . Seluruh Hak Cipta Dilindungi.
+                        . {t("footer.copyright")}
                     </p>
 
                 </div>

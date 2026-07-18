@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 
 import MainLayout from '@js/Layouts/MainLayout';
 import Button from '@components/Forms/Button';
+import { useTranslation } from '@js/i18n';
 
 import {
     FiCalendar,
@@ -32,6 +33,7 @@ function getAlbumThumbnail(thumbnail) {
 // SIMPLE ALBUM CARD
 // ============================================================
 function SimpleAlbumCard({ album }) {
+    const { t } = useTranslation();
     const handleVisit = () => {
         router.visit(route('album.show', album.slug));
     };
@@ -171,8 +173,8 @@ function SimpleAlbumCard({ album }) {
                         />
 
                         {album.is_public
-                            ? 'Publik'
-                            : 'Privat'}
+                            ? t('common.public')
+                            : t('common.private')}
                     </span>
                 </div>
             </div>
@@ -184,9 +186,10 @@ function SimpleAlbumCard({ album }) {
 // EMPTY STATE
 // ============================================================
 function EmptyState({ ownerName }) {
+    const { t } = useTranslation();
     const message = ownerName
         ? `${ownerName} belum memiliki album publik.`
-        : 'Kamu belum memiliki album.';
+        : t('album.all_empty');
 
     return (
         <div
@@ -231,6 +234,7 @@ export default function AlbumAll({
     pageTitle = 'Semua Album Kamu',
     ownerName = null,
 }) {
+    const { t } = useTranslation();
     const handleBack = () => {
         router.visit(route('album.index'));
     };
@@ -249,7 +253,7 @@ export default function AlbumAll({
                         <FiChevronLeft size={16} />
                     }
                 >
-                    Kembali
+                    {t('common.back')}
                 </Button>
             </div>
 

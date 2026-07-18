@@ -7,16 +7,18 @@ import {
 import { adminMenuItems } from '@js/Data/AdminNavigation';
 import { HiOutlineLogout } from 'react-icons/hi';
 import { FaRegUser } from 'react-icons/fa';
+import { useTranslation } from '@js/i18n';
 
 export default function AdminSidebar({ isCollapsed, isMobileOpen, onToggleCollapsed, onCloseMobile }) {
     const { url } = usePage();
+    const { t } = useTranslation();
 
     return (
         <>
             {isMobileOpen && (
                 <button
                     type="button"
-                    aria-label="Tutup sidebar"
+                    aria-label={t('admin.sidebar.close')}
                     onClick={onCloseMobile}
                     className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] md:hidden"
                 />
@@ -71,7 +73,7 @@ export default function AdminSidebar({ isCollapsed, isMobileOpen, onToggleCollap
 
                     <button
                         type="button"
-                        aria-label={isCollapsed ? 'Buka sidebar' : 'Tutup sidebar'}
+                        aria-label={isCollapsed ? t('admin.sidebar.open') : t('admin.sidebar.close')}
                         onClick={onToggleCollapsed}
                         className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-primary text-secondary transition-colors hover:bg-primary-10 md:flex"
                     >
@@ -80,7 +82,7 @@ export default function AdminSidebar({ isCollapsed, isMobileOpen, onToggleCollap
 
                     <button
                         type="button"
-                        aria-label="Tutup sidebar"
+                        aria-label={t('admin.sidebar.close')}
                         onClick={onCloseMobile}
                         className="flex h-10 w-10 shrink-0 p-2 items-center justify-center rounded-xl text-primary-100 transition-colors hover:bg-primary-10 md:hidden"
                     >
@@ -101,7 +103,7 @@ export default function AdminSidebar({ isCollapsed, isMobileOpen, onToggleCollap
                                     key={item.route}
                                     href={route(routeName)}
                                     onClick={onCloseMobile}
-                                    title={isCollapsed ? item.label : undefined}
+                                    title={isCollapsed ? t(`admin.sidebar.${item.route}`) : undefined}
                                     className={`
                                         group flex h-12 items-center rounded-xl transition-all duration-200
                                         ${isCollapsed ? 'md:justify-center md:px-0' : 'gap-4 px-4'}
@@ -124,7 +126,7 @@ export default function AdminSidebar({ isCollapsed, isMobileOpen, onToggleCollap
                                             }
                                         `}
                                     >
-                                        {item.label}
+                                        {t(`admin.sidebar.${item.route}`)}
                                     </span>
                                 </Link>
                             );
@@ -147,7 +149,7 @@ export default function AdminSidebar({ isCollapsed, isMobileOpen, onToggleCollap
                                 ${isCollapsed ? 'md:w-0 md:overflow-hidden md:opacity-0' : ''}
                             `}
                         >
-                            Panel Pengguna
+                            {t('admin.sidebar.user_panel')}
                         </span>
                     </Link>
 
@@ -167,7 +169,7 @@ export default function AdminSidebar({ isCollapsed, isMobileOpen, onToggleCollap
                                 ${isCollapsed ? 'md:w-0 md:overflow-hidden md:opacity-0' : ''}
                             `}
                         >
-                            Keluar
+                            {t('nav.logout')}
                         </span>
                     </Link>
                 </div>

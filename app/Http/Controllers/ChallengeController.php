@@ -23,8 +23,15 @@ class ChallengeController extends Controller
     private function calculateLevel($totalPoints)
     {
         $levels = $this->getLevels();
+
+        // Guard: bila tabel levels kosong/belum ter-seed, jangan sampai crash
+        // ($levels[0]/[1] undefined). Kembalikan default aman.
+        if (empty($levels)) {
+            return [['name' => '-', 'min' => 0], null];
+        }
+
         $currentLevel = $levels[0];
-        $nextLevel = $levels[1];
+        $nextLevel = $levels[1] ?? null;
 
         for ($i = count($levels) - 1; $i >= 0; $i--) {
             if ($totalPoints >= $levels[$i]['min']) {
@@ -40,14 +47,7 @@ class ChallengeController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $detail = tap(UserDetail::where('user_id', $user->id)->first(), function ($detail) {
-            // For testing if user has no detail
-            if (! $detail) {
-                $detail = new UserDetail;
-                $detail->total_points = 0;
-            }
-        });
-
+        $detail = UserDetail::where('user_id', $user->id)->first();
         $totalPoints = $detail ? $detail->total_points : 0;
 
         [$currentLevel, $nextLevel] = $this->calculateLevel($totalPoints);
@@ -63,19 +63,6 @@ class ChallengeController extends Controller
             $progressPercent = (($totalPoints - $currentMin) / ($nextMin - $currentMin)) * 100;
         }
 
-        $allBadges = Badge::all()->map(function ($badge) use ($user) {
-            $badge->earned = clone tap($badge, function ($b) use ($user) {
-                if ($user) {
-                    return $user->badges->contains($b->id);
-                }
-
-                return false;
-            });
-
-            return $badge;
-        });
-
-        // Simpler approach for badge earned status
         $userBadgeIds = $user ? $user->badges()->pluck('badges.id')->toArray() : [];
         $allBadges = Badge::all()->map(function ($badge) use ($userBadgeIds) {
             $badge->earned = in_array($badge->id, $userBadgeIds);

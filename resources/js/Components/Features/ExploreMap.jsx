@@ -200,7 +200,7 @@ function LocalPlaceMarker({ place, onVisit }) {
 // agar tidak dobel.
 const MARKER_MIN_PX = 40; // jarak minimal antar pin (px) agar tidak menumpuk
 
-function MapMarkers({ points = [], onVisit, excludeId = null, excludeLat = null, excludeLng = null }) {
+function MapMarkers({ points = [], onVisit, excludeId = null, excludeLat = null, excludeLng = null, excludeIds = null }) {
   const map = useMap();
   const [tick, setTick] = React.useState(0);
 
@@ -214,10 +214,12 @@ function MapMarkers({ points = [], onVisit, excludeId = null, excludeLat = null,
     // Singkirkan titik yang sedang tampil sebagai marker pencarian agar tidak dobel:
     // cocok berdasarkan id (toleran tipe), ATAU koordinat yang praktis sama (~5 m),
     // untuk menangani duplikat baris (mis. dua node OSM di lokasi yang sama).
-    const hasExclude = excludeId != null || (excludeLat != null && excludeLng != null);
+    // excludeIds: id waypoint rute (dirender sebagai layer sendiri) agar tak dobel.
+    const hasExclude = excludeId != null || (excludeLat != null && excludeLng != null) || (excludeIds && excludeIds.size > 0);
     const base = hasExclude
       ? points.filter((p) => {
           if (excludeId != null && Number(p.id) === Number(excludeId)) return false;
+          if (excludeIds && excludeIds.has(Number(p.id))) return false;
           if (excludeLat != null && excludeLng != null) {
             if (Math.abs(parseFloat(p.latitude) - excludeLat) < 5e-5 &&
                 Math.abs(parseFloat(p.longitude) - excludeLng) < 5e-5) return false;
@@ -262,7 +264,7 @@ function MapMarkers({ points = [], onVisit, excludeId = null, excludeLat = null,
     }
 
     return kept;
-  }, [points, excludeId, excludeLat, excludeLng, map, tick]);
+  }, [points, excludeId, excludeLat, excludeLng, excludeIds, map, tick]);
 
   return (
     <>
@@ -344,6 +346,53 @@ function SelectedPlaceMarker({ place, onVisit }) {
   );
 }
 
+// Ikon mobil untuk animasi perjalanan.
+const journeyCarIcon = L.divIcon({
+  className: 'nl-journey-car',
+  html: '<div style="font-size:24px;line-height:34px;text-align:center;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))">🚗</div>',
+  iconSize: [34, 34],
+  iconAnchor: [17, 17],
+});
+
+// Marker mobil: mode demo → animasi menyusuri garis rute (panggil onComplete saat habis);
+// mode real → mengikuti posisi GPS user.
+function JourneyCar({ routeData, running, demo, userPosition, onComplete }) {
+  const [pos, setPos] = React.useState(null);
+  const rafRef = React.useRef(null);
+  const onCompleteRef = React.useRef(onComplete);
+  React.useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
+
+  React.useEffect(() => {
+    if (!running || !demo) { setPos(null); return; }
+    const coords = routeData?.coordinates;
+    if (!coords || coords.length === 0) return;
+
+    const DURATION = 8000; // durasi animasi demo (ms)
+    let start = null;
+    let done = false;
+    const step = (ts) => {
+      if (start == null) start = ts;
+      const t = Math.min(1, (ts - start) / DURATION);
+      const idx = Math.min(coords.length - 1, Math.floor(t * (coords.length - 1)));
+      setPos(coords[idx]);
+      if (t < 1) {
+        rafRef.current = requestAnimationFrame(step);
+      } else if (!done) {
+        done = true;
+        onCompleteRef.current?.();
+      }
+    };
+    rafRef.current = requestAnimationFrame(step);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [running, demo, routeData]);
+
+  if (!running) return null;
+  const carPos = demo ? pos : (userPosition ? [userPosition.lat, userPosition.lng] : routeData?.coordinates?.[0]);
+  if (!carPos) return null;
+
+  return <Marker position={carPos} icon={journeyCarIcon} zIndexOffset={1000} />;
+}
+
 export default function ExploreMap({
   places = [],            // hanya dipakai untuk menghitung center awal peta
   points = [],            // titik individual dari server
@@ -354,6 +403,10 @@ export default function ExploreMap({
   destination,
   onBoundsChange,
   onSettle,
+  journeyRunning = false, // perjalanan 2 titik sedang berjalan
+  journeyDemo = true,     // true = animasi mobil; false = ikuti GPS user
+  userPosition = null,    // posisi GPS user (mode real)
+  onJourneyComplete,      // dipanggil saat animasi demo selesai
 }) {
   const defaultCenter = [-8.0, 113.0];
   const [center, setCenter] = React.useState(defaultCenter);
@@ -406,6 +459,15 @@ export default function ExploreMap({
           />
         )}
 
+        {/* Mobil perjalanan (animasi demo / ikuti GPS real) */}
+        <JourneyCar
+          routeData={routeData}
+          running={journeyRunning}
+          demo={journeyDemo}
+          userPosition={userPosition}
+          onComplete={onJourneyComplete}
+        />
+
         {/* Origin Marker */}
         {origin && (
           <Marker position={[origin.lat, origin.lng]} icon={createMarkerIcon()}>
@@ -420,14 +482,23 @@ export default function ExploreMap({
           </Marker>
         )}
 
+        {/* ── Waypoint rute: SELALU tampil begitu rute muncul, tanpa bergantung pada
+            budget zoom server maupun declutter. Inilah titik "wajib/rekomendasi" yang
+            dilewati rute, jadi harus terlihat langsung meski peta masih zoom-out. ── */}
+        {routeData?.waypoints?.map((w) => (
+          <LocalPlaceMarker key={`wp-${w.id}`} place={w} onVisit={onVisit} />
+        ))}
+
         {/* ── Titik dari server (satu jenis), kepadatan diatur level-of-detail + declutter.
-            excludeId: hindari dobel dengan marker hasil pencarian yang sedang tampil. ── */}
+            excludeId: hindari dobel dengan marker hasil pencarian yang sedang tampil.
+            excludeIds: hindari dobel dengan waypoint rute yang sudah dirender di atas. ── */}
         <MapMarkers
           points={points}
           onVisit={onVisit}
           excludeId={!routeData && selectedPlace ? (selectedPlace.placeId ?? selectedPlace.id) : null}
           excludeLat={!routeData && selectedPlace?.latitude != null ? parseFloat(selectedPlace.latitude) : null}
           excludeLng={!routeData && selectedPlace?.longitude != null ? parseFloat(selectedPlace.longitude) : null}
+          excludeIds={routeData?.waypoints?.length ? new Set(routeData.waypoints.map((w) => Number(w.id))) : null}
         />
       </MapContainer>
     </div>
