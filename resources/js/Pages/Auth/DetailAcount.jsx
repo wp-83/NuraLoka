@@ -6,6 +6,7 @@ import { useState } from "react";
 import { FaRegUserCircle } from "react-icons/fa";
 import { MdOutlineDateRange, MdLocationOn } from "react-icons/md";
 import { FaPerson } from "react-icons/fa6";
+import { useTranslation } from "@js/i18n";
 
 import Input from "@components/Forms/Input";
 import Dropdown from "@components/Forms/Dropdown";
@@ -15,6 +16,8 @@ import Button from "@components/Forms/Button";
 
 export default function DetailAccount(){
     const { provinces, fullname } = usePage().props;
+    const { t } = useTranslation();
+    const subtitleParts = t("account.detail.subtitle").split(":app");
     const [disabledBtn, setDisabledBtn] = useState(true);
 
     const { data, setData, post, reset, processing, errors } = useForm({
@@ -33,26 +36,26 @@ export default function DetailAccount(){
         <>
             <div className="page-context">
                 <h2 className="text-title font-heading text-primary-100">
-                    <b>Informasi Akun</b>
+                    <b>{t("account.detail.title")}</b>
                 </h2>
 
                 <p className="font-body text-body">
-                    Satu langkah lagi untuk menjadi bagian dari{" "}
+                    {subtitleParts[0]}
                     <span className="nuraloka-text">
                         <span className="nura">Nura</span>
                         <span className="loka">Loka</span>
                     </span>
-                    !
+                    {subtitleParts[1]}
                 </p>
             </div>
 
             <form className="register-form" method="POST" onSubmit={handleSubmit}>
 
                 <Input
-                    label="Nama Lengkap"
+                    label={t("account.detail.fullname_label")}
                     name="fullname"
                     type="text"
-                    placeholder="Nura Panjang Banget"
+                    placeholder={t("account.detail.fullname_placeholder")}
                     value={data.fullname}
                     onChange={(e) => setData("fullname", e.target.value)}
                     error={errors.fullname}
@@ -62,7 +65,7 @@ export default function DetailAccount(){
 
                     <Input
                         className="split-element"
-                        label="Tanggal Lahir"
+                        label={t("account.detail.dob_label")}
                         name="dob"
                         type="date"
                         value={data.dob}
@@ -72,24 +75,24 @@ export default function DetailAccount(){
 
                     <Dropdown
                         className="split-element"
-                        label="Jenis Kelamin"
+                        label={t("account.detail.gender_label")}
                         name="gender"
-                        placeholder="Jenis kelamin kamu"
+                        placeholder={t("account.detail.gender_placeholder")}
                         value={data.gender}
                         onChange={(e) => setData("gender", e.target.value)}
                         error={errors.gender}
                         options={[
                             {
                                 value: "male",
-                                label: "Laki-laki",
+                                label: t("account.gender_male"),
                             },
                             {
                                 value: "female",
-                                label: "Perempuan",
+                                label: t("account.gender_female"),
                             },
                             {
                                 value: "unspecified",
-                                label: "Tidak ingin memberi tahu",
+                                label: t("account.gender_unspecified"),
                             },
                         ]}
                     />
@@ -97,9 +100,9 @@ export default function DetailAccount(){
                 </div>
 
                 <Dropdown
-                    label="Provinsi Domisili"
+                    label={t("account.detail.province_label")}
                     name="province"
-                    placeholder="Provinsi tempat kamu tinggal sekarang"
+                    placeholder={t("account.detail.province_placeholder")}
                     value={data.province}
                     onChange={(e) => setData("province", e.target.value)}
                     error={errors.province}
@@ -114,7 +117,7 @@ export default function DetailAccount(){
                     name="dataApproval"
                     checked={!disabledBtn}
                     onChange={(e) => setDisabledBtn(!e.target.checked)}
-                    label="Saya telah membaca dan menyetujui penggunaan data pribadi saya untuk proses registrasi dan konfirmasi akun."
+                    label={t("account.detail.data_approval")}
                     className="mt-6 mb-4"
                 />
 
@@ -127,8 +130,8 @@ export default function DetailAccount(){
                         fullWidth
                     >
                         {processing
-                            ? "Memeriksa data..."
-                            : "Simpan Data dan Masuk"}
+                            ? t("account.detail.submit_processing")
+                            : t("account.detail.submit")}
                     </Button>
                 </div>
 
@@ -137,4 +140,4 @@ export default function DetailAccount(){
     );
 }
 
-DetailAccount.layout = page => <SignUp title="Informasi Akun" content={page}></SignUp>
+DetailAccount.layout = page => <SignUp titleKey="account.detail.layout_title" content={page}></SignUp>

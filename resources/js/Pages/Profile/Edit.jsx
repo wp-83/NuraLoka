@@ -5,6 +5,7 @@ import Button from '@components/Forms/Button';
 import Dropdown from '@components/Forms/Dropdown';
 import Input from '@components/Forms/Input';
 import MainLayout from '@js/Layouts/MainLayout';
+import { useTranslation } from '@js/i18n';
 
 import {
     FiArrowLeft,
@@ -12,6 +13,7 @@ import {
 } from 'react-icons/fi';
 
 export default function Edit({ user, provinces }) {
+    const { t } = useTranslation();
     const [avatarPreview, setAvatarPreview] = useState(
         user.public_profile_photo
     );
@@ -40,15 +42,15 @@ export default function Edit({ user, provinces }) {
     const genderOptions = [
         {
             value: 'male',
-            label: 'Laki-Laki',
+            label: t('profile.gender_male'),
         },
         {
             value: 'female',
-            label: 'Perempuan',
+            label: t('profile.gender_female'),
         },
         {
             value: 'unspecified',
-            label: 'Tidak Ingin Memberi Tahu',
+            label: t('profile.gender_unspecified'),
         },
     ];
 
@@ -98,7 +100,7 @@ export default function Edit({ user, provinces }) {
         <section className="container w-full py-10 sm:py-12 lg:py-14">
             {/* PAGE HEADER */}
             <h1 className="font-heading text-subtitle font-bold text-primary sm:text-title">
-                Perbarui Data Profil Kamu
+                {t('profile.edit_title')}
             </h1>
 
             {/* BACK BUTTON */}
@@ -109,7 +111,7 @@ export default function Edit({ user, provinces }) {
                         size="btn-md"
                         iconLeft={<FiArrowLeft />}
                     >
-                        Kembali
+                        {t('common.back')}
                     </Button>
                 </Link>
             </div>
@@ -137,7 +139,7 @@ export default function Edit({ user, provinces }) {
                     "
                 >
                     <p className="mb-3 font-heading text-paragraph text-primary-100">
-                        Foto Profil
+                        {t('profile.photo_label')}
                     </p>
 
                     <label
@@ -187,7 +189,7 @@ export default function Edit({ user, provinces }) {
                         >
                             <div className="flex flex-col items-center gap-2 font-body text-small text-white">
                                 <FiUpload size={24} />
-                                <span>Ganti Foto</span>
+                                <span>{t('profile.change_photo')}</span>
                             </div>
                         </div>
                     </label>
@@ -208,8 +210,7 @@ export default function Edit({ user, provinces }) {
                     )}
 
                     <p className="mt-3 max-w-72 text-center font-body text-body text-gray-50">
-                        Klik foto untuk mengganti foto profil.
-                        Hanya mendukung format JPG, PNG, atau WebP.
+                        {t('profile.photo_hint')}
                     </p>
                 </div>
 
@@ -227,14 +228,14 @@ export default function Edit({ user, provinces }) {
                 >
                     {/* FULLNAME */}
                     <Input
-                        label="Nama Lengkap"
+                        label={t('profile.fullname')}
                         name="fullname"
                         type="text"
                         value={data.fullname}
                         onChange={(event) =>
                             setData('fullname', event.target.value)
                         }
-                        placeholder="Masukkan nama lengkap kamu"
+                        placeholder={t('profile.fullname_placeholder')}
                         error={errors.fullname}
                         autoComplete="name"
                         required
@@ -242,14 +243,14 @@ export default function Edit({ user, provinces }) {
 
                     {/* USERNAME */}
                     <Input
-                        label="Username"
+                        label={t('profile.username')}
                         name="username"
                         type="text"
                         value={data.username}
                         onChange={(event) =>
                             setData('username', event.target.value)
                         }
-                        placeholder="Masukkan username"
+                        placeholder={t('profile.username_placeholder')}
                         error={errors.username}
                         autoComplete="username"
                         required
@@ -257,14 +258,14 @@ export default function Edit({ user, provinces }) {
 
                     {/* EMAIL */}
                     <Input
-                        label="Email"
+                        label={t('profile.email')}
                         name="email"
                         type="email"
                         value={data.email}
                         onChange={(event) =>
                             setData('email', event.target.value)
                         }
-                        placeholder="Masukkan email kamu"
+                        placeholder={t('profile.email_placeholder')}
                         error={errors.email}
                         autoComplete="email"
                         required
@@ -272,7 +273,7 @@ export default function Edit({ user, provinces }) {
 
                     {/* DATE OF BIRTH */}
                     <Input
-                        label="Tanggal Lahir"
+                        label={t('profile.dob')}
                         name="dob"
                         type="date"
                         value={data.dob}
@@ -285,49 +286,49 @@ export default function Edit({ user, provinces }) {
 
                     {/* GENDER */}
                     <Dropdown
-                        label="Jenis Kelamin"
+                        label={t('profile.gender')}
                         name="gender"
                         value={data.gender}
                         onChange={(event) =>
                             setData('gender', event.target.value)
                         }
                         options={genderOptions}
-                        placeholder="Pilih jenis kelamin"
+                        placeholder={t('profile.gender_placeholder')}
                         error={errors.gender}
                         required
                     />
 
                     {/* PROVINCE */}
                     <Dropdown
-                        label="Provinsi Domisili"
+                        label={t('profile.province')}
                         name="province_id"
                         value={data.province_id}
                         onChange={(event) =>
                             setData('province_id', event.target.value)
                         }
                         options={provinceOptions}
-                        placeholder="Pilih provinsi"
+                        placeholder={t('profile.province_placeholder')}
                         error={errors.province_id}
                         required
                     />
 
                     {/* PASSWORD */}
                     <Input
-                        label="Kata Sandi Baru"
+                        label={t('profile.password_new')}
                         name="password"
                         type="password"
                         value={data.password}
                         onChange={(event) =>
                             setData('password', event.target.value)
                         }
-                        placeholder="Kosongkan jika tidak ingin mengganti"
+                        placeholder={t('profile.password_new_placeholder')}
                         error={errors.password}
                         autoComplete="new-password"
                     />
 
                     {/* PASSWORD CONFIRMATION */}
                     <Input
-                        label="Konfirmasi Kata Sandi Baru"
+                        label={t('profile.password_confirm')}
                         name="password_confirmation"
                         type="password"
                         value={data.password_confirmation}
@@ -337,7 +338,7 @@ export default function Edit({ user, provinces }) {
                                 event.target.value
                             )
                         }
-                        placeholder="Ulangi kata sandi baru"
+                        placeholder={t('profile.password_confirm_placeholder')}
                         error={errors.password_confirmation}
                         autoComplete="new-password"
                     />
@@ -350,14 +351,14 @@ export default function Edit({ user, provinces }) {
                             size="btn-md"
                             loading={processing}
                         >
-                            Simpan Perubahan Data
+                            {t('profile.submit')}
                         </Button>
                     </div>
 
                     {/* SUCCESS MESSAGE */}
                     {recentlySuccessful && (
                         <p className="font-body text-small text-success-dark md:col-span-2">
-                            Data profil berhasil diperbarui.
+                            {t('profile.success')}
                         </p>
                     )}
                 </div>

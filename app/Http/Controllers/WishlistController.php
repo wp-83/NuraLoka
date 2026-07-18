@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Place;
+use App\Services\GamificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -82,6 +83,9 @@ class WishlistController extends Controller
             // Save
             $user->savedPlaces()->attach($placeId);
             $saved = true;
+
+            // Gamifikasi: catat aksi menyimpan tempat (dengan filter kategori tempat).
+            app(GamificationService::class)->record($user, 'save_place', Place::find($placeId));
         }
 
         return back();

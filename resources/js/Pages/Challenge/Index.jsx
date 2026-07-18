@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { route } from 'ziggy-js';
 import MainLayout from '@js/Layouts/MainLayout';
+import { useTranslation } from '@js/i18n';
 
 // ─── Badge Icon Component ──────────────────────────────────────────────────
 function BadgeIcon({ badge, size = 'md' }) {
@@ -74,7 +75,7 @@ function UserAvatar({ path, name, className = "w-12 h-12" }) {
 }
 
 // ─── Podium Column Component ──────────────────────────────────────────────────
-function PodiumColumn({ entry }) {
+function PodiumColumn({ entry, t }) {
     if (!entry) return <div className="flex-1" />;
 
     const rank = entry.rank;
@@ -113,7 +114,7 @@ function PodiumColumn({ entry }) {
 
             <div className={`w-full ${config.bg} ${config.height} rounded-t-3xl pt-14 sm:pt-16 pb-4 px-2 flex flex-col items-center justify-start shadow-sm border border-black/5 group-hover:shadow-md transition-shadow`}>
                 <div className={`font-black text-sm sm:text-base ${config.pointColor}`}>
-                    {entry.points?.toLocaleString('id-ID')} Poin
+                    {t('challenge.podium_points', { points: entry.points?.toLocaleString('id-ID') })}
                 </div>
                 <div className="text-[10px] sm:text-xs font-bold text-gray-500 mt-1 uppercase tracking-wider text-center">
                     {entry.level}
@@ -138,6 +139,7 @@ export default function ChallengeIndex({
     ongoingMissions = [],
     leaderboard = [],
 }) {
+    const { t } = useTranslation();
     const top3 = (leaderboard ?? []).slice(0, 3);
     const rest = (leaderboard ?? []).slice(3);
 
@@ -163,12 +165,12 @@ export default function ChallengeIndex({
 
     return (
         <>
-            <Head title="Tantangan Nuravers | NuraLoka" />
+            <Head title={`${t('challenge.meta_title')} | NuraLoka`} />
             <div className="w-full min-h-screen bg-[#FAF8F4]">
                 <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-8">
                     {/* ── Page Title ── */}
                     <div className="mb-6">
-                        <h1 className="font-heading text-3xl font-bold text-primary">Tantangan Nuravers</h1>
+                        <h1 className="font-heading text-3xl font-bold text-primary">{t('challenge.title')}</h1>
                         <p className="text-sm text-info font-medium mt-0.5 italic text-[#1B86FF]">Tetandingan Nuravers</p>
                         <div className="h-0.5 w-16 bg-[#1B86FF] mt-1" />
                     </div>
@@ -185,9 +187,9 @@ export default function ChallengeIndex({
                             />
                             <div className="relative z-10 flex items-center justify-between">
                                 <div>
-                                    <div className="text-sm font-bold text-primary mb-1">Total Poin Nura</div>
+                                    <div className="text-sm font-bold text-primary mb-1">{t('challenge.total_points')}</div>
                                     <div className="text-4xl font-black text-secondary tracking-wide flex items-center gap-2">
-                                        {(totalPoints ?? 0).toLocaleString('id-ID')} POIN
+                                        {(totalPoints ?? 0).toLocaleString('id-ID')} {t('challenge.points_suffix')}
                                     </div>
                                 </div>
                             </div>
@@ -203,22 +205,25 @@ export default function ChallengeIndex({
                             />
                             <div className="relative z-10 flex flex-col justify-between h-full w-full">
                                 <div className="flex justify-between items-center w-full mb-1">
-                                    <span className="font-bold text-lg text-primary">Level Kamu Saat Ini</span>
+                                    <span className="font-bold text-lg text-primary">{t('challenge.level_current')}</span>
                                     <Link href={route('challenge.levels')} className="text-xs text-accent hover:text-accent-85 font-bold transition-colors">
-                                        Lihat Semua Level →
+                                        {t('challenge.see_all_levels')}
                                     </Link>
                                 </div>
                                 {nextLevel ? (
                                     <div className="flex justify-between items-end w-full mb-2">
                                         <span className="text-xs font-bold text-gray-500">
-                                            {pointsForNextLevel.toLocaleString('id-ID')} poin lagi untuk menjadi <span className="font-bold">{nextLevel.name}</span>!
+                                            {(() => {
+                                                const [a, b] = t('challenge.points_to_next', { points: pointsForNextLevel.toLocaleString('id-ID') }).split(':level');
+                                                return (<>{a}<span className="font-bold">{nextLevel.name}</span>{b}</>);
+                                            })()}
                                         </span>
                                         <span className="text-xs font-bold text-gray-500">
-                                            {totalPoints.toLocaleString('id-ID')} dari {nextLevel.min.toLocaleString('id-ID')}
+                                            {t('challenge.points_progress', { current: totalPoints.toLocaleString('id-ID'), max: nextLevel.min.toLocaleString('id-ID') })}
                                         </span>
                                     </div>
                                 ) : (
-                                    <div className="text-xs font-bold text-secondary mb-2">Kamu sudah mencapai level tertinggi!</div>
+                                    <div className="text-xs font-bold text-secondary mb-2">{t('challenge.max_level')}</div>
                                 )}
                                 <div className="flex items-center gap-4 w-full">
                                     <div className="flex-1">
@@ -237,13 +242,13 @@ export default function ChallengeIndex({
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
                                 <span className="text-xl">🏆</span>
-                                <h2 className="font-heading text-xl font-bold text-primary">Daftar Lencana Nuravers</h2>
+                                <h2 className="font-heading text-xl font-bold text-primary">{t('challenge.badges_title')}</h2>
                             </div>
                             <Link
                                 href={route('challenge.badges')}
                                 className="text-sm text-accent hover:text-accent-85 font-bold transition-colors"
                             >
-                                Lihat Daftar Semua Lencana dan Misi →
+                                {t('challenge.badges_link')}
                             </Link>
                         </div>
 
@@ -262,7 +267,7 @@ export default function ChallengeIndex({
                                             {badge.name.replace(/\s\([^)]+\)/, '')}
                                         </span>
                                         <span className={`text-[10px] font-semibold ${badge.earned ? 'text-secondary' : 'text-gray-400'}`}>
-                                            {badge.points > 0 ? `${badge.points} poin` : '—'}
+                                            {badge.points > 0 ? t('challenge.point_amount', { points: badge.points }) : t('challenge.point_none')}
                                             {badge.name.match(/\(([^)]+)\)/)?.[1] ? ` (${badge.name.match(/\(([^)]+)\)/)[1]})` : ''}
                                         </span>
                                     </div>
@@ -283,8 +288,8 @@ export default function ChallengeIndex({
                                     />
                                 </div>
                                 <div>
-                                    <h2 className="font-heading text-lg font-bold text-primary">Udah Mau Selesai Nih...</h2>
-                                    <p className="text-sm text-gray-500 font-medium">Selesaikan segera untuk mendapatkan lencana dan poin Nura!</p>
+                                    <h2 className="font-heading text-lg font-bold text-primary">{t('challenge.missions_title')}</h2>
+                                    <p className="text-sm text-gray-500 font-medium">{t('challenge.missions_desc')}</p>
                                 </div>
                             </div>
 
@@ -309,15 +314,15 @@ export default function ChallengeIndex({
                                                 <div className="flex-1">
                                                     <div className="font-bold text-base text-primary leading-tight group-hover:text-secondary transition-colors">{mission.title}</div>
                                                     <div className="text-xs text-secondary font-bold mt-0.5">
-                                                        {mission.points} poin Nura
+                                                        {t('challenge.mission_points', { points: mission.points })}
                                                     </div>
                                                     <p className="text-xs text-gray-700 font-medium mt-1 leading-relaxed">{mission.description}</p>
                                                 </div>
                                             </div>
                                             <div className="mt-auto z-10 relative">
                                                 <div className="flex justify-between text-xs text-gray-500 mb-1">
-                                                    <span className="font-medium">Progress Kamu</span>
-                                                    <span className="font-medium">{mission.progress} dari {mission.target} ({mission.percent}%)</span>
+                                                    <span className="font-medium">{t('challenge.progress_you')}</span>
+                                                    <span className="font-medium">{t('challenge.mission_progress', { progress: mission.progress, target: mission.target, percent: mission.percent })}</span>
                                                 </div>
                                                 <ProgressBar percent={mission.percent} color="bg-secondary" />
                                             </div>
@@ -327,8 +332,8 @@ export default function ChallengeIndex({
                             ) : (
                                 <div className="text-center py-6 bg-[#EEF5F0] rounded-xl border border-green-100 shadow-sm">
                                     <div className="text-3xl mb-2">🎉</div>
-                                    <div className="font-bold text-primary">Hebat! Semua Tantangan Telah Selesai!</div>
-                                    <div className="text-sm text-gray-500 mt-1">Nantikan tantangan dan misi seru NuraLoka selanjutnya.</div>
+                                    <div className="font-bold text-primary">{t('challenge.missions_empty_title')}</div>
+                                    <div className="text-sm text-gray-500 mt-1">{t('challenge.missions_empty_desc')}</div>
                                 </div>
                             )}
                         </div>
@@ -338,7 +343,7 @@ export default function ChallengeIndex({
                     <section className="mb-8">
                         <div className="flex items-center gap-2 mb-4">
                             <span className="text-xl">📊</span>
-                            <h2 className="font-heading text-xl font-bold text-primary">Papan Peringkat Para Nuravers</h2>
+                            <h2 className="font-heading text-xl font-bold text-primary">{t('challenge.leaderboard_title')}</h2>
                         </div>
 
                         <div className="bg-[#FAF8F4] rounded-2xl shadow-sm">
@@ -346,9 +351,9 @@ export default function ChallengeIndex({
                                 {/* Left Side: Podium (cols 1-7) */}
                                 <div className="lg:col-span-7 flex flex-col justify-end">
                                     <div className="flex items-end justify-center gap-2 sm:gap-4 pt-10 pb-4 h-full">
-                                        <PodiumColumn entry={top3.find(e => e.rank === 2)} />
-                                        <PodiumColumn entry={top3.find(e => e.rank === 1)} />
-                                        <PodiumColumn entry={top3.find(e => e.rank === 3)} />
+                                        <PodiumColumn entry={top3.find(e => e.rank === 2)} t={t} />
+                                        <PodiumColumn entry={top3.find(e => e.rank === 1)} t={t} />
+                                        <PodiumColumn entry={top3.find(e => e.rank === 3)} t={t} />
                                     </div>
                                 </div>
 
@@ -366,7 +371,7 @@ export default function ChallengeIndex({
                                                     <div className="flex-1 min-w-0">
                                                         <div className="font-bold text-sm text-primary truncate">{entry.name}</div>
                                                         <div className="text-[10px] text-gray-500 font-medium italic mb-0.5">{entry.level}</div>
-                                                        <div className="text-xs text-secondary font-bold">{entry.points?.toLocaleString('id-ID')} Poin Nura</div>
+                                                        <div className="text-xs text-secondary font-bold">{t('challenge.points_nura', { points: entry.points?.toLocaleString('id-ID') })}</div>
                                                     </div>
                                                     <div className="text-xl font-black text-primary pr-2">
                                                         #{entry.rank}
@@ -378,7 +383,7 @@ export default function ChallengeIndex({
 
                                     <div className="flex justify-end mt-4">
                                         <Link href={route('challenge.leaderboard')} className="px-5 py-3 bg-primary hover:bg-primary-85 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm text-center">
-                                            Lihat Semua Papan Peringkat
+                                            {t('challenge.see_all_leaderboard')}
                                         </Link>
                                     </div>
                                 </div>
@@ -390,7 +395,7 @@ export default function ChallengeIndex({
                     <section className="mb-8">
                         <div className="flex items-center gap-2 mb-4">
                             <span className="text-xl">💰</span>
-                            <h2 className="font-heading text-xl font-bold text-primary">Tukarkan Poin Nura Kamu!</h2>
+                            <h2 className="font-heading text-xl font-bold text-primary">{t('challenge.redeem_title')}</h2>
                         </div>
 
                         <div className="bg-[#F2F2F2] rounded-2xl border border-gray-200 shadow-sm p-10 flex flex-col items-center justify-center text-center">
@@ -401,8 +406,8 @@ export default function ChallengeIndex({
                                     className="w-full h-full object-contain"
                                 />
                             </div>
-                            <h3 className="font-heading text-xl font-bold text-primary mb-1">Segera Hadir!</h3>
-                            <p className="text-sm text-gray-600 font-medium">Mohon ditunggu dan bersabar ya :)</p>
+                            <h3 className="font-heading text-xl font-bold text-primary mb-1">{t('challenge.coming_soon')}</h3>
+                            <p className="text-sm text-gray-600 font-medium">{t('challenge.coming_soon_desc')}</p>
                         </div>
                     </section>
                 </main>

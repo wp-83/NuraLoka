@@ -2,8 +2,13 @@ import '@css/Layouts/SignUp.css';
 
 import { Head } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from '@js/i18n';
+import LanguageSwitcher from '@components/Common/LanguageSwitcher';
 
-export default function SignUp({ title, content }) {
+// titleKey: kunci terjemahan judul (diprioritaskan). title: fallback string statis.
+export default function SignUp({ title, titleKey, content }) {
+    const { t } = useTranslation();
+    const pageTitle = titleKey ? t(titleKey) : title;
     const amountBgImage = 5;
 
     const [currIdx, setCurrIdx] = useState(0);
@@ -51,7 +56,7 @@ export default function SignUp({ title, content }) {
 
     return (
         <>
-            <Head title={`NuraLoka | ${title}`}>
+            <Head title={`NuraLoka | ${pageTitle}`}>
                 <meta
                     name="description"
                     content="Temukan rekomendasi tempat wisata, kuliner, dan lokasi persinggahan terbaik di sepanjang rute perjalanan antar kota di Indonesia bersama NuraLoka."
@@ -70,6 +75,11 @@ export default function SignUp({ title, content }) {
                             <div className="circle bg-primary-30"></div>
                             <div className="circle bg-primary-70"></div>
                         </div>
+                    </div>
+
+                    {/* Pemilih bahasa untuk pengunjung (tamu) */}
+                    <div className="absolute right-6 top-6 z-30">
+                        <LanguageSwitcher />
                     </div>
 
                     <div className="container relative h-full overflow-y-auto pb-28 hide-scrollbar animate-swipe-up">

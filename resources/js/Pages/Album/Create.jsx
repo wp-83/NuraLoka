@@ -3,6 +3,7 @@ import { router, useForm } from '@inertiajs/react';
 
 import MainLayout from '@js/Layouts/MainLayout';
 import Button from '@components/Forms/Button';
+import { useTranslation } from '@js/i18n';
 
 import {
     FiChevronLeft,
@@ -16,6 +17,7 @@ import {
 // MAIN PAGE
 // ============================================================
 export default function AlbumCreate() {
+    const { t } = useTranslation();
     const [previewPhotos, setPreviewPhotos] = useState([]);
     const fileInputRef = useRef(null);
 
@@ -175,7 +177,7 @@ export default function AlbumCreate() {
                         <FiChevronLeft size={16} />
                     }
                 >
-                    Batal & Kembali
+                    {t('common.cancel')}
                 </Button>
 
                 {/* Visibility */}
@@ -193,7 +195,7 @@ export default function AlbumCreate() {
                             font-semibold text-gray-70
                         "
                     >
-                        Visibilitas
+                        {t('album.field_visibility')}
                     </span>
 
                     <button
@@ -247,8 +249,8 @@ export default function AlbumCreate() {
                             "
                         >
                             {data.is_public
-                                ? 'Publik'
-                                : 'Privat'}
+                                ? t('common.public')
+                                : t('common.private')}
                         </span>
                     </button>
                 </div>
@@ -267,7 +269,7 @@ export default function AlbumCreate() {
                         md:text-hero
                     "
                 >
-                    Buat Album Baru
+                    {t('album.create_meta_title')}
                 </h1>
 
                 <p
@@ -323,7 +325,7 @@ export default function AlbumCreate() {
                                 font-semibold text-gray-85
                             "
                         >
-                            Judul Album
+                            {t('album.field_title')}
 
                             <span className="ml-1 text-error-dark">
                                 *
@@ -341,7 +343,7 @@ export default function AlbumCreate() {
                                 )
                             }
                             required
-                            placeholder="Masukkan judul album..."
+                            placeholder={t('album.field_title_placeholder')}
                             className="
                                 w-full
                                 rounded-lg
@@ -393,7 +395,7 @@ export default function AlbumCreate() {
                                     font-semibold text-gray-85
                                 "
                             >
-                                Lokasi
+                                {t('album.field_location')}
 
                                 <span className="ml-1 text-error-dark">
                                     *
@@ -415,7 +417,7 @@ export default function AlbumCreate() {
                                     onFocus={() => setShowLocationDropdown(true)}
                                     onBlur={() => setTimeout(() => setShowLocationDropdown(false), 200)}
                                     required
-                                    placeholder="Cari lokasi..."
+                                    placeholder={t('album.field_location_placeholder')}
                                     className="
                                         w-full
                                         rounded-full
@@ -499,7 +501,7 @@ export default function AlbumCreate() {
                                     font-semibold text-gray-85
                                 "
                             >
-                                Tanggal
+                                {t('album.field_date')}
 
                                 <span className="ml-1 text-error-dark">
                                     *
@@ -572,7 +574,7 @@ export default function AlbumCreate() {
                                     font-semibold text-primary-100
                                 "
                             >
-                                Unggah Foto
+                                {t('album.field_photos')}
                             </h2>
 
                             <p
@@ -718,8 +720,8 @@ export default function AlbumCreate() {
                                             hover:bg-error
                                             hover:text-white
                                         "
-                                        title="Batal unggah"
-                                        aria-label={`Hapus ${photo.filename}`}
+                                        title={t('album.cancel_upload')}
+                                        aria-label={`${t('album.cancel_upload')} ${photo.filename}`}
                                     >
                                         <FiX size={17} />
                                     </button>
@@ -803,7 +805,7 @@ export default function AlbumCreate() {
                         loading={processing}
                         disabled={processing}
                     >
-                        Simpan Album Baru
+                        {t('album.create_submit')}
                     </Button>
                 </div>
             </form>

@@ -17,6 +17,8 @@ class Mission extends Model
         'target',
         'badge_id',
         'slug',
+        'action_type',
+        'category_id',
     ];
 
     public function getSlugOptions(): SlugOptions
@@ -37,5 +39,11 @@ class Mission extends Model
     public function badge()
     {
         return $this->belongsTo(Badge::class);
+    }
+
+    /** Filter kategori tempat (opsional) untuk aksi berbasis tempat. */
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 }

@@ -6,6 +6,7 @@ import { IoLanguage } from "react-icons/io5";
 import { LuLayoutDashboard } from "react-icons/lu";
 import { MdOutlineCategory } from "react-icons/md";
 import { TbTargetArrow } from "react-icons/tb";
+import { TbMedal } from "react-icons/tb";
 import { TiGroupOutline } from "react-icons/ti";
 
 export const adminMenuItems = [
@@ -30,15 +31,20 @@ export const adminMenuItems = [
         icon: MdOutlineCategory,
     },
     {
-        label: 'Lencana dan Misi',
+        label: 'Misi / Tantangan',
         route: 'missions',
         icon: TbTargetArrow,
     },
-    // {
-    //     label: 'Level',
-    //     route: 'levels',
-    //     icon: GiStairsGoal,
-    // },
+    {
+        label: 'Lencana',
+        route: 'badges',
+        icon: TbMedal,
+    },
+    {
+        label: 'Level',
+        route: 'levels',
+        icon: GiStairsGoal,
+    },
     // {
     //     label: 'Wawasan Wisata',
     //     route: 'news',

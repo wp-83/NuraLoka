@@ -3,6 +3,7 @@ import { router } from '@inertiajs/react';
 
 import MainLayout from '@js/Layouts/MainLayout';
 import Button from '@components/Forms/Button';
+import { useTranslation } from '@js/i18n';
 
 import {
     FiCalendar,
@@ -49,6 +50,7 @@ function getProfileImage(profilePath) {
 // POPULAR ALBUM CARD
 // ============================================================
 function PopularAlbumCard({ album }) {
+    const { t } = useTranslation();
     const handleVisit = () => {
         router.visit(route('album.show', { album: album.slug }));
     };
@@ -118,7 +120,7 @@ function PopularAlbumCard({ album }) {
                     <HiOutlineEye size={14} className="shrink-0" />
 
                     <span>
-                        {formatViews(album.view_count)} dilihat
+                        {t('album.views_count', { count: formatViews(album.view_count) })}
                     </span>
                 </div>
 
@@ -128,7 +130,7 @@ function PopularAlbumCard({ album }) {
                         size="btn-sm"
                         onClick={handleVisit}
                     >
-                        Lihat Album
+                        {t('common.view_detail')}
                     </Button>
                 </div>
             </div>
@@ -140,6 +142,7 @@ function PopularAlbumCard({ album }) {
 // MY ALBUM CARD
 // ============================================================
 function MyAlbumCard({ album, onDelete }) {
+    const { t } = useTranslation();
     const handleToggleVisibility = () => {
         router.post(
             route('album.toggle.visibility', album.slug),
@@ -249,8 +252,7 @@ function MyAlbumCard({ album, onDelete }) {
                         />
 
                         <span>
-                            Dilihat oleh{' '}
-                            {formatViews(album.view_count)} Nuravers
+                            {t('album.viewers_count', { count: formatViews(album.view_count) })}
                         </span>
                     </div>
 
@@ -273,7 +275,7 @@ function MyAlbumCard({ album, onDelete }) {
                                 transition-opacity
                                 hover:opacity-80
                             "
-                            title="Klik untuk mengganti visibilitas"
+                            title={t('album.toggle_visibility')}
                         >
                             <span
                                 className={`
@@ -313,8 +315,8 @@ function MyAlbumCard({ album, onDelete }) {
                                 "
                             >
                                 {album.is_public
-                                    ? 'Publik'
-                                    : 'Privat'}
+                                    ? t('common.public')
+                                    : t('common.private')}
                             </span>
                         </button>
 
@@ -332,8 +334,8 @@ function MyAlbumCard({ album, onDelete }) {
                                     transition-opacity
                                     hover:opacity-80
                                 "
-                                title="Lihat detail"
-                                aria-label={`Lihat album ${album.title}`}
+                                title={t('album.view_detail')}
+                                aria-label={`${t('album.view_detail')} ${album.title}`}
                             >
                                 <HiOutlineEye size={15} />
                             </button>
@@ -350,8 +352,8 @@ function MyAlbumCard({ album, onDelete }) {
                                     transition-opacity
                                     hover:opacity-80
                                 "
-                                title="Edit album"
-                                aria-label={`Edit album ${album.title}`}
+                                title={t('album.edit_title')}
+                                aria-label={`${t('album.edit_title')} ${album.title}`}
                             >
                                 <FiEdit2 size={14} />
                             </button>
@@ -368,8 +370,8 @@ function MyAlbumCard({ album, onDelete }) {
                                     transition-opacity
                                     hover:opacity-80
                                 "
-                                title="Hapus album"
-                                aria-label={`Hapus album ${album.title}`}
+                                title={t('album.delete_title')}
+                                aria-label={`${t('album.delete_title')} ${album.title}`}
                             >
                                 <FiTrash2 size={14} />
                             </button>
@@ -385,6 +387,7 @@ function MyAlbumCard({ album, onDelete }) {
 // USER SEARCH RESULT
 // ============================================================
 function UserSearchResult({ user }) {
+    const { t } = useTranslation();
     const handleVisitAlbums = () => {
         router.visit(
             route('album.user.albums', user.id)
@@ -442,7 +445,7 @@ function UserSearchResult({ user }) {
                         text-gray-50
                     "
                 >
-                    {user.province || 'Lokasi tidak tersedia'}
+                    {user.province || t('album.location_unavailable')}
                 </p>
             </div>
 
@@ -451,7 +454,7 @@ function UserSearchResult({ user }) {
                 size="btn-sm"
                 onClick={handleVisitAlbums}
             >
-                Lihat Album
+                {t('common.view_detail')}
             </Button>
         </article>
     );
@@ -514,6 +517,7 @@ export default function Index({
     searchResults = null,
     searchQuery = '',
 }) {
+    const { t } = useTranslation();
     const [search, setSearch] = useState(searchQuery);
 
     const isSearching = searchResults !== null;
@@ -552,7 +556,7 @@ export default function Index({
 
     const handleDelete = (albumSlug) => {
         const isConfirmed = window.confirm(
-            'Yakin ingin menghapus album ini?'
+            t('album.delete_confirm')
         );
 
         if (!isConfirmed) return;
@@ -603,7 +607,7 @@ export default function Index({
                             md:text-hero
                         "
                     >
-                        Album Nuravers
+                        {t('album.meta_title')} {t('common.community')}
                     </h1>
 
                     <p
@@ -649,7 +653,7 @@ export default function Index({
                         onChange={(event) =>
                             setSearch(event.target.value)
                         }
-                        placeholder="Masukkan nama Nuravers lain untuk melihat koleksi album mereka..."
+                        placeholder={t('album.search_placeholder')}
                         className="
                             w-full
                             border-none bg-transparent
@@ -705,7 +709,7 @@ export default function Index({
                         </div>
                     ) : (
                         <EmptyState
-                            title="Tidak ditemukan Nuravers dengan nama tersebut."
+                            title={t('album.not_found')}
                         />
                     )}
                 </section>
@@ -732,7 +736,7 @@ export default function Index({
                                     font-bold text-primary-100
                                 "
                             >
-                                Album Populer Minggu Ini
+                                {t('album.popular_title')}
                             </h2>
 
                             {popularAlbums.length > 0 ? (
@@ -754,7 +758,7 @@ export default function Index({
                                 </div>
                             ) : (
                                 <EmptyState
-                                    title="Belum ada album populer minggu ini."
+                                    title={t('album.popular_empty')}
                                 />
                             )}
                         </div>
@@ -781,7 +785,7 @@ export default function Index({
                                     font-bold text-primary-100
                                 "
                             >
-                                Album Kamu
+                                {t('album.my_albums_title')}
                             </h2>
 
                             <Button
@@ -789,7 +793,7 @@ export default function Index({
                                 size="btn-sm"
                                 onClick={handleCreateAlbum}
                             >
-                                Tambah Album Baru
+                                {t('album.create_submit')}
                             </Button>
                         </div>
 
@@ -820,8 +824,8 @@ export default function Index({
                                 "
                             >
                                 <EmptyState
-                                    title="Kamu belum memiliki album."
-                                    description="Ayo mulai dokumentasikan perjalananmu!"
+                                    title={t('album.my_empty')}
+                                    description={t('album.start_cta')}
                                 />
                             </div>
                         )}
@@ -834,7 +838,7 @@ export default function Index({
                                     size="btn-sm"
                                     onClick={handleViewAllAlbums}
                                 >
-                                    Lihat Semua Album
+                                    {t('common.see_all')}
                                 </Button>
                             </div>
                         )}

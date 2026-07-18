@@ -1,6 +1,7 @@
 import Button from '@components/Forms/Button';
 import NewsCard from '@components/Features/NewsCard';
 import MainLayout from '@js/Layouts/MainLayout';
+import { useTranslation } from '@js/i18n';
 
 import { Link } from '@inertiajs/react';
 import {
@@ -67,6 +68,8 @@ export default function Index({
     auth,
     latestNews = [],
 }) {
+    const { t } = useTranslation();
+
     const userName =
         auth?.user?.name?.split(' ')[0] ||
         auth?.user?.username ||
@@ -76,6 +79,9 @@ export default function Index({
         latestNews.length > 0
             ? latestNews
             : news;
+
+    const heroDescParts = t('home.hero_desc').split(':app');
+    const greetingParts = t('home.search_greeting').split(':name');
 
     return (
         <div className="flex flex-col">
@@ -96,21 +102,20 @@ export default function Index({
                 <div className="absolute container inset-0 z-10 flex min-h-[540px] flex-col justify-between py-12 sm:py-16">
                     <div className="max-w-3xl text-white">
                         <h1 className="text-hero font-heading font-bold">
-                            Mantapkan Langkahmu!
+                            {t('home.hero_title')}
                         </h1>
 
                         <p className="mt-2 text-sm italic text-white/80">
-                            Mantapkan langkah perjalanan
+                            {t('home.hero_subtitle')}
                         </p>
 
                         <div className="mt-20 max-w-3xl">
                             <p className="text-lg leading-relaxed sm:text-xl">
-                                Dari ikon wisata terkenal hingga hidden gem
-                                tersembunyi, temukan destinasi yang sesuai
-                                dengan gaya perjalanan kamu bersama{' '}
+                                {heroDescParts[0]}
                                 <span className="rounded bg-white px-1 font-bold text-secondary-100">
                                     NuraLoka
                                 </span>
+                                {heroDescParts[1]}
                             </p>
 
                             <p className="mt-2 max-w-2xl text-xs italic leading-relaxed text-white/80">
@@ -134,10 +139,11 @@ export default function Index({
             <section className="container relative z-20 -mt-16">
                 <div className="rounded-2xl bg-white/95 p-5 shadow-lg backdrop-blur-sm sm:p-6">
                     <h2 className="text-lg text-primary-100">
-                        Mau ke mana hari ini,{' '}
+                        {greetingParts[0]}
                         <span className="font-bold">
-                            {userName}?
+                            {userName}
                         </span>
+                        {greetingParts[1]}
                     </h2>
 
                     <p className="mt-1 text-xs italic text-primary-70">
@@ -151,7 +157,7 @@ export default function Index({
 
                             <input
                                 type="text"
-                                placeholder="Temukan destinasi wisatamu sekarang..."
+                                placeholder={t('home.search_placeholder')}
                                 className="w-full rounded-xl bg-primary-10 py-3 pr-4 pl-11 text-sm text-gray-100 outline-none placeholder:text-gray-50 focus:ring-2 focus:ring-primary-30"
                             />
                         </div>
@@ -161,7 +167,7 @@ export default function Index({
                             variant="primary"
                             size="btn-md"
                         >
-                            Cari Destinasi
+                            {t('home.search_button')}
                         </Button>
                     </form>
                 </div>
@@ -179,14 +185,13 @@ export default function Index({
                     <div className="flex-1 text-center sm:text-left">
                         <h2 className="text-lg text-primary-100 sm:text-xl">
                             <span className="font-bold">
-                                Misi Terdekat:
+                                {t('home.mission_nearest')}
                             </span>{' '}
-                            Kunjungi 10 lokasi kuliner lokal di Indonesia
+                            {t('home.mission_example')}
                         </h2>
 
                         <p className="mt-1 text-sm text-secondary-100">
-                            Selesaikan misi ini untuk mendapatkan lencana
-                            perak kuliner dan poin Nura sebesar 100 poin.
+                            {t('home.mission_desc')}
                         </p>
 
                         <Button
@@ -195,13 +200,13 @@ export default function Index({
                             size="btn-sm"
                             className="mt-4"
                         >
-                            Lihat Detail
+                            {t('common.view_detail')}
                         </Button>
                     </div>
 
                     <div className="flex shrink-0 flex-col items-center gap-2">
                         <span className="text-xs font-semibold text-secondary-100">
-                            Progress Kamu
+                            {t('home.progress_you')}
                         </span>
 
                         <div className="flex h-20 w-20 items-center justify-center rounded-full border-[7px] border-primary-30 border-r-primary-100">
@@ -250,9 +255,9 @@ export default function Index({
             <section className="container pb-20">
                 <SectionHeader
                     mascot="/images/mascot/mascot-reading.png"
-                    title="Wawasan Wisata Hari Ini"
-                    description="Ayo membaca dan temukan wawasan baru seputar destinasi, budaya, serta tips perjalanan untuk petualangan Anda berikutnya."
-                    linkLabel="Lihat Semua Wawasan Wisata"
+                    title={t('home.news_title')}
+                    description={t('home.news_desc')}
+                    linkLabel={t('home.news_link')}
                     href={route(
                         'news.index',
                     )}
@@ -282,15 +287,11 @@ export default function Index({
                             />
 
                             <p className="mt-3 font-heading text-paragraph text-gray-100">
-                                Belum ada
-                                wawasan wisata
+                                {t('home.news_empty_title')}
                             </p>
 
                             <p className="mt-1 font-body text-body text-gray-50">
-                                Wawasan wisata
-                                terbaru akan
-                                ditampilkan di
-                                sini.
+                                {t('home.news_empty_desc')}
                             </p>
                         </div>
                     )}
@@ -344,6 +345,7 @@ function AlbumCard({
     image,
     className = '',
 }) {
+    const { t } = useTranslation();
     return (
         <Link
             href="#"
@@ -363,7 +365,7 @@ function AlbumCard({
                 </h3>
 
                 <p className="mt-1 text-xs text-white/70">
-                    Periksa album Nuravers
+                    {t('home.album_card_subtitle')}
                 </p>
             </div>
         </Link>

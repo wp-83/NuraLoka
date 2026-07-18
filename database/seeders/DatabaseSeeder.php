@@ -18,7 +18,9 @@ class DatabaseSeeder extends Seeder
             XullCategorySeeder::class,
             XullPlaceSeeder::class,
             UserSeeder::class,
+            LevelSeeder::class, // Level tantangan (dibutuhkan ChallengeController)
             ChallengeSeeder::class, // Added ChallengeSeeder
+            MissionActionSeeder::class, // Tautkan misi ke aksi user (gamifikasi dinamis)
             PlaceVisitSeeder::class,
             NewsSeederFW::class,
         ]);

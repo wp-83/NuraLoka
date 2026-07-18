@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { NAV_ITEMS } from '@js/Data/UserNavigation';
+import { useTranslation } from '@js/i18n';
+import LanguageSwitcher from '@components/Common/LanguageSwitcher';
 import { PiUser } from 'react-icons/pi';
 import { RiAdminLine } from 'react-icons/ri';
 import { HiOutlineLogout } from 'react-icons/hi';
@@ -10,6 +12,7 @@ import { HiOutlineLogout } from 'react-icons/hi';
 // ============================================================
 export default function Navbar() {
     const { user } = usePage().props.auth;
+    const { t } = useTranslation();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     // ============================================================
@@ -31,7 +34,7 @@ export default function Navbar() {
                     "
                 >
                     <PiUser size={24} className="shrink-0" />
-                    <span>Profil Saya</span>
+                    <span>{t('nav.my_profile')}</span>
                 </Link>
             </div>
 
@@ -50,7 +53,7 @@ export default function Navbar() {
                         "
                     >
                         <RiAdminLine size={24} className="shrink-0" />
-                        <span>Panel Admin</span>
+                        <span>{t('nav.admin_panel')}</span>
                     </Link>
                 </div>
             )}
@@ -70,7 +73,7 @@ export default function Navbar() {
                     "
                 >
                     <HiOutlineLogout size={24} className="shrink-0" />
-                    <span>Keluar</span>
+                    <span>{t('nav.logout')}</span>
                 </Link>
             </div>
         </>
@@ -109,7 +112,7 @@ export default function Navbar() {
                                     }
                                 `}
                             >
-                                {item.label}
+                                {t(item.labelKey)}
                             </span>
 
                             <span
@@ -174,8 +177,11 @@ export default function Navbar() {
                         {/* Navigation */}
                         {renderNavItems()}
 
-                        {/* Profile */}
-                        <div className="relative">
+                        {/* Aksi kanan: pemilih bahasa + profil */}
+                        <div className="flex items-center gap-2">
+                            <LanguageSwitcher />
+
+                            <div className="relative">
                             <button
                                 type="button"
                                 onClick={() =>
@@ -194,7 +200,7 @@ export default function Navbar() {
                                     </h5>
 
                                     <p className="font-body text-micro italic text-secondary">
-                                        Gelar/Badge
+                                        {t('nav.badge_label')}
                                     </p>
                                 </div>
 
@@ -228,6 +234,7 @@ export default function Navbar() {
                             >
                                 {renderProfileMenu()}
                             </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -247,6 +254,8 @@ export default function Navbar() {
                         />
                     </Link>
 
+                    <LanguageSwitcher />
+
                     {/* Mobile Profile Button */}
                     <button
                         type="button"
@@ -259,7 +268,7 @@ export default function Navbar() {
                             </h5>
 
                             <p className="font-body text-micro italic text-secondary">
-                                Gelar/Badge Mobile
+                                {t('nav.badge_label')}
                             </p>
                         </div>
 
@@ -381,7 +390,7 @@ export default function Navbar() {
                                         }
                                     `}
                                 >
-                                    {item.label}
+                                    {t(item.labelKey)}
                                 </span>
 
                                 {isActive && (

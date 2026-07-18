@@ -4,6 +4,7 @@ import { Link, router } from '@inertiajs/react';
 import MainLayout from '@js/Layouts/MainLayout';
 import PlaceMiniMap from '@components/Features/PlaceMiniMap';
 import { useFlash } from '@js/Contexts/FlashContext';
+import { useTranslation } from '@js/i18n';
 
 import {
     FiBookmark,
@@ -31,6 +32,7 @@ export default function Show({
     isSaved: initialSaved = false,
     totalSaves = 0,
 }) {
+    const { t } = useTranslation();
     const [isSaved, setIsSaved] = useState(initialSaved);
     const [checkingIn, setCheckingIn] = useState(false);
     const showFlash = useFlash();
@@ -64,7 +66,7 @@ export default function Show({
     const handleCheckIn = () => {
         if (!place?.id) return;
         if (!navigator.geolocation) {
-            flashCheckin(false, 'Perangkat tidak mendukung deteksi lokasi.');
+            flashCheckin(false, t('explore.checkin_no_geo'));
             return;
         }
         setCheckingIn(true);
@@ -86,16 +88,16 @@ export default function Show({
                         }),
                     });
                     const data = await res.json();
-                    flashCheckin(res.ok && data.ok, data.message || 'Check-in gagal.');
+                    flashCheckin(res.ok && data.ok, data.message || t('explore.checkin_failed'));
                 } catch (e) {
-                    flashCheckin(false, 'Gagal terhubung ke server. Coba lagi.');
+                    flashCheckin(false, t('explore.checkin_conn_error'));
                 } finally {
                     setCheckingIn(false);
                 }
             },
             () => {
                 setCheckingIn(false);
-                flashCheckin(false, 'Izin lokasi ditolak atau lokasi tidak terdeteksi.');
+                flashCheckin(false, t('explore.checkin_denied'));
             },
             { enableHighAccuracy: true, timeout: 10000 }
         );
@@ -163,7 +165,7 @@ export default function Show({
                             />
 
                             <span className="hidden xs:inline">
-                                Kembali ke Jelajah
+                                {t('explore.back_to_explore')}
                             </span>
                         </Link>
 
@@ -199,8 +201,8 @@ export default function Show({
                         >
                             <span className="hidden sm:inline">
                                 {isSaved
-                                    ? 'Tersimpan di daftar impian'
-                                    : 'Simpan ke daftar impian'}
+                                    ? t('explore.saved_in_wishlist')
+                                    : t('explore.save_to_wishlist')}
                             </span>
 
                             {isSaved ? (
@@ -234,7 +236,7 @@ export default function Show({
                         >
                             <FiMapPin size={18} className="shrink-0" />
                             <span className="hidden sm:inline">
-                                {checkingIn ? 'Mendeteksi lokasi…' : 'Check-in di sini'}
+                                {checkingIn ? t('explore.checkin_detecting') : t('explore.checkin')}
                             </span>
                         </button>
                     </div>
@@ -279,7 +281,7 @@ export default function Show({
                                 "
                             >
                                 {place?.description ||
-                                    'Deskripsi wisata belum tersedia.'}
+                                    t('explore.description_unavailable')}
                             </p>
 
                             {/* Categories */}
@@ -329,7 +331,7 @@ export default function Show({
                                             className="shrink-0"
                                         />
 
-                                        Kategori Umum
+                                        {t('explore.category_general')}
                                     </div>
                                 )}
                             </div>
@@ -357,7 +359,7 @@ export default function Show({
                                         "
                                     >
                                         {place?.address ||
-                                            'Alamatnya masih jadi rahasia — temukan langsung pesonanya di lokasi ✨'}
+                                            t('explore.address_hero_fallback')}
                                     </span>
                                 </div>
 
@@ -381,8 +383,8 @@ export default function Show({
                                         "
                                     >
                                         {totalSaves > 0
-                                            ? `${formattedTotalSaves} pengunjung menyimpan tempat ini`
-                                            : 'Belum ada yang menyimpan tempat ini'}
+                                            ? t('explore.saves_count', { count: formattedTotalSaves })
+                                            : t('explore.saves_empty')}
                                     </span>
                                 </div>
 
@@ -405,8 +407,7 @@ export default function Show({
                                             md:text-body
                                         "
                                     >
-                                        ± Rp85.000,00 –
-                                        Rp150.000,00/orang
+                                        {t('explore.price_estimate')}
                                     </span>
                                 </div>
                             </div>
@@ -477,7 +478,7 @@ export default function Show({
                             md:text-hero
                         "
                     >
-                        {place?.name} dalam Potret
+                        {t('explore.gallery_title', { name: place?.name })}
                     </h2>
                 </div>
 
@@ -556,11 +557,10 @@ export default function Show({
                     >
                         <FiMapPin size={32} className="text-gray-50" />
                         <p className="font-body text-body font-medium text-gray-70">
-                            Belum ada foto untuk tempat ini.
+                            {t('explore.gallery_empty_title')}
                         </p>
                         <p className="font-body text-small text-gray-50 max-w-md">
-                            Foto akan muncul dari album populer Nuravers yang menandai lokasi ini,
-                            atau saat admin mengunggah foto.
+                            {t('explore.gallery_empty_desc')}
                         </p>
                     </div>
                 )}

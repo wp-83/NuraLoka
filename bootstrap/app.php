@@ -3,6 +3,7 @@
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsBanned;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $middleware->web(append: [
+            SetLocale::class,          // set locale sebelum props Inertia di-share
             HandleInertiaRequests::class,
         ]);
 
