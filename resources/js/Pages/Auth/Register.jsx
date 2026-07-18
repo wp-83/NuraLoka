@@ -2,6 +2,7 @@ import { Link, useForm } from "@inertiajs/react";
 import { route } from "ziggy-js";
 
 import SignUp from "@js/Layouts/SignUp";
+import { useTranslation } from "@js/i18n";
 
 import Input from "@components/Forms/Input";
 import Button from "@components/Forms/Button";
@@ -11,6 +12,9 @@ import { MdOutlineMail } from "react-icons/md";
 import { GiPadlock } from "react-icons/gi";
 
 export default function Register() {
+    const { t } = useTranslation();
+    const subtitleParts = t("account.register.subtitle").split(":app");
+
     const { data, setData, post, processing, errors, reset } = useForm({
         username: "",
         email: "",
@@ -30,16 +34,16 @@ export default function Register() {
         <>
             <div className="mb-2">
                 <h2 className="text-title font-heading text-primary-100">
-                    <b>Daftar Akun</b>
+                    <b>{t("account.register.title")}</b>
                 </h2>
 
                 <p className="font-body text-body">
-                    Segera jadi bagian dari{" "}
+                    {subtitleParts[0]}
                     <span className="nuraloka-text">
                         <span className="nura">Nura</span>
                         <span className="loka">Loka</span>
-                    </span>{" "}
-                    dan mulai eksplorasi Indonesia!
+                    </span>
+                    {subtitleParts[1]}
                 </p>
             </div>
 
@@ -50,10 +54,10 @@ export default function Register() {
             >
                 <div className="flex flex-col gap-4 mb-8">
                     <Input
-                        label="Username"
+                        label={t("account.register.username_label")}
                         name="username"
                         type="text"
-                        placeholder="kocakbanget123"
+                        placeholder={t("account.register.username_placeholder")}
                         icon={<FaRegUserCircle size={26} />}
                         value={data.username}
                         onChange={(e) =>
@@ -63,10 +67,10 @@ export default function Register() {
                     />
 
                     <Input
-                        label="Email"
+                        label={t("account.register.email_label")}
                         name="email"
                         type="email"
-                        placeholder="email.kamu@gmail.com"
+                        placeholder={t("account.register.email_placeholder")}
                         icon={<MdOutlineMail size={26} />}
                         value={data.email}
                         onChange={(e) =>
@@ -76,10 +80,10 @@ export default function Register() {
                     />
 
                     <Input
-                        label="Kata Sandi"
+                        label={t("account.register.password_label")}
                         name="password"
                         type="password"
-                        placeholder="Kata sandi kamu"
+                        placeholder={t("account.register.password_placeholder")}
                         icon={<GiPadlock size={26} />}
                         value={data.password}
                         onChange={(e) =>
@@ -89,10 +93,10 @@ export default function Register() {
                     />
 
                     <Input
-                        label="Konfirmasi Kata Sandi"
+                        label={t("account.register.confirm_label")}
                         name="confirmPassword"
                         type="password"
-                        placeholder="Konfirmasi kata sandi kamu"
+                        placeholder={t("account.register.confirm_placeholder")}
                         icon={<GiPadlock size={26} />}
                         value={data.confirmPassword}
                         onChange={(e) =>
@@ -111,8 +115,8 @@ export default function Register() {
                         className="mb-3"
                     >
                         {processing
-                            ? "Mendaftarkan akun..."
-                            : "Daftar Akun"}
+                            ? t("account.register.submit_processing")
+                            : t("account.register.submit")}
                     </Button>
 
                     <a
@@ -131,16 +135,16 @@ export default function Register() {
                                 />
                             }
                         >
-                            Daftar dengan Google
+                            {t("account.register.google")}
                         </Button>
                     </a>
                 </div>
             </form>
 
             <p className="text-body text-center mt-2">
-                Sudah punya akun?{" "}
+                {t("account.register.have_account")}{" "}
                 <Link href={route("auth.login.index")}>
-                    Masuk Sekarang!
+                    {t("account.register.login_now")}
                 </Link>
             </p>
         </>
@@ -148,5 +152,5 @@ export default function Register() {
 }
 
 Register.layout = (page) => (
-    <SignUp title="Daftar Akun" content={page} />
+    <SignUp titleKey="account.register.layout_title" content={page} />
 );

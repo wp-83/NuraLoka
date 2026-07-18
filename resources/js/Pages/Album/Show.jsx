@@ -3,6 +3,7 @@ import { router } from '@inertiajs/react';
 
 import MainLayout from '@js/Layouts/MainLayout';
 import Button from '@components/Forms/Button';
+import { useTranslation } from '@js/i18n';
 
 import {
     FiCalendar,
@@ -54,6 +55,7 @@ export default function AlbumShow({
     isOwner = false,
     author = {},
 }) {
+    const { t } = useTranslation();
     const [lightboxIndex, setLightboxIndex] = useState(null);
 
     const isLightboxOpen = lightboxIndex !== null;
@@ -150,7 +152,7 @@ export default function AlbumShow({
 
     const handleDelete = () => {
         const isConfirmed = window.confirm(
-            'Yakin ingin menghapus album ini? Semua foto akan ikut terhapus.'
+            t('album.show_delete_confirm')
         );
 
         if (!isConfirmed) return;
@@ -198,7 +200,7 @@ export default function AlbumShow({
                             <FiChevronLeft size={16} />
                         }
                     >
-                        Kembali
+                        {t('common.back')}
                     </Button>
 
                     {/* Owner Visibility */}
@@ -217,7 +219,7 @@ export default function AlbumShow({
                                     font-semibold text-gray-70
                                 "
                             >
-                                Visibilitas
+                                {t('album.field_visibility')}
                             </span>
 
                             <button
@@ -269,8 +271,8 @@ export default function AlbumShow({
                                     "
                                 >
                                     {album.is_public
-                                        ? 'Publik'
-                                        : 'Privat'}
+                                        ? t('common.public')
+                                        : t('common.private')}
                                 </span>
                             </button>
                         </div>
@@ -324,7 +326,7 @@ export default function AlbumShow({
                                         text-gray-50
                                     "
                                 >
-                                    Pembuat Album
+                                    {t('album.author_label')}
                                 </p>
                             </div>
                         </div>
@@ -395,11 +397,7 @@ export default function AlbumShow({
                                 "
                             />
 
-                            Dilihat oleh{' '}
-                            {formatViews(
-                                album.view_count
-                            )}{' '}
-                            Nuravers
+                            {t('album.viewers_count', { count: formatViews(album.view_count) })}
                         </span>
                     </div>
                 </div>
@@ -425,7 +423,7 @@ export default function AlbumShow({
                             }
                             onClick={handleEdit}
                         >
-                            Ubah Data
+                            {t('common.edit')}
                         </Button>
 
                         <Button
@@ -436,7 +434,7 @@ export default function AlbumShow({
                             }
                             onClick={handleDelete}
                         >
-                            Hapus Album
+                            {t('album.delete_title')}
                         </Button>
                     </div>
                 )}
@@ -573,7 +571,7 @@ export default function AlbumShow({
                 <div
                     role="dialog"
                     aria-modal="true"
-                    aria-label="Pratinjau foto"
+                    aria-label={t('album.photo_preview')}
                     className="
                         fixed inset-0
                         z-[100]
@@ -605,8 +603,8 @@ export default function AlbumShow({
 
                             hover:bg-white/20
                         "
-                        title="Tutup"
-                        aria-label="Tutup pratinjau foto"
+                        title={t('album.photo_close')}
+                        aria-label={t('album.photo_close')}
                     >
                         <FiX size={26} />
                     </button>
@@ -636,7 +634,7 @@ export default function AlbumShow({
                                 md:h-12
                                 md:w-12
                             "
-                            aria-label="Foto sebelumnya"
+                            aria-label={t('album.photo_prev')}
                         >
                             <FiChevronLeft size={24} />
                         </button>
@@ -704,7 +702,7 @@ export default function AlbumShow({
                                 md:h-12
                                 md:w-12
                             "
-                            aria-label="Foto berikutnya"
+                            aria-label={t('album.photo_next')}
                         >
                             <FiChevronRight size={24} />
                         </button>

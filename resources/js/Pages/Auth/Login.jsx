@@ -7,6 +7,8 @@ import Flash from '@components/Common/Flash';
 import Input from "@components/Forms/Input";
 import Button from "@components/Forms/Button";
 import Checkbox from "@components/Forms/Checkbox";
+import LanguageSwitcher from "@components/Common/LanguageSwitcher";
+import { useTranslation } from '@js/i18n';
 import { route } from 'ziggy-js';
 
 export default function Login() {
@@ -15,6 +17,13 @@ export default function Login() {
     const [showPass, setShowPass] = useState(false);
     const [fade, setFade] = useState(true);
     const { flash } = usePage().props;
+    const { t, tRaw } = useTranslation();
+
+    // Slide latar (nama/lokasi/deskripsi) diambil dari file lang (account.login_slides).
+    const slides = tRaw('account.login_slides', []);
+
+    // Sisipkan brand "NuraLoka" berstyle ke tengah teks subtitle (mengandung :app).
+    const subtitleParts = t('account.login.subtitle').split(':app');
 
     const { data, setData, post, processing, errors, reset } = useForm({
         'identity': '',
@@ -31,30 +40,6 @@ export default function Login() {
         post(route('auth.login.authenticate'), {
             onSuccess: () => reset(),
         });
-    };
-
-    const bgIdentity = {
-        'name': [
-            'Candi Borobudur',
-            'Gunung Kerinci',
-            'Papeda',
-            'Proses Tenun Tradisional',
-            'Kilometer 0 Indonesia',
-        ],
-        'loc': [
-            'Magelang, Jawa Tengah',
-            'Kerinci, Jambi',
-            'Jayapura, Papua',
-            'Sikka, Nusa Tenggara Timur',
-            'Sabang, Aceh',
-        ],
-        'desc': [
-            'Candi Buddha terbesar di dunia dengan stupa khas dan situs warisan UNESCO.',
-            'Gunung tertinggi di Sumatra dengan lanskap megah dan sering diselimuti kabut.',
-            'Makanan khas berbahan sagu bertekstur kental, biasanya disajikan dengan kuah ikan.',
-            'Proses menenun kain dengan alat tradisional menggunakan benang berwarna, menghasilkan motif khas daerah.',
-            'Monumen penanda titik nol kilometer Indonesia sebagai batas paling barat NKRI.',
-        ],
     };
 
     useEffect(() => {
@@ -74,14 +59,16 @@ export default function Login() {
         return () => clearInterval(slider);
     }, []);
 
+    const slide = slides[currIdx] || {};
+
     return (
         <>
             <Head>
-                <title>NuraLoka | Masuk Akun</title>
+                <title>NuraLoka | {t('account.login.meta_title')}</title>
 
                 <meta
                     name="description"
-                    content="Temukan rekomendasi tempat wisata, kuliner, dan lokasi persinggahan terbaik di sepanjang rute perjalanan antar kota di Indonesia bersama NuraLoka."
+                    content={t('account.login.meta_description')}
                 />
             </Head>
 
@@ -93,10 +80,10 @@ export default function Login() {
                     <img src={`/images/background-auth/login/${currIdx + 1}.jpg`} alt="login-bg" className='login-bg' />
                     <div className='bg-desc'>
                         <div className='bg-main-content'>
-                            <h2 className='text-white font-heading text-title'><b>{bgIdentity.name[currIdx]}</b></h2>
-                            <p className='text-accent-10 text-body font-body'><i>{bgIdentity.loc[currIdx]}</i></p>
+                            <h2 className='text-white font-heading text-title'><b>{slide.name}</b></h2>
+                            <p className='text-accent-10 text-body font-body'><i>{slide.loc}</i></p>
                         </div>
-                        <p className={`${(currIdx == 2 ? 'white' : 'bg-additional-content')} font-body text-paragraph`}>{bgIdentity.desc[currIdx]}</p>
+                        <p className={`${(currIdx == 2 ? 'white' : 'bg-additional-content')} font-body text-paragraph`}>{slide.desc}</p>
                     </div>
                 </section>
                 <section className='right-section'>
@@ -107,23 +94,31 @@ export default function Login() {
                             <div className='circle bg-primary-70'></div>
                         </div>
                     </div>
+                    {/* Pemilih bahasa untuk pengunjung (tamu) di halaman login */}
+                    <div className='absolute right-4 top-4 z-20'>
+                        <LanguageSwitcher />
+                    </div>
                     <div className='container overflow-auto h-full hide-scrollbar'>
                         <div className='text-body font-body mb-6'>
-                            <p><b className='text-primary-100'>Hi, Nuravers!</b> Selamat datang kembali di</p>
+                            <p><b className='text-primary-100'>{t('account.login.welcome_greeting')}</b> {t('account.login.welcome_back')}</p>
                             <img src="/images/logo/with-tagline.png" alt="logo" className='w-52' />
                         </div>
                         <div className='main-content'>
                             <div className='mb-4'>
-                                <h2 className='text-title font-heading text-primary-100'><b>Masuk Akun</b></h2>
-                                <p className='font-body text-body'>Ayo masuk ke akun Anda untuk eksplorasi Indonesia bersama <span className='nuraloka-text'><span className='nura'>Nura</span><span className='loka'>Loka</span></span>!</p>
+                                <h2 className='text-title font-heading text-primary-100'><b>{t('account.login.title')}</b></h2>
+                                <p className='font-body text-body'>
+                                    {subtitleParts[0]}
+                                    <span className='nuraloka-text'><span className='nura'>Nura</span><span className='loka'>Loka</span></span>
+                                    {subtitleParts[1]}
+                                </p>
                             </div>
                             <form method="POST" className="w-full" onSubmit={handleSubmit}>
                                 <div className='flex flex-col gap-4 mb-2'>
                                     <Input
-                                        label="Email atau Username"
+                                        label={t('account.login.identity_label')}
                                         name="identity"
                                         type="text"
-                                        placeholder="email.kamu@gmail.com"
+                                        placeholder={t('account.login.identity_placeholder')}
                                         icon={<FaRegUserCircle size={26} />}
                                         value={data.identity ?? ""}
                                         onChange={(e) => setData("identity", e.target.value)}
@@ -133,10 +128,10 @@ export default function Login() {
                                     <div className='w-full flex flex-col gap-1.5 items-end'>
                                         <Input
                                             autoComplete="off"
-                                            label="Kata Sandi"
+                                            label={t('account.login.password_label')}
                                             name="password"
                                             type="password"
-                                            placeholder="Kata sandi kamu"
+                                            placeholder={t('account.login.password_placeholder')}
                                             icon={<GiPadlock size={26} />}
                                             value={data.password}
                                             onChange={(e) => setData("password", e.target.value)}
@@ -144,7 +139,7 @@ export default function Login() {
                                         />
 
                                         <Link href={route('auth.forget-password.index')}>
-                                            Lupa kata sandi?
+                                            {t('account.login.forgot_password')}
                                         </Link>
                                     </div>
                                 </div>
@@ -152,7 +147,7 @@ export default function Login() {
                                 <Checkbox
                                     id="rememberMe"
                                     name="rememberMe"
-                                    label="Ingat Saya untuk 30 Hari Ke Depan"
+                                    label={t('account.login.remember_me')}
                                     checked={data.rememberMe}
                                     onChange={(e) => setData("rememberMe", e.target.checked)}
                                     className="mb-4"
@@ -166,7 +161,7 @@ export default function Login() {
                                         fullWidth
                                         className="mb-3"
                                     >
-                                        {processing ? "Memeriksa data..." : "Masuk"}
+                                        {processing ? t('account.login.submit_processing') : t('account.login.submit')}
                                     </Button>
 
                                     <a href={route("auth.google.login")} className="block">
@@ -182,12 +177,12 @@ export default function Login() {
                                                 />
                                             }
                                         >
-                                            Masuk dengan Google
+                                            {t('account.login.google')}
                                         </Button>
                                     </a>
                                 </div>
                             </form>
-                            <p className='text-body text-center mt-2'>Belum punya akun? <Link href={route('auth.register.index')}>Daftar Sekarang!</Link></p>
+                            <p className='text-body text-center mt-2'>{t('account.login.no_account')} <Link href={route('auth.register.index')}>{t('account.login.register_now')}</Link></p>
                         </div>
                     </div>
                     <div className='bottom-left-decoration'>

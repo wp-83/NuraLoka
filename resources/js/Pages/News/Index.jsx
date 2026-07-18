@@ -1,34 +1,38 @@
 import { Link, Head, usePage } from '@inertiajs/react';
+import { useTranslation } from '@js/i18n';
 import '@css/News/Index.css';
+
+const LOCALE_TAG = { id: 'id-ID', en: 'en-US', ko: 'ko-KR' };
 
 export default function Index({ news }) {
     const { auth } = usePage().props;
-    // Utility to generate relative time in Indonesian
+    const { t, locale } = useTranslation();
+    // Waktu relatif mengikuti bahasa aktif (baru saja / menit / jam / hari yang lalu).
     const getRelativeTime = (dateString) => {
         const now = new Date();
         const date = new Date(dateString);
         const diffInSeconds = Math.floor((now - date) / 1000);
 
         if (diffInSeconds < 60) {
-            return 'baru saja';
+            return t('news.just_now');
         }
 
         const diffInMinutes = Math.floor(diffInSeconds / 60);
         if (diffInMinutes < 60) {
-            return `${diffInMinutes} menit yang lalu`;
+            return t('news.minutes_ago', { count: diffInMinutes });
         }
 
         const diffInHours = Math.floor(diffInMinutes / 60);
         if (diffInHours < 24) {
-            return `${diffInHours} jam yang lalu`;
+            return t('news.hours_ago', { count: diffInHours });
         }
 
         const diffInDays = Math.floor(diffInHours / 24);
         if (diffInDays < 30) {
-            return `${diffInDays} hari yang lalu`;
+            return t('news.days_ago', { count: diffInDays });
         }
 
-        return date.toLocaleDateString('id-ID', {
+        return date.toLocaleDateString(LOCALE_TAG[locale] || 'id-ID', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
@@ -45,15 +49,15 @@ export default function Index({ news }) {
     return (
         <>
             <Head>
-                <title>NuraLoka | Semua Wawasan Wisata</title>
-                <meta name="description" content="Temukan seluruh wawasan wisata seputar destinasi, budaya, dan tips perjalanan di Indonesia." />
+                <title>{`NuraLoka | ${t('news.meta_title')}`}</title>
+                <meta name="description" content={t('news.meta_description')} />
             </Head>
 
             <div className="news-index-container">
                 {/* Back button */}
                 <div className="back-navigation">
                     <Link href={route('home.index')} className="back-to-home-link">
-                        &larr; Kembali ke Beranda
+                        &larr; {t('news.back_to_home')}
                     </Link>
                 </div>
 
@@ -65,9 +69,9 @@ export default function Index({ news }) {
                         className="news-index-mascot"
                     />
                     <div className="news-index-title-wrapper">
-                        <h1 className="news-index-title">Semua Wawasan Wisata</h1>
+                        <h1 className="news-index-title">{t('news.index_title')}</h1>
                         <p className="news-index-subtitle">
-                            Jelajahi berbagai artikel menarik seputar keindahan destinasi, nilai budaya, serta tips perjalanan berharga dari NuraLoka.
+                            {t('news.index_subtitle')}
                         </p>
 
                     </div>
@@ -91,7 +95,7 @@ export default function Index({ news }) {
                                     <p className="news-grid-excerpt">{getExcerpt(item.content)}</p>
                                     <div className="news-grid-action">
                                         <Link href={route('news.show', item.id)} className="btn-primary btn-sm news-read-more-btn">
-                                            Baca Selengkapnya
+                                            {t('news.read_more')}
                                         </Link>
                                     </div>
                                 </div>
@@ -99,7 +103,7 @@ export default function Index({ news }) {
                         ))
                     ) : (
                         <div className="news-grid-empty">
-                            <p>Tidak ada wawasan wisata yang tersedia saat ini.</p>
+                            <p>{t('news.empty')}</p>
                         </div>
                     )}
                 </div>
@@ -111,9 +115,9 @@ export default function Index({ news }) {
                             // Convert HTML entities like &laquo; and &raquo; to normal text
                             let label = link.label;
                             if (label.includes('Previous')) {
-                                label = 'Sebelumnya';
+                                label = t('common.previous');
                             } else if (label.includes('Next')) {
-                                label = 'Selanjutnya';
+                                label = t('common.next');
                             }
 
                             if (!link.url) {

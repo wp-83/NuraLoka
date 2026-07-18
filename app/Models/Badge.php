@@ -32,7 +32,7 @@ class Badge extends Model
     // Relationships
     public function users()
     {
-        return $this->belongsToMany(User::class)
+        return $this->belongsToMany(User::class, 'user_badges')
             ->withPivot('id')
             ->withTimestamps();
     }

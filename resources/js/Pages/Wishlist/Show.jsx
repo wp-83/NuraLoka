@@ -4,6 +4,7 @@ import { router } from '@inertiajs/react';
 import MainLayout from '@js/Layouts/MainLayout';
 import PlaceMiniMap from '@components/Features/PlaceMiniMap';
 import Button from '@components/Forms/Button';
+import { useTranslation } from '@js/i18n';
 
 import {
     FiBookmark,
@@ -30,6 +31,7 @@ export default function Show({
     isSaved: initialSaved = false,
     totalSaves = 0,
 }) {
+    const { t } = useTranslation();
     const [isSaved, setIsSaved] = useState(initialSaved);
     const [checkingIn, setCheckingIn] = useState(false);
     const [checkinStatus, setCheckinStatus] = useState(null); // { ok, message }
@@ -70,7 +72,7 @@ export default function Show({
     const handleCheckIn = () => {
         if (!place?.id) return;
         if (!navigator.geolocation) {
-            setCheckinStatus({ ok: false, message: 'Perangkat tidak mendukung deteksi lokasi.' });
+            setCheckinStatus({ ok: false, message: t('explore.checkin_no_geo') });
             return;
         }
         setCheckingIn(true);
@@ -93,16 +95,16 @@ export default function Show({
                         }),
                     });
                     const data = await res.json();
-                    setCheckinStatus({ ok: res.ok && data.ok, message: data.message || 'Check-in gagal.' });
+                    setCheckinStatus({ ok: res.ok && data.ok, message: data.message || t('explore.checkin_failed') });
                 } catch (e) {
-                    setCheckinStatus({ ok: false, message: 'Gagal terhubung ke server. Coba lagi.' });
+                    setCheckinStatus({ ok: false, message: t('explore.checkin_conn_error') });
                 } finally {
                     setCheckingIn(false);
                 }
             },
             () => {
                 setCheckingIn(false);
-                setCheckinStatus({ ok: false, message: 'Izin lokasi ditolak atau lokasi tidak terdeteksi.' });
+                setCheckinStatus({ ok: false, message: t('explore.checkin_denied') });
             },
             { enableHighAccuracy: true, timeout: 10000 }
         );
@@ -158,7 +160,7 @@ export default function Show({
                                 <FiChevronLeft size={18} />
                             }
                         >
-                            Kembali ke Impian
+                            {t('wishlist.back_to_wishlist')}
                         </Button>
 
                         {/* Wishlist Toggle */}
@@ -193,8 +195,8 @@ export default function Show({
                         >
                             <span className="hidden sm:inline">
                                 {isSaved
-                                    ? 'Tersimpan di daftar impian'
-                                    : 'Simpan ke daftar impian'}
+                                    ? t('explore.saved_in_wishlist')
+                                    : t('explore.save_to_wishlist')}
                             </span>
 
                             {isSaved ? (
@@ -228,7 +230,7 @@ export default function Show({
                         >
                             <FiMapPin size={18} className="shrink-0" />
                             <span className="hidden sm:inline">
-                                {checkingIn ? 'Mendeteksi lokasi…' : 'Check-in di sini'}
+                                {checkingIn ? t('explore.checkin_detecting') : t('explore.checkin')}
                             </span>
                         </button>
                     </div>
@@ -282,7 +284,7 @@ export default function Show({
                                 "
                             >
                                 {place?.description ||
-                                    'Deskripsi wisata belum tersedia.'}
+                                    t('wishlist.description_unavailable')}
                             </p>
 
                             {/* Categories */}
@@ -332,7 +334,7 @@ export default function Show({
                                             className="shrink-0"
                                         />
 
-                                        Kategori Umum
+                                        {t('explore.category_general')}
                                     </div>
                                 )}
                             </div>
@@ -360,7 +362,7 @@ export default function Show({
                                         "
                                     >
                                         {place?.address ||
-                                            'Alamat belum tersedia.'}
+                                            t('wishlist.address_unavailable')}
                                     </span>
                                 </div>
 
@@ -384,8 +386,8 @@ export default function Show({
                                         "
                                     >
                                         {totalSaves > 0
-                                            ? `${formattedTotalSaves} pengunjung menyimpan tempat ini`
-                                            : 'Belum ada yang menyimpan tempat ini'}
+                                            ? t('explore.saves_count', { count: formattedTotalSaves })
+                                            : t('explore.saves_empty')}
                                     </span>
                                 </div>
 
@@ -408,8 +410,7 @@ export default function Show({
                                             md:text-body
                                         "
                                     >
-                                        ± Rp85.000,00 –
-                                        Rp150.000,00/orang
+                                        {t('explore.price_estimate')}
                                     </span>
                                 </div>
                             </div>
@@ -480,7 +481,7 @@ export default function Show({
                             md:text-hero
                         "
                     >
-                        {place?.name} dalam Potret
+                        {t('explore.gallery_title', { name: place?.name })}
                     </h2>
                 </div>
 

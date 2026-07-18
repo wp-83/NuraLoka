@@ -1,8 +1,10 @@
 import React from 'react';
 import { FiMapPin, FiBookmark, FiUsers, FiCamera } from 'react-icons/fi';
 import { FaBookmark } from 'react-icons/fa';
+import { useTranslation } from '@js/i18n';
 
 export default function PlaceCard({ place, onVisit, isSaved = false, onToggleSave }) {
+    const { t } = useTranslation();
     return (
         <div
             onClick={() => onVisit(place)}
@@ -48,17 +50,17 @@ export default function PlaceCard({ place, onVisit, isSaved = false, onToggleSav
                     {Number(place.visitors_count) > 0 && (
                         <span className="flex items-center gap-1">
                             <FiUsers size={13} className="text-accent" />
-                            {Number(place.visitors_count).toLocaleString('id-ID')} pengunjung
+                            {t('explore.card_visitors', { count: Number(place.visitors_count).toLocaleString('id-ID') })}
                         </span>
                     )}
                     {Number(place.album_posters_count) > 0 && (
                         <span className="flex items-center gap-1">
                             <FiCamera size={13} className="text-accent" />
-                            {Number(place.album_posters_count).toLocaleString('id-ID')} album
+                            {t('explore.card_albums', { count: Number(place.album_posters_count).toLocaleString('id-ID') })}
                         </span>
                     )}
                     {!(Number(place.visitors_count) > 0) && !(Number(place.album_posters_count) > 0) && (
-                        <span>Ramai disimpan Nuravers</span>
+                        <span>{t('explore.card_popular_saved')}</span>
                     )}
                 </div>
             </div>

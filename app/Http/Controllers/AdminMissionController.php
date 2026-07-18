@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Badge;
+use App\Models\Category;
 use App\Models\Mission;
+use App\Services\GamificationService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class AdminMissionController extends Controller
@@ -39,10 +42,10 @@ class AdminMissionController extends Controller
      */
     public function create()
     {
-        $badges = Badge::all();
-
         return Inertia::render('Admin/Mission/Create', [
-            'badges' => $badges,
+            'badges' => Badge::all(),
+            'categories' => Category::orderBy('name')->get(['id', 'name']),
+            'actions' => $this->actionOptions(),
         ]);
     }
 
@@ -51,21 +54,17 @@ class AdminMissionController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'title' => 'required|string|max:255|unique:missions,title',
             'description' => 'required|string',
             'points_reward' => 'required|integer|min:0',
             'target' => 'required|integer|min:1',
             'badge_id' => 'required|exists:badges,id',
+            'action_type' => ['nullable', Rule::in(array_keys(GamificationService::ACTIONS))],
+            'category_id' => 'nullable|exists:categories,id',
         ]);
 
-        Mission::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'points_reward' => $request->points_reward,
-            'target' => $request->target,
-            'badge_id' => $request->badge_id,
-        ]);
+        Mission::create($this->normalize($data));
 
         session()->flash('flash.type', 'success');
         session()->flash('flash.message', 'Tantangan berhasil ditambahkan!');
@@ -79,11 +78,12 @@ class AdminMissionController extends Controller
     public function edit(string $id)
     {
         $mission = Mission::findOrFail($id);
-        $badges = Badge::all();
 
         return Inertia::render('Admin/Mission/Edit', [
             'mission' => $mission,
-            'badges' => $badges,
+            'badges' => Badge::all(),
+            'categories' => Category::orderBy('name')->get(['id', 'name']),
+            'actions' => $this->actionOptions(),
         ]);
     }
 
@@ -94,21 +94,17 @@ class AdminMissionController extends Controller
     {
         $mission = Mission::findOrFail($id);
 
-        $request->validate([
+        $data = $request->validate([
             'title' => 'required|string|max:255|unique:missions,title,'.$id,
             'description' => 'required|string',
             'points_reward' => 'required|integer|min:0',
             'target' => 'required|integer|min:1',
             'badge_id' => 'required|exists:badges,id',
+            'action_type' => ['nullable', Rule::in(array_keys(GamificationService::ACTIONS))],
+            'category_id' => 'nullable|exists:categories,id',
         ]);
 
-        $mission->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'points_reward' => $request->points_reward,
-            'target' => $request->target,
-            'badge_id' => $request->badge_id,
-        ]);
+        $mission->update($this->normalize($data));
 
         session()->flash('flash.type', 'success');
         session()->flash('flash.message', 'Tantangan berhasil diperbarui!');
@@ -136,5 +132,31 @@ class AdminMissionController extends Controller
         session()->flash('flash.message', 'Tantangan berhasil dihapus!');
 
         return redirect()->route('admin.missions.index');
+    }
+
+    /** Opsi aksi pemicu untuk dropdown form. */
+    private function actionOptions(): array
+    {
+        $options = [['value' => '', 'label' => 'Manual (tidak otomatis)', 'category' => false]];
+        foreach (GamificationService::ACTIONS as $key => $label) {
+            $options[] = [
+                'value' => $key,
+                'label' => $label,
+                'category' => in_array($key, GamificationService::CATEGORY_ACTIONS, true),
+            ];
+        }
+
+        return $options;
+    }
+
+    /** Bersihkan data: category_id hanya bermakna untuk aksi berbasis kategori. */
+    private function normalize(array $data): array
+    {
+        $action = $data['action_type'] ?? null;
+        if (! $action || ! in_array($action, GamificationService::CATEGORY_ACTIONS, true)) {
+            $data['category_id'] = null;
+        }
+
+        return $data;
     }
 }

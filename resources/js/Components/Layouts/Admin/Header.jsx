@@ -1,5 +1,6 @@
 import { usePage } from '@inertiajs/react';
 import { HiOutlineBars3 } from 'react-icons/hi2';
+import LanguageSwitcher from '@components/Common/LanguageSwitcher';
 
 export default function AdminHeader({ onOpenMobile }) {
     const{ user } = usePage().props.auth;
@@ -27,18 +28,22 @@ export default function AdminHeader({ onOpenMobile }) {
                     </div>
                 </div>
 
-                <div className="group flex items-center gap-2 rounded-xl p-1.5 transition-colors">
-                    <div className="text-right">
-                        <h5 className="font-body font-bold text-body text-secondary">
-                            {user.fullname}
-                        </h5>
-                    </div>
+                <div className="flex items-center gap-2">
+                    <LanguageSwitcher />
 
-                    <img
-                        src={user.public_profile_photo}
-                        className="w-12 h-12 rounded-full p-px border-2 border-error-dark object-cover"
-                        alt="Profile"
-                    />
+                    <div className="group flex items-center gap-2 rounded-xl p-1.5 transition-colors">
+                        <div className="text-right">
+                            <h5 className="font-body font-bold text-body text-secondary">
+                                {user.fullname}
+                            </h5>
+                        </div>
+
+                        <img
+                            src={user.public_profile_photo}
+                            className="w-12 h-12 rounded-full p-px border-2 border-error-dark object-cover"
+                            alt="Profile"
+                        />
+                    </div>
                 </div>
             </div>
         </header>

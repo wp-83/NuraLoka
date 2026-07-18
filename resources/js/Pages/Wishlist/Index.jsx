@@ -3,11 +3,13 @@ import { router } from '@inertiajs/react';
 import PlaceCard from '@components/Features/PlaceCard';
 import Button from '@components/Forms/Button';
 import MainLayout from '@js/Layouts/MainLayout';
+import { useTranslation } from '@js/i18n';
 
 export default function Index({
     savedPlaces = [],
     savedPlaceIds = [],
 }) {
+    const { t } = useTranslation();
     const hasSavedPlaces = savedPlaces.length > 0;
 
     const handleVisit = (place) => {
@@ -69,7 +71,7 @@ export default function Index({
                             md:text-hero
                         "
                     >
-                        Impian dari Nuravers
+                        {t('wishlist.title')}
                     </h1>
 
                     <p
@@ -79,7 +81,7 @@ export default function Index({
                             text-primary-70
                         "
                     >
-                        Impianmu Nuravers
+                        {t('wishlist.subtitle')}
                     </p>
                 </div>
 
@@ -109,7 +111,7 @@ export default function Index({
                                 font-medium text-gray-50
                             "
                         >
-                            Belum ada destinasi impianmu.
+                            {t('wishlist.empty_text')}
 
                             <span
                                 className="
@@ -117,7 +119,7 @@ export default function Index({
                                     text-body text-gray-30
                                 "
                             >
-                                Ayo jelajahi dan simpan destinasi favoritmu!
+                                {t('wishlist.empty_sub')}
                             </span>
                         </p>
 
@@ -126,7 +128,7 @@ export default function Index({
                             variant="primary"
                             className="mt-2"
                         >
-                            Ayo cari lagi destinasi impianmu!
+                            {t('wishlist.cta_explore')}
                         </Button>
                     </div>
                 ) : (
@@ -137,7 +139,7 @@ export default function Index({
                                 onClick={handleExplore}
                                 variant="primary"
                             >
-                                Ayo cari lagi destinasi impianmu!
+                                {t('wishlist.cta_explore')}
                             </Button>
                         </div>
 
