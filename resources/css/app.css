@@ -65,6 +65,10 @@
         color: #058F00;
     }
 
+    .local-language {
+        @apply font-body italic text-info-dark;
+    }
+
     .hide-scrollbar {
         -ms-overflow-style: none; /* IE and Edge */
         scrollbar-width: none; /* Firefox */

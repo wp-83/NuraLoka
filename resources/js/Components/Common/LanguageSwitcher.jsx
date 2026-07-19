@@ -37,7 +37,7 @@ export default function LanguageSwitcher({ className = '' }) {
                 aria-label="Pilih bahasa"
                 className="
                     flex items-center gap-1.5 rounded-xl px-2.5 py-1.5
-                    font-body text-btn-sm text-primary
+                    font-body text-btn-sm text-accent bg-white
                     transition-colors hover:bg-primary-10 hover:text-secondary hover:cursor-pointer
                 "
             >

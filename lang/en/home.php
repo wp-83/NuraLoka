@@ -6,7 +6,6 @@ return [
 
     // Hero
     'hero_title' => 'Take Your Step Forward!',
-    'hero_subtitle' => 'Set your journey in motion',
     'hero_desc' => 'From famous landmarks to well-kept hidden gems, find destinations that match your travel style with :app',
 
     // Search
@@ -16,12 +15,12 @@ return [
 
     // Mission
     'mission_nearest' => 'Nearest Mission:',
-    'mission_example' => 'Visit 10 local culinary spots across Indonesia',
-    'mission_desc' => 'Complete this mission to earn the silver culinary badge and 100 Nura points.',
     'progress_you' => 'Your Progress',
 
     // Album
-    'album_card_subtitle' => 'Check out Nuravers albums',
+    'album_title' => 'Moments from Nuravers',
+    'album_desc' => "Find travel and destination inspiration through various snapshots of Nuravers' best moments.",
+    'album_link' => 'View All Nuravers Albums',
 
     // Travel insights (news)
     'news_title' => "Today's Travel Insights",
