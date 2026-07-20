@@ -1,4 +1,5 @@
 import Button from '@components/Forms/Button';
+import Input from '@components/Forms/Input';
 import NewsCard from '@components/Features/NewsCard';
 import MainLayout from '@js/Layouts/MainLayout';
 import { useTranslation } from '@js/i18n';
@@ -68,12 +69,7 @@ export default function Index({
     auth,
     latestNews = [],
 }) {
-    const { t } = useTranslation();
-
-    const userName =
-        auth?.user?.name?.split(' ')[0] ||
-        auth?.user?.username ||
-        'Jayadi';
+    const { t } = useTranslation()
 
     const newsItems =
         latestNews.length > 0
@@ -88,7 +84,7 @@ export default function Index({
             {/* Hero */}
             <section className="relative">
                 {/* Background full viewport */}
-                <div className="relative left-1/2 min-h-[64vh] sm:min-h-[72vh] w-screen -translate-x-1/2 overflow-hidden">
+                <div className="relative left-1/2 min-h-[64vh] sm:min-h-[68vh] w-[99vw] -translate-x-1/2 overflow-hidden">
                     <img
                         src="/images/backgrounds/home.jpg"
                         alt="Keindahan wisata Indonesia"
@@ -105,20 +101,23 @@ export default function Index({
                             {t('home.hero_title')}
                         </h1>
 
-                        <p className="mt-2 text-sm italic text-white/80">
-                            {t('home.hero_subtitle')}
+                        <p className="mt-2 text-paragraph local-language !text-info-light">
+                            Mantêpaken lampah panjenengan
                         </p>
 
-                        <div className="mt-20 max-w-3xl">
-                            <p className="text-lg leading-relaxed sm:text-xl">
+                        <div className="mt-20 max-w-2xl font-heading">
+                            <p className="leading-relaxed text-paragraph">
                                 {heroDescParts[0]}
                                 <span className="rounded bg-white px-1 font-bold text-secondary-100">
-                                    NuraLoka
+                                    <span className="nuraloka-text">
+                                        <span className="nura">Nura</span>
+                                        <span className="loka">Loka</span>
+                                    </span>
                                 </span>
                                 {heroDescParts[1]}
                             </p>
 
-                            <p className="mt-2 max-w-2xl text-xs italic leading-relaxed text-white/80">
+                            <p className="mt-2 text-small local-language !text-info-light max-w-xl">
                                 Saking ikon wisata ingkang misuwur dumugi papan
                                 wisata istimewa ingkang kasimpen, temokake
                                 destinasi ingkang cocog kaliyan gaya lelampahan
@@ -138,29 +137,26 @@ export default function Index({
             {/* Search */}
             <section className="container relative z-20 -mt-16">
                 <div className="rounded-2xl bg-white/95 p-5 shadow-lg backdrop-blur-sm sm:p-6">
-                    <h2 className="text-lg text-primary-100">
+                    <h2 className="text-lg font-heading text-paragraph text-primary-100">
                         {greetingParts[0]}
                         <span className="font-bold">
-                            {userName}
+                            {auth.user.fullname}
                         </span>
                         {greetingParts[1]}
                     </h2>
 
-                    <p className="mt-1 text-xs italic text-primary-70">
+                    <p className="local-language">
                         Panjenengan badhé tindak pundi dinten menika,{' '}
-                        {userName}?
+                        {auth.user.fullname}?
                     </p>
 
                     <form className="mt-5 flex flex-col gap-3 sm:flex-row">
-                        <div className="relative flex-1">
-                            <FiSearch className="absolute top-1/2 left-4 -translate-y-1/2 text-primary-70" />
-
-                            <input
-                                type="text"
-                                placeholder={t('home.search_placeholder')}
-                                className="w-full rounded-xl bg-primary-10 py-3 pr-4 pl-11 text-sm text-gray-100 outline-none placeholder:text-gray-50 focus:ring-2 focus:ring-primary-30"
-                            />
-                        </div>
+                        <Input
+                            type="search"
+                            name="placeSearch"
+                            icon={<FiSearch size={20} />}
+                            placeholder="Temukan destinasi wisatamu sekarang..."
+                        />
 
                         <Button
                             type="submit"
@@ -183,21 +179,21 @@ export default function Index({
                     />
 
                     <div className="flex-1 text-center sm:text-left">
-                        <h2 className="text-lg text-primary-100 sm:text-xl">
+                        <h2 className="text-paragraph font-heading text-primary-100">
                             <span className="font-bold">
                                 {t('home.mission_nearest')}
                             </span>{' '}
-                            {t('home.mission_example')}
+                            Kunjungi 10 lokasi kuliner lokal di Indonesia
                         </h2>
 
-                        <p className="mt-1 text-sm text-secondary-100">
-                            {t('home.mission_desc')}
+                        <p className="text-body text-secondary-100">
+                            Selesaikan misi ini untuk mendapatkan lencana perak kuliner dan poin Nura sebesar 100 poin.
                         </p>
 
                         <Button
                             type="button"
                             variant="primary"
-                            size="btn-sm"
+                            size="btn-md"
                             className="mt-4"
                         >
                             {t('common.view_detail')}
@@ -205,7 +201,7 @@ export default function Index({
                     </div>
 
                     <div className="flex shrink-0 flex-col items-center gap-2">
-                        <span className="text-xs font-semibold text-secondary-100">
+                        <span className="text-body text-secondary-100">
                             {t('home.progress_you')}
                         </span>
 
@@ -219,8 +215,18 @@ export default function Index({
             </section>
 
             {/* Album */}
-            <section className="container py-16">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <section className="container pt-16 pb-24">
+                <SectionHeader
+                    mascot="/images/mascots/camera.png"
+                    title={t('home.album_title')}
+                    description={t('home.album_desc')}
+                    linkLabel={t('home.album_link')}
+                    href={route(
+                        'album.index',
+                    )}
+                />
+
+                <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                     {/* Gambar Besar Kiri */}
                     <AlbumCard
                         {...albums[0]}
@@ -254,7 +260,7 @@ export default function Index({
             {/* News */}
             <section className="container pb-20">
                 <SectionHeader
-                    mascot="/images/mascot/mascot-reading.png"
+                    mascot="/images/mascots/hi.png"
                     title={t('home.news_title')}
                     description={t('home.news_desc')}
                     linkLabel={t('home.news_link')}
@@ -263,7 +269,7 @@ export default function Index({
                     )}
                 />
 
-                <div className="mt-8 flex flex-col gap-5">
+                <div className="mt-4 flex flex-col gap-5">
                     {latestNews.length >
                     0 ? (
                         latestNews.map(
@@ -314,15 +320,15 @@ function SectionHeader({
                 <img
                     src={mascot}
                     alt=""
-                    className="hidden h-28 w-28 shrink-0 object-contain sm:block"
+                    className="hidden h-32 w-32 shrink-0 object-contain sm:block"
                 />
 
                 <div>
-                    <h2 className="text-2xl font-bold text-primary-100 sm:text-3xl">
+                    <h2 className="text-title font-bold font-heading text-primary-100">
                         {title}
                     </h2>
 
-                    <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-80">
+                    <p className="mt-1 max-w-2xl text-body leading-relaxed text-gray-100">
                         {description}
                     </p>
                 </div>
