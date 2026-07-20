@@ -1,94 +1,146 @@
-import { Link, Head } from '@inertiajs/react';
+import MainLayout from '@js/Layouts/MainLayout';
+import { Link } from '@inertiajs/react';
 import { useTranslation } from '@js/i18n';
-import '@css/News/Show.css';
+import Button from '@components/Forms/Button';
+import { IoIosArrowBack } from 'react-icons/io';
 
-const LOCALE_TAG = { id: 'id-ID', en: 'en-US', ko: 'ko-KR' };
+const LOCALE_TAG = {
+    id: 'id-ID',
+    en: 'en-US',
+    ko: 'ko-KR',
+};
 
 export default function Show({ newsItem }) {
+    console.log(newsItem);
     const { t, locale } = useTranslation();
 
-    // Determine the author's display name safely
-    const authorName = newsItem.user?.userDetails?.fullname
-        || newsItem.user?.user_details?.fullname
-        || newsItem.user?.username
-        || t('news.default_author');
+    const authorName =
+        newsItem.user?.userDetails?.fullname ||
+        newsItem.user?.user_details?.fullname ||
+        newsItem.user?.username ||
+        t('news.default_author');
 
-    // Format absolute date
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString(LOCALE_TAG[locale] || 'id-ID', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }) + ' ' + t('news.time_suffix');
+
+        return (
+            date.toLocaleDateString(
+                LOCALE_TAG[locale] || 'id-ID',
+                {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                },
+            ) +
+            ' ' +
+            t('news.time_suffix')
+        );
     };
 
-    // Parse the content text into paragraphs
     const renderContent = (content) => {
         if (!content) return null;
-        // Split by double newline to separate paragraphs
-        return content.split(/\n+/).map((paragraph, index) => (
-            <p key={index} className="news-paragraph">
-                {paragraph.trim()}
-            </p>
-        ));
+
+        return content
+            .split(/\n+/)
+            .map((paragraph, index) => (
+                <p
+                    key={index}
+                    className="mb-6 text-justify indent-8 leading-loose text-gray-85 max-sm:indent-4"
+                >
+                    {paragraph.trim()}
+                </p>
+            ));
     };
 
     return (
-        <>
-            <Head>
-                <title>{`NuraLoka | ${newsItem.title}`}</title>
-                <meta name="description" content={newsItem.content ? newsItem.content.substring(0, 160) : ''} />
-            </Head>
+        <article className="mx-auto w-full max-w-4xl px-6 py-12">
 
-            <article className="news-detail-container">
-                {/* Back Button */}
-                <div className="back-navigation">
-                    <Link href={route('news.index')} className="back-link">
-                        &larr; {t('news.show_back')}
-                    </Link>
-                </div>
+            {/* Back */}
 
-                {/* News Article Header */}
-                <header className="news-detail-header">
-                    <h1 className="news-detail-title">{newsItem.title}</h1>
-                    <div className="news-detail-meta">
-                        <div className="meta-author">
-                            <span className="meta-label">{t('news.author_label')}</span>
-                            <span className="meta-value">{authorName}</span>
-                        </div>
-                        <div className="meta-divider">|</div>
-                        <div className="meta-date">
-                            <span className="meta-label">{t('news.published_label')}</span>
-                            <span className="meta-value">{formatDate(newsItem.publish_date)}</span>
-                        </div>
+            <div className="mb-8">
+                <Link href={route('news.index')}>
+                    <Button iconLeft={<IoIosArrowBack />}>{t('news.show_back')}</Button>
+                </Link>
+            </div>
+
+            {/* Header */}
+
+            <header className="mb-8">
+
+                <h1 className="mb-5 font-heading text-subtitle text-primary-100 sm:text-title">
+                    {newsItem.title}
+                </h1>
+
+                <div className="flex flex-wrap items-center gap-4 border-y border-primary-30 py-3 text-small text-primary-70 max-sm:flex-col max-sm:items-start max-sm:gap-2">
+
+                    <div className="flex items-center gap-1">
+
+                        <span className="text-primary-50">
+                            {t('news.author_label')}
+                        </span>
+
+                        <span className="font-semibold">
+                            {authorName}
+                        </span>
+
                     </div>
-                </header>
 
-                {/* Main Article Image Banner */}
-                <div className="news-detail-image-wrapper">
-                    <img
-                        src={newsItem.thumbnail || '/images/defaults/image.png'}
-                        alt={newsItem.title}
-                        className="news-detail-image"
-                    />
+                    <span className="text-primary-30 max-sm:hidden">
+                        |
+                    </span>
+
+                    <div className="flex items-center gap-1">
+
+                        <span className="text-primary-50">
+                            {t('news.published_label')}
+                        </span>
+
+                        <span className="font-semibold">
+                            {formatDate(
+                                newsItem.publish_date,
+                            )}
+                        </span>
+
+                    </div>
+
                 </div>
 
-                {/* Article Body Content */}
-                <div className="news-detail-content">
-                    {renderContent(newsItem.content)}
-                </div>
+            </header>
 
-                {/* Footer Back Link */}
-                <footer className="news-detail-footer">
-                    <Link href={route('news.index')} className="btn-primary back-btn-bottom">
-                        {t('news.back_bottom')}
-                    </Link>
-                </footer>
-            </article>
-        </>
+            {/* Hero Image */}
+
+            <div className="mb-10 overflow-hidden rounded-2xl shadow-lg shadow-primary-100/10">
+
+                <img
+                    src={
+                        newsItem.thumbnail ||
+                        '/images/defaults/image.png'
+                    }
+                    alt={newsItem.title}
+                    className="h-[250px] w-full object-cover sm:h-[350px] lg:h-[400px]"
+                />
+
+            </div>
+
+            {/* Content */}
+
+            <div className="mb-14 text-[1.15rem] leading-loose text-gray-85">
+
+                {renderContent(
+                    newsItem.content,
+                )}
+
+            </div>
+        </article>
     );
 }
+
+Show.layout = (page) => (
+    <MainLayout
+        pageTitle="Detail Wawasan Wisata"
+        content={page}
+    />
+);

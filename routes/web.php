@@ -140,7 +140,7 @@ Route::middleware(['auth', 'unbanned'])->group(function () {
     // News
     Route::controller(NewsController::class)->prefix('/wawasan-wisata')->name('news.')->group(function () {
         Route::get('/', 'index')->name('index');
-        Route::get('/{id}', 'show')->name('show');
+        Route::get('/{news:slug}', 'show')->name('show');
     });
 });
 
