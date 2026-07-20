@@ -49,6 +49,7 @@ class HomeController extends Controller
                     $mission->percent = $mission->target > 0
                         ? min(100, round(($mission->progress / $mission->target) * 100))
                         : 0;
+
                     return $mission;
                 })
                 ->first();
@@ -57,7 +58,7 @@ class HomeController extends Controller
         }
 
         return inertia('Home/Index', [
-            'latestNews'     => $latestNews,
+            'latestNews' => $latestNews,
             'ongoingMission' => $ongoingMission,
         ]);
     }
