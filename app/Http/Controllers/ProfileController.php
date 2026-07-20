@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Album;
 use App\Models\Badge;
 use App\Models\Province;
 use App\Models\User;
@@ -114,17 +115,18 @@ class ProfileController extends Controller
 
         $recentBadges = $targetUser->badges()->orderBy('pivot_created_at', 'desc')->take(4)->get();
         $allBadges = $targetUser->badges()->orderBy('pivot_created_at', 'desc')->get();
-        
-        $albums = \App\Models\Album::with(['trip', 'tripPhotos'])
+
+        $albums = Album::with(['trip', 'tripPhotos'])
             ->whereHas('trip', function ($q) use ($targetUser) {
                 $q->where('user_id', $targetUser->id)
-                  ->where('is_public', true);
+                    ->where('is_public', true);
             })
             ->orderByDesc('created_at')
             ->take(6)
             ->get()
             ->map(function ($album) {
                 $firstPhoto = $album->tripPhotos->first();
+
                 return [
                     'id' => $album->id,
                     'slug' => $album->slug,
