@@ -136,7 +136,7 @@ export default function NewsCard({
 
                 {/* Action */}
                 <div className="mt-auto pt-5">
-                    <Link href={route('news.show', news.id)}>
+                    <Link href={route('news.show', news.slug)}>
                         <Button
                             size="btn-sm"
                             type="button"
