@@ -52,7 +52,7 @@ export default function Index({ user, totalUser, rank, recentBadges, totalBadge,
                         {user.user_detail.fullname}
                     </h2>
                     <p className="mt-1 font-heading text-body text-secondary">
-                        diisi dengan role nanti
+                        {user.user_detail?.level?.name || 'Nuravers'}
                     </p>
 
                     {/* PROFILE INFORMATION */}

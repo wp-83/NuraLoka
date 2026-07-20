@@ -120,7 +120,27 @@ class GamificationService
     {
         $reward = (int) $mission->points_reward;
         if ($reward > 0) {
-            UserDetail::where('user_id', $user->id)->increment('total_points', $reward);
+            $userDetail = UserDetail::where('user_id', $user->id)->first();
+            if ($userDetail) {
+                $userDetail->total_points += $reward;
+                
+                // Recalculate level
+                $levels = \App\Models\Level::orderBy('order')->get();
+                $currentLevelId = null;
+                
+                foreach ($levels->reverse() as $level) {
+                    if ($userDetail->total_points >= $level->min_points) {
+                        $currentLevelId = $level->id;
+                        break;
+                    }
+                }
+                
+                if ($currentLevelId) {
+                    $userDetail->level_id = $currentLevelId;
+                }
+                
+                $userDetail->save();
+            }
         }
 
         if ($mission->badge_id) {

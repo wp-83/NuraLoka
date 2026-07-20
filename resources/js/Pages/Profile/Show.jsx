@@ -21,7 +21,7 @@ const formatDate = (date) => {
 // =========================================================
 // MAIN COMPONENT
 // =========================================================
-export default function Show({ targetUser, totalUser, rank, totalBadge, statistics, recentBadges }) {
+export default function Show({ targetUser, totalUser, rank, totalBadge, statistics, recentBadges, allBadges, albums }) {
     const { t } = useTranslation();
     return (
         <section className="w-full py-8">
@@ -122,75 +122,79 @@ export default function Show({ targetUser, totalUser, rank, totalBadge, statisti
                         </p>
                     </div>
 
-                    {/* RECENT BADGES */}
-                    <div className="text-right hidden lg:block">
-                        <p className="mb-3 font-body text-body text-primary-100">
-                            {t('profile.recent_badges')}
-                        </p>
-
-                        {recentBadges?.length > 0 ? (
-                            <div className="flex justify-end gap-3">
-                                {recentBadges.map((badge) => (
-                                    <img
-                                        key={badge.id}
-                                        src={`/${badge.icon_path}`}
-                                        alt={badge.name}
-                                        title={badge.name}
-                                        className="h-14 w-14 object-contain sm:h-16 sm:w-16"
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="font-body text-small text-gray-70 italic">{t('profile.no_badges')}</p>
-                        )}
-                    </div>
-                </div>
-
-                {/* RECENT BADGES FOR MOBILE */}
-                <div className="mt-6 text-center block lg:hidden">
-                    <p className="mb-3 font-body text-body text-primary-100">
-                        {t('profile.recent_badges')}
-                    </p>
-
-                    {recentBadges?.length > 0 ? (
-                        <div className="flex justify-center gap-3">
-                            {recentBadges.map((badge) => (
-                                <img
-                                    key={badge.id}
-                                    src={`/${badge.icon_path}`}
-                                    alt={badge.name}
-                                    title={badge.name}
-                                    className="h-14 w-14 object-contain sm:h-16 sm:w-16"
-                                />
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="font-body text-small text-gray-70 italic">{t('profile.no_badges')}</p>
-                    )}
                 </div>
             </div>
 
-            {/* STATISTICS */}
-            <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-3">
-                <ProfileStatisticCard
-                    title={t('profile.stat_badges')}
-                    value={statistics?.badges ?? 0}
-                    description={t('profile.stat_badges_desc', { total: totalBadge })}
-                    image="/images/badges/siPalingBudaya/4.png"
-                />
-                <ProfileStatisticCard
-                    title={t('profile.stat_albums')}
-                    value={statistics?.albums ?? 0}
-                    description={t('profile.stat_albums_desc', { year: new Date().getFullYear() })}
-                    image="/images/mascots/map-v2.png"
-                />
-                <ProfileStatisticCard
-                    title={t('profile.stat_points')}
-                    value={(targetUser.user_detail?.total_points ?? 0).toLocaleString('id-ID')}
-                    description={t('profile.stat_points_desc')}
-                    image="/images/mascots/telescope.png"
-                    flipImage={true}
-                />
+            {/* PUBLIC PROFILE: ALBUMS & BADGES */}
+            <div className="mt-10 border-t border-gray-30 pt-8">
+                <div className="mb-8">
+                    <h2 className="font-heading text-2xl font-bold text-primary mb-6">
+                        {t('profile.stat_badges')} ({allBadges?.length || 0})
+                    </h2>
+                    {allBadges?.length > 0 ? (
+                        <div className="flex flex-wrap gap-4">
+                            {allBadges.map((badge) => (
+                                <div key={badge.id} className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl shadow-sm border border-gray-100 w-24">
+                                    <img
+                                        src={`/${badge.icon_path}`}
+                                        alt={badge.name}
+                                        title={badge.name}
+                                        className="h-14 w-14 object-contain"
+                                    />
+                                    <span className="text-xs font-bold text-center text-primary leading-tight">
+                                        {badge.name.replace(/\s\([^)]+\)/, '')}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="font-body text-gray-500 italic">{t('profile.no_badges')}</p>
+                    )}
+                </div>
+
+                <div>
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="font-heading text-2xl font-bold text-primary">
+                            Album Perjalanan ({statistics?.albums || 0})
+                        </h2>
+                        {albums?.length > 0 && (
+                            <Link href={route('album.user.albums', { userId: targetUser.id })} className="text-accent font-bold text-sm hover:underline">
+                                Lihat Semua
+                            </Link>
+                        )}
+                    </div>
+                    
+                    {albums?.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {albums.map((album) => (
+                                <Link key={album.id} href={route('album.show', { album: album.slug })} className="block group">
+                                    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 group-hover:shadow-md transition-shadow">
+                                        <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
+                                            {album.thumbnail ? (
+                                                <img src={`/storage/${album.thumbnail}`} alt={album.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-400 font-medium">Tanpa Foto</div>
+                                            )}
+                                            <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" /></svg>
+                                                {album.photo_count}
+                                            </div>
+                                        </div>
+                                        <div className="p-4">
+                                            <h3 className="font-bold text-primary truncate group-hover:text-secondary transition-colors">{album.title}</h3>
+                                            <div className="flex items-center gap-1 mt-1 text-gray-500 text-xs">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-accent" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" /></svg>
+                                                <span className="truncate">{album.location}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="font-body text-gray-500 italic">Belum ada album publik.</p>
+                    )}
+                </div>
             </div>
         </section>
     );
