@@ -1,11 +1,18 @@
-import { Link, Head, useForm } from '@inertiajs/react';
-import { FaArrowLeft, FaSave, FaExclamationCircle } from 'react-icons/fa';
-import Input from '@components/Forms/Input';
-import Dropdown from '@components/Forms/Dropdown';
+import FormSection from '@components/Common/FormSection';
+import PageHeader from '@components/Common/PageHeader';
 import Button from '@components/Forms/Button';
-import AdminLayout from '../../../Layouts/AdminLayout';
+import Dropdown from '@components/Forms/Dropdown';
+import Input from '@components/Forms/Input';
+import AdminLayout from '@js/Layouts/AdminLayout';
+import { useTranslation } from '@js/i18n';
+
+import { router, useForm } from '@inertiajs/react';
+
+import { FiAlertCircle, FiArrowLeft, FiSave } from 'react-icons/fi';
 
 export default function Edit({ mission, badges, categories = [], actions = [] }) {
+    const { t } = useTranslation();
+
     const { data, setData, post, processing, errors } = useForm({
         title: mission.title || '',
         description: mission.description || '',
@@ -18,152 +25,166 @@ export default function Edit({ mission, badges, categories = [], actions = [] })
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('admin.missions.update', mission.id));
+        post(route('admin.missions.update', mission.slug));
     };
 
-    const badgeOptions = badges ? badges.map(b => ({ label: b.name, value: b.id })) : [];
-    const actionOptions = actions.map(a => ({ label: a.label, value: a.value }));
-    const categoryOptions = categories.map(c => ({ label: c.name, value: c.id }));
-    const selectedAction = actions.find(a => String(a.value) === String(data.action_type));
+    const badgeOptions = badges ? badges.map((b) => ({ label: b.name, value: b.id })) : [];
+    const actionOptions = actions.map((a) => ({ label: a.label, value: a.value }));
+    const categoryOptions = categories.map((c) => ({ label: c.name, value: c.id }));
+
+    const selectedAction = actions.find((a) => String(a.value) === String(data.action_type));
     const showCategory = selectedAction?.category;
 
     return (
-        <>
-            <Head>
-                <title>Admin | Edit Tantangan</title>
-            </Head>
+        <div className="flex w-full flex-col gap-6">
+            {/* Header */}
+            <PageHeader
+                title={t('admin.missions.edit_title')}
+                description={t('admin.missions.edit_description', { title: mission.title })}
+            />
 
-            <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-6 py-12 animate-fade-in">
-                {/* Back navigation */}
-                <div className="flex justify-start">
-                    <Link
-                        href={route('admin.missions.index')}
-                        className="inline-flex items-center gap-2 font-body text-body font-semibold text-primary transition-all duration-200 hover:-translate-x-1 hover:text-primary-85"
+            <form onSubmit={submit} className="flex flex-col gap-6">
+                {/* Back */}
+                <div>
+                    <Button
+                        type="button"
+                        variant="white"
+                        iconLeft={<FiArrowLeft size={18} />}
+                        onClick={() => router.get(route('admin.missions.index'))}
                     >
-                        <FaArrowLeft className="text-small" /> Kembali ke Daftar Tantangan
-                    </Link>
+                        {t('admin.common.back')}
+                    </Button>
                 </div>
 
-                {/* Header */}
-                <section className="flex flex-col items-center gap-6 rounded-2xl border border-primary-30 bg-secondary-10 p-6 shadow-[0_4px_20px_rgba(76,59,50,0.05)] sm:flex-row sm:p-8">
-                    <div className="flex-1 text-center sm:text-left">
-                        <h1 className="mb-2 font-heading text-title font-bold text-primary-100">Edit Tantangan</h1>
-                        <p className="font-body text-body leading-relaxed text-gray-70">
-                            Ubah informasi tantangan "{mission.title}"
-                        </p>
-                    </div>
-                </section>
-
-                {/* Form Container */}
-                <section className="rounded-2xl border border-primary-30 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] sm:p-8">
-                    <form onSubmit={submit} className="flex flex-col gap-6">
+                {/* Challenge Information */}
+                <FormSection
+                    title={t('admin.missions.section_info_title')}
+                    description={t('admin.missions.section_info_description_edit')}
+                >
+                    <div className="flex flex-col gap-5">
                         <Input
-                            label="Judul Tantangan"
+                            label={t('admin.missions.label_title')}
                             name="title"
                             value={data.title}
                             onChange={(e) => setData('title', e.target.value)}
-                            placeholder="Contoh: Kunjungi 5 Pantai"
+                            placeholder={t('admin.missions.placeholder_title')}
                             error={errors.title}
                             required
                         />
 
                         <Input
                             type="textarea"
-                            label="Deskripsi"
+                            rows={4}
+                            label={t('admin.missions.label_description')}
                             name="description"
                             value={data.description}
                             onChange={(e) => setData('description', e.target.value)}
-                            placeholder="Jelaskan detail tantangan ini..."
-                            rows={4}
+                            placeholder={t('admin.missions.placeholder_description')}
                             error={errors.description}
                             required
                         />
 
-                        <Input
-                            type="number"
-                            label="Reward Poin"
-                            name="points_reward"
-                            value={data.points_reward}
-                            onChange={(e) => setData('points_reward', e.target.value)}
-                            placeholder="Contoh: 100"
-                            error={errors.points_reward}
-                            min="0"
-                            required
-                        />
-
-                        {/* ── Aksi pemicu otomatis (gamifikasi dinamis) ── */}
-                        <div className="rounded-xl border border-secondary-30 bg-secondary-10/50 p-4">
-                            <p className="mb-3 font-body text-small text-gray-70">
-                                Tautkan tantangan ke aksi user agar progres berjalan otomatis. Pilih
-                                <b> Manual</b> bila tantangan tidak dihubungkan ke aksi apa pun.
-                            </p>
-                            <Dropdown
-                                label="Aksi Pemicu"
-                                name="action_type"
-                                value={data.action_type}
-                                onChange={(e) => setData('action_type', e.target.value)}
-                                options={actionOptions}
-                                error={errors.action_type}
-                            />
-
-                            {showCategory && (
-                                <div className="mt-4">
-                                    <Dropdown
-                                        label="Kategori Tempat (opsional)"
-                                        name="category_id"
-                                        value={data.category_id}
-                                        onChange={(e) => setData('category_id', e.target.value)}
-                                        options={categoryOptions}
-                                        placeholder="Semua kategori"
-                                        error={errors.category_id}
-                                    />
-                                    <p className="mt-1 text-micro text-gray-50">
-                                        Kosongkan untuk menghitung semua kategori tempat.
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-
-                        <Input
-                            type="number"
-                            label="Target Misi (Jumlah yang harus diselesaikan)"
-                            name="target"
-                            value={data.target}
-                            onChange={(e) => setData('target', e.target.value)}
-                            placeholder="Contoh: 5"
-                            error={errors.target}
-                            min="1"
-                            required
-                        />
-
-                        <div>
-                            <Dropdown
-                                label="Lencana (Badge)"
-                                name="badge_id"
-                                value={data.badge_id}
-                                onChange={(e) => setData('badge_id', e.target.value)}
-                                options={badgeOptions}
-                                placeholder="Pilih lencana untuk tantangan ini"
-                                error={errors.badge_id}
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                            <Input
+                                type="number"
+                                min="0"
+                                label={t('admin.missions.label_points_reward')}
+                                name="points_reward"
+                                value={data.points_reward}
+                                onChange={(e) => setData('points_reward', e.target.value)}
+                                placeholder={t('admin.missions.placeholder_points_reward')}
+                                error={errors.points_reward}
                                 required
                             />
-                            {badges && badges.length === 0 && (
-                                <p className="mt-2 inline-flex items-center gap-1 text-small italic text-error-dark">
-                                    <FaExclamationCircle /> Belum ada lencana yang tersedia.
-                                </p>
-                            )}
-                        </div>
 
-                        <div className="mt-4 flex justify-end">
-                            <Button type="submit" variant="primary" loading={processing} iconLeft={<FaSave className="mr-2" />}>
-                                {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
-                            </Button>
+                            <Input
+                                type="number"
+                                min="1"
+                                label={t('admin.missions.label_target')}
+                                name="target"
+                                value={data.target}
+                                onChange={(e) => setData('target', e.target.value)}
+                                placeholder={t('admin.missions.placeholder_target')}
+                                error={errors.target}
+                                required
+                            />
                         </div>
-                    </form>
-                </section>
-            </div>
-        </>
+                    </div>
+                </FormSection>
+
+                {/* Trigger Action */}
+                <FormSection
+                    title={t('admin.missions.section_action_title')}
+                    description={t('admin.missions.section_action_description')}
+                >
+                    <div className="flex flex-col gap-4">
+                        <Dropdown
+                            label={t('admin.missions.label_action_type')}
+                            name="action_type"
+                            value={data.action_type}
+                            onChange={(e) => setData('action_type', e.target.value)}
+                            options={actionOptions}
+                            error={errors.action_type}
+                        />
+
+                        {showCategory && (
+                            <div>
+                                <Dropdown
+                                    label={t('admin.missions.label_category_filter')}
+                                    name="category_id"
+                                    value={data.category_id}
+                                    onChange={(e) => setData('category_id', e.target.value)}
+                                    options={categoryOptions}
+                                    placeholder={t('admin.missions.placeholder_category_filter')}
+                                    error={errors.category_id}
+                                />
+
+                                <p className="mt-1 font-body text-micro text-gray-50">
+                                    {t('admin.missions.category_filter_hint')}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </FormSection>
+
+                {/* Badge */}
+                <FormSection
+                    title={t('admin.missions.section_badge_title')}
+                    description={t('admin.missions.section_badge_description')}
+                >
+                    <Dropdown
+                        label={t('admin.missions.label_badge')}
+                        name="badge_id"
+                        value={data.badge_id}
+                        onChange={(e) => setData('badge_id', e.target.value)}
+                        options={badgeOptions}
+                        placeholder={t('admin.missions.placeholder_badge')}
+                        error={errors.badge_id}
+                        required
+                    />
+
+                    {badges && badges.length === 0 && (
+                        <p className="mt-2 inline-flex items-center gap-1 font-body text-small italic text-error-dark">
+                            <FiAlertCircle /> {t('admin.missions.no_badges_available')}
+                        </p>
+                    )}
+                </FormSection>
+
+                {/* Actions */}
+                <div className="flex justify-end">
+                    <Button
+                        type="submit"
+                        loading={processing}
+                        iconLeft={!processing && <FiSave size={20} />}
+                    >
+                        {processing ? t('admin.common.saving') : t('admin.missions.submit_edit')}
+                    </Button>
+                </div>
+            </form>
+        </div>
     );
 }
 
-Edit.layout = (page) => <AdminLayout content={page}></AdminLayout>
+Edit.layout = (page) => (
+    <AdminLayout pageTitle="Edit Tantangan" content={page} />
+);

@@ -1,6 +1,6 @@
 <?php
 
-// Admin panel (sidebar only). Sidebar keys are mapped by the menu route name.
+// Admin panel: sidebar + every Admin/* page. Sidebar keys are mapped by the menu route name.
 return [
     'sidebar' => [
         'dashboard' => 'Dashboard',
@@ -10,9 +10,591 @@ return [
         'missions' => 'Missions / Challenges',
         'badges' => 'Badges',
         'levels' => 'Levels',
+        'news' => 'Tourism Insights',
         'users' => 'Users',
         'user_panel' => 'User Panel',
         'open' => 'Open sidebar',
         'close' => 'Close sidebar',
+    ],
+
+    'common' => [
+        'back' => 'Back',
+        'cancel' => 'Cancel',
+        'delete' => 'Delete',
+        'deleting' => 'Deleting...',
+        'save' => 'Save',
+        'saving' => 'Saving...',
+        'updating' => 'Updating...',
+        'add' => 'Add',
+        'search' => 'Search',
+        'reset' => 'Reset',
+        'apply_filter' => 'Apply Filter',
+        'actions' => 'Actions',
+        'showing' => 'Showing :from–:to of :all :label',
+        'empty_title' => 'No data found',
+        'empty_description' => 'There is no data to display yet.',
+        'no_results_hint' => 'Try changing your search keyword.',
+    ],
+
+    'footer' => [
+        'copyright' => 'All Rights Reserved.',
+    ],
+
+    'header' => [
+        'title' => 'Admin Dashboard',
+        'subtitle' => 'Welcome to the Admin Panel',
+    ],
+
+    'dashboard' => [
+        'page_title' => 'Dashboard',
+        'title' => 'Admin Dashboard',
+        'welcome' => 'Welcome back to the NuraLoka admin panel! Here you can manage tourism insights, travel destinations, and keep track of traveler activity.',
+
+        'stat_users' => 'Total Users',
+        'stat_news' => 'Insight Articles',
+        'stat_places' => 'Registered Destinations',
+        'stat_categories' => 'Active Categories',
+
+        'menu_heading' => 'Main Management Menu',
+        'menu_open' => 'Open Management',
+
+        'menu_news_title' => 'Manage Tourism Insights',
+        'menu_news_description' => 'Write, edit, and delete news articles, travel tips, culinary recommendations, and local cultural history.',
+
+        'menu_places_title' => 'Manage Destinations & Routes',
+        'menu_places_description' => 'Manage the directory of attractions, culinary spots, transit points, and travel routes between cities across Indonesia.',
+
+        'menu_osm_title' => 'Import OSM Points',
+        'menu_osm_description' => 'Pull point-of-interest data from OpenStreetMap into the explore map to automatically add destinations outside Java.',
+
+        'menu_categories_title' => 'Manage Categories',
+        'menu_categories_description' => 'Set up destination classifications such as Beach, Mountain, Culinary, and more, along with their category icons.',
+
+        'menu_missions_title' => 'Manage Challenges',
+        'menu_missions_description' => 'Manage the list of challenges (missions) for users, along with reward points and badges they can earn.',
+
+        'menu_badges_title' => 'Manage Badges',
+        'menu_badges_description' => 'Add, edit, and delete badges linked to challenges and awarded automatically when users complete their missions.',
+
+        'menu_levels_title' => 'Manage Levels',
+        'menu_levels_description' => 'Set up level tiers and point thresholds. A user\'s level is calculated automatically from their total Nura points.',
+
+        'menu_users_title' => 'Manage Users',
+        'menu_users_description' => 'Manage and monitor registered user accounts, including admin roles, ban status, and personal data.',
+
+        'quick_badges' => 'Total Badges',
+        'quick_missions' => 'Total Challenges',
+        'quick_banned' => 'Banned Users',
+
+        'active_import_notice' => ':count OSM import(s) currently running.',
+        'active_import_cta' => 'View Progress',
+
+        'recent_users_heading' => 'Newly Joined Users',
+        'recent_users_empty' => 'No new users yet.',
+        'joined_at' => 'Joined :date',
+
+        'recent_news_heading' => 'Latest Articles',
+        'recent_news_empty' => 'No tourism insight articles yet.',
+
+        'view_all' => 'View All',
+    ],
+
+    'users' => [
+        'page_title' => 'Manage Users',
+        'page_description' => 'Manage and monitor user accounts registered on NuraLoka.',
+
+        'stat_total' => 'Total Users',
+        'stat_regular' => 'Regular Users',
+        'stat_admin' => 'Admins',
+        'stat_banned' => 'Banned Users',
+
+        'filter_search_label' => 'Search Users',
+        'filter_search_placeholder' => 'Search by name, username, or email...',
+        'filter_role_label' => 'Role',
+        'filter_role_placeholder' => 'All roles',
+        'filter_gender_label' => 'Gender',
+        'filter_gender_placeholder' => 'All genders',
+        'filter_status_label' => 'Status',
+        'filter_status_placeholder' => 'All statuses',
+
+        'role_admin' => 'Admin',
+        'role_user' => 'User',
+        'gender_male' => 'Male',
+        'gender_female' => 'Female',
+        'gender_unspecified' => 'Prefer not to say',
+        'status_active' => 'Active',
+        'status_banned' => 'Banned',
+
+        'add_button' => 'Add New User',
+
+        'th_user' => 'User',
+        'th_username' => 'Username',
+        'th_email' => 'Email',
+        'th_gender' => 'Gender',
+        'th_province' => 'Province',
+        'th_points' => 'Points',
+        'th_role' => 'Role',
+        'th_status' => 'Status',
+        'th_actions' => 'Actions',
+
+        'you_suffix' => '(You)',
+        'id_prefix' => 'ID',
+        'item_label' => 'users',
+
+        'empty_title' => 'No users found',
+        'empty_description' => 'Try changing your search keyword or filters.',
+
+        'action_edit' => 'Edit user',
+        'action_ban' => 'Ban user',
+        'action_unban' => 'Unban user',
+        'action_delete' => 'Delete user',
+        'action_disabled_self_ban' => 'You cannot ban your own account',
+        'action_disabled_self_unban' => 'You cannot unban your own account',
+        'action_disabled_self_delete' => 'You cannot delete your own account',
+        'action_disabled_admin_ban' => 'Admin accounts cannot be banned',
+        'action_disabled_admin_delete' => 'Admin accounts cannot be deleted',
+
+        'modal_ban_title' => 'Ban User',
+        'modal_ban_message' => 'Are you sure you want to ban the account @:username?',
+        'modal_ban_confirm' => 'Ban',
+        'modal_unban_title' => 'Unban User',
+        'modal_unban_message' => 'Are you sure you want to unban the account @:username?',
+        'modal_unban_confirm' => 'Unban',
+        'modal_delete_title' => 'Delete User',
+        'modal_delete_message' => 'Are you sure you want to permanently delete the account @:username?',
+        'modal_delete_confirm' => 'Delete',
+
+        'create_title' => 'Add New User',
+        'create_description' => 'Create a new user account and complete their information.',
+        'edit_title' => 'Edit User',
+        'edit_description' => 'Update the account and personal information of this user.',
+
+        'form_photo_title' => 'Profile Photo',
+        'form_photo_description' => 'Upload a profile photo for the user. Maximum 5 MB.',
+        'form_photo_choose' => 'Choose Photo',
+        'form_photo_change' => 'Change Photo',
+
+        'form_account_title' => 'Account Information',
+        'form_account_description' => 'Set the account\'s main information and access rights.',
+        'label_username' => 'Username',
+        'placeholder_username' => 'Enter username',
+        'label_email' => 'Email',
+        'placeholder_email' => 'Enter email',
+        'label_role' => 'Role',
+
+        'form_personal_title' => 'Personal Information',
+        'form_personal_description' => 'Complete the Nuraver\'s personal information.',
+        'label_fullname' => 'Full Name',
+        'placeholder_fullname' => 'Enter full name',
+        'label_dob' => 'Date of Birth',
+        'label_gender' => 'Gender',
+        'label_province' => 'Home Province',
+        'placeholder_province' => 'Select province',
+
+        'form_password_title' => 'Password',
+        'form_password_title_edit' => 'Change Password',
+        'form_password_description' => 'Create a password for the Nuraver account.',
+        'form_password_description_edit' => 'Leave blank if you don\'t want to change it.',
+        'label_password' => 'Password',
+        'label_password_new' => 'New Password',
+        'placeholder_password' => 'Enter password',
+        'label_password_confirm' => 'Confirm Password',
+        'placeholder_password_confirm' => 'Repeat password',
+
+        'submit_create' => 'Add User',
+        'submit_edit' => 'Save Changes',
+    ],
+
+    'badges' => [
+        'page_title' => 'Manage Badges',
+        'page_description' => 'Add, edit, and delete badges. Badges are linked to challenges and awarded automatically when users complete their missions.',
+
+        'filter_search_label' => 'Search Badges',
+        'filter_search_placeholder' => 'Search badges by name or category...',
+        'add_button' => 'Add Badge',
+
+        'th_badge' => 'Badge',
+        'th_type' => 'Type / Category',
+        'th_tier' => 'Tier',
+        'th_points' => 'Points',
+        'th_used' => 'Used By',
+        'th_actions' => 'Actions',
+
+        'type_special' => 'Special',
+        'type_general' => 'General',
+        'used_count' => ':count missions',
+        'tier_target' => 'target :target',
+        'tier_none' => '—',
+        'tier_bronze' => 'Bronze',
+        'tier_silver' => 'Silver',
+        'tier_gold' => 'Gold',
+        'tier_diamond' => 'Diamond',
+
+        'item_label' => 'badges',
+        'empty_title' => 'No badges found',
+        'empty_description' => 'Try changing your search keyword.',
+        'empty_description_no_search' => 'No badges have been added yet.',
+
+        'action_edit' => 'Edit badge',
+        'action_delete' => 'Delete badge',
+        'modal_delete_title' => 'Delete Badge',
+        'modal_delete_message' => 'Are you sure you want to delete the badge :name?',
+
+        'create_title' => 'Add New Badge',
+        'create_description' => 'Create a new badge that can be linked to a challenge.',
+        'edit_title' => 'Edit Badge',
+        'edit_description' => 'Update the information for the badge ":name".',
+
+        'section_info_title' => 'Badge Information',
+        'section_info_description_create' => 'Fill in the basic details of the badge to be added.',
+        'section_info_description_edit' => 'Update the basic details of this badge.',
+        'label_name' => 'Badge Name',
+        'placeholder_name' => 'e.g. Beach Enthusiast (Gold)',
+        'label_requirement' => 'Requirement Description',
+        'placeholder_requirement' => 'Explain how to earn this badge...',
+        'label_type' => 'Type',
+        'type_option_general' => 'General (tiered)',
+        'type_option_special' => 'Special',
+        'label_category' => 'Badge Category',
+        'placeholder_category' => 'e.g. Beach Enthusiast',
+        'label_points' => 'Points',
+        'label_tier_level' => 'Tier Level',
+        'tier_option_none' => 'No tier',
+        'label_tier_target' => 'Tier Target',
+
+        'section_icon_title' => 'Badge Icon',
+        'section_icon_description_create' => 'Upload the badge icon. Optional, maximum 5MB.',
+        'section_icon_description_edit' => 'Change the badge icon. Leave blank to keep it unchanged.',
+        'icon_empty' => 'None yet',
+        'icon_empty_edit' => 'No icon',
+        'icon_choose' => 'Choose File',
+        'icon_change' => 'Change File',
+        'icon_remove_current' => 'Remove current icon',
+        'icon_hint' => 'JPG, PNG, WEBP, SVG (Max. 5MB). Optional.',
+        'icon_hint_edit' => 'JPG, PNG, WEBP, SVG (Max. 5MB).',
+
+        'submit_create' => 'Save Badge',
+        'submit_edit' => 'Save Changes',
+    ],
+
+    'categories' => [
+        'page_title' => 'Manage Destination Categories',
+        'page_description' => 'Add, edit, and delete tourist destination categories. Categories are used to classify places on NuraLoka.',
+
+        'filter_search_label' => 'Search Categories',
+        'filter_search_placeholder' => 'Search categories by name...',
+        'add_button' => 'Add Category',
+
+        'th_icon' => 'Icon',
+        'th_name' => 'Category Name',
+        'th_place_count' => 'Number of Destinations',
+        'th_actions' => 'Actions',
+        'place_count' => ':count Destinations',
+
+        'item_label' => 'categories',
+        'empty_title' => 'No categories found',
+        'empty_description' => 'Try changing your search keyword.',
+        'empty_description_no_search' => 'No categories have been added yet.',
+
+        'action_edit' => 'Edit category',
+        'action_delete' => 'Delete category',
+        'action_delete_blocked' => 'Cannot be deleted — still in use',
+        'modal_delete_title' => 'Delete Category',
+        'modal_delete_message' => 'Are you sure you want to delete the category :name?',
+
+        'create_title' => 'Add New Category',
+        'create_description' => 'Create a new category to classify tourist destinations.',
+        'edit_title' => 'Edit Category',
+        'edit_description' => 'Update the information for the category ":name".',
+
+        'section_info_title' => 'Category Information',
+        'section_info_description_create' => 'Fill in the category\'s name and icon.',
+        'section_info_description_edit' => 'Update the category\'s name and icon.',
+        'label_name' => 'Category Name',
+        'placeholder_name' => 'e.g. Beach, Mountain, Culinary, History...',
+        'label_icon' => 'Category Icon',
+        'icon_empty' => 'No icon yet',
+        'icon_choose' => 'Choose File',
+        'icon_choose_new' => 'Choose New File',
+        'icon_view' => 'View Icon',
+        'icon_remove' => 'Remove Icon',
+        'icon_no_file' => 'No file selected',
+        'icon_current_file' => 'Using current icon',
+        'icon_hint' => 'Format: JPG, PNG, WEBP, SVG, or GIF (Max. 5MB). Optional.',
+        'icon_hint_edit' => 'Leave blank if you don\'t want to change the icon. Max. 5MB.',
+
+        'submit_create' => 'Save Category',
+        'submit_edit' => 'Save Changes',
+    ],
+
+    'levels' => [
+        'page_title' => 'Manage Levels',
+        'page_description' => 'Set up level tiers & point thresholds. User levels are calculated automatically from their total Nura points.',
+        'add_button' => 'Add Level',
+
+        'th_order' => 'Order',
+        'th_name' => 'Level Name',
+        'th_min_points' => 'Minimum Points',
+        'th_actions' => 'Actions',
+        'min_points_value' => '≥ :points points',
+
+        'empty_title' => 'No levels yet',
+        'empty_description' => 'Add the first level to set up user tiers.',
+
+        'action_edit' => 'Edit level',
+        'action_delete' => 'Delete level',
+        'modal_delete_title' => 'Delete Level',
+        'modal_delete_message' => 'Are you sure you want to delete the level :name?',
+
+        'create_title' => 'Add New Level',
+        'create_description' => 'Create a new level tier along with its point threshold.',
+        'edit_title' => 'Edit Level',
+        'edit_description' => 'Update the information for the level ":name".',
+
+        'section_info_title' => 'Level Information',
+        'section_info_description_create' => 'Set the level name, point threshold, and order.',
+        'section_info_description_edit' => 'Update the level name, point threshold, and order.',
+        'label_name' => 'Level Name',
+        'placeholder_name' => 'e.g. Adventurer',
+        'label_min_points' => 'Minimum Points',
+        'placeholder_min_points' => 'e.g. 2000',
+        'min_points_hint' => 'Must be greater than the minimum points of the level with the previous order, and less than the level with the next order.',
+        'label_order' => 'Order',
+
+        'submit_create' => 'Save Level',
+        'submit_edit' => 'Save Changes',
+    ],
+
+    'missions' => [
+        'page_title' => 'Manage Challenges',
+        'page_description' => 'Add, edit, and delete the list of challenges (missions) for NuraLoka users.',
+
+        'filter_search_label' => 'Search Challenges',
+        'filter_search_placeholder' => 'Search challenges by title...',
+        'add_button' => 'Add Challenge',
+
+        'th_title' => 'Title',
+        'th_badge' => 'Badge',
+        'th_points' => 'Points',
+        'th_participants' => 'Participants',
+        'th_actions' => 'Actions',
+        'points_value' => '+:points Pts',
+        'participants_value' => ':count Users',
+        'badge_none' => '-',
+
+        'item_label' => 'challenges',
+        'empty_title' => 'No challenges found',
+        'empty_description' => 'Try changing your search keyword.',
+        'empty_description_no_search' => 'No challenges have been added yet.',
+
+        'action_edit' => 'Edit challenge',
+        'action_delete' => 'Delete challenge',
+        'action_delete_blocked' => 'Cannot be deleted — already has participants',
+        'modal_delete_title' => 'Delete Challenge',
+        'modal_delete_message' => 'Are you sure you want to delete the challenge :title?',
+
+        'create_title' => 'Add New Challenge',
+        'create_description' => 'Create a new challenge along with the reward points and badge users can earn.',
+        'edit_title' => 'Edit Challenge',
+        'edit_description' => 'Update the information for the challenge ":title".',
+
+        'section_info_title' => 'Challenge Information',
+        'section_info_description_create' => 'Fill in the title, description, and reward for the challenge.',
+        'section_info_description_edit' => 'Update the title, description, and reward for the challenge.',
+        'label_title' => 'Challenge Title',
+        'placeholder_title' => 'e.g. Visit 5 Beaches',
+        'label_description' => 'Description',
+        'placeholder_description' => 'Explain the details of this challenge...',
+        'label_points_reward' => 'Reward Points',
+        'placeholder_points_reward' => 'e.g. 100',
+        'label_target' => 'Mission Target (Number to Complete)',
+        'placeholder_target' => 'e.g. 5',
+
+        'section_action_title' => 'Automatic Trigger Action',
+        'section_action_description' => 'Link the challenge to a user action so progress updates automatically. Choose Manual if the challenge isn\'t linked to any action.',
+        'label_action_type' => 'Trigger Action',
+        'label_category_filter' => 'Place Category (optional)',
+        'placeholder_category_filter' => 'All categories',
+        'category_filter_hint' => 'Leave blank to count all place categories.',
+
+        'section_badge_title' => 'Badge',
+        'section_badge_description' => 'Choose the badge users will earn upon completing this challenge.',
+        'label_badge' => 'Badge',
+        'placeholder_badge' => 'Select a badge for this challenge',
+        'no_badges_available' => 'No badges are available yet.',
+
+        'submit_create' => 'Save Challenge',
+        'submit_edit' => 'Save Changes',
+    ],
+
+    'news' => [
+        'page_title' => 'Manage Tourism Insights',
+        'page_description' => 'Add, edit, and delete news articles, travel tips, culinary recommendations, and local cultural history.',
+
+        'filter_search_label' => 'Search Articles',
+        'filter_search_placeholder' => 'Search articles by title or content...',
+        'add_button' => 'Add Article',
+
+        'th_image' => 'Image',
+        'th_title' => 'Title',
+        'th_author' => 'Author',
+        'th_publish_date' => 'Publish Date',
+        'th_actions' => 'Actions',
+        'author_fallback' => 'Admin',
+
+        'item_label' => 'articles',
+        'empty_title' => 'No articles found',
+        'empty_description' => 'Try changing your search keyword.',
+        'empty_description_no_search' => 'No tourism insight articles have been added yet.',
+
+        'action_edit' => 'Edit article',
+        'action_delete' => 'Delete article',
+        'modal_delete_title' => 'Delete Article',
+        'modal_delete_message' => 'Are you sure you want to delete the article :title?',
+
+        'create_title' => 'Add New Tourism Insight',
+        'create_description' => 'Write a new tourism insight article for NuraLoka users.',
+        'edit_title' => 'Edit Tourism Insight',
+        'edit_description' => 'Update the article ":title".',
+
+        'section_info_title' => 'Article Information',
+        'section_info_description' => 'The article\'s title and publish date.',
+        'label_title' => 'News / Article Title',
+        'placeholder_title' => 'Write an engaging article title...',
+        'label_publish_date' => 'Publish Date',
+
+        'section_thumbnail_title' => 'Thumbnail Image',
+        'section_thumbnail_description_create' => 'Upload a cover image for this article.',
+        'section_thumbnail_description_edit' => 'Replace the article\'s cover image. Leave blank if you don\'t want to change it.',
+        'thumbnail_empty' => 'No image yet',
+        'thumbnail_view' => 'View Image',
+        'thumbnail_remove' => 'Remove Image',
+        'thumbnail_choose' => 'Choose File',
+        'thumbnail_change' => 'Change File',
+        'thumbnail_no_file' => 'No file selected',
+        'thumbnail_current_file' => 'Using current image',
+        'thumbnail_hint' => 'Format: JPG, JPEG, PNG, WEBP, or GIF (Max. 5MB).',
+        'thumbnail_hint_edit' => 'Leave blank if you don\'t want to change the thumbnail. Max. 5MB.',
+
+        'section_content_title' => 'Article Content',
+        'section_content_description' => 'Write the full content of the tourism insight article.',
+        'label_content' => 'Article Content',
+        'placeholder_content' => 'Write the full content of the tourism insight article here...',
+
+        'submit_create' => 'Save Article',
+        'submit_edit' => 'Save Changes',
+    ],
+
+    'places' => [
+        'page_title' => 'Manage Tourist Destinations',
+        'page_description' => 'Add, edit, and delete tourist destination data. Each destination can be linked to multiple categories.',
+
+        'filter_search_label' => 'Search Destinations',
+        'filter_search_placeholder' => 'Search destinations by name or address...',
+        'filter_source_label' => 'Data Source',
+        'filter_source_placeholder' => 'All sources',
+        'source_internal' => 'Internal (NuraLoka)',
+        'source_osm' => 'OSM (Imported)',
+        'source_badge_internal' => 'Internal',
+        'source_badge_osm' => 'OSM',
+        'add_button' => 'Add Destination',
+
+        'th_name' => 'Destination Name',
+        'th_address' => 'Address',
+        'th_coordinates' => 'Coordinates',
+        'th_categories' => 'Categories',
+        'th_source' => 'Source',
+        'th_actions' => 'Actions',
+        'address_unavailable' => 'Address not available',
+        'no_categories' => 'None',
+
+        'item_label' => 'destinations',
+        'empty_title' => 'No destinations found',
+        'empty_description' => 'Try changing your search keyword or filters.',
+        'empty_description_no_search' => 'No tourist destination data yet.',
+
+        'action_edit' => 'Edit destination',
+        'action_delete' => 'Delete destination',
+        'modal_delete_title' => 'Delete Destination',
+        'modal_delete_message' => 'Are you sure you want to delete the destination :name?',
+
+        'create_title' => 'Add New Tourist Destination',
+        'create_description' => 'Fill in the information for the destination to be added.',
+        'edit_title' => 'Edit Tourist Destination',
+        'edit_description' => 'Update the information for the destination ":name".',
+
+        'section_info_title' => 'Destination Information',
+        'section_info_description' => 'The destination\'s name, address, and coordinates.',
+        'label_name' => 'Destination Name',
+        'placeholder_name' => 'e.g. Bira Beach, Baluran National Park...',
+        'label_address' => 'Full Address',
+        'placeholder_address' => 'e.g. Jl. Pantai Bira, Bulukumba Regency, South Sulawesi',
+        'label_latitude' => 'Latitude',
+        'label_longitude' => 'Longitude',
+        'label_description' => 'Destination Description',
+        'placeholder_description' => 'Write a full description of this tourist destination...',
+
+        'section_categories_title' => 'Destination Categories',
+        'section_categories_description' => 'Select one or more categories that fit this destination.',
+        'no_categories_available' => 'No categories available yet.',
+        'add_category_first' => 'Add a category first',
+
+        'section_photos_title' => 'Destination Photos (optional)',
+        'section_photos_title_edit' => 'Destination Photos',
+        'section_photos_description_create' => 'Upload one or more photos. These will appear in the detail page gallery alongside photos from popular Nuraver albums.',
+        'section_photos_description_edit' => 'Manage the photos shown in the detail gallery. Click the cross mark to flag a photo for removal on save.',
+        'photo_preview_alt' => 'Preview :index',
+        'photo_mark_undo' => 'Undo removal',
+        'photo_mark_delete' => 'Mark for removal',
+
+        'submit_create' => 'Save Destination',
+        'submit_edit' => 'Save Changes',
+    ],
+
+    'osm_import' => [
+        'page_title' => 'Import OSM Points',
+        'page_description' => 'Pull point-of-interest data from OpenStreetMap into the explore map for new areas outside Java. Current total OSM points: :total.',
+
+        'notice' => 'The import is split into many per-tile jobs in the queue. Make sure a worker is running (php artisan queue:work --timeout=180) so jobs get processed. Each tile is processed & retried independently, so the import can safely resume even if the worker stops. Large areas like the whole of Indonesia still take time — use a sufficient delay (sleep) to respect the Overpass rate limit.',
+
+        'section_title' => 'Start a New Import',
+        'section_description' => 'Choose the area to import, then run the import process in the background.',
+
+        'mode_region' => 'Region Preset',
+        'mode_custom' => 'Manual Coordinates',
+        'label_region' => 'Select Region',
+        'bbox_hint' => 'bbox: :bbox (south, west, north, east)',
+
+        'label_south' => 'South (lat)',
+        'label_north' => 'North (lat)',
+        'label_west' => 'West (lng)',
+        'label_east' => 'East (lng)',
+
+        'label_tile' => 'Tile size (degrees)',
+        'tile_hint' => 'Smaller is more detailed, but requires more queries.',
+        'label_sleep' => 'Delay between tiles (seconds)',
+
+        'submit' => 'Start Import',
+        'active_run_hint' => 'An import is already running — please wait until it finishes.',
+
+        'history_heading' => 'Import History',
+        'th_area' => 'Area',
+        'th_status' => 'Status',
+        'th_saved_points' => 'Saved Points',
+        'th_tiles' => 'Tiles',
+        'th_time' => 'Time',
+        'th_by' => 'By',
+        'empty_history' => 'No import history yet.',
+
+        'status_pending' => 'Pending',
+        'status_running' => 'Running',
+        'status_success' => 'Completed',
+        'status_failed' => 'Failed',
+
+        'total_summary' => 'total :before → :after',
+        'tiles_summary' => ':processed / :total tiles',
+        'tiles_failed' => ':count tiles failed',
+        'started_at' => 'Started: :time',
+        'finished_at' => 'Finished: :time',
     ],
 ];

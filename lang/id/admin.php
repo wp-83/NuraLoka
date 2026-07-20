@@ -1,6 +1,6 @@
 <?php
 
-// Panel admin (khusus sidebar). Key sidebar dipetakan berdasarkan nama route menu.
+// Panel admin: sidebar + seluruh halaman Admin/*. Key sidebar dipetakan berdasarkan nama route menu.
 return [
     'sidebar' => [
         'dashboard' => 'Dasbor',
@@ -10,9 +10,592 @@ return [
         'missions' => 'Misi / Tantangan',
         'badges' => 'Lencana',
         'levels' => 'Level',
+        'news' => 'Wawasan Wisata',
         'users' => 'Pengguna',
         'user_panel' => 'Panel Pengguna',
         'open' => 'Buka sidebar',
         'close' => 'Tutup sidebar',
+    ],
+
+    // Potongan UI yang dipakai berulang di banyak halaman admin.
+    'common' => [
+        'back' => 'Kembali',
+        'cancel' => 'Batal',
+        'delete' => 'Hapus',
+        'deleting' => 'Menghapus...',
+        'save' => 'Simpan',
+        'saving' => 'Menyimpan...',
+        'updating' => 'Memperbarui...',
+        'add' => 'Tambah',
+        'search' => 'Cari',
+        'reset' => 'Reset',
+        'apply_filter' => 'Terapkan Filter',
+        'actions' => 'Aksi',
+        'showing' => 'Menampilkan :from–:to dari :all :label',
+        'empty_title' => 'Data tidak ditemukan',
+        'empty_description' => 'Belum ada data untuk ditampilkan.',
+        'no_results_hint' => 'Coba ubah kata kunci pencarian.',
+    ],
+
+    'footer' => [
+        'copyright' => 'Seluruh Hak Cipta Dilindungi.',
+    ],
+
+    'header' => [
+        'title' => 'Dasbor Admin',
+        'subtitle' => 'Selamat datang di Panel Admin',
+    ],
+
+    'dashboard' => [
+        'page_title' => 'Dasbor',
+        'title' => 'Dasbor Admin',
+        'welcome' => 'Selamat datang kembali di panel administrasi NuraLoka! Di sini Anda dapat mengelola wawasan wisata, destinasi perjalanan, serta memantau aktivitas traveler.',
+
+        'stat_users' => 'Total Pengguna',
+        'stat_news' => 'Artikel Wawasan',
+        'stat_places' => 'Destinasi Terdaftar',
+        'stat_categories' => 'Kategori Aktif',
+
+        'menu_heading' => 'Menu Manajemen Utama',
+        'menu_open' => 'Buka Manajemen',
+
+        'menu_news_title' => 'Kelola Wawasan Wisata',
+        'menu_news_description' => 'Tulis, sunting, dan hapus artikel berita, tips liburan, rekomendasi kuliner, serta informasi sejarah kebudayaan lokal.',
+
+        'menu_places_title' => 'Kelola Destinasi & Rute',
+        'menu_places_description' => 'Mengatur direktori objek wisata, tempat kuliner, pos transit, serta rute peta perjalanan antar kota di Indonesia.',
+
+        'menu_osm_title' => 'Impor Titik OSM',
+        'menu_osm_description' => 'Tarik data titik (POI) dari OpenStreetMap ke peta jelajah untuk menambah destinasi di luar Jawa secara otomatis.',
+
+        'menu_categories_title' => 'Kelola Kategori',
+        'menu_categories_description' => 'Atur klasifikasi destinasi wisata seperti Pantai, Pegunungan, Kuliner, dan lainnya beserta ikon kategorinya.',
+
+        'menu_missions_title' => 'Kelola Tantangan',
+        'menu_missions_description' => 'Atur daftar tantangan (missions) untuk para pengguna beserta poin reward dan lencana (badge) yang bisa didapatkan.',
+
+        'menu_badges_title' => 'Kelola Lencana',
+        'menu_badges_description' => 'Tambah, ubah, dan hapus lencana yang ditautkan ke tantangan dan diberikan otomatis saat pengguna menyelesaikan misinya.',
+
+        'menu_levels_title' => 'Kelola Level',
+        'menu_levels_description' => 'Atur tingkatan level dan ambang poin. Level pengguna dihitung otomatis dari total poin Nura yang mereka kumpulkan.',
+
+        'menu_users_title' => 'Kelola Pengguna',
+        'menu_users_description' => 'Kelola dan pantau akun pengguna yang terdaftar, termasuk peran admin, status blokir, dan data pribadi mereka.',
+
+        'quick_badges' => 'Total Lencana',
+        'quick_missions' => 'Total Tantangan',
+        'quick_banned' => 'Pengguna Diblokir',
+
+        'active_import_notice' => 'Ada :count impor OSM yang sedang berjalan.',
+        'active_import_cta' => 'Lihat Progres',
+
+        'recent_users_heading' => 'Pengguna Baru Bergabung',
+        'recent_users_empty' => 'Belum ada pengguna baru.',
+        'joined_at' => 'Bergabung :date',
+
+        'recent_news_heading' => 'Artikel Terbaru',
+        'recent_news_empty' => 'Belum ada artikel wawasan wisata.',
+
+        'view_all' => 'Lihat Semua',
+    ],
+
+    'users' => [
+        'page_title' => 'Kelola Pengguna',
+        'page_description' => 'Kelola dan pantau akun pengguna yang terdaftar di NuraLoka.',
+
+        'stat_total' => 'Total Pengguna',
+        'stat_regular' => 'Pengguna Biasa',
+        'stat_admin' => 'Admin',
+        'stat_banned' => 'Pengguna Diblokir',
+
+        'filter_search_label' => 'Cari Pengguna',
+        'filter_search_placeholder' => 'Cari nama, username, atau email...',
+        'filter_role_label' => 'Role',
+        'filter_role_placeholder' => 'Semua role',
+        'filter_gender_label' => 'Jenis Kelamin',
+        'filter_gender_placeholder' => 'Semua jenis kelamin',
+        'filter_status_label' => 'Status',
+        'filter_status_placeholder' => 'Semua status',
+
+        'role_admin' => 'Admin',
+        'role_user' => 'Pengguna',
+        'gender_male' => 'Laki-laki',
+        'gender_female' => 'Perempuan',
+        'gender_unspecified' => 'Tidak ingin memberi tahu',
+        'status_active' => 'Aktif',
+        'status_banned' => 'Diblokir',
+
+        'add_button' => 'Tambah Pengguna Baru',
+
+        'th_user' => 'Pengguna',
+        'th_username' => 'Username',
+        'th_email' => 'Email',
+        'th_gender' => 'Jenis Kelamin',
+        'th_province' => 'Provinsi',
+        'th_points' => 'Poin',
+        'th_role' => 'Role',
+        'th_status' => 'Status',
+        'th_actions' => 'Aksi',
+
+        'you_suffix' => '(Kamu)',
+        'id_prefix' => 'ID',
+        'item_label' => 'pengguna',
+
+        'empty_title' => 'Pengguna tidak ditemukan',
+        'empty_description' => 'Coba ubah kata kunci atau filter pencarian.',
+
+        'action_edit' => 'Edit pengguna',
+        'action_ban' => 'Blokir pengguna',
+        'action_unban' => 'Buka blokir pengguna',
+        'action_delete' => 'Hapus pengguna',
+        'action_disabled_self_ban' => 'Tidak dapat memblokir akun sendiri',
+        'action_disabled_self_unban' => 'Tidak dapat membuka blokir akun sendiri',
+        'action_disabled_self_delete' => 'Tidak dapat menghapus akun sendiri',
+        'action_disabled_admin_ban' => 'Admin tidak dapat diblokir',
+        'action_disabled_admin_delete' => 'Admin tidak dapat dihapus',
+
+        'modal_ban_title' => 'Blokir Pengguna',
+        'modal_ban_message' => 'Apakah kamu yakin ingin memblokir akun @:username?',
+        'modal_ban_confirm' => 'Blokir',
+        'modal_unban_title' => 'Buka Blokir Pengguna',
+        'modal_unban_message' => 'Apakah kamu yakin ingin membuka blokir akun @:username?',
+        'modal_unban_confirm' => 'Buka Blokir',
+        'modal_delete_title' => 'Hapus Pengguna',
+        'modal_delete_message' => 'Apakah kamu yakin ingin menghapus akun @:username secara permanen?',
+        'modal_delete_confirm' => 'Hapus',
+
+        'create_title' => 'Tambah Pengguna Baru',
+        'create_description' => 'Buat akun pengguna baru dan lengkapi informasi pengguna.',
+        'edit_title' => 'Edit Pengguna',
+        'edit_description' => 'Perbarui informasi akun dan data pribadi pengguna.',
+
+        'form_photo_title' => 'Foto Profil',
+        'form_photo_description' => 'Unggah foto profil pengguna. Maksimal 5 MB.',
+        'form_photo_choose' => 'Pilih Foto',
+        'form_photo_change' => 'Ganti Foto',
+
+        'form_account_title' => 'Informasi Akun',
+        'form_account_description' => 'Atur informasi utama dan hak akses akun.',
+        'label_username' => 'Username',
+        'placeholder_username' => 'Masukkan username',
+        'label_email' => 'Email',
+        'placeholder_email' => 'Masukkan email',
+        'label_role' => 'Role',
+
+        'form_personal_title' => 'Informasi Pribadi',
+        'form_personal_description' => 'Lengkapi informasi pribadi Nuravers.',
+        'label_fullname' => 'Nama Lengkap',
+        'placeholder_fullname' => 'Masukkan nama lengkap',
+        'label_dob' => 'Tanggal Lahir',
+        'label_gender' => 'Jenis Kelamin',
+        'label_province' => 'Provinsi Domisili',
+        'placeholder_province' => 'Pilih provinsi',
+
+        'form_password_title' => 'Kata Sandi',
+        'form_password_title_edit' => 'Ubah Kata Sandi',
+        'form_password_description' => 'Buat kata sandi untuk akun Nuravers.',
+        'form_password_description_edit' => 'Kosongkan kata sandi jika tidak ingin mengubahnya.',
+        'label_password' => 'Kata Sandi',
+        'label_password_new' => 'Kata Sandi Baru',
+        'placeholder_password' => 'Masukkan kata sandi',
+        'label_password_confirm' => 'Konfirmasi Kata Sandi',
+        'placeholder_password_confirm' => 'Ulangi kata sandi',
+
+        'submit_create' => 'Tambah Pengguna',
+        'submit_edit' => 'Simpan Perubahan',
+    ],
+
+    'badges' => [
+        'page_title' => 'Kelola Lencana',
+        'page_description' => 'Tambah, ubah, dan hapus lencana. Lencana ditautkan ke tantangan dan diberikan otomatis saat pengguna menyelesaikan misinya.',
+
+        'filter_search_label' => 'Cari Lencana',
+        'filter_search_placeholder' => 'Cari lencana berdasarkan nama atau kategori...',
+        'add_button' => 'Tambah Lencana',
+
+        'th_badge' => 'Lencana',
+        'th_type' => 'Tipe / Kategori',
+        'th_tier' => 'Tier',
+        'th_points' => 'Poin',
+        'th_used' => 'Dipakai',
+        'th_actions' => 'Aksi',
+
+        'type_special' => 'Khusus',
+        'type_general' => 'Umum',
+        'used_count' => ':count misi',
+        'tier_target' => 'target :target',
+        'tier_none' => '—',
+        'tier_bronze' => 'Perunggu',
+        'tier_silver' => 'Perak',
+        'tier_gold' => 'Emas',
+        'tier_diamond' => 'Berlian',
+
+        'item_label' => 'lencana',
+        'empty_title' => 'Lencana tidak ditemukan',
+        'empty_description' => 'Coba ubah kata kunci pencarian.',
+        'empty_description_no_search' => 'Belum ada lencana yang ditambahkan.',
+
+        'action_edit' => 'Edit lencana',
+        'action_delete' => 'Hapus lencana',
+        'modal_delete_title' => 'Hapus Lencana',
+        'modal_delete_message' => 'Apakah kamu yakin ingin menghapus lencana :name?',
+
+        'create_title' => 'Tambah Lencana Baru',
+        'create_description' => 'Buat lencana baru yang dapat ditautkan ke tantangan.',
+        'edit_title' => 'Edit Lencana',
+        'edit_description' => 'Perbarui informasi lencana ":name".',
+
+        'section_info_title' => 'Informasi Lencana',
+        'section_info_description_create' => 'Lengkapi detail dasar lencana yang akan ditambahkan.',
+        'section_info_description_edit' => 'Perbarui detail dasar lencana ini.',
+        'label_name' => 'Nama Lencana',
+        'placeholder_name' => 'Contoh: Si Paling Pantai (Emas)',
+        'label_requirement' => 'Deskripsi Syarat',
+        'placeholder_requirement' => 'Jelaskan cara mendapatkan lencana ini...',
+        'label_type' => 'Tipe',
+        'type_option_general' => 'Umum (bertingkat)',
+        'type_option_special' => 'Khusus',
+        'label_category' => 'Kategori Lencana',
+        'placeholder_category' => 'Contoh: Si Paling Pantai',
+        'label_points' => 'Poin',
+        'label_tier_level' => 'Tingkat (Tier)',
+        'tier_option_none' => 'Tanpa tingkat',
+        'label_tier_target' => 'Target Tier',
+
+        'section_icon_title' => 'Icon Lencana',
+        'section_icon_description_create' => 'Unggah icon lencana. Opsional, maksimal 5MB.',
+        'section_icon_description_edit' => 'Ganti icon lencana. Biarkan kosong bila tidak diubah.',
+        'icon_empty' => 'Belum ada',
+        'icon_empty_edit' => 'Tanpa icon',
+        'icon_choose' => 'Pilih File',
+        'icon_change' => 'Ganti File',
+        'icon_remove_current' => 'Hapus icon saat ini',
+        'icon_hint' => 'JPG, PNG, WEBP, SVG (Maks. 5MB). Opsional.',
+        'icon_hint_edit' => 'JPG, PNG, WEBP, SVG (Maks. 5MB).',
+
+        'submit_create' => 'Simpan Lencana',
+        'submit_edit' => 'Simpan Perubahan',
+    ],
+
+    'categories' => [
+        'page_title' => 'Kelola Kategori Destinasi',
+        'page_description' => 'Tambah, ubah, dan hapus kategori destinasi wisata. Kategori digunakan untuk mengklasifikasi tempat-tempat di NuraLoka.',
+
+        'filter_search_label' => 'Cari Kategori',
+        'filter_search_placeholder' => 'Cari kategori berdasarkan nama...',
+        'add_button' => 'Tambah Kategori',
+
+        'th_icon' => 'Icon',
+        'th_name' => 'Nama Kategori',
+        'th_place_count' => 'Jumlah Destinasi',
+        'th_actions' => 'Aksi',
+        'place_count' => ':count Destinasi',
+
+        'item_label' => 'kategori',
+        'empty_title' => 'Kategori tidak ditemukan',
+        'empty_description' => 'Coba ubah kata kunci pencarian.',
+        'empty_description_no_search' => 'Belum ada kategori yang ditambahkan.',
+
+        'action_edit' => 'Edit kategori',
+        'action_delete' => 'Hapus kategori',
+        'action_delete_blocked' => 'Tidak bisa dihapus — masih digunakan',
+        'modal_delete_title' => 'Hapus Kategori',
+        'modal_delete_message' => 'Apakah kamu yakin ingin menghapus kategori :name?',
+
+        'create_title' => 'Tambah Kategori Baru',
+        'create_description' => 'Buat kategori baru untuk mengklasifikasi destinasi wisata.',
+        'edit_title' => 'Edit Kategori',
+        'edit_description' => 'Perbarui informasi kategori ":name".',
+
+        'section_info_title' => 'Informasi Kategori',
+        'section_info_description_create' => 'Lengkapi nama dan icon kategori.',
+        'section_info_description_edit' => 'Perbarui nama dan icon kategori.',
+        'label_name' => 'Nama Kategori',
+        'placeholder_name' => 'Contoh: Pantai, Pegunungan, Kuliner, Sejarah...',
+        'label_icon' => 'Icon Kategori',
+        'icon_empty' => 'Belum ada icon',
+        'icon_choose' => 'Pilih File',
+        'icon_choose_new' => 'Pilih File Baru',
+        'icon_view' => 'Lihat Icon',
+        'icon_remove' => 'Hapus Icon',
+        'icon_no_file' => 'Tidak ada berkas dipilih',
+        'icon_current_file' => 'Menggunakan icon saat ini',
+        'icon_hint' => 'Format: JPG, PNG, WEBP, SVG, atau GIF (Maks. 5MB). Opsional.',
+        'icon_hint_edit' => 'Biarkan kosong jika tidak ingin mengganti icon. Maks. 5MB.',
+
+        'submit_create' => 'Simpan Kategori',
+        'submit_edit' => 'Simpan Perubahan',
+    ],
+
+    'levels' => [
+        'page_title' => 'Kelola Level',
+        'page_description' => 'Atur tingkatan level & ambang poin. Level pengguna dihitung otomatis dari total poin Nura mereka.',
+        'add_button' => 'Tambah Level',
+
+        'th_order' => 'Urutan',
+        'th_name' => 'Nama Level',
+        'th_min_points' => 'Minimal Poin',
+        'th_actions' => 'Aksi',
+        'min_points_value' => '≥ :points poin',
+
+        'empty_title' => 'Belum ada level',
+        'empty_description' => 'Tambahkan level pertama untuk mengatur tingkatan pengguna.',
+
+        'action_edit' => 'Edit level',
+        'action_delete' => 'Hapus level',
+        'modal_delete_title' => 'Hapus Level',
+        'modal_delete_message' => 'Apakah kamu yakin ingin menghapus level :name?',
+
+        'create_title' => 'Tambah Level Baru',
+        'create_description' => 'Buat tingkatan level baru beserta ambang poinnya.',
+        'edit_title' => 'Edit Level',
+        'edit_description' => 'Perbarui informasi level ":name".',
+
+        'section_info_title' => 'Informasi Level',
+        'section_info_description_create' => 'Tentukan nama level, ambang poin, dan urutannya.',
+        'section_info_description_edit' => 'Perbarui nama level, ambang poin, dan urutannya.',
+        'label_name' => 'Nama Level',
+        'placeholder_name' => 'Contoh: Petualang',
+        'label_min_points' => 'Minimal Poin',
+        'placeholder_min_points' => 'Contoh: 2000',
+        'min_points_hint' => 'Harus lebih besar dari minimal poin level dengan urutan sebelumnya, dan lebih kecil dari level dengan urutan berikutnya.',
+        'label_order' => 'Urutan',
+
+        'submit_create' => 'Simpan Level',
+        'submit_edit' => 'Simpan Perubahan',
+    ],
+
+    'missions' => [
+        'page_title' => 'Kelola Tantangan',
+        'page_description' => 'Tambah, ubah, dan hapus daftar tantangan (missions) untuk para pengguna NuraLoka.',
+
+        'filter_search_label' => 'Cari Tantangan',
+        'filter_search_placeholder' => 'Cari tantangan berdasarkan judul...',
+        'add_button' => 'Tambah Tantangan',
+
+        'th_title' => 'Judul',
+        'th_badge' => 'Lencana (Badge)',
+        'th_points' => 'Poin',
+        'th_participants' => 'Peserta',
+        'th_actions' => 'Aksi',
+        'points_value' => '+:points Pts',
+        'participants_value' => ':count Pengguna',
+        'badge_none' => '-',
+
+        'item_label' => 'tantangan',
+        'empty_title' => 'Tantangan tidak ditemukan',
+        'empty_description' => 'Coba ubah kata kunci pencarian.',
+        'empty_description_no_search' => 'Belum ada tantangan yang ditambahkan.',
+
+        'action_edit' => 'Edit tantangan',
+        'action_delete' => 'Hapus tantangan',
+        'action_delete_blocked' => 'Tidak bisa dihapus — sudah ada pengguna',
+        'modal_delete_title' => 'Hapus Tantangan',
+        'modal_delete_message' => 'Apakah kamu yakin ingin menghapus tantangan :title?',
+
+        'create_title' => 'Tambah Tantangan Baru',
+        'create_description' => 'Buat tantangan baru beserta reward poin dan lencana yang akan didapat pengguna.',
+        'edit_title' => 'Edit Tantangan',
+        'edit_description' => 'Perbarui informasi tantangan ":title".',
+
+        'section_info_title' => 'Informasi Tantangan',
+        'section_info_description_create' => 'Lengkapi judul, deskripsi, dan reward tantangan.',
+        'section_info_description_edit' => 'Perbarui judul, deskripsi, dan reward tantangan.',
+        'label_title' => 'Judul Tantangan',
+        'placeholder_title' => 'Contoh: Kunjungi 5 Pantai',
+        'label_description' => 'Deskripsi',
+        'placeholder_description' => 'Jelaskan detail tantangan ini...',
+        'label_points_reward' => 'Reward Poin',
+        'placeholder_points_reward' => 'Contoh: 100',
+        'label_target' => 'Target Misi (Jumlah yang harus diselesaikan)',
+        'placeholder_target' => 'Contoh: 5',
+
+        'section_action_title' => 'Aksi Pemicu Otomatis',
+        'section_action_description' => 'Tautkan tantangan ke aksi user agar progres berjalan otomatis. Pilih Manual bila tantangan tidak dihubungkan ke aksi apa pun.',
+        'label_action_type' => 'Aksi Pemicu',
+        'label_category_filter' => 'Kategori Tempat (opsional)',
+        'placeholder_category_filter' => 'Semua kategori',
+        'category_filter_hint' => 'Kosongkan untuk menghitung semua kategori tempat.',
+
+        'section_badge_title' => 'Lencana (Badge)',
+        'section_badge_description' => 'Pilih lencana yang akan didapat pengguna saat menyelesaikan tantangan ini.',
+        'label_badge' => 'Lencana (Badge)',
+        'placeholder_badge' => 'Pilih lencana untuk tantangan ini',
+        'no_badges_available' => 'Belum ada lencana yang tersedia.',
+
+        'submit_create' => 'Simpan Tantangan',
+        'submit_edit' => 'Simpan Perubahan',
+    ],
+
+    'news' => [
+        'page_title' => 'Kelola Wawasan Wisata',
+        'page_description' => 'Tambah, ubah, dan hapus artikel berita, tips liburan, rekomendasi kuliner, serta informasi sejarah kebudayaan lokal.',
+
+        'filter_search_label' => 'Cari Artikel',
+        'filter_search_placeholder' => 'Cari artikel berdasarkan judul atau konten...',
+        'add_button' => 'Tambah Berita',
+
+        'th_image' => 'Gambar',
+        'th_title' => 'Judul',
+        'th_author' => 'Penulis',
+        'th_publish_date' => 'Tanggal Rilis',
+        'th_actions' => 'Aksi',
+        'author_fallback' => 'Admin',
+
+        'item_label' => 'artikel',
+        'empty_title' => 'Artikel tidak ditemukan',
+        'empty_description' => 'Coba ubah kata kunci pencarian.',
+        'empty_description_no_search' => 'Belum ada artikel wawasan wisata.',
+
+        'action_edit' => 'Edit artikel',
+        'action_delete' => 'Hapus artikel',
+        'modal_delete_title' => 'Hapus Artikel',
+        'modal_delete_message' => 'Apakah kamu yakin ingin menghapus wawasan wisata :title?',
+
+        'create_title' => 'Tambah Wawasan Wisata Baru',
+        'create_description' => 'Tulis artikel wawasan wisata baru untuk pengguna NuraLoka.',
+        'edit_title' => 'Edit Wawasan Wisata',
+        'edit_description' => 'Perbarui artikel ":title".',
+
+        'section_info_title' => 'Informasi Artikel',
+        'section_info_description' => 'Judul dan tanggal publikasi artikel.',
+        'label_title' => 'Judul Berita / Artikel',
+        'placeholder_title' => 'Tulis judul artikel yang menarik...',
+        'label_publish_date' => 'Tanggal Publikasi',
+
+        'section_thumbnail_title' => 'Gambar Thumbnail',
+        'section_thumbnail_description_create' => 'Unggah gambar sampul untuk artikel ini.',
+        'section_thumbnail_description_edit' => 'Ganti gambar sampul artikel. Biarkan kosong bila tidak diubah.',
+        'thumbnail_empty' => 'Belum ada gambar',
+        'thumbnail_view' => 'Lihat Gambar',
+        'thumbnail_remove' => 'Hapus Gambar',
+        'thumbnail_choose' => 'Pilih File',
+        'thumbnail_change' => 'Ganti File',
+        'thumbnail_no_file' => 'Tidak ada berkas dipilih',
+        'thumbnail_current_file' => 'Menggunakan gambar saat ini',
+        'thumbnail_hint' => 'Format: JPG, JPEG, PNG, WEBP, atau GIF (Maks. 5MB).',
+        'thumbnail_hint_edit' => 'Biarkan kosong jika tidak ingin mengganti gambar thumbnail. Maks. 5MB.',
+
+        'section_content_title' => 'Konten Artikel',
+        'section_content_description' => 'Tulis seluruh isi artikel wawasan wisata.',
+        'label_content' => 'Konten / Isi Artikel',
+        'placeholder_content' => 'Tulis seluruh isi artikel wawasan wisata di sini...',
+
+        'submit_create' => 'Simpan Artikel',
+        'submit_edit' => 'Simpan Perubahan',
+    ],
+
+    'places' => [
+        'page_title' => 'Kelola Destinasi Wisata',
+        'page_description' => 'Tambah, ubah, dan hapus data destinasi wisata. Setiap destinasi dapat dihubungkan ke beberapa kategori.',
+
+        'filter_search_label' => 'Cari Destinasi',
+        'filter_search_placeholder' => 'Cari destinasi berdasarkan nama atau alamat...',
+        'filter_source_label' => 'Sumber Data',
+        'filter_source_placeholder' => 'Semua sumber',
+        'source_internal' => 'Internal (NuraLoka)',
+        'source_osm' => 'OSM (Impor)',
+        'source_badge_internal' => 'Internal',
+        'source_badge_osm' => 'OSM',
+        'add_button' => 'Tambah Destinasi',
+
+        'th_name' => 'Nama Destinasi',
+        'th_address' => 'Alamat',
+        'th_coordinates' => 'Koordinat',
+        'th_categories' => 'Kategori',
+        'th_source' => 'Sumber',
+        'th_actions' => 'Aksi',
+        'address_unavailable' => 'Alamat belum tersedia',
+        'no_categories' => 'Tidak ada',
+
+        'item_label' => 'destinasi',
+        'empty_title' => 'Destinasi tidak ditemukan',
+        'empty_description' => 'Coba ubah kata kunci atau filter pencarian.',
+        'empty_description_no_search' => 'Belum ada data destinasi wisata.',
+
+        'action_edit' => 'Edit destinasi',
+        'action_delete' => 'Hapus destinasi',
+        'modal_delete_title' => 'Hapus Destinasi',
+        'modal_delete_message' => 'Apakah kamu yakin ingin menghapus destinasi :name?',
+
+        'create_title' => 'Tambah Destinasi Wisata Baru',
+        'create_description' => 'Lengkapi informasi destinasi wisata yang akan ditambahkan.',
+        'edit_title' => 'Edit Destinasi Wisata',
+        'edit_description' => 'Perbarui informasi destinasi ":name".',
+
+        'section_info_title' => 'Informasi Destinasi',
+        'section_info_description' => 'Nama, alamat, dan titik koordinat destinasi.',
+        'label_name' => 'Nama Destinasi',
+        'placeholder_name' => 'Contoh: Pantai Bira, Taman Nasional Baluran...',
+        'label_address' => 'Alamat Lengkap',
+        'placeholder_address' => 'Contoh: Jl. Pantai Bira, Kab. Bulukumba, Sulawesi Selatan',
+        'label_latitude' => 'Latitude',
+        'label_longitude' => 'Longitude',
+        'label_description' => 'Deskripsi Destinasi',
+        'placeholder_description' => 'Tuliskan deskripsi lengkap tentang destinasi wisata ini...',
+
+        'section_categories_title' => 'Kategori Destinasi',
+        'section_categories_description' => 'Pilih satu atau lebih kategori yang sesuai untuk destinasi ini.',
+        'no_categories_available' => 'Belum ada kategori tersedia.',
+        'add_category_first' => 'Tambah kategori dulu',
+
+        'section_photos_title' => 'Foto Destinasi (opsional)',
+        'section_photos_title_edit' => 'Foto Destinasi',
+        'section_photos_description_create' => 'Unggah satu atau beberapa foto. Foto ini akan tampil di galeri halaman detail bersama foto dari album populer Nuravers.',
+        'section_photos_description_edit' => 'Kelola foto yang tampil di galeri detail. Klik tanda silang untuk menandai foto yang akan dihapus saat disimpan.',
+        'photo_preview_alt' => 'Pratinjau :index',
+        'photo_mark_undo' => 'Batalkan hapus',
+        'photo_mark_delete' => 'Tandai untuk dihapus',
+
+        'submit_create' => 'Simpan Destinasi',
+        'submit_edit' => 'Simpan Perubahan',
+    ],
+
+    'osm_import' => [
+        'page_title' => 'Impor Titik OSM',
+        'page_description' => 'Tarik data titik (POI) dari OpenStreetMap ke peta jelajah untuk daerah baru di luar Jawa. Total titik OSM saat ini: :total.',
+
+        'notice' => 'Impor dipecah menjadi banyak job per-petak di antrean (queue). Pastikan worker aktif (php artisan queue:work --timeout=180) agar tugas diproses. Tiap petak diproses & di-retry sendiri, jadi impor aman dilanjut meski worker sempat mati. Area luas seperti Seluruh Indonesia tetap memakan waktu — gunakan jeda (sleep) yang cukup untuk menghormati batas Overpass.',
+
+        'section_title' => 'Mulai Impor Baru',
+        'section_description' => 'Pilih area yang ingin diimpor, lalu jalankan proses impor di latar belakang.',
+
+        'mode_region' => 'Preset Region',
+        'mode_custom' => 'Koordinat Manual',
+        'label_region' => 'Pilih Region',
+        'bbox_hint' => 'bbox: :bbox (selatan, barat, utara, timur)',
+
+        'label_south' => 'Selatan (lat)',
+        'label_north' => 'Utara (lat)',
+        'label_west' => 'Barat (lng)',
+        'label_east' => 'Timur (lng)',
+
+        'label_tile' => 'Ukuran petak (derajat)',
+        'tile_hint' => 'Makin kecil makin detail, tapi lebih banyak query.',
+        'label_sleep' => 'Jeda antar petak (detik)',
+
+        'submit' => 'Mulai Impor',
+        'active_run_hint' => 'Masih ada impor berjalan — tunggu sampai selesai.',
+
+        'history_heading' => 'Riwayat Impor',
+        'th_area' => 'Area',
+        'th_status' => 'Status',
+        'th_saved_points' => 'Titik Tersimpan',
+        'th_tiles' => 'Petak',
+        'th_time' => 'Waktu',
+        'th_by' => 'Oleh',
+        'empty_history' => 'Belum ada riwayat impor.',
+
+        'status_pending' => 'Menunggu',
+        'status_running' => 'Berjalan',
+        'status_success' => 'Selesai',
+        'status_failed' => 'Gagal',
+
+        'total_summary' => 'total :before → :after',
+        'tiles_summary' => ':processed / :total petak',
+        'tiles_failed' => ':count petak gagal',
+        'started_at' => 'Mulai: :time',
+        'finished_at' => 'Selesai: :time',
     ],
 ];

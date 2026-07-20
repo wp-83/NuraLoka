@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\News;
+use App\Services\ImageCompressionService;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 
 class AdminNewsController extends Controller
 {
@@ -28,7 +28,7 @@ class AdminNewsController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('Admin/News/Index', [
+        return inertia('Admin/News/Index', [
             'news' => $news,
             'filters' => [
                 'search' => $search,
@@ -41,7 +41,7 @@ class AdminNewsController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/News/Create');
+        return inertia('Admin/News/Create');
     }
 
     /**
@@ -53,21 +53,17 @@ class AdminNewsController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'publish_date' => 'required|date',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
         ]);
 
         $thumbnailPath = null;
         if ($request->hasFile('thumbnail')) {
-            $file = $request->file('thumbnail');
-            $filename = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
+            $filename = app(ImageCompressionService::class)->compressToPublic(
+                $request->file('thumbnail'),
+                public_path('images/news'),
+                maxWidth: 1200,
+            );
 
-            // Ensure directory exists
-            $destinationPath = public_path('images/news');
-            if (! file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
-
-            $file->move($destinationPath, $filename);
             $thumbnailPath = '/images/news/'.$filename;
         }
 
@@ -88,21 +84,19 @@ class AdminNewsController extends Controller
     /**
      * Show the form for editing the specified news article.
      */
-    public function edit(string $id)
+    public function edit(News $news)
     {
-        $newsItem = News::findOrFail($id);
-
-        return Inertia::render('Admin/News/Edit', [
-            'newsItem' => $newsItem,
+        return inertia('Admin/News/Edit', [
+            'newsItem' => $news,
         ]);
     }
 
     /**
      * Update the specified news article in database.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, News $news)
     {
-        $newsItem = News::findOrFail($id);
+        $newsItem = $news;
 
         $request->validate([
             'title' => 'required|string|max:255',
@@ -113,7 +107,7 @@ class AdminNewsController extends Controller
 
         if ($request->hasFile('thumbnail')) {
             $request->validate([
-                'thumbnail' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+                'thumbnail' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             ]);
         }
 
@@ -137,15 +131,12 @@ class AdminNewsController extends Controller
                 }
             }
 
-            $file = $request->file('thumbnail');
-            $filename = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
+            $filename = app(ImageCompressionService::class)->compressToPublic(
+                $request->file('thumbnail'),
+                public_path('images/news'),
+                maxWidth: 1200,
+            );
 
-            $destinationPath = public_path('images/news');
-            if (! file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
-
-            $file->move($destinationPath, $filename);
             $thumbnailPath = '/images/news/'.$filename;
         }
 
@@ -165,9 +156,9 @@ class AdminNewsController extends Controller
     /**
      * Remove the specified news article from database.
      */
-    public function destroy(string $id)
+    public function destroy(News $news)
     {
-        $newsItem = News::findOrFail($id);
+        $newsItem = $news;
 
         // Delete thumbnail file if it exists
         if ($newsItem->thumbnail && file_exists(public_path($newsItem->thumbnail))) {

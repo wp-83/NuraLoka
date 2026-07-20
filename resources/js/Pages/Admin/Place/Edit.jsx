@@ -1,12 +1,19 @@
-import { Head, useForm, router } from '@inertiajs/react';
-import { FaArrowLeft, FaTimes } from 'react-icons/fa';
+import FormSection from '@components/Common/FormSection';
+import PageHeader from '@components/Common/PageHeader';
 import Button from '@components/Forms/Button';
-import Input from '@components/Forms/Input';
 import Checkbox from '@components/Forms/Checkbox';
-import AdminLayout from '../../../Layouts/AdminLayout';
+import Input from '@components/Forms/Input';
+import AdminLayout from '@js/Layouts/AdminLayout';
+import { useTranslation } from '@js/i18n';
+
+import { router, useForm } from '@inertiajs/react';
+
+import { FiArrowLeft, FiSave, FiX } from 'react-icons/fi';
 
 export default function Edit({ place, categories, photos = [] }) {
-    // Pre-fill selected category IDs from the existing place data
+    const { t } = useTranslation();
+
+    // Pre-fill selected category IDs from the existing place data.
     const existingCategoryIds = place.categories ? place.categories.map((c) => c.id) : [];
 
     const { data, setData, post, processing, errors } = useForm({
@@ -42,56 +49,59 @@ export default function Edit({ place, categories, photos = [] }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('admin.places.update', place.id));
+        post(route('admin.places.update', place.slug));
     };
 
     return (
-        <>
-            <Head>
-                <title>Admin | Edit Destinasi Wisata</title>
-            </Head>
+        <div className="flex w-full flex-col gap-6">
+            {/* Header */}
+            <PageHeader
+                title={t('admin.places.edit_title')}
+                description={t('admin.places.edit_description', { name: place.name })}
+            />
 
-            <div className="mx-auto w-full max-w-3xl">
-                {/* Back button */}
-                <div className="mb-6">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                {/* Back */}
+                <div>
                     <Button
-                        variant="primary"
-                        size="btn-sm"
-                        iconLeft={<FaArrowLeft />}
+                        type="button"
+                        variant="white"
+                        iconLeft={<FiArrowLeft size={18} />}
                         onClick={() => router.get(route('admin.places.index'))}
                     >
-                        Kembali ke Daftar Destinasi
+                        {t('admin.common.back')}
                     </Button>
                 </div>
 
-                <h2 className="mb-6 border-b border-primary-10 pb-4 font-heading text-subtitle font-bold text-primary-100">
-                    Edit Destinasi Wisata
-                </h2>
-
-                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                {/* Destination Information */}
+                <FormSection
+                    title={t('admin.places.section_info_title')}
+                    description={t('admin.places.section_info_description')}
+                >
+                    <div className="flex flex-col gap-5">
                         <Input
-                            label="Nama Destinasi"
+                            label={t('admin.places.label_name')}
                             name="name"
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
-                            placeholder="Contoh: Pantai Bira, Taman Nasional Baluran..."
+                            placeholder={t('admin.places.placeholder_name')}
                             error={errors.name}
                             required
                         />
 
                         <Input
-                            label="Alamat Lengkap"
+                            label={t('admin.places.label_address')}
                             name="address"
                             value={data.address}
                             onChange={(e) => setData('address', e.target.value)}
-                            placeholder="Contoh: Jl. Pantai Bira, Kab. Bulukumba, Sulawesi Selatan"
+                            placeholder={t('admin.places.placeholder_address')}
                             error={errors.address}
                             required
                         />
 
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                             <Input
-                                label="Latitude"
+                                label={t('admin.places.label_latitude')}
                                 name="latitude"
                                 type="number"
                                 step="any"
@@ -101,8 +111,9 @@ export default function Edit({ place, categories, photos = [] }) {
                                 error={errors.latitude}
                                 required
                             />
+
                             <Input
-                                label="Longitude"
+                                label={t('admin.places.label_longitude')}
                                 name="longitude"
                                 type="number"
                                 step="any"
@@ -114,48 +125,19 @@ export default function Edit({ place, categories, photos = [] }) {
                             />
                         </div>
 
-                        {/* Categories */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="font-heading text-paragraph text-primary-100">
-                                Kategori Destinasi
-                            </label>
-                            <p className="text-small text-gray-70">
-                                Pilih satu atau lebih kategori yang sesuai untuk destinasi ini.
-                            </p>
-
-                            {categories && categories.length > 0 ? (
-                                <div className="mt-2 grid grid-cols-1 gap-3 rounded-xl border border-primary-10 bg-gray-10 p-4 sm:grid-cols-2 lg:grid-cols-3">
-                                    {categories.map((cat) => (
-                                        <Checkbox
-                                            key={cat.id}
-                                            id={`cat-${cat.id}`}
-                                            label={cat.name}
-                                            checked={data.categories.includes(cat.id)}
-                                            onChange={() => toggleCategory(cat.id)}
-                                        />
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-small italic text-gray-50">
-                                    Belum ada kategori tersedia.
-                                </p>
-                            )}
-                            {errors.categories && (
-                                <p className="text-small italic text-error-dark">{errors.categories}</p>
-                            )}
-                        </div>
-
                         <Input
-                            label="Deskripsi Destinasi"
+                            label={t('admin.places.label_description')}
                             name="description"
                             type="textarea"
                             rows={5}
                             value={data.description}
                             onChange={(e) => setData('description', e.target.value)}
-                            placeholder="Tuliskan deskripsi lengkap tentang destinasi wisata ini..."
+                            placeholder={t('admin.places.placeholder_description')}
                             error={errors.description}
                             required
                         />
+                    </div>
+                </FormSection>
 
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                             <Input
@@ -223,38 +205,123 @@ export default function Edit({ place, categories, photos = [] }) {
                             {data.photos.length > 0 && (
                                 <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4">
                                     {data.photos.map((file, i) => (
-                                        <img
-                                            key={i}
-                                            src={URL.createObjectURL(file)}
-                                            alt={`Pratinjau ${i + 1}`}
-                                            className="h-24 w-full rounded-lg object-cover ring-2 ring-success-dark"
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                            {(errors.photos || errors['photos.0']) && (
-                                <p className="text-small italic text-error-dark">
-                                    {errors.photos || errors['photos.0']}
-                                </p>
-                            )}
+                {/* Categories */}
+                <FormSection
+                    title={t('admin.places.section_categories_title')}
+                    description={t('admin.places.section_categories_description')}
+                >
+                    {categories && categories.length > 0 ? (
+                        <div className="grid grid-cols-1 gap-3 rounded-xl border border-gray-20 bg-gray-10 p-4 sm:grid-cols-2 lg:grid-cols-3">
+                            {categories.map((cat) => (
+                                <Checkbox
+                                    key={cat.id}
+                                    id={`cat-${cat.id}`}
+                                    label={cat.name}
+                                    checked={data.categories.includes(cat.id)}
+                                    onChange={() => toggleCategory(cat.id)}
+                                />
+                            ))}
                         </div>
+                    ) : (
+                        <p className="font-body text-small italic text-gray-50">
+                            {t('admin.places.no_categories_available')}
+                        </p>
+                    )}
 
-                        {/* Actions */}
-                        <div className="mt-2 flex justify-end gap-3 border-t border-primary-10 pt-5">
-                            <Button
-                                variant="white"
-                                onClick={() => router.get(route('admin.places.index'))}
-                            >
-                                Batal
-                            </Button>
-                            <Button variant="success" type="submit" loading={processing}>
-                                {processing ? 'Memperbarui...' : 'Simpan Perubahan'}
-                            </Button>
+                    {errors.categories && (
+                        <p className="mt-2 font-body text-small italic text-error-dark">
+                            {errors.categories}
+                        </p>
+                    )}
+                </FormSection>
+
+                {/* Photos */}
+                <FormSection
+                    title={t('admin.places.section_photos_title_edit')}
+                    description={t('admin.places.section_photos_description_edit')}
+                >
+                    {photos.length > 0 && (
+                        <div className="mb-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
+                            {photos.map((photo) => {
+                                const marked = data.deleted_photos.includes(photo.id);
+
+                                return (
+                                    <div key={photo.id} className="relative">
+                                        <img
+                                            src={photo.url}
+                                            alt={t('admin.places.section_photos_title_edit')}
+                                            className={[
+                                                'h-24 w-full rounded-lg object-cover transition',
+                                                marked && 'opacity-30 grayscale',
+                                            ]
+                                                .filter(Boolean)
+                                                .join(' ')}
+                                        />
+
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleRemoveExisting(photo.id)}
+                                            title={
+                                                marked
+                                                    ? t('admin.places.photo_mark_undo')
+                                                    : t('admin.places.photo_mark_delete')
+                                            }
+                                            className={[
+                                                'absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full text-white shadow',
+                                                marked ? 'bg-gray-50' : 'bg-error-dark',
+                                            ].join(' ')}
+                                        >
+                                            <FiX size={13} />
+                                        </button>
+                                    </div>
+                                );
+                            })}
                         </div>
-                </form>
-            </div>
-        </>
+                    )}
+
+                    <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/jpg,image/webp"
+                        multiple
+                        onChange={handlePhotos}
+                        className="block w-full cursor-pointer rounded-xl border border-gray-20 bg-gray-10 px-3 py-2 font-body text-small text-gray-70 file:mr-3 file:rounded-lg file:border-0 file:bg-primary-100 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-primary-85"
+                    />
+
+                    {data.photos.length > 0 && (
+                        <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4">
+                            {data.photos.map((file, i) => (
+                                <img
+                                    key={i}
+                                    src={URL.createObjectURL(file)}
+                                    alt={t('admin.places.photo_preview_alt', { index: i + 1 })}
+                                    className="h-24 w-full rounded-lg object-cover ring-2 ring-success-dark"
+                                />
+                            ))}
+                        </div>
+                    )}
+
+                    {(errors.photos || errors['photos.0']) && (
+                        <p className="mt-2 font-body text-small italic text-error-dark">
+                            {errors.photos || errors['photos.0']}
+                        </p>
+                    )}
+                </FormSection>
+
+                {/* Actions */}
+                <div className="flex justify-end">
+                    <Button
+                        type="submit"
+                        loading={processing}
+                        iconLeft={!processing && <FiSave size={20} />}
+                    >
+                        {processing ? t('admin.common.updating') : t('admin.places.submit_edit')}
+                    </Button>
+                </div>
+            </form>
+        </div>
     );
 }
 
-Edit.layout = (page) => <AdminLayout content={page}></AdminLayout>;
+Edit.layout = (page) => (
+    <AdminLayout pageTitle="Edit Destinasi" content={page} />
+);

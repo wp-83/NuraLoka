@@ -7,13 +7,12 @@ use App\Models\Badge;
 use App\Models\Province;
 use App\Models\User;
 use App\Models\UserDetail;
+use App\Services\ImageCompressionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
 
 class ProfileController extends Controller
 {
@@ -249,7 +248,7 @@ class ProfileController extends Controller
                 'nullable',
                 'image',
                 'mimes:jpg,jpeg,png,webp',
-                'max:2048',
+                'max:5120',
             ],
         ], [
             'password.regex' => 'Kata sandi harus mengandung minimal 1 huruf kapital dan 1 simbol di antara !,@,#,$,%.',
@@ -258,7 +257,7 @@ class ProfileController extends Controller
 
             'email.unique' => 'Email tersebut sudah digunakan oleh pengguna lain.',
 
-            'profile_photo.max' => 'Ukuran maksimal Foto profil 2MB.',
+            'profile_photo.max' => 'Ukuran maksimal Foto profil 5MB.',
         ]);
 
         DB::transaction(function () use (
@@ -304,42 +303,11 @@ class ProfileController extends Controller
             */
 
             if ($request->hasFile('profile_photo')) {
-                $photo = $request->file('profile_photo');
-
-                // Buat image manager menggunakan GD.
-                $manager = new ImageManager(
-                    new Driver
-                );
-
-                // Baca gambar.
-                $image = $manager->decodePath(
-                    $photo->getPathname()
-                );
-
-                // Perkecil gambar tanpa merusak aspect ratio.
-                $image->scaleDown(
-                    width: 800,
-                    height: 800
-                );
-
-                // Konversi dan kompres ke WebP.
-                $encoded = $image->encodeUsingFileExtension(
-                    'webp',
-                    quality: 80
-                );
-
-                // Buat nama file unik.
-                $filename = uniqid(
-                    'profile_',
-                    true
-                ).'.webp';
-
-                $path = 'profile-photos/'.$filename;
-
-                // Simpan foto baru.
-                Storage::disk('public')->put(
-                    $path,
-                    $encoded->toString()
+                $path = app(ImageCompressionService::class)->compressToDisk(
+                    $request->file('profile_photo'),
+                    'profile-photos',
+                    maxWidth: 800,
+                    maxHeight: 800,
                 );
 
                 // Hapus foto lama.

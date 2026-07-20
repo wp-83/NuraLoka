@@ -17,6 +17,11 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('icon_path');
             $table->string('requirement_description');
+            $table->enum('type', ['general', 'special'])->default('general');
+            $table->string('category')->nullable();
+            $table->integer('points')->default(0);
+            $table->integer('tier_level')->default(0);
+            $table->integer('tier_target')->default(0);
             $table->timestamps();
         });
     }

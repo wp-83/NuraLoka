@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -15,12 +16,25 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->text('description');
+
+            // 'internal' = added by an admin, 'osm' = imported from Overpass. Admin-only, not shown to users.
+            $table->enum('source', ['internal', 'osm'])->default('internal')->index();
+
+            // Nullable: OSM imports often lack these, so leave null instead of failing.
+            $table->text('description')->nullable();
             $table->decimal('latitude', 10, 8);
             $table->decimal('longitude', 11, 8);
-            $table->string('address');
+            $table->string('address')->nullable();
             $table->timestamps();
         });
+
+        // FULLTEXT keeps autocomplete search fast at scale (LIKE '%q%' can't use an index).
+        // MySQL/MariaDB only, so guard by driver (e.g. SQLite in tests).
+        if (DB::getDriverName() === 'mysql') {
+            Schema::table('places', function (Blueprint $table) {
+                $table->fullText('name', 'places_name_fulltext');
+            });
+        }
     }
 
     /**

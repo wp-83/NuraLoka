@@ -1,6 +1,6 @@
 <?php
 
-// 관리자 패널 (사이드바 전용). 사이드바 키는 메뉴 라우트 이름으로 매핑됩니다.
+// 관리자 패널: 사이드바 + 모든 Admin/* 페이지. 사이드바 키는 메뉴 라우트 이름으로 매핑됩니다.
 return [
     'sidebar' => [
         'dashboard' => '대시보드',
@@ -10,9 +10,591 @@ return [
         'missions' => '미션 / 챌린지',
         'badges' => '배지',
         'levels' => '레벨',
+        'news' => '여행 인사이트',
         'users' => '사용자',
         'user_panel' => '사용자 패널',
         'open' => '사이드바 열기',
         'close' => '사이드바 닫기',
+    ],
+
+    'common' => [
+        'back' => '뒤로',
+        'cancel' => '취소',
+        'delete' => '삭제',
+        'deleting' => '삭제 중...',
+        'save' => '저장',
+        'saving' => '저장 중...',
+        'updating' => '업데이트 중...',
+        'add' => '추가',
+        'search' => '검색',
+        'reset' => '초기화',
+        'apply_filter' => '필터 적용',
+        'actions' => '작업',
+        'showing' => ':all개 중 :from–:to :label 표시 중',
+        'empty_title' => '데이터를 찾을 수 없습니다',
+        'empty_description' => '표시할 데이터가 아직 없습니다.',
+        'no_results_hint' => '검색어를 변경해 보세요.',
+    ],
+
+    'footer' => [
+        'copyright' => '모든 권리 보유.',
+    ],
+
+    'header' => [
+        'title' => '관리자 대시보드',
+        'subtitle' => '관리자 패널에 오신 것을 환영합니다',
+    ],
+
+    'dashboard' => [
+        'page_title' => '대시보드',
+        'title' => '관리자 대시보드',
+        'welcome' => 'NuraLoka 관리자 패널에 다시 오신 것을 환영합니다! 여기에서 여행 인사이트, 여행지, 그리고 여행자 활동을 관리할 수 있습니다.',
+
+        'stat_users' => '총 사용자',
+        'stat_news' => '인사이트 기사',
+        'stat_places' => '등록된 여행지',
+        'stat_categories' => '활성 카테고리',
+
+        'menu_heading' => '주요 관리 메뉴',
+        'menu_open' => '관리 화면 열기',
+
+        'menu_news_title' => '여행 인사이트 관리',
+        'menu_news_description' => '뉴스 기사, 여행 팁, 맛집 추천, 지역 문화 역사 정보를 작성, 수정, 삭제합니다.',
+
+        'menu_places_title' => '여행지 및 경로 관리',
+        'menu_places_description' => '관광지, 맛집, 환승 지점, 인도네시아 도시 간 여행 경로 디렉터리를 관리합니다.',
+
+        'menu_osm_title' => 'OSM 지점 가져오기',
+        'menu_osm_description' => 'OpenStreetMap에서 관심 지점(POI) 데이터를 가져와 자바 외 지역의 여행지를 자동으로 추가합니다.',
+
+        'menu_categories_title' => '카테고리 관리',
+        'menu_categories_description' => '해변, 산, 음식 등 여행지 분류와 카테고리 아이콘을 설정합니다.',
+
+        'menu_missions_title' => '챌린지 관리',
+        'menu_missions_description' => '사용자를 위한 챌린지(미션) 목록과 보상 포인트, 획득 가능한 배지를 관리합니다.',
+
+        'menu_badges_title' => '배지 관리',
+        'menu_badges_description' => '챌린지와 연결되어 사용자가 미션을 완료하면 자동으로 지급되는 배지를 추가, 수정, 삭제합니다.',
+
+        'menu_levels_title' => '레벨 관리',
+        'menu_levels_description' => '레벨 단계와 포인트 기준을 설정합니다. 사용자 레벨은 누적된 Nura 포인트로 자동 계산됩니다.',
+
+        'menu_users_title' => '사용자 관리',
+        'menu_users_description' => '관리자 권한, 차단 상태, 개인 정보를 포함한 등록된 사용자 계정을 관리하고 모니터링합니다.',
+
+        'quick_badges' => '총 배지',
+        'quick_missions' => '총 챌린지',
+        'quick_banned' => '차단된 사용자',
+
+        'active_import_notice' => '현재 진행 중인 OSM 가져오기 :count개.',
+        'active_import_cta' => '진행 상황 보기',
+
+        'recent_users_heading' => '새로 가입한 사용자',
+        'recent_users_empty' => '아직 신규 사용자가 없습니다.',
+        'joined_at' => ':date 가입',
+
+        'recent_news_heading' => '최신 기사',
+        'recent_news_empty' => '아직 여행 인사이트 기사가 없습니다.',
+
+        'view_all' => '전체 보기',
+    ],
+
+    'users' => [
+        'page_title' => '사용자 관리',
+        'page_description' => 'NuraLoka에 등록된 사용자 계정을 관리하고 모니터링합니다.',
+
+        'stat_total' => '총 사용자',
+        'stat_regular' => '일반 사용자',
+        'stat_admin' => '관리자',
+        'stat_banned' => '차단된 사용자',
+
+        'filter_search_label' => '사용자 검색',
+        'filter_search_placeholder' => '이름, 사용자명, 이메일로 검색...',
+        'filter_role_label' => '역할',
+        'filter_role_placeholder' => '모든 역할',
+        'filter_gender_label' => '성별',
+        'filter_gender_placeholder' => '모든 성별',
+        'filter_status_label' => '상태',
+        'filter_status_placeholder' => '모든 상태',
+
+        'role_admin' => '관리자',
+        'role_user' => '사용자',
+        'gender_male' => '남성',
+        'gender_female' => '여성',
+        'gender_unspecified' => '밝히지 않음',
+        'status_active' => '활성',
+        'status_banned' => '차단됨',
+
+        'add_button' => '새 사용자 추가',
+
+        'th_user' => '사용자',
+        'th_username' => '사용자명',
+        'th_email' => '이메일',
+        'th_gender' => '성별',
+        'th_province' => '지역',
+        'th_points' => '포인트',
+        'th_role' => '역할',
+        'th_status' => '상태',
+        'th_actions' => '작업',
+
+        'you_suffix' => '(나)',
+        'id_prefix' => 'ID',
+        'item_label' => '명의 사용자',
+
+        'empty_title' => '사용자를 찾을 수 없습니다',
+        'empty_description' => '검색어나 필터를 변경해 보세요.',
+
+        'action_edit' => '사용자 수정',
+        'action_ban' => '사용자 차단',
+        'action_unban' => '차단 해제',
+        'action_delete' => '사용자 삭제',
+        'action_disabled_self_ban' => '본인 계정은 차단할 수 없습니다',
+        'action_disabled_self_unban' => '본인 계정은 차단을 해제할 수 없습니다',
+        'action_disabled_self_delete' => '본인 계정은 삭제할 수 없습니다',
+        'action_disabled_admin_ban' => '관리자 계정은 차단할 수 없습니다',
+        'action_disabled_admin_delete' => '관리자 계정은 삭제할 수 없습니다',
+
+        'modal_ban_title' => '사용자 차단',
+        'modal_ban_message' => '@:username 계정을 차단하시겠습니까?',
+        'modal_ban_confirm' => '차단',
+        'modal_unban_title' => '차단 해제',
+        'modal_unban_message' => '@:username 계정의 차단을 해제하시겠습니까?',
+        'modal_unban_confirm' => '차단 해제',
+        'modal_delete_title' => '사용자 삭제',
+        'modal_delete_message' => '@:username 계정을 영구적으로 삭제하시겠습니까?',
+        'modal_delete_confirm' => '삭제',
+
+        'create_title' => '새 사용자 추가',
+        'create_description' => '새 사용자 계정을 만들고 정보를 입력합니다.',
+        'edit_title' => '사용자 수정',
+        'edit_description' => '계정 및 개인 정보를 업데이트합니다.',
+
+        'form_photo_title' => '프로필 사진',
+        'form_photo_description' => '사용자의 프로필 사진을 업로드하세요. 최대 5MB.',
+        'form_photo_choose' => '사진 선택',
+        'form_photo_change' => '사진 변경',
+
+        'form_account_title' => '계정 정보',
+        'form_account_description' => '계정의 기본 정보와 접근 권한을 설정합니다.',
+        'label_username' => '사용자명',
+        'placeholder_username' => '사용자명 입력',
+        'label_email' => '이메일',
+        'placeholder_email' => '이메일 입력',
+        'label_role' => '역할',
+
+        'form_personal_title' => '개인 정보',
+        'form_personal_description' => 'Nuraver의 개인 정보를 입력합니다.',
+        'label_fullname' => '전체 이름',
+        'placeholder_fullname' => '전체 이름 입력',
+        'label_dob' => '생년월일',
+        'label_gender' => '성별',
+        'label_province' => '거주 지역',
+        'placeholder_province' => '지역 선택',
+
+        'form_password_title' => '비밀번호',
+        'form_password_title_edit' => '비밀번호 변경',
+        'form_password_description' => 'Nuraver 계정의 비밀번호를 만드세요.',
+        'form_password_description_edit' => '변경하지 않으려면 비워 두세요.',
+        'label_password' => '비밀번호',
+        'label_password_new' => '새 비밀번호',
+        'placeholder_password' => '비밀번호 입력',
+        'label_password_confirm' => '비밀번호 확인',
+        'placeholder_password_confirm' => '비밀번호 다시 입력',
+
+        'submit_create' => '사용자 추가',
+        'submit_edit' => '변경 사항 저장',
+    ],
+
+    'badges' => [
+        'page_title' => '배지 관리',
+        'page_description' => '배지를 추가, 수정, 삭제합니다. 배지는 챌린지와 연결되어 사용자가 미션을 완료하면 자동으로 지급됩니다.',
+
+        'filter_search_label' => '배지 검색',
+        'filter_search_placeholder' => '이름 또는 카테고리로 배지 검색...',
+        'add_button' => '배지 추가',
+
+        'th_badge' => '배지',
+        'th_type' => '유형 / 카테고리',
+        'th_tier' => '등급',
+        'th_points' => '포인트',
+        'th_used' => '사용됨',
+        'th_actions' => '작업',
+
+        'type_special' => '특별',
+        'type_general' => '일반',
+        'used_count' => '미션 :count개',
+        'tier_target' => '목표 :target',
+        'tier_none' => '—',
+        'tier_bronze' => '브론즈',
+        'tier_silver' => '실버',
+        'tier_gold' => '골드',
+        'tier_diamond' => '다이아몬드',
+
+        'item_label' => '개의 배지',
+        'empty_title' => '배지를 찾을 수 없습니다',
+        'empty_description' => '검색어를 변경해 보세요.',
+        'empty_description_no_search' => '아직 추가된 배지가 없습니다.',
+
+        'action_edit' => '배지 수정',
+        'action_delete' => '배지 삭제',
+        'modal_delete_title' => '배지 삭제',
+        'modal_delete_message' => '배지 ":name"을(를) 삭제하시겠습니까?',
+
+        'create_title' => '새 배지 추가',
+        'create_description' => '챌린지에 연결할 새 배지를 만듭니다.',
+        'edit_title' => '배지 수정',
+        'edit_description' => '배지 ":name" 정보를 업데이트합니다.',
+
+        'section_info_title' => '배지 정보',
+        'section_info_description_create' => '추가할 배지의 기본 정보를 입력하세요.',
+        'section_info_description_edit' => '이 배지의 기본 정보를 업데이트하세요.',
+        'label_name' => '배지 이름',
+        'placeholder_name' => '예: 해변 마스터 (골드)',
+        'label_requirement' => '획득 조건 설명',
+        'placeholder_requirement' => '이 배지를 얻는 방법을 설명하세요...',
+        'label_type' => '유형',
+        'type_option_general' => '일반 (등급형)',
+        'type_option_special' => '특별',
+        'label_category' => '배지 카테고리',
+        'placeholder_category' => '예: 해변 마스터',
+        'label_points' => '포인트',
+        'label_tier_level' => '등급',
+        'tier_option_none' => '등급 없음',
+        'label_tier_target' => '등급 목표',
+
+        'section_icon_title' => '배지 아이콘',
+        'section_icon_description_create' => '배지 아이콘을 업로드하세요. 선택 사항, 최대 5MB.',
+        'section_icon_description_edit' => '배지 아이콘을 변경하세요. 변경하지 않으려면 비워 두세요.',
+        'icon_empty' => '아직 없음',
+        'icon_empty_edit' => '아이콘 없음',
+        'icon_choose' => '파일 선택',
+        'icon_change' => '파일 변경',
+        'icon_remove_current' => '현재 아이콘 삭제',
+        'icon_hint' => 'JPG, PNG, WEBP, SVG (최대 5MB). 선택 사항.',
+        'icon_hint_edit' => 'JPG, PNG, WEBP, SVG (최대 5MB).',
+
+        'submit_create' => '배지 저장',
+        'submit_edit' => '변경 사항 저장',
+    ],
+
+    'categories' => [
+        'page_title' => '여행지 카테고리 관리',
+        'page_description' => '여행지 카테고리를 추가, 수정, 삭제합니다. 카테고리는 NuraLoka의 장소를 분류하는 데 사용됩니다.',
+
+        'filter_search_label' => '카테고리 검색',
+        'filter_search_placeholder' => '이름으로 카테고리 검색...',
+        'add_button' => '카테고리 추가',
+
+        'th_icon' => '아이콘',
+        'th_name' => '카테고리 이름',
+        'th_place_count' => '여행지 수',
+        'th_actions' => '작업',
+        'place_count' => '여행지 :count개',
+
+        'item_label' => '개의 카테고리',
+        'empty_title' => '카테고리를 찾을 수 없습니다',
+        'empty_description' => '검색어를 변경해 보세요.',
+        'empty_description_no_search' => '아직 추가된 카테고리가 없습니다.',
+
+        'action_edit' => '카테고리 수정',
+        'action_delete' => '카테고리 삭제',
+        'action_delete_blocked' => '아직 사용 중이라 삭제할 수 없습니다',
+        'modal_delete_title' => '카테고리 삭제',
+        'modal_delete_message' => '카테고리 ":name"을(를) 삭제하시겠습니까?',
+
+        'create_title' => '새 카테고리 추가',
+        'create_description' => '여행지를 분류할 새 카테고리를 만듭니다.',
+        'edit_title' => '카테고리 수정',
+        'edit_description' => '카테고리 ":name" 정보를 업데이트합니다.',
+
+        'section_info_title' => '카테고리 정보',
+        'section_info_description_create' => '카테고리 이름과 아이콘을 입력하세요.',
+        'section_info_description_edit' => '카테고리 이름과 아이콘을 업데이트하세요.',
+        'label_name' => '카테고리 이름',
+        'placeholder_name' => '예: 해변, 산, 음식, 역사...',
+        'label_icon' => '카테고리 아이콘',
+        'icon_empty' => '아이콘 없음',
+        'icon_choose' => '파일 선택',
+        'icon_choose_new' => '새 파일 선택',
+        'icon_view' => '아이콘 보기',
+        'icon_remove' => '아이콘 삭제',
+        'icon_no_file' => '선택된 파일 없음',
+        'icon_current_file' => '현재 아이콘 사용 중',
+        'icon_hint' => '형식: JPG, PNG, WEBP, SVG, GIF (최대 5MB). 선택 사항.',
+        'icon_hint_edit' => '아이콘을 변경하지 않으려면 비워 두세요. 최대 5MB.',
+
+        'submit_create' => '카테고리 저장',
+        'submit_edit' => '변경 사항 저장',
+    ],
+
+    'levels' => [
+        'page_title' => '레벨 관리',
+        'page_description' => '레벨 단계와 포인트 기준을 설정합니다. 사용자 레벨은 누적된 Nura 포인트로 자동 계산됩니다.',
+        'add_button' => '레벨 추가',
+
+        'th_order' => '순서',
+        'th_name' => '레벨 이름',
+        'th_min_points' => '최소 포인트',
+        'th_actions' => '작업',
+        'min_points_value' => '≥ :points 포인트',
+
+        'empty_title' => '아직 레벨이 없습니다',
+        'empty_description' => '사용자 등급을 설정할 첫 레벨을 추가하세요.',
+
+        'action_edit' => '레벨 수정',
+        'action_delete' => '레벨 삭제',
+        'modal_delete_title' => '레벨 삭제',
+        'modal_delete_message' => '레벨 ":name"을(를) 삭제하시겠습니까?',
+
+        'create_title' => '새 레벨 추가',
+        'create_description' => '포인트 기준과 함께 새 레벨 단계를 만듭니다.',
+        'edit_title' => '레벨 수정',
+        'edit_description' => '레벨 ":name" 정보를 업데이트합니다.',
+
+        'section_info_title' => '레벨 정보',
+        'section_info_description_create' => '레벨 이름, 포인트 기준, 순서를 설정하세요.',
+        'section_info_description_edit' => '레벨 이름, 포인트 기준, 순서를 업데이트하세요.',
+        'label_name' => '레벨 이름',
+        'placeholder_name' => '예: 모험가',
+        'label_min_points' => '최소 포인트',
+        'placeholder_min_points' => '예: 2000',
+        'min_points_hint' => '이전 순서 레벨의 최소 포인트보다 크고, 다음 순서 레벨보다 작아야 합니다.',
+        'label_order' => '순서',
+
+        'submit_create' => '레벨 저장',
+        'submit_edit' => '변경 사항 저장',
+    ],
+
+    'missions' => [
+        'page_title' => '챌린지 관리',
+        'page_description' => 'NuraLoka 사용자를 위한 챌린지(미션) 목록을 추가, 수정, 삭제합니다.',
+
+        'filter_search_label' => '챌린지 검색',
+        'filter_search_placeholder' => '제목으로 챌린지 검색...',
+        'add_button' => '챌린지 추가',
+
+        'th_title' => '제목',
+        'th_badge' => '배지',
+        'th_points' => '포인트',
+        'th_participants' => '참가자',
+        'th_actions' => '작업',
+        'points_value' => '+:points 포인트',
+        'participants_value' => ':count명',
+        'badge_none' => '-',
+
+        'item_label' => '개의 챌린지',
+        'empty_title' => '챌린지를 찾을 수 없습니다',
+        'empty_description' => '검색어를 변경해 보세요.',
+        'empty_description_no_search' => '아직 추가된 챌린지가 없습니다.',
+
+        'action_edit' => '챌린지 수정',
+        'action_delete' => '챌린지 삭제',
+        'action_delete_blocked' => '이미 참가자가 있어 삭제할 수 없습니다',
+        'modal_delete_title' => '챌린지 삭제',
+        'modal_delete_message' => '챌린지 ":title"을(를) 삭제하시겠습니까?',
+
+        'create_title' => '새 챌린지 추가',
+        'create_description' => '보상 포인트와 획득 가능한 배지를 포함한 새 챌린지를 만듭니다.',
+        'edit_title' => '챌린지 수정',
+        'edit_description' => '챌린지 ":title" 정보를 업데이트합니다.',
+
+        'section_info_title' => '챌린지 정보',
+        'section_info_description_create' => '챌린지의 제목, 설명, 보상을 입력하세요.',
+        'section_info_description_edit' => '챌린지의 제목, 설명, 보상을 업데이트하세요.',
+        'label_title' => '챌린지 제목',
+        'placeholder_title' => '예: 해변 5곳 방문하기',
+        'label_description' => '설명',
+        'placeholder_description' => '이 챌린지의 세부 내용을 설명하세요...',
+        'label_points_reward' => '보상 포인트',
+        'placeholder_points_reward' => '예: 100',
+        'label_target' => '미션 목표 (완료해야 하는 횟수)',
+        'placeholder_target' => '예: 5',
+
+        'section_action_title' => '자동 트리거 액션',
+        'section_action_description' => '진행 상황이 자동으로 업데이트되도록 챌린지를 사용자 액션에 연결하세요. 특정 액션에 연결하지 않으려면 수동을 선택하세요.',
+        'label_action_type' => '트리거 액션',
+        'label_category_filter' => '장소 카테고리 (선택 사항)',
+        'placeholder_category_filter' => '모든 카테고리',
+        'category_filter_hint' => '모든 장소 카테고리를 포함하려면 비워 두세요.',
+
+        'section_badge_title' => '배지',
+        'section_badge_description' => '이 챌린지를 완료했을 때 사용자가 획득할 배지를 선택하세요.',
+        'label_badge' => '배지',
+        'placeholder_badge' => '이 챌린지에 사용할 배지 선택',
+        'no_badges_available' => '아직 사용 가능한 배지가 없습니다.',
+
+        'submit_create' => '챌린지 저장',
+        'submit_edit' => '변경 사항 저장',
+    ],
+
+    'news' => [
+        'page_title' => '여행 인사이트 관리',
+        'page_description' => '뉴스 기사, 여행 팁, 맛집 추천, 지역 문화 역사 정보를 추가, 수정, 삭제합니다.',
+
+        'filter_search_label' => '기사 검색',
+        'filter_search_placeholder' => '제목 또는 내용으로 기사 검색...',
+        'add_button' => '기사 추가',
+
+        'th_image' => '이미지',
+        'th_title' => '제목',
+        'th_author' => '작성자',
+        'th_publish_date' => '게시일',
+        'th_actions' => '작업',
+        'author_fallback' => '관리자',
+
+        'item_label' => '개의 기사',
+        'empty_title' => '기사를 찾을 수 없습니다',
+        'empty_description' => '검색어를 변경해 보세요.',
+        'empty_description_no_search' => '아직 추가된 여행 인사이트 기사가 없습니다.',
+
+        'action_edit' => '기사 수정',
+        'action_delete' => '기사 삭제',
+        'modal_delete_title' => '기사 삭제',
+        'modal_delete_message' => '기사 ":title"을(를) 삭제하시겠습니까?',
+
+        'create_title' => '새 여행 인사이트 추가',
+        'create_description' => 'NuraLoka 사용자를 위한 새 여행 인사이트 기사를 작성합니다.',
+        'edit_title' => '여행 인사이트 수정',
+        'edit_description' => '기사 ":title"을(를) 업데이트합니다.',
+
+        'section_info_title' => '기사 정보',
+        'section_info_description' => '기사의 제목과 게시일입니다.',
+        'label_title' => '뉴스 / 기사 제목',
+        'placeholder_title' => '흥미로운 기사 제목을 작성하세요...',
+        'label_publish_date' => '게시일',
+
+        'section_thumbnail_title' => '썸네일 이미지',
+        'section_thumbnail_description_create' => '이 기사의 커버 이미지를 업로드하세요.',
+        'section_thumbnail_description_edit' => '기사의 커버 이미지를 교체하세요. 변경하지 않으려면 비워 두세요.',
+        'thumbnail_empty' => '아직 이미지 없음',
+        'thumbnail_view' => '이미지 보기',
+        'thumbnail_remove' => '이미지 삭제',
+        'thumbnail_choose' => '파일 선택',
+        'thumbnail_change' => '파일 변경',
+        'thumbnail_no_file' => '선택된 파일 없음',
+        'thumbnail_current_file' => '현재 이미지 사용 중',
+        'thumbnail_hint' => '형식: JPG, JPEG, PNG, WEBP, GIF (최대 5MB).',
+        'thumbnail_hint_edit' => '썸네일을 변경하지 않으려면 비워 두세요. 최대 5MB.',
+
+        'section_content_title' => '기사 내용',
+        'section_content_description' => '여행 인사이트 기사의 전체 내용을 작성하세요.',
+        'label_content' => '기사 내용',
+        'placeholder_content' => '여기에 여행 인사이트 기사의 전체 내용을 작성하세요...',
+
+        'submit_create' => '기사 저장',
+        'submit_edit' => '변경 사항 저장',
+    ],
+
+    'places' => [
+        'page_title' => '관광지 관리',
+        'page_description' => '관광지 데이터를 추가, 수정, 삭제합니다. 각 여행지는 여러 카테고리에 연결할 수 있습니다.',
+
+        'filter_search_label' => '여행지 검색',
+        'filter_search_placeholder' => '이름 또는 주소로 여행지 검색...',
+        'filter_source_label' => '데이터 출처',
+        'filter_source_placeholder' => '모든 출처',
+        'source_internal' => '내부 (NuraLoka)',
+        'source_osm' => 'OSM (가져옴)',
+        'source_badge_internal' => '내부',
+        'source_badge_osm' => 'OSM',
+        'add_button' => '여행지 추가',
+
+        'th_name' => '여행지 이름',
+        'th_address' => '주소',
+        'th_coordinates' => '좌표',
+        'th_categories' => '카테고리',
+        'th_source' => '출처',
+        'th_actions' => '작업',
+        'address_unavailable' => '주소 정보 없음',
+        'no_categories' => '없음',
+
+        'item_label' => '개의 여행지',
+        'empty_title' => '여행지를 찾을 수 없습니다',
+        'empty_description' => '검색어나 필터를 변경해 보세요.',
+        'empty_description_no_search' => '아직 관광지 데이터가 없습니다.',
+
+        'action_edit' => '여행지 수정',
+        'action_delete' => '여행지 삭제',
+        'modal_delete_title' => '여행지 삭제',
+        'modal_delete_message' => '여행지 ":name"을(를) 삭제하시겠습니까?',
+
+        'create_title' => '새 관광지 추가',
+        'create_description' => '추가할 여행지 정보를 입력하세요.',
+        'edit_title' => '관광지 수정',
+        'edit_description' => '여행지 ":name" 정보를 업데이트합니다.',
+
+        'section_info_title' => '여행지 정보',
+        'section_info_description' => '여행지의 이름, 주소, 좌표입니다.',
+        'label_name' => '여행지 이름',
+        'placeholder_name' => '예: 비라 해변, 발루란 국립공원...',
+        'label_address' => '전체 주소',
+        'placeholder_address' => '예: Jl. Pantai Bira, Bulukumba, 남술라웨시',
+        'label_latitude' => '위도',
+        'label_longitude' => '경도',
+        'label_description' => '여행지 설명',
+        'placeholder_description' => '이 관광지에 대한 전체 설명을 작성하세요...',
+
+        'section_categories_title' => '여행지 카테고리',
+        'section_categories_description' => '이 여행지에 맞는 카테고리를 하나 이상 선택하세요.',
+        'no_categories_available' => '아직 사용 가능한 카테고리가 없습니다.',
+        'add_category_first' => '먼저 카테고리를 추가하세요',
+
+        'section_photos_title' => '여행지 사진 (선택 사항)',
+        'section_photos_title_edit' => '여행지 사진',
+        'section_photos_description_create' => '사진을 하나 이상 업로드하세요. 인기 Nuraver 앨범 사진과 함께 상세 페이지 갤러리에 표시됩니다.',
+        'section_photos_description_edit' => '상세 갤러리에 표시되는 사진을 관리하세요. 저장 시 삭제할 사진은 X 표시를 클릭하세요.',
+        'photo_preview_alt' => '미리보기 :index',
+        'photo_mark_undo' => '삭제 취소',
+        'photo_mark_delete' => '삭제 표시',
+
+        'submit_create' => '여행지 저장',
+        'submit_edit' => '변경 사항 저장',
+    ],
+
+    'osm_import' => [
+        'page_title' => 'OSM 지점 가져오기',
+        'page_description' => '자바 외 새로운 지역의 여행지를 추가하기 위해 OpenStreetMap의 관심 지점(POI) 데이터를 탐색 지도로 가져옵니다. 현재 총 OSM 지점: :total개.',
+
+        'notice' => '가져오기는 대기열(queue)의 여러 타일 단위 작업으로 분할됩니다. 작업이 처리되도록 워커(php artisan queue:work --timeout=180)가 실행 중인지 확인하세요. 각 타일은 개별적으로 처리 및 재시도되므로 워커가 중지되어도 가져오기를 안전하게 이어갈 수 있습니다. 인도네시아 전체와 같이 넓은 지역은 여전히 시간이 걸리므로 Overpass 제한을 지키기 위해 충분한 지연(sleep)을 사용하세요.',
+
+        'section_title' => '새 가져오기 시작',
+        'section_description' => '가져올 지역을 선택한 후 백그라운드에서 가져오기를 실행하세요.',
+
+        'mode_region' => '지역 프리셋',
+        'mode_custom' => '수동 좌표',
+        'label_region' => '지역 선택',
+        'bbox_hint' => 'bbox: :bbox (남, 서, 북, 동)',
+
+        'label_south' => '남 (위도)',
+        'label_north' => '북 (위도)',
+        'label_west' => '서 (경도)',
+        'label_east' => '동 (경도)',
+
+        'label_tile' => '타일 크기 (도)',
+        'tile_hint' => '작을수록 더 세밀하지만 쿼리 수가 늘어납니다.',
+        'label_sleep' => '타일 간 지연 (초)',
+
+        'submit' => '가져오기 시작',
+        'active_run_hint' => '이미 가져오기가 진행 중입니다 — 완료될 때까지 기다려 주세요.',
+
+        'history_heading' => '가져오기 기록',
+        'th_area' => '지역',
+        'th_status' => '상태',
+        'th_saved_points' => '저장된 지점',
+        'th_tiles' => '타일',
+        'th_time' => '시간',
+        'th_by' => '실행자',
+        'empty_history' => '아직 가져오기 기록이 없습니다.',
+
+        'status_pending' => '대기 중',
+        'status_running' => '진행 중',
+        'status_success' => '완료',
+        'status_failed' => '실패',
+
+        'total_summary' => '총 :before → :after',
+        'tiles_summary' => ':processed / :total 타일',
+        'tiles_failed' => ':count개 타일 실패',
+        'started_at' => '시작: :time',
+        'finished_at' => '완료: :time',
     ],
 ];

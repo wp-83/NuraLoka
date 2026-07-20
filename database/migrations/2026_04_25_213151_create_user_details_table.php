@@ -20,6 +20,7 @@ return new class extends Migration
             $table->enum('gender', ['male', 'female', 'unspecified']);
             $table->string('profile_path')->nullable();
             $table->integer('total_points')->default(0);
+            $table->foreignId('level_id')->nullable()->constrained('levels')->nullOnDelete();
             $table->timestamps();
         });
     }
