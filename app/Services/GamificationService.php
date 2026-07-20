@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Level;
 use App\Models\Mission;
 use App\Models\Place;
 use App\Models\User;
@@ -123,22 +124,22 @@ class GamificationService
             $userDetail = UserDetail::where('user_id', $user->id)->first();
             if ($userDetail) {
                 $userDetail->total_points += $reward;
-                
+
                 // Recalculate level
-                $levels = \App\Models\Level::orderBy('order')->get();
+                $levels = Level::orderBy('order')->get();
                 $currentLevelId = null;
-                
+
                 foreach ($levels->reverse() as $level) {
                     if ($userDetail->total_points >= $level->min_points) {
                         $currentLevelId = $level->id;
                         break;
                     }
                 }
-                
+
                 if ($currentLevelId) {
                     $userDetail->level_id = $currentLevelId;
                 }
-                
+
                 $userDetail->save();
             }
         }
