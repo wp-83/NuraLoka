@@ -23,7 +23,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        $user->load('userDetail.province');
+        $user->load(['userDetail.province', 'userDetail.level']);
 
         $userDetail = $user->userDetail;
 
@@ -80,7 +80,7 @@ class ProfileController extends Controller
         }
 
         $targetUser = User::where('username', $username)->firstOrFail();
-        $targetUser->load('userDetail.province');
+        $targetUser->load(['userDetail.province', 'userDetail.level']);
 
         $userDetail = $targetUser->userDetail;
 
@@ -113,6 +113,27 @@ class ProfileController extends Controller
         ];
 
         $recentBadges = $targetUser->badges()->orderBy('pivot_created_at', 'desc')->take(4)->get();
+        $allBadges = $targetUser->badges()->orderBy('pivot_created_at', 'desc')->get();
+        
+        $albums = \App\Models\Album::with(['trip', 'tripPhotos'])
+            ->whereHas('trip', function ($q) use ($targetUser) {
+                $q->where('user_id', $targetUser->id)
+                  ->where('is_public', true);
+            })
+            ->orderByDesc('created_at')
+            ->take(6)
+            ->get()
+            ->map(function ($album) {
+                $firstPhoto = $album->tripPhotos->first();
+                return [
+                    'id' => $album->id,
+                    'slug' => $album->slug,
+                    'title' => $album->trip->title,
+                    'location' => $album->trip->destination_name,
+                    'thumbnail' => $firstPhoto ? $firstPhoto->photo_path : null,
+                    'photo_count' => $album->tripPhotos->count(),
+                ];
+            });
 
         return inertia('Profile/Show', [
             'targetUser' => $targetUser,
@@ -121,6 +142,8 @@ class ProfileController extends Controller
             'totalBadge' => $totalBadges,
             'statistics' => $statistics,
             'recentBadges' => $recentBadges,
+            'allBadges' => $allBadges,
+            'albums' => $albums,
         ]);
     }
 

@@ -23,4 +23,9 @@ class UserDetail extends Model
     {
         return $this->belongsTo(Province::class);
     }
+
+    public function level()
+    {
+        return $this->belongsTo(Level::class);
+    }
 }

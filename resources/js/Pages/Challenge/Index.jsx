@@ -241,7 +241,7 @@ export default function ChallengeIndex({
                     <section className="mb-8">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
-                                <span className="text-xl">🏆</span>
+                                <img src="/images/badges/special/2.png" alt="icon" className="w-6 h-6 object-contain drop-shadow-sm" />
                                 <h2 className="font-heading text-xl font-bold text-primary">{t('challenge.badges_title')}</h2>
                             </div>
                             <Link
@@ -342,7 +342,7 @@ export default function ChallengeIndex({
                     {/* ── PAPAN PERINGKAT ── */}
                     <section className="mb-8">
                         <div className="flex items-center gap-2 mb-4">
-                            <span className="text-xl">📊</span>
+                            <img src="/images/badges/special/3.png" alt="icon" className="w-6 h-6 object-contain drop-shadow-sm" />
                             <h2 className="font-heading text-xl font-bold text-primary">{t('challenge.leaderboard_title')}</h2>
                         </div>
 
@@ -394,7 +394,7 @@ export default function ChallengeIndex({
                     {/* ── TUKAR POIN (Coming Soon) ── */}
                     <section className="mb-8">
                         <div className="flex items-center gap-2 mb-4">
-                            <span className="text-xl">💰</span>
+                            <img src="/images/badges/special/1.png" alt="icon" className="w-6 h-6 object-contain drop-shadow-sm" />
                             <h2 className="font-heading text-xl font-bold text-primary">{t('challenge.redeem_title')}</h2>
                         </div>
 
