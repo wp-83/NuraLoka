@@ -12,10 +12,10 @@ return [
     'search_placeholder' => '지금 여행지를 찾아보세요!',
     'filter_title' => '특정 장소 필터',
     'map_loading_extra' => '지도 데이터를 더 불러오는 중...',
-    'origin_label' => '출발지',
-    'origin_placeholder' => '출발 위치 검색...',
-    'destination_label' => '목적지',
-    'destination_placeholder' => '목적지 검색...',
+    'origin_label' => '출발 주소',
+    'origin_placeholder' => '시작 주소를 검색하세요...',
+    'destination_label' => '목적지 주소',
+    'destination_placeholder' => '목적지 주소를 검색하세요...',
     'location_search_placeholder' => '위치 검색...',
 
     // 보조 패널

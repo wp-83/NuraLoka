@@ -12,10 +12,10 @@ return [
     'search_placeholder' => 'Find your travel destination now!',
     'filter_title' => 'Filter Specific Places',
     'map_loading_extra' => 'Loading more map data...',
-    'origin_label' => 'Departure Point',
-    'origin_placeholder' => 'Search starting location...',
-    'destination_label' => 'Destination',
-    'destination_placeholder' => 'Search destination...',
+    'origin_label' => 'Departure Address',
+    'origin_placeholder' => 'Search for starting address...',
+    'destination_label' => 'Destination Address',
+    'destination_placeholder' => 'Search for destination address...',
     'location_search_placeholder' => 'Search location...',
 
     // Secondary panel

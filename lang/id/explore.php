@@ -12,10 +12,10 @@ return [
     'search_placeholder' => 'Temukan destinasi wisatamu sekarang!',
     'filter_title' => 'Filter Tempat Spesifik',
     'map_loading_extra' => 'Memuat tambahan data peta...',
-    'origin_label' => 'Tempat Keberangkatan',
-    'origin_placeholder' => 'Cari lokasi awal...',
-    'destination_label' => 'Tempat Tujuan',
-    'destination_placeholder' => 'Cari lokasi tujuan...',
+    'origin_label' => 'Alamat Keberangkatan',
+    'origin_placeholder' => 'Cari alamat awal...',
+    'destination_label' => 'Alamat Tujuan',
+    'destination_placeholder' => 'Cari alamat tujuan...',
     'location_search_placeholder' => 'Cari lokasi...',
 
     // Panel sekunder

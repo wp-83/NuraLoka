@@ -4,6 +4,7 @@ import MainLayout from '@js/Layouts/MainLayout';
 import ExploreMap from '@components/Features/ExploreMap';
 import LocationSearchInput from '@components/Features/LocationSearchInput';
 import PlaceCard from '@components/Features/PlaceCard';
+import Input from '@components/Forms/Input';
 import { useTranslation } from '@js/i18n';
 import { FiMapPin, FiSearch } from 'react-icons/fi';
 import { MdRestaurant, MdBeachAccess, MdDiamond, MdMuseum, MdWaterDrop, MdSportsHandball } from 'react-icons/md';
@@ -213,16 +214,14 @@ function ExplorePanel({
             {activeTab === 'Satu Titik' && (
                 <>
                     <div className="relative mb-4">
-                        <div className="flex items-center gap-2 border border-gray-30 rounded-xl px-3 py-2 bg-gray-10 focus-within:bg-white focus-within:border-accent focus-within:ring-2 focus-within:ring-accent-30 transition-all">
-                            <FiSearch size={14} className="text-gray-50 flex-shrink-0" />
-                            <input
-                                type="text"
-                                placeholder={t('explore.search_placeholder')}
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="bg-transparent w-full outline-none font-body text-body text-primary placeholder-gray-50"
-                            />
-                        </div>
+                        <Input
+                            type="search"
+                            name="searchQuery"
+                            icon={<FiSearch size={20} />}
+                            placeholder={t('explore.search_placeholder')}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                         {searchSuggestions.length > 0 && searchQuery.trim() !== '' && (
                             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-30 rounded-xl shadow-lg z-[500] overflow-y-auto max-h-56">
                                 {searchSuggestions.map((place) => (
