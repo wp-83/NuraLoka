@@ -5,6 +5,7 @@ import { useTranslation } from '@js/i18n';
 
 export default function PlaceCard({ place, onVisit, isSaved = false, onToggleSave }) {
     const { t } = useTranslation();
+
     return (
         <div
             onClick={() => onVisit(place)}
@@ -15,16 +16,16 @@ export default function PlaceCard({ place, onVisit, isSaved = false, onToggleSav
                     <img src={place.img} alt={place.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
-                        <FiMapPin size={32} className="text-gray-400" />
+                        <img src="/images/defaults/image.png" alt="" />
                     </div>
                 )}
             </div>
             <div className="p-4 relative z-10">
-                <div className="flex justify-between items-start gap-2 mb-0.5 w-full overflow-hidden">
-                    <h3 className="font-bold text-gray-900 text-base truncate flex-grow min-w-0" style={{ fontFamily: 'Poppins, sans-serif' }}>{place.name}</h3>
+                <div className="flex justify-between items-start gap-2 w-full overflow-hidden">
+                    <h3 className="text-primary truncate flex-grow min-w-0 text-paragraph" style={{ fontFamily: 'Poppins, sans-serif' }}>{place.name}</h3>
                     <button
                         type="button"
-                        className={`flex-shrink-0 transition-colors relative z-50 flex items-center justify-center ${isSaved ? 'text-amber-500 hover:text-amber-600' : 'text-gray-900 hover:text-amber-600'}`}
+                        className={`flex-shrink-0 transition-colors relative z-50 flex items-center justify-center ${isSaved ? 'text-accent hover:text-accent-70' : 'text-primary hover:text-secondary'}`}
                         style={{ width: '22px', height: '22px' }}
                         onClick={(e) => {
                             e.stopPropagation();
@@ -38,24 +39,24 @@ export default function PlaceCard({ place, onVisit, isSaved = false, onToggleSav
                         )}
                     </button>
                 </div>
-                <p className="text-xs text-gray-500 mb-3 truncate">{place.address}</p>
+                <p className="text-gray-100 mb-3 text-small truncate">{place.address}</p>
                 <div className="flex flex-wrap gap-1.5 mb-3">
                     {place.categories && place.categories.map((cat) => (
-                        <span key={cat.id} className="bg-amber-600 text-white px-3 py-1 rounded-full flex items-center gap-1 font-semibold" style={{ fontSize: '0.68rem' }}>
-                            🏛 {cat.name}
+                        <span key={cat.id} className="bg-secondary text-white px-2.5 py-1 rounded-md flex items-center gap-1 text-small">
+                            {cat.name}
                         </span>
                     ))}
                 </div>
-                <div className="flex items-center gap-3 text-xs text-gray-500">
+                <div className="flex items-center gap-3 mt-5 text-small text-gray">
                     {Number(place.visitors_count) > 0 && (
                         <span className="flex items-center gap-1">
-                            <FiUsers size={13} className="text-accent" />
+                            <FiUsers size={16} className="text-accent" />
                             {t('explore.card_visitors', { count: Number(place.visitors_count).toLocaleString('id-ID') })}
                         </span>
                     )}
                     {Number(place.album_posters_count) > 0 && (
                         <span className="flex items-center gap-1">
-                            <FiCamera size={13} className="text-accent" />
+                            <FiCamera size={16} className="text-accent" />
                             {t('explore.card_albums', { count: Number(place.album_posters_count).toLocaleString('id-ID') })}
                         </span>
                     )}
@@ -66,7 +67,7 @@ export default function PlaceCard({ place, onVisit, isSaved = false, onToggleSav
             </div>
 
             {/* Background Mascot Overlay */}
-            <div className="absolute -bottom-10 right-0 w-32 h-32 opacity-60 pointer-events-none z-0 transition-all duration-500 group-hover:-rotate-[-13.69deg] group-hover:opacity-100">
+            <div className="absolute -bottom-10 right-0 w-28 h-28 opacity-60 pointer-events-none z-0 transition-all duration-500 group-hover:-rotate-[-13.69deg] group-hover:opacity-100">
                 <img src="/images/mascots/camera.png" alt="mascot-bg" className="w-full h-full object-contain" />
             </div>
         </div>

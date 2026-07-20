@@ -8,7 +8,6 @@ return [
 
     // Index
     'title' => 'Nuravers의 위시리스트',
-    'subtitle' => '나의 Nuravers 위시리스트',
     'empty_text' => '아직 위시리스트에 담은 여행지가 없습니다.',
     'empty_sub' => '탐색하며 좋아하는 여행지를 저장해 보세요!',
     'cta_explore' => '더 많은 여행지를 찾아봐요!',
