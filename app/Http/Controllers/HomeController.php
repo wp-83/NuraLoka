@@ -79,6 +79,7 @@ class HomeController extends Controller
                     'slug' => $album->slug,
                     'title' => $trip->title,
                     'thumbnail' => $firstPhoto?->photo_path,
+                    'view_count' => $album->view_count,
                 ];
             });
 

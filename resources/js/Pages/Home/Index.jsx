@@ -11,6 +11,7 @@ import {
     FiMapPin,
     FiSearch,
 } from 'react-icons/fi';
+import { HiOutlineEye } from 'react-icons/hi';
 
 const albums = [
     {
@@ -362,6 +363,7 @@ export default function Index({
                             title={popularAlbums[0].title}
                             image={popularAlbums[0].thumbnail ? `/storage/${popularAlbums[0].thumbnail}` : '/images/defaults/image.png'}
                             slug={popularAlbums[0].slug}
+                            view_count={popularAlbums[0].view_count}
                             className="min-h-[420px]"
                         />
                     </div>
@@ -371,12 +373,14 @@ export default function Index({
                             title={popularAlbums[0].title}
                             image={popularAlbums[0].thumbnail ? `/storage/${popularAlbums[0].thumbnail}` : '/images/defaults/image.png'}
                             slug={popularAlbums[0].slug}
+                            view_count={popularAlbums[0].view_count}
                             className="min-h-[420px]"
                         />
                         <AlbumCard
                             title={popularAlbums[1].title}
                             image={popularAlbums[1].thumbnail ? `/storage/${popularAlbums[1].thumbnail}` : '/images/defaults/image.png'}
                             slug={popularAlbums[1].slug}
+                            view_count={popularAlbums[1].view_count}
                             className="min-h-[420px]"
                         />
                     </div>
@@ -388,6 +392,7 @@ export default function Index({
                                 title={popularAlbums[0].title}
                                 image={popularAlbums[0].thumbnail ? `/storage/${popularAlbums[0].thumbnail}` : '/images/defaults/image.png'}
                                 slug={popularAlbums[0].slug}
+                                view_count={popularAlbums[0].view_count}
                                 className="min-h-[420px]"
                             />
                         )}
@@ -400,6 +405,7 @@ export default function Index({
                                     title={popularAlbums[1].title}
                                     image={popularAlbums[1].thumbnail ? `/storage/${popularAlbums[1].thumbnail}` : '/images/defaults/image.png'}
                                     slug={popularAlbums[1].slug}
+                                    view_count={popularAlbums[1].view_count}
                                     className="min-h-[200px]"
                                 />
                             )}
@@ -410,6 +416,7 @@ export default function Index({
                                     title={popularAlbums[2].title}
                                     image={popularAlbums[2].thumbnail ? `/storage/${popularAlbums[2].thumbnail}` : '/images/defaults/image.png'}
                                     slug={popularAlbums[2].slug}
+                                    view_count={popularAlbums[2].view_count}
                                     className="min-h-[200px]"
                                 />
                             ) : (
@@ -419,6 +426,7 @@ export default function Index({
                                             title={popularAlbums[2].title}
                                             image={popularAlbums[2].thumbnail ? `/storage/${popularAlbums[2].thumbnail}` : '/images/defaults/image.png'}
                                             slug={popularAlbums[2].slug}
+                                            view_count={popularAlbums[2].view_count}
                                             className="min-h-[200px]"
                                         />
                                     )}
@@ -428,6 +436,7 @@ export default function Index({
                                             title={popularAlbums[3].title}
                                             image={popularAlbums[3].thumbnail ? `/storage/${popularAlbums[3].thumbnail}` : '/images/defaults/image.png'}
                                             slug={popularAlbums[3].slug}
+                                            view_count={popularAlbums[3].view_count}
                                             className="min-h-[200px]"
                                         />
                                     )}
@@ -535,6 +544,7 @@ function AlbumCard({
     title,
     image,
     slug,
+    view_count = 0,
     className = '',
 }) {
     const { t } = useTranslation();
@@ -556,9 +566,12 @@ function AlbumCard({
                     {title}
                 </h3>
 
-                <p className="mt-1 text-xs text-white/70">
-                    {t('home.album_card_subtitle')}
-                </p>
+                <div className="mt-1 flex items-center gap-1.5 text-xs text-white/70">
+                    <HiOutlineEye size={14} className="shrink-0" />
+                    <span>
+                        {t('album.views_count', { count: Number(view_count).toLocaleString('id-ID') })}
+                    </span>
+                </div>
             </div>
         </Link>
     );
