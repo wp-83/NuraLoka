@@ -19,6 +19,8 @@ export default function Create({ categories }) {
         latitude: '',
         longitude: '',
         address: '',
+        min_price: '',
+        max_price: '',
         categories: [],
         photos: [],
     });
@@ -123,6 +125,61 @@ export default function Create({ categories }) {
                             error={errors.description}
                             required
                         />
+
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                            <Input
+                                label="Harga Minimal (Rp)"
+                                name="min_price"
+                                type="number"
+                                value={data.min_price}
+                                onChange={(e) => setData('min_price', e.target.value)}
+                                placeholder="Contoh: 15000 (Kosongkan jika gratis)"
+                                error={errors.min_price}
+                            />
+                            <Input
+                                label="Harga Maksimal (Rp)"
+                                name="max_price"
+                                type="number"
+                                value={data.max_price}
+                                onChange={(e) => setData('max_price', e.target.value)}
+                                placeholder="Contoh: 50000 (Kosongkan jika gratis)"
+                                error={errors.max_price}
+                            />
+                        </div>
+
+                        {/* Photos */}
+                        <div className="flex flex-col gap-1.5">
+                            <label className="font-heading text-paragraph text-primary-100">
+                                Foto Destinasi (opsional)
+                            </label>
+                            <p className="text-small text-gray-70">
+                                Unggah satu atau beberapa foto. Foto ini akan tampil di galeri
+                                halaman detail bersama foto dari album populer Nuravers.
+                            </p>
+                            <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/jpg,image/webp"
+                                multiple
+                                onChange={handlePhotos}
+                                className="mt-2 block w-full cursor-pointer rounded-xl border border-primary-10 bg-gray-10 px-3 py-2 font-body text-small text-gray-70 file:mr-3 file:rounded-lg file:border-0 file:bg-primary-100 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-primary-85"
+                            />
+                            {data.photos.length > 0 && (
+                                <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4">
+                                    {data.photos.map((file, i) => (
+                                        <img
+                                            key={i}
+                                            src={URL.createObjectURL(file)}
+                                            alt={`Pratinjau ${i + 1}`}
+                                            className="h-24 w-full rounded-lg object-cover"
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                            {(errors.photos || errors['photos.0']) && (
+                                <p className="text-small italic text-error-dark">
+                                    {errors.photos || errors['photos.0']}
+                                </p>
+                            )}
                     </div>
                 </FormSection>
 

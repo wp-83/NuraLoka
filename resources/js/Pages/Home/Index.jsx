@@ -204,14 +204,14 @@ export default function Index({
                     <h2 className="text-lg font-heading text-paragraph text-primary-100">
                         {greetingParts[0]}
                         <span className="font-bold">
-                            {auth.user.fullname}
+                            {auth?.user?.fullname || 'Pengunjung'}
                         </span>
                         {greetingParts[1]}
                     </h2>
 
                     <p className="local-language">
                         Panjenengan badhé tindak pundi dinten menika,{' '}
-                        {auth.user.fullname}?
+                        {auth?.user?.fullname || 'Pengunjung'}?
                     </p>
 
                     <form className="mt-5 flex flex-col gap-3 sm:flex-row" onSubmit={handleSearchSubmit}>

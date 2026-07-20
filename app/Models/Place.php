@@ -20,8 +20,15 @@ class Place extends Model
     }
 
     protected $fillable = [
-        'name', 'slug', 'description',
-        'latitude', 'longitude', 'address', 'source',
+        'name',
+        'slug',
+        'description',
+        'latitude',
+        'longitude',
+        'address',
+        'source',
+        'min_price',
+        'max_price',
     ];
 
     // Relationships

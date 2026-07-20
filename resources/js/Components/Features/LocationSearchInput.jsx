@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FiSearch, FiMapPin, FiLoader } from 'react-icons/fi';
+import Input from '@components/Forms/Input';
 
 export default function LocationSearchInput({ placeholder, onSelectLocation }) {
     const [query, setQuery] = useState('');
@@ -45,21 +46,19 @@ export default function LocationSearchInput({ placeholder, onSelectLocation }) {
 
     return (
         <div className="relative mb-3 w-full" ref={wrapperRef}>
-            <div className="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2 bg-[#FAF7F2] focus-within:bg-white focus-within:border-amber-600 transition-all">
-                <FiSearch size={14} className="text-gray-400 flex-shrink-0" />
-                <input
-                    type="text"
-                    placeholder={placeholder}
-                    value={query}
-                    onChange={(e) => {
-                        setQuery(e.target.value);
-                        setIsOpen(true);
-                    }}
-                    onFocus={() => setIsOpen(true)}
-                    className="bg-transparent w-full outline-none text-sm text-gray-800 placeholder-gray-500"
-                />
-                {loading && <FiLoader className="animate-spin text-amber-600" size={14} />}
-            </div>
+            <Input
+                type="search"
+                name="locationSearch"
+                placeholder={placeholder}
+                value={query}
+                onChange={(e) => {
+                    setQuery(e.target.value);
+                    setIsOpen(true);
+                }}
+                onFocus={() => setIsOpen(true)}
+                icon={<FiSearch size={20} />}
+                iconRight={loading ? <FiLoader className="animate-spin text-amber-600" size={14} /> : null}
+            />
             
             {isOpen && suggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-[600] overflow-y-auto max-h-56">
