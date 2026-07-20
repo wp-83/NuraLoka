@@ -904,7 +904,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
             {/* ── Map Section ──
                 Mobile/tablet: panels stack vertically in normal flow (control → map → secondary panel).
                 Desktop (lg+): panels are absolutely positioned overlays on top of a full-bleed map. */}
-            <section className="relative w-full flex flex-col gap-4 lg:block lg:gap-0 lg:h-[520px]">
+            <section className="relative w-full flex flex-col gap-4 lg:block lg:gap-0 lg:h-[620px]">
                 {/* ── Control Panel (top on mobile, left overlay on desktop) ── */}
                 <div className="order-1 lg:order-none w-full z-[400] lg:absolute lg:inset-x-0 lg:top-4 lg:pointer-events-none">
                     <div className="w-full lg:container lg:mx-auto lg:px-4 xl:px-8 lg:grid lg:grid-cols-12">
@@ -935,7 +935,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                 </div>
 
                 {/* ── Map ── */}
-                <div className="order-2 lg:order-none relative w-full h-[380px] sm:h-[460px] rounded-2xl overflow-hidden shadow-md lg:rounded-none lg:shadow-none lg:absolute lg:inset-0 lg:h-auto z-0">
+                <div className="order-2 lg:order-none relative w-full h-[460px] sm:h-[520px] rounded-2xl overflow-hidden shadow-md lg:rounded-none lg:shadow-none lg:absolute lg:inset-0 lg:h-auto z-0">
                     <ExploreMap
                         places={places}
                         points={displayedPoints}
