@@ -21,6 +21,10 @@ export default function UserStatisticCard({
             text: 'text-error-dark',
             background: 'bg-error-light',
         },
+        accent: {
+            text: 'text-accent-100',
+            background: 'bg-accent-10',
+        },
     };
 
     const style = variants[variant] ?? variants.primary;

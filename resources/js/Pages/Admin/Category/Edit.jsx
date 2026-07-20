@@ -1,11 +1,23 @@
-import { Head, useForm, router } from '@inertiajs/react';
-import { useState } from 'react';
-import { FaArrowLeft, FaUpload, FaTrash, FaSearchPlus } from 'react-icons/fa';
+import FormSection from '@components/Common/FormSection';
+import PageHeader from '@components/Common/PageHeader';
 import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
-import AdminLayout from '../../../Layouts/AdminLayout';
+import AdminLayout from '@js/Layouts/AdminLayout';
+import { useTranslation } from '@js/i18n';
+
+import { router, useForm } from '@inertiajs/react';
+import { useState } from 'react';
+
+import {
+    FiArrowLeft,
+    FiSave,
+    FiSearch,
+    FiTrash2,
+    FiUpload,
+} from 'react-icons/fi';
 
 export default function Edit({ category }) {
+    const { t } = useTranslation();
     const [previewUrl, setPreviewUrl] = useState(category.icon_path || null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
@@ -34,138 +46,158 @@ export default function Edit({ category }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('admin.categories.update', category.id));
+        post(route('admin.categories.update', category.slug));
     };
 
     return (
-        <>
-            <Head>
-                <title>Admin | Edit Kategori</title>
-            </Head>
+        <div className="flex w-full flex-col gap-6">
+            {/* Header */}
+            <PageHeader
+                title={t('admin.categories.edit_title')}
+                description={t('admin.categories.edit_description', { name: category.name })}
+            />
 
-            <div className="mx-auto w-full max-w-3xl">
-                {/* Back button */}
-                <div className="mb-6">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                {/* Back */}
+                <div>
                     <Button
+                        type="button"
                         variant="white"
-                        size="btn-sm"
-                        iconLeft={<FaArrowLeft />}
+                        iconLeft={<FiArrowLeft size={18} />}
                         onClick={() => router.get(route('admin.categories.index'))}
                     >
-                        Kembali ke Daftar Kategori
+                        {t('admin.common.back')}
                     </Button>
                 </div>
 
-                <h2 className="mb-6 border-b border-primary-10 pb-4 font-heading text-subtitle font-bold text-primary-100">
-                    Edit Kategori
-                </h2>
+                {/* Category Information */}
+                <FormSection
+                    title={t('admin.categories.section_info_title')}
+                    description={t('admin.categories.section_info_description_edit')}
+                >
+                    <div className="flex flex-col gap-5">
+                        <Input
+                            label={t('admin.categories.label_name')}
+                            name="name"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                            placeholder={t('admin.categories.placeholder_name')}
+                            error={errors.name}
+                            required
+                        />
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                    <Input
-                        label="Nama Kategori"
-                        name="name"
-                        value={data.name}
-                        onChange={(e) => setData('name', e.target.value)}
-                        placeholder="Contoh: Pantai, Pegunungan, Kuliner, Sejarah..."
-                        error={errors.name}
-                        required
-                    />
+                        {/* Icon Upload */}
+                        <div className="flex flex-col gap-1.5">
+                            <label className="font-heading text-paragraph text-primary-100">
+                                {t('admin.categories.label_icon')}
+                            </label>
 
-                    {/* Icon Upload */}
-                    <div className="flex flex-col gap-1.5">
-                        <label className="font-heading text-paragraph text-primary-100">
-                            Icon Kategori
-                        </label>
+                            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+                                {/* Preview Box */}
+                                <div
+                                    className={[
+                                        'group relative flex h-32 w-32 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-dashed bg-gray-10',
+                                        errors.icon_path
+                                            ? 'border-error-dark'
+                                            : 'border-primary-30',
+                                        !previewUrl && 'cursor-pointer hover:bg-secondary-10',
+                                    ]
+                                        .filter(Boolean)
+                                        .join(' ')}
+                                    onClick={!previewUrl ? triggerFileInput : undefined}
+                                >
+                                    {previewUrl ? (
+                                        <>
+                                            <img
+                                                src={previewUrl}
+                                                alt={t('admin.categories.label_icon')}
+                                                className="h-full w-full object-contain p-2"
+                                                onError={(e) => {
+                                                    e.target.src = '/images/defaults/image.png';
+                                                }}
+                                            />
 
-                        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                            {/* Preview Box */}
-                            <div
-                                className={`group relative flex h-32 w-32 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-dashed ${
-                                    errors.icon_path ? 'border-error-dark' : 'border-primary-30'
-                                } bg-gray-10 ${!previewUrl ? 'cursor-pointer hover:bg-secondary-10' : ''}`}
-                                onClick={!previewUrl ? triggerFileInput : undefined}
-                            >
-                                {previewUrl ? (
-                                    <>
-                                        <img
-                                            src={previewUrl}
-                                            alt="Icon Preview"
-                                            className="h-full w-full object-contain p-2"
-                                            onError={(e) => { e.target.src = '/images/defaults/image.png'; }}
-                                        />
-                                        <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                                            <button
-                                                type="button"
-                                                onClick={() => setIsPreviewOpen(true)}
-                                                title="Lihat Icon"
-                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary-100 hover:opacity-80"
-                                            >
-                                                <FaSearchPlus />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={handleRemoveIcon}
-                                                title="Hapus Icon"
-                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-error-dark hover:opacity-80"
-                                            >
-                                                <FaTrash />
-                                            </button>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <span className="px-2 text-center text-micro italic text-gray-50">
-                                        Belum ada icon
-                                    </span>
-                                )}
-                            </div>
+                                            <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsPreviewOpen(true)}
+                                                    title={t('admin.categories.icon_view')}
+                                                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary-100 hover:opacity-80"
+                                                >
+                                                    <FiSearch size={16} />
+                                                </button>
 
-                            {/* File Picker */}
-                            <div className="flex flex-col gap-2">
-                                <input
-                                    id="icon-file"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleFileChange}
-                                    className="hidden"
-                                />
-                                <div className="flex items-center gap-3">
-                                    <Button
-                                        variant="white"
-                                        size="btn-sm"
-                                        iconLeft={<FaUpload />}
-                                        onClick={triggerFileInput}
-                                    >
-                                        Pilih File Baru
-                                    </Button>
-                                    <span className="max-w-[12rem] truncate text-small text-gray-70">
-                                        {data.icon_path ? data.icon_path.name : 'Menggunakan icon saat ini'}
+                                                <button
+                                                    type="button"
+                                                    onClick={handleRemoveIcon}
+                                                    title={t('admin.categories.icon_remove')}
+                                                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-error-dark hover:opacity-80"
+                                                >
+                                                    <FiTrash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <span className="px-2 text-center font-body text-micro italic text-gray-50">
+                                            {t('admin.categories.icon_empty')}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* File Picker */}
+                                <div className="flex flex-col gap-2">
+                                    <input
+                                        id="icon-file"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                        className="hidden"
+                                    />
+
+                                    <div className="flex items-center gap-3">
+                                        <Button
+                                            type="button"
+                                            variant="white"
+                                            size="btn-sm"
+                                            iconLeft={<FiUpload size={16} />}
+                                            onClick={triggerFileInput}
+                                        >
+                                            {t('admin.categories.icon_choose_new')}
+                                        </Button>
+
+                                        <span className="max-w-[12rem] truncate font-body text-small text-gray-70">
+                                            {data.icon_path
+                                                ? data.icon_path.name
+                                                : t('admin.categories.icon_current_file')}
+                                        </span>
+                                    </div>
+
+                                    <span className="font-body text-micro text-gray-50">
+                                        {t('admin.categories.icon_hint_edit')}
                                     </span>
                                 </div>
-                                <span className="text-micro text-gray-50">
-                                    Biarkan kosong jika tidak ingin mengganti icon. Maks. 2MB.
-                                </span>
                             </div>
+
+                            {errors.icon_path && (
+                                <p className="font-body text-small italic text-error-dark">
+                                    {errors.icon_path}
+                                </p>
+                            )}
                         </div>
-
-                        {errors.icon_path && (
-                            <p className="text-small italic text-error-dark">{errors.icon_path}</p>
-                        )}
                     </div>
+                </FormSection>
 
-                    {/* Actions */}
-                    <div className="mt-2 flex justify-end gap-3 border-t border-primary-10 pt-5">
-                        <Button
-                            variant="white"
-                            onClick={() => router.get(route('admin.categories.index'))}
-                        >
-                            Batal
-                        </Button>
-                        <Button variant="success" type="submit" loading={processing}>
-                            {processing ? 'Memperbarui...' : 'Simpan Perubahan'}
-                        </Button>
-                    </div>
-                </form>
-            </div>
+                {/* Actions */}
+                <div className="flex justify-end">
+                    <Button
+                        type="submit"
+                        loading={processing}
+                        iconLeft={!processing && <FiSave size={20} />}
+                    >
+                        {processing ? t('admin.common.updating') : t('admin.categories.submit_edit')}
+                    </Button>
+                </div>
+            </form>
 
             {/* Image preview overlay */}
             {isPreviewOpen && previewUrl && (
@@ -181,16 +213,19 @@ export default function Edit({ category }) {
                         >
                             &times;
                         </button>
+
                         <img
                             src={previewUrl}
-                            alt="Preview Icon"
+                            alt={t('admin.categories.label_icon')}
                             className="max-h-[80vh] max-w-[80vw] rounded-lg bg-white object-contain p-4"
                         />
                     </div>
                 </div>
             )}
-        </>
+        </div>
     );
 }
 
-Edit.layout = (page) => <AdminLayout content={page}></AdminLayout>;
+Edit.layout = (page) => (
+    <AdminLayout pageTitle="Edit Kategori" content={page} />
+);

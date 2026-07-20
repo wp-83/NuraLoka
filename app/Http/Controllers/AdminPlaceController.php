@@ -5,11 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Photo;
 use App\Models\Place;
+use App\Services\ImageCompressionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
 
 class AdminPlaceController extends Controller
 {
@@ -40,7 +38,7 @@ class AdminPlaceController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('Admin/Place/Index', [
+        return inertia('Admin/Place/Index', [
             'places' => $places,
             'filters' => [
                 'search' => $search,
@@ -56,7 +54,7 @@ class AdminPlaceController extends Controller
     {
         $categories = Category::orderBy('name')->get();
 
-        return Inertia::render('Admin/Place/Create', [
+        return inertia('Admin/Place/Create', [
             'categories' => $categories,
         ]);
     }
@@ -75,7 +73,7 @@ class AdminPlaceController extends Controller
             'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:categories,id',
             'photos' => 'nullable|array',
-            'photos.*' => 'image|mimes:jpeg,png,jpg,webp|max:10240',
+            'photos.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
         $place = Place::create([
@@ -104,12 +102,12 @@ class AdminPlaceController extends Controller
     /**
      * Show the form for editing the specified place.
      */
-    public function edit(string $id)
+    public function edit(Place $place)
     {
-        $place = Place::with(['categories', 'photos'])->findOrFail($id);
+        $place->load(['categories', 'photos']);
         $categories = Category::orderBy('name')->get();
 
-        return Inertia::render('Admin/Place/Edit', [
+        return inertia('Admin/Place/Edit', [
             'place' => $place,
             'categories' => $categories,
             'photos' => $place->photos->map(fn ($ph) => [
@@ -122,10 +120,8 @@ class AdminPlaceController extends Controller
     /**
      * Update the specified place in database.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Place $place)
     {
-        $place = Place::findOrFail($id);
-
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -135,7 +131,7 @@ class AdminPlaceController extends Controller
             'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:categories,id',
             'photos' => 'nullable|array',
-            'photos.*' => 'image|mimes:jpeg,png,jpg,webp|max:10240',
+            'photos.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
             'deleted_photos' => 'nullable|array',
             'deleted_photos.*' => 'integer',
         ]);
@@ -167,9 +163,9 @@ class AdminPlaceController extends Controller
     /**
      * Remove the specified place from database.
      */
-    public function destroy(string $id)
+    public function destroy(Place $place)
     {
-        $place = Place::with('photos')->findOrFail($id);
+        $place->load('photos');
 
         // Hapus file foto yang tidak lagi dipakai place lain, lalu detach.
         $this->deletePhotos($place, $place->photos->pluck('id')->all());
@@ -194,15 +190,10 @@ class AdminPlaceController extends Controller
             return;
         }
 
-        $manager = new ImageManager(new Driver);
+        $compressor = app(ImageCompressionService::class);
 
         foreach ($request->file('photos') as $file) {
-            $image = $manager->decodePath($file->getPathname());
-            $image->scaleDown(width: 1600);
-            $encoded = $image->encodeUsingFileExtension('webp', quality: 80);
-
-            $path = 'place-photos/'.uniqid('place_', true).'.webp';
-            Storage::disk('public')->put($path, $encoded->toString());
+            $path = $compressor->compressToDisk($file, 'place-photos', maxWidth: 1600);
 
             $photo = Photo::create([
                 'path' => $path,

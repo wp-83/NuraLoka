@@ -8,11 +8,10 @@ use App\Models\Trip;
 use App\Models\TripPhoto;
 use App\Models\User;
 use App\Services\GamificationService;
+use App\Services\ImageCompressionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
 
 class AlbumController extends Controller
 {
@@ -141,7 +140,7 @@ class AlbumController extends Controller
             'date' => 'required|date',
             'is_public' => 'boolean',
             'photos' => 'nullable|array',
-            'photos.*' => 'image|mimes:jpeg,png,jpg,webp|max:10240',
+            'photos.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
         $user = Auth::user();
@@ -167,16 +166,10 @@ class AlbumController extends Controller
         ]);
 
         if ($request->hasFile('photos')) {
-            $manager = new ImageManager(new Driver);
+            $compressor = app(ImageCompressionService::class);
+
             foreach ($request->file('photos') as $photo) {
-                $image = $manager->decodePath($photo->getPathname());
-                $image->scaleDown(width: 1200);
-                $encoded = $image->encodeUsingFileExtension('webp', quality: 80);
-
-                $filename = uniqid('album_', true).'.webp';
-                $path = 'album-photos/'.$filename;
-
-                Storage::disk('public')->put($path, $encoded->toString());
+                $path = $compressor->compressToDisk($photo, 'album-photos');
 
                 TripPhoto::create([
                     'album_id' => $album->id,
@@ -369,27 +362,13 @@ class AlbumController extends Controller
 
         $request->validate([
             'photos' => 'required|array',
-            'photos.*' => 'image|mimes:jpeg,png,jpg,webp|max:10240', // Max 10MB sebelum kompresi
+            'photos.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120', // Max 5MB sebelum kompresi
         ]);
 
-        $manager = new ImageManager(new Driver);
+        $compressor = app(ImageCompressionService::class);
 
         foreach ($request->file('photos') as $photo) {
-            // Baca gambar
-            $image = $manager->decodePath($photo->getPathname());
-
-            // Perkecil gambar jika terlalu besar (maksimal lebar 1200px), proporsi dijaga otomatis
-            $image->scaleDown(width: 1200);
-
-            // Encode ke format WebP dengan kualitas 80% (bagus dan ringan)
-            $encoded = $image->encodeUsingFileExtension('webp', quality: 80);
-
-            // Buat nama file unik
-            $filename = uniqid('album_', true).'.webp';
-            $path = 'album-photos/'.$filename;
-
-            // Simpan file hasil kompresi ke storage
-            Storage::disk('public')->put($path, $encoded->toString());
+            $path = $compressor->compressToDisk($photo, 'album-photos');
 
             TripPhoto::create([
                 'album_id' => $album->id,

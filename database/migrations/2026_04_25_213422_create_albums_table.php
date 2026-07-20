@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('trip_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('caption');
+            $table->string('slug')->unique()->nullable();
+            $table->unsignedInteger('view_count')->default(0);
             $table->timestamps();
         });
     }

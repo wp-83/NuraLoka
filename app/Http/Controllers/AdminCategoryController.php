@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Services\ImageCompressionService;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 
 class AdminCategoryController extends Controller
 {
@@ -25,7 +25,7 @@ class AdminCategoryController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('Admin/Category/Index', [
+        return inertia('Admin/Category/Index', [
             'categories' => $categories,
             'filters' => [
                 'search' => $search,
@@ -38,7 +38,7 @@ class AdminCategoryController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Category/Create');
+        return inertia('Admin/Category/Create');
     }
 
     /**
@@ -48,20 +48,16 @@ class AdminCategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:categories,name',
-            'icon_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+            'icon_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
         ]);
 
         $iconPath = null;
         if ($request->hasFile('icon_path')) {
-            $file = $request->file('icon_path');
-            $filename = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
+            $filename = app(ImageCompressionService::class)->compressToPublic(
+                $request->file('icon_path'),
+                public_path('images/categories'),
+            );
 
-            $destinationPath = public_path('images/categories');
-            if (! file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
-
-            $file->move($destinationPath, $filename);
             $iconPath = '/images/categories/'.$filename;
         }
 
@@ -79,11 +75,9 @@ class AdminCategoryController extends Controller
     /**
      * Show the form for editing the specified category.
      */
-    public function edit(string $id)
+    public function edit(Category $category)
     {
-        $category = Category::findOrFail($id);
-
-        return Inertia::render('Admin/Category/Edit', [
+        return inertia('Admin/Category/Edit', [
             'category' => $category,
         ]);
     }
@@ -91,19 +85,17 @@ class AdminCategoryController extends Controller
     /**
      * Update the specified category in database.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Category $category)
     {
-        $category = Category::findOrFail($id);
-
         $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,'.$id,
+            'name' => 'required|string|max:255|unique:categories,name,'.$category->id,
             'icon_path' => 'nullable',
             'remove_icon' => 'nullable|boolean',
         ]);
 
         if ($request->hasFile('icon_path')) {
             $request->validate([
-                'icon_path' => 'image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+                'icon_path' => 'image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
             ]);
         }
 
@@ -128,15 +120,11 @@ class AdminCategoryController extends Controller
                 }
             }
 
-            $file = $request->file('icon_path');
-            $filename = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
+            $filename = app(ImageCompressionService::class)->compressToPublic(
+                $request->file('icon_path'),
+                public_path('images/categories'),
+            );
 
-            $destinationPath = public_path('images/categories');
-            if (! file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
-
-            $file->move($destinationPath, $filename);
             $iconPath = '/images/categories/'.$filename;
         }
 
@@ -154,9 +142,9 @@ class AdminCategoryController extends Controller
     /**
      * Remove the specified category from database.
      */
-    public function destroy(string $id)
+    public function destroy(Category $category)
     {
-        $category = Category::withCount('places')->findOrFail($id);
+        $category->loadCount('places');
 
         if ($category->places_count > 0) {
             session()->flash('flash.type', 'error');

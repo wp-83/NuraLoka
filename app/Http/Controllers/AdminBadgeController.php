@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Badge;
+use App\Services\ImageCompressionService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Inertia\Inertia;
 
 class AdminBadgeController extends Controller
 {
@@ -26,7 +26,7 @@ class AdminBadgeController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('Admin/Badge/Index', [
+        return inertia('Admin/Badge/Index', [
             'badges' => $badges,
             'filters' => ['search' => $search],
         ]);
@@ -34,7 +34,7 @@ class AdminBadgeController extends Controller
 
     public function create()
     {
-        return Inertia::render('Admin/Badge/Create');
+        return inertia('Admin/Badge/Create');
     }
 
     public function store(Request $request)
@@ -50,17 +50,16 @@ class AdminBadgeController extends Controller
         return redirect()->route('admin.badges.index');
     }
 
-    public function edit(string $id)
+    public function edit(Badge $badge)
     {
-        return Inertia::render('Admin/Badge/Edit', [
-            'badge' => Badge::findOrFail($id),
+        return inertia('Admin/Badge/Edit', [
+            'badge' => $badge,
         ]);
     }
 
-    public function update(Request $request, string $id)
+    public function update(Request $request, Badge $badge)
     {
-        $badge = Badge::findOrFail($id);
-        $data = $this->validateData($request, $id);
+        $data = $this->validateData($request, $badge->id);
 
         if ($request->boolean('remove_icon')) {
             $this->deleteIcon($badge->icon_path);
@@ -80,9 +79,9 @@ class AdminBadgeController extends Controller
         return redirect()->route('admin.badges.index');
     }
 
-    public function destroy(string $id)
+    public function destroy(Badge $badge)
     {
-        $badge = Badge::withCount(['missions', 'users'])->findOrFail($id);
+        $badge->loadCount(['missions', 'users']);
 
         if ($badge->missions_count > 0) {
             return $this->blocked('Lencana tidak dapat dihapus karena masih dipakai '.$badge->missions_count.' tantangan.');
@@ -113,26 +112,23 @@ class AdminBadgeController extends Controller
         ];
 
         if ($request->hasFile('icon_path')) {
-            $rules['icon_path'] = 'image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048';
+            $rules['icon_path'] = 'image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120';
         }
 
         return $request->validate($rules);
     }
 
-    /** Simpan file icon ke public/images/badges/uploads; kembalikan path relatif (tanpa slash awal). */
+    /** Kompres & simpan file icon ke public/images/badges/uploads; kembalikan path relatif (tanpa slash awal). */
     private function storeIcon(Request $request): ?string
     {
         if (! $request->hasFile('icon_path')) {
             return null;
         }
 
-        $file = $request->file('icon_path');
-        $filename = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
-        $dest = public_path('images/badges/uploads');
-        if (! file_exists($dest)) {
-            mkdir($dest, 0755, true);
-        }
-        $file->move($dest, $filename);
+        $filename = app(ImageCompressionService::class)->compressToPublic(
+            $request->file('icon_path'),
+            public_path('images/badges/uploads'),
+        );
 
         return 'images/badges/uploads/'.$filename;
     }

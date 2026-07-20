@@ -1,8 +1,10 @@
 import { usePage } from '@inertiajs/react';
 import { HiOutlineBars3 } from 'react-icons/hi2';
 import LanguageSwitcher from '@components/Common/LanguageSwitcher';
+import { useTranslation } from '@js/i18n';
 
 export default function AdminHeader({ onOpenMobile }) {
+    const { t } = useTranslation();
     const{ user } = usePage().props.auth;
 
     return (
@@ -20,10 +22,10 @@ export default function AdminHeader({ onOpenMobile }) {
 
                     <div>
                         <h2 className="font-heading text-paragraph font-bold text-primary sm:text-subtitle">
-                            Dasbor Admin
+                            {t('admin.header.title')}
                         </h2>
                         <p className="hidden text-small text-gray-70 sm:block">
-                            Selamat datang di Panel Admin
+                            {t('admin.header.subtitle')}
                         </p>
                     </div>
                 </div>

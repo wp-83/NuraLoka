@@ -8,7 +8,6 @@ use App\Models\Mission;
 use App\Services\GamificationService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Inertia\Inertia;
 
 class AdminMissionController extends Controller
 {
@@ -29,7 +28,7 @@ class AdminMissionController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('Admin/Mission/Index', [
+        return inertia('Admin/Mission/Index', [
             'missions' => $missions,
             'filters' => [
                 'search' => $search,
@@ -42,7 +41,7 @@ class AdminMissionController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Mission/Create', [
+        return inertia('Admin/Mission/Create', [
             'badges' => Badge::all(),
             'categories' => Category::orderBy('name')->get(['id', 'name']),
             'actions' => $this->actionOptions(),
@@ -75,11 +74,9 @@ class AdminMissionController extends Controller
     /**
      * Show the form for editing the specified mission.
      */
-    public function edit(string $id)
+    public function edit(Mission $mission)
     {
-        $mission = Mission::findOrFail($id);
-
-        return Inertia::render('Admin/Mission/Edit', [
+        return inertia('Admin/Mission/Edit', [
             'mission' => $mission,
             'badges' => Badge::all(),
             'categories' => Category::orderBy('name')->get(['id', 'name']),
@@ -90,12 +87,10 @@ class AdminMissionController extends Controller
     /**
      * Update the specified mission in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Mission $mission)
     {
-        $mission = Mission::findOrFail($id);
-
         $data = $request->validate([
-            'title' => 'required|string|max:255|unique:missions,title,'.$id,
+            'title' => 'required|string|max:255|unique:missions,title,'.$mission->id,
             'description' => 'required|string',
             'points_reward' => 'required|integer|min:0',
             'target' => 'required|integer|min:1',
@@ -115,9 +110,9 @@ class AdminMissionController extends Controller
     /**
      * Remove the specified mission from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Mission $mission)
     {
-        $mission = Mission::withCount('users')->findOrFail($id);
+        $mission->loadCount('users');
 
         if ($mission->users_count > 0) {
             session()->flash('flash.type', 'error');

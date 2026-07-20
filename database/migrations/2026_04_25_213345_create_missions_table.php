@@ -18,6 +18,9 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('description');
             $table->integer('points_reward');
+            $table->integer('target')->default(1);
+            $table->string('action_type')->nullable();
+            $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
             $table->timestamps();
         });
     }
