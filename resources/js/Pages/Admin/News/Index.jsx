@@ -1,18 +1,33 @@
-import { Link, Head, router, usePage } from '@inertiajs/react';
+import EmptyState from '@components/Common/EmptyState';
+import Modal from '@components/Common/Modal';
+import PageHeader from '@components/Common/PageHeader';
+import Pagination from '@components/Common/Pagination';
+import Button from '@components/Forms/Button';
+import Input from '@components/Forms/Input';
+import AdminLayout from '@js/Layouts/AdminLayout';
+import { useTranslation } from '@js/i18n';
+
+import { router } from '@inertiajs/react';
 import { useState } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaArrowLeft } from 'react-icons/fa';
-import Flash from '@components/Common/Flash';
-import '@css/Admin/News.css';
 
-export default function Index({ news, filters }) {
-    const { flash } = usePage().props;
-    const [search, setSearch] = useState(filters.search || '');
+import {
+    FiEdit2,
+    FiPlus,
+    FiSearch,
+    FiTrash2,
+} from 'react-icons/fi';
 
-    // Format publish date to a clean Indonesian readable string
+export default function Index({ news, filters = {} }) {
+    const { t } = useTranslation();
+    const [search, setSearch] = useState(filters.search ?? '');
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [deleting, setDeleting] = useState(false);
+
+    // Format the publish date as a readable Indonesian string.
     const formatDate = (dateString) => {
         if (!dateString) return '-';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('id-ID', {
+
+        return new Date(dateString).toLocaleDateString('id-ID', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -21,135 +36,174 @@ export default function Index({ news, filters }) {
         });
     };
 
-    // Trigger search when search form is submitted
     const handleSearch = (e) => {
         e.preventDefault();
-        router.get(route('admin.news.index'), { search }, { preserveState: true, replace: true });
+
+        router.get(
+            route('admin.news.index'),
+            { search },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
     };
 
-    // Clear search filter
-    const handleClearSearch = () => {
+    const handleReset = () => {
         setSearch('');
-        router.get(route('admin.news.index'), { search: '' }, { preserveState: true, replace: true });
+
+        router.get(
+            route('admin.news.index'),
+            {},
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
     };
 
-    // Trigger delete request
-    const handleDelete = (id, title) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus wawasan wisata "${title}"?`)) {
-            router.delete(route('admin.news.destroy', id), {
-                onSuccess: () => {
-                    // Flash will auto show from usePage().props.flash
-                }
-            });
+    const confirmDelete = () => {
+        if (!deleteTarget) {
+            return;
         }
+
+        router.delete(route('admin.news.destroy', deleteTarget.slug), {
+            preserveScroll: true,
+            onStart: () => setDeleting(true),
+            onFinish: () => {
+                setDeleting(false);
+                setDeleteTarget(null);
+            },
+        });
     };
 
     return (
-        <>
-            <Head>
-                <title>Admin | Kelola Wawasan Wisata</title>
-            </Head>
+        <div className="flex w-full flex-col gap-6">
+            {/* Header */}
+            <PageHeader
+                title={t('admin.news.page_title')}
+                description={t('admin.news.page_description')}
+            />
 
-            {/* Flash Message Banner */}
-            {flash && flash.message && (
-                <Flash type={flash.type || 'success'} message={flash.message} />
-            )}
-
-            <div className="admin-news-container">
-                {/* Back button to Admin Dashboard */}
-                <div className="back-navigation">
-                    <Link href={route('admin.dashboard')} className="back-to-home-link">
-                        <FaArrowLeft style={{ fontSize: '0.9rem', marginRight: '0.5rem' }} /> Kembali ke Dashboard Admin
-                    </Link>
-                </div>
-
-                {/* Header */}
-                <div className="admin-news-header">
-                    <img
-                        src="/images/mascots/welcome.png"
-                        alt="NuraLoka Mascot"
-                        className="admin-news-mascot"
+            {/* Filter */}
+            <div className="rounded-xl bg-white p-5 shadow-sm">
+                <form
+                    onSubmit={handleSearch}
+                    className="flex flex-col gap-4 sm:flex-row sm:items-end"
+                >
+                    <Input
+                        label={t('admin.news.filter_search_label')}
+                        name="search"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder={t('admin.news.filter_search_placeholder')}
+                        icon={<FiSearch size={20} />}
                     />
-                    <div className="admin-news-title-wrapper">
-                        <h1 className="admin-news-title">Kelola Wawasan Wisata</h1>
-                        <p className="admin-news-subtitle">
-                            Halaman dashboard admin untuk menambah, mengubah, dan menghapus artikel wawasan wisata NuraLoka.
-                        </p>
+
+                    <div className="flex shrink-0 gap-3">
+                        <Button type="button" variant="white" onClick={handleReset}>
+                            {t('admin.common.reset')}
+                        </Button>
+
+                        <Button type="submit">{t('admin.common.search')}</Button>
                     </div>
-                </div>
+                </form>
+            </div>
 
-                {/* Toolbar */}
-                <div className="admin-toolbar">
-                    <form onSubmit={handleSearch} className="admin-search-wrapper">
-                        <div className="search-input-group">
-                            <input
-                                type="text"
-                                placeholder="Cari artikel berdasarkan judul atau konten..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-                            <FaSearch className="search-icon" />
-                        </div>
-                    </form>
+            {/* Add News */}
+            <div className="flex justify-end">
+                <Button
+                    iconLeft={<FiPlus size={18} />}
+                    onClick={() => router.get(route('admin.news.create'))}
+                >
+                    {t('admin.news.add_button')}
+                </Button>
+            </div>
 
-                    <Link href={route('admin.news.create')} className="admin-add-news-btn">
-                        <span className="add-news-icon-box">
-                            <FaPlus />
-                        </span>
-                        <span className="add-news-text">Tambah Berita</span>
-                    </Link>
-                </div>
-
-                {/* Table list */}
-                <div className="table-responsive">
-                    <table className="admin-table">
-                        <thead>
-                            <tr>
-                                <th style={{ width: '10%' }}>Gambar</th>
-                                <th style={{ width: '40%' }}>Judul</th>
-                                <th style={{ width: '15%' }}>Penulis</th>
-                                <th style={{ width: '20%' }}>Tanggal Rilis</th>
-                                <th style={{ width: '15%', textAlign: 'center' }}>Aksi</th>
+            {/* Table */}
+            <div className="overflow-hidden rounded-lg bg-white shadow-md">
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead className="bg-primary-100 font-heading text-body text-white">
+                            <tr className="text-center">
+                                <th className="min-w-24 whitespace-nowrap px-5 py-4">
+                                    {t('admin.news.th_image')}
+                                </th>
+                                <th className="min-w-72 whitespace-nowrap px-5 py-4">
+                                    {t('admin.news.th_title')}
+                                </th>
+                                <th className="min-w-40 whitespace-nowrap px-5 py-4">
+                                    {t('admin.news.th_author')}
+                                </th>
+                                <th className="min-w-48 whitespace-nowrap px-5 py-4">
+                                    {t('admin.news.th_publish_date')}
+                                </th>
+                                <th className="min-w-32 whitespace-nowrap px-5 py-4">
+                                    {t('admin.news.th_actions')}
+                                </th>
                             </tr>
                         </thead>
+
                         <tbody>
                             {news.data && news.data.length > 0 ? (
                                 news.data.map((item) => {
-                                    const authorName = item.user?.user_details?.fullname || item.user?.username || 'Admin';
+                                    const authorName =
+                                        item.user?.user_details?.fullname ||
+                                        item.user?.username ||
+                                        t('admin.news.author_fallback');
+
                                     return (
-                                        <tr key={item.id}>
-                                            <td>
+                                        <tr
+                                            key={item.id}
+                                            className="border-b border-gray-20 transition-colors last:border-b-0 hover:bg-primary-10"
+                                        >
+                                            <td className="px-5 py-4">
                                                 <img
                                                     src={item.thumbnail || '/images/defaults/image.png'}
                                                     alt={item.title}
-                                                    className="admin-table-thumbnail"
+                                                    className="h-14 w-20 rounded-lg object-cover"
                                                     onError={(e) => {
                                                         e.target.src = '/images/defaults/image.png';
                                                     }}
                                                 />
                                             </td>
-                                            <td style={{ fontWeight: '600', color: 'var(--primary-100)' }}>
+
+                                            <td className="px-5 py-4 font-body text-body font-semibold text-primary-100">
                                                 {item.title}
                                             </td>
-                                            <td>{authorName}</td>
-                                            <td>{formatDate(item.publish_date)}</td>
-                                            <td>
-                                                <div className="admin-actions" style={{ justifyContent: 'center' }}>
-                                                    <Link
-                                                        href={route('admin.news.edit', item.id)}
-                                                        className="btn-info btn-sm admin-action-btn edit-btn-icon-only"
-                                                        title="Edit Artikel"
-                                                    >
-                                                        <FaEdit />
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => handleDelete(item.id, item.title)}
-                                                        className="btn-error btn-sm admin-action-btn"
-                                                        title="Hapus Artikel"
-                                                        type="button"
-                                                    >
-                                                        <FaTrash /> Hapus
-                                                    </button>
+
+                                            <td className="px-5 py-4 font-body text-body text-gray-100">
+                                                {authorName}
+                                            </td>
+
+                                            <td className="px-5 py-4 font-body text-small text-gray-70">
+                                                {formatDate(item.publish_date)}
+                                            </td>
+
+                                            <td className="px-5 py-4 text-center">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <Button
+                                                        variant="info"
+                                                        size="btn-sm"
+                                                        className="h-9 w-9 p-0"
+                                                        iconLeft={<FiEdit2 size={17} />}
+                                                        onClick={() =>
+                                                            router.get(
+                                                                route('admin.news.edit', item.slug),
+                                                            )
+                                                        }
+                                                        title={t('admin.news.action_edit')}
+                                                        aria-label={t('admin.news.action_edit')}
+                                                    />
+
+                                                    <Button
+                                                        variant="error"
+                                                        size="btn-sm"
+                                                        className="h-9 w-9 p-0"
+                                                        iconLeft={<FiTrash2 size={17} />}
+                                                        onClick={() =>
+                                                            setDeleteTarget({
+                                                                slug: item.slug,
+                                                                title: item.title,
+                                                            })
+                                                        }
+                                                        title={t('admin.news.action_delete')}
+                                                        aria-label={t('admin.news.action_delete')}
+                                                    />
                                                 </div>
                                             </td>
                                         </tr>
@@ -157,8 +211,15 @@ export default function Index({ news, filters }) {
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: 'var(--gray-50)' }}>
-                                        {search ? 'Tidak ada artikel yang cocok dengan pencarian Anda.' : 'Belum ada artikel wawasan wisata.'}
+                                    <td colSpan={5} className="px-6 py-8">
+                                        <EmptyState
+                                            title={t('admin.news.empty_title')}
+                                            description={
+                                                search
+                                                    ? t('admin.news.empty_description')
+                                                    : t('admin.news.empty_description_no_search')
+                                            }
+                                        />
                                     </td>
                                 </tr>
                             )}
@@ -167,40 +228,44 @@ export default function Index({ news, filters }) {
                 </div>
 
                 {/* Pagination */}
-                {news.links && news.links.length > 3 && (
-                    <div className="admin-pagination-wrapper">
-                        <div className="news-pagination">
-                            {news.links.map((link, index) => {
-                                let label = link.label;
-                                if (label.includes('Previous')) {
-                                    label = 'Sebelumnya';
-                                } else if (label.includes('Next')) {
-                                    label = 'Selanjutnya';
-                                }
-
-                                if (!link.url) {
-                                    return (
-                                        <span
-                                            key={index}
-                                            className="pagination-link pagination-disabled"
-                                            dangerouslySetInnerHTML={{ __html: label }}
-                                        />
-                                    );
-                                }
-
-                                return (
-                                    <Link
-                                        key={index}
-                                        href={link.url}
-                                        className={`pagination-link ${link.active ? 'pagination-active' : ''}`}
-                                        dangerouslySetInnerHTML={{ __html: label }}
-                                    />
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
+                <Pagination
+                    links={news.links}
+                    from={news.from}
+                    to={news.to}
+                    total={news.total}
+                    itemLabel={t('admin.news.item_label')}
+                />
             </div>
-        </>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                type="error"
+                title={t('admin.news.modal_delete_title')}
+                actions={[
+                    {
+                        label: t('admin.common.cancel'),
+                        variant: 'white',
+                        onClick: () => setDeleteTarget(null),
+                        disabled: deleting,
+                    },
+                    {
+                        label: t('admin.common.delete'),
+                        variant: 'error',
+                        onClick: confirmDelete,
+                        loading: deleting,
+                    },
+                ]}
+            >
+                {t('admin.news.modal_delete_message', {
+                    title: deleteTarget?.title,
+                })}
+            </Modal>
+        </div>
     );
 }
+
+Index.layout = (page) => (
+    <AdminLayout pageTitle="Kelola Wawasan Wisata" content={page} />
+);

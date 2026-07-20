@@ -10,7 +10,6 @@ use Illuminate\Bus\Batch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Validation\Rule;
-use Inertia\Inertia;
 
 class AdminOsmImportController extends Controller
 {
@@ -19,7 +18,7 @@ class AdminOsmImportController extends Controller
     /** Halaman: form pemicu impor + riwayat/status. */
     public function index()
     {
-        return Inertia::render('Admin/OsmImport/Index', [
+        return inertia('Admin/OsmImport/Index', [
             'regions' => $this->regionOptions(),
             'runs' => $this->recentRuns(),
             'osmTotal' => Place::where('source', 'osm')->count(),

@@ -7,13 +7,10 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Referensi asal OSM untuk baris `places` bersumber 'osm'.
-     *
-     * Dipisah dari tabel `places` agar `places` tetap bersih (tidak memikul
-     * identitas eksternal). Relasi 1-1 (place_id unik). `osm_id` unik menjaga
-     * impor tetap idempotent: re-impor node OSM yang sama memperbarui place,
-     * bukan menduplikasi. `subtype` menyimpan metadata OSM mentah (amenity/
-     * tourism/natural/...) yang tidak punya kolom di `places`.
+     * OSM origin reference for `places` rows with source='osm'. Kept separate
+     * so `places` stays free of external identifiers. One-to-one via unique
+     * `place_id`; unique `osm_id` keeps re-imports idempotent (update, not
+     * duplicate). `subtype` holds raw OSM metadata with no column in `places`.
      */
     public function up(): void
     {

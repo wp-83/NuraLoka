@@ -24,6 +24,7 @@ return new class extends Migration
             $table->decimal('destination_longitude', 11, 8);
             $table->date('trip_date');
             $table->boolean('is_public');
+            $table->boolean('is_system')->default(false);
             $table->timestamps();
         });
     }

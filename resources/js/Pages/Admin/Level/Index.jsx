@@ -1,88 +1,168 @@
-import { Head, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
-import { GiStairsGoal } from 'react-icons/gi';
-import Flash from '@components/Common/Flash';
+import EmptyState from '@components/Common/EmptyState';
 import Modal from '@components/Common/Modal';
+import PageHeader from '@components/Common/PageHeader';
 import Button from '@components/Forms/Button';
-import AdminLayout from '../../../Layouts/AdminLayout';
+import AdminLayout from '@js/Layouts/AdminLayout';
+import { useTranslation } from '@js/i18n';
+
+import { router } from '@inertiajs/react';
+import { useState } from 'react';
+
+import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
 
 export default function Index({ levels = [] }) {
-    const { flash } = usePage().props;
+    const { t } = useTranslation();
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [deleting, setDeleting] = useState(false);
 
     const confirmDelete = () => {
-        if (!deleteTarget) return;
-        router.delete(route('admin.levels.destroy', deleteTarget.id), {
+        if (!deleteTarget) {
+            return;
+        }
+
+        router.delete(route('admin.levels.destroy', deleteTarget.slug), {
+            preserveScroll: true,
             onStart: () => setDeleting(true),
-            onFinish: () => { setDeleting(false); setDeleteTarget(null); },
+            onFinish: () => {
+                setDeleting(false);
+                setDeleteTarget(null);
+            },
         });
     };
 
     return (
-        <>
-            <Head><title>Admin | Kelola Level</title></Head>
-            {flash && flash.message && <Flash type={flash.type || 'success'} message={flash.message} />}
+        <div className="flex w-full flex-col gap-6">
+            {/* Header */}
+            <PageHeader
+                title={t('admin.levels.page_title')}
+                description={t('admin.levels.page_description')}
+            />
 
-            <div className="mx-auto w-full max-w-3xl">
-                <div className="flex flex-col items-center gap-4 border-b border-primary-10 pb-6 text-center sm:flex-row sm:text-left">
-                    <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-secondary-10 text-secondary-100">
-                        <GiStairsGoal size={40} />
-                    </div>
-                    <div>
-                        <h1 className="font-heading text-subtitle font-bold text-primary-100">Kelola Level</h1>
-                        <p className="mt-1 text-body text-gray-70">
-                            Atur tingkatan level & ambang poin. Level pengguna dihitung otomatis dari total poin Nura mereka.
-                        </p>
-                    </div>
-                </div>
+            {/* Add Level */}
+            <div className="flex justify-end">
+                <Button
+                    iconLeft={<FiPlus size={18} />}
+                    onClick={() => router.get(route('admin.levels.create'))}
+                >
+                    {t('admin.levels.add_button')}
+                </Button>
+            </div>
 
-                <div className="mt-6 flex justify-end">
-                    <Button variant="primary" iconLeft={<FaPlus />} onClick={() => router.get(route('admin.levels.create'))}>Tambah Level</Button>
-                </div>
-
-                <div className="mt-6 overflow-x-auto rounded-xl border border-primary-10">
-                    <table className="w-full border-collapse text-left">
-                        <thead>
-                            <tr className="bg-primary-10 text-primary-100">
-                                <th className="px-4 py-3 font-heading text-small font-semibold">Urutan</th>
-                                <th className="px-4 py-3 font-heading text-small font-semibold">Nama Level</th>
-                                <th className="px-4 py-3 font-heading text-small font-semibold">Minimal Poin</th>
-                                <th className="px-4 py-3 text-center font-heading text-small font-semibold">Aksi</th>
+            {/* Table */}
+            <div className="overflow-hidden rounded-lg bg-white shadow-md">
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead className="bg-primary-100 font-heading text-body text-white">
+                            <tr className="text-center">
+                                <th className="min-w-24 whitespace-nowrap px-5 py-4">
+                                    {t('admin.levels.th_order')}
+                                </th>
+                                <th className="min-w-56 whitespace-nowrap px-5 py-4">
+                                    {t('admin.levels.th_name')}
+                                </th>
+                                <th className="min-w-44 whitespace-nowrap px-5 py-4">
+                                    {t('admin.levels.th_min_points')}
+                                </th>
+                                <th className="min-w-32 whitespace-nowrap px-5 py-4">
+                                    {t('admin.levels.th_actions')}
+                                </th>
                             </tr>
                         </thead>
+
                         <tbody>
                             {levels.length > 0 ? (
                                 levels.map((lvl) => (
-                                    <tr key={lvl.id} className="border-t border-primary-10 transition-colors hover:bg-secondary-10">
-                                        <td className="px-4 py-3 font-semibold text-primary-100">#{lvl.order}</td>
-                                        <td className="px-4 py-3 text-primary-100">{lvl.name}</td>
-                                        <td className="px-4 py-3 text-small text-gray-70">≥ {Number(lvl.min_points).toLocaleString('id-ID')} poin</td>
-                                        <td className="px-4 py-3">
+                                    <tr
+                                        key={lvl.id}
+                                        className="border-b border-gray-20 transition-colors last:border-b-0 hover:bg-primary-10"
+                                    >
+                                        <td className="px-5 py-4 text-center font-body text-body font-semibold text-primary-100">
+                                            #{lvl.order}
+                                        </td>
+
+                                        <td className="px-5 py-4 font-body text-body text-gray-100">
+                                            {lvl.name}
+                                        </td>
+
+                                        <td className="px-5 py-4 text-center font-body text-small text-gray-70">
+                                            {t('admin.levels.min_points_value', {
+                                                points: Number(lvl.min_points).toLocaleString('id-ID'),
+                                            })}
+                                        </td>
+
+                                        <td className="px-5 py-4 text-center">
                                             <div className="flex items-center justify-center gap-2">
-                                                <Button variant="info" size="btn-sm" iconLeft={<FaEdit />} onClick={() => router.get(route('admin.levels.edit', lvl.id))}>Edit</Button>
-                                                <Button variant="error" size="btn-sm" iconLeft={<FaTrash />} onClick={() => setDeleteTarget({ id: lvl.id, name: lvl.name })}>Hapus</Button>
+                                                <Button
+                                                    variant="info"
+                                                    size="btn-sm"
+                                                    className="h-9 w-9 p-0"
+                                                    iconLeft={<FiEdit2 size={17} />}
+                                                    onClick={() =>
+                                                        router.get(route('admin.levels.edit', lvl.slug))
+                                                    }
+                                                    title={t('admin.levels.action_edit')}
+                                                    aria-label={t('admin.levels.action_edit')}
+                                                />
+
+                                                <Button
+                                                    variant="error"
+                                                    size="btn-sm"
+                                                    className="h-9 w-9 p-0"
+                                                    iconLeft={<FiTrash2 size={17} />}
+                                                    onClick={() =>
+                                                        setDeleteTarget({ slug: lvl.slug, name: lvl.name })
+                                                    }
+                                                    title={t('admin.levels.action_delete')}
+                                                    aria-label={t('admin.levels.action_delete')}
+                                                />
                                             </div>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
-                                <tr><td colSpan="4" className="px-4 py-12 text-center text-body text-gray-50">Belum ada level.</td></tr>
+                                <tr>
+                                    <td colSpan={4} className="px-6 py-8">
+                                        <EmptyState
+                                            title={t('admin.levels.empty_title')}
+                                            description={t('admin.levels.empty_description')}
+                                        />
+                                    </td>
+                                </tr>
                             )}
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} type="error"
-                title={`Hapus level "${deleteTarget?.name}"?`}
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                type="error"
+                title={t('admin.levels.modal_delete_title')}
                 actions={[
-                    { label: 'Batal', variant: 'gray', onClick: () => setDeleteTarget(null), disabled: deleting },
-                    { label: 'Hapus', variant: 'error', onClick: confirmDelete, loading: deleting },
-                ]} />
-        </>
+                    {
+                        label: t('admin.common.cancel'),
+                        variant: 'white',
+                        onClick: () => setDeleteTarget(null),
+                        disabled: deleting,
+                    },
+                    {
+                        label: t('admin.common.delete'),
+                        variant: 'error',
+                        onClick: confirmDelete,
+                        loading: deleting,
+                    },
+                ]}
+            >
+                {t('admin.levels.modal_delete_message', {
+                    name: deleteTarget?.name,
+                })}
+            </Modal>
+        </div>
     );
 }
 
-Index.layout = (page) => <AdminLayout content={page}></AdminLayout>;
+Index.layout = (page) => (
+    <AdminLayout pageTitle="Kelola Level" content={page} />
+);

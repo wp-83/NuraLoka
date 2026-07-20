@@ -1,24 +1,48 @@
-import { Head, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaMapMarkerAlt } from 'react-icons/fa';
-import Flash from '@components/Common/Flash';
+import EmptyState from '@components/Common/EmptyState';
 import Modal from '@components/Common/Modal';
+import PageHeader from '@components/Common/PageHeader';
+import Pagination from '@components/Common/Pagination';
 import Button from '@components/Forms/Button';
+import Dropdown from '@components/Forms/Dropdown';
 import Input from '@components/Forms/Input';
-import AdminLayout from '../../../Layouts/AdminLayout';
+import AdminLayout from '@js/Layouts/AdminLayout';
+import { useTranslation } from '@js/i18n';
 
-export default function Index({ places, filters }) {
-    const { flash } = usePage().props;
-    const [search, setSearch] = useState(filters.search || '');
-    const [source, setSource] = useState(filters.source || '');
+import { router } from '@inertiajs/react';
+import { useState } from 'react';
+
+import {
+    FiEdit2,
+    FiMapPin,
+    FiPlus,
+    FiSearch,
+    FiTrash2,
+} from 'react-icons/fi';
+
+export default function Index({ places, filters = {} }) {
+    const { t } = useTranslation();
+
+    const SOURCE_OPTIONS = [
+        { value: 'internal', label: t('admin.places.source_internal') },
+        { value: 'osm', label: t('admin.places.source_osm') },
+    ];
+
+    const [search, setSearch] = useState(filters.search ?? '');
+    const [source, setSource] = useState(filters.source ?? '');
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [deleting, setDeleting] = useState(false);
 
     const applyFilters = (overrides = {}) => {
         const params = { search, source, ...overrides };
-        // Buang parameter kosong agar URL tetap bersih.
+
+        // Drop empty params so the URL stays clean.
         Object.keys(params).forEach((k) => params[k] === '' && delete params[k]);
-        router.get(route('admin.places.index'), params, { preserveState: true, replace: true });
+
+        router.get(route('admin.places.index'), params, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
     };
 
     const handleSearch = (e) => {
@@ -26,14 +50,24 @@ export default function Index({ places, filters }) {
         applyFilters();
     };
 
-    const handleSourceChange = (value) => {
-        setSource(value);
-        applyFilters({ source: value });
+    const handleReset = () => {
+        setSearch('');
+        setSource('');
+
+        router.get(
+            route('admin.places.index'),
+            {},
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
     };
 
     const confirmDelete = () => {
-        if (!deleteTarget) return;
-        router.delete(route('admin.places.destroy', deleteTarget.id), {
+        if (!deleteTarget) {
+            return;
+        }
+
+        router.delete(route('admin.places.destroy', deleteTarget.slug), {
+            preserveScroll: true,
             onStart: () => setDeleting(true),
             onFinish: () => {
                 setDeleting(false);
@@ -43,164 +77,188 @@ export default function Index({ places, filters }) {
     };
 
     return (
-        <>
-            <Head>
-                <title>Admin | Kelola Destinasi Wisata</title>
-            </Head>
+        <div className="flex w-full flex-col gap-6">
+            {/* Header */}
+            <PageHeader
+                title={t('admin.places.page_title')}
+                description={t('admin.places.page_description')}
+            />
 
-            {flash && flash.message && (
-                <Flash type={flash.type || 'success'} message={flash.message} />
-            )}
-
-            <div className="mx-auto w-full max-w-6xl">
-                {/* Header */}
-                <div className="flex flex-col items-center gap-4 border-b border-primary-10 pb-6 text-center sm:flex-row sm:text-left">
-                    <img
-                        src="/images/mascots/welcome.png"
-                        alt="NuraLoka Mascot"
-                        className="h-24 w-24 shrink-0 object-contain"
+            {/* Filter */}
+            <div className="rounded-xl bg-white p-5 shadow-sm">
+                <form onSubmit={handleSearch} className="flex flex-col gap-4">
+                    <Input
+                        label={t('admin.places.filter_search_label')}
+                        name="search"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder={t('admin.places.filter_search_placeholder')}
+                        icon={<FiSearch size={20} />}
                     />
-                    <div>
-                        <h1 className="font-heading text-subtitle font-bold text-primary-100">
-                            Kelola Destinasi Wisata
-                        </h1>
-                        <p className="mt-1 text-body text-gray-70">
-                            Tambah, ubah, dan hapus data destinasi wisata. Setiap destinasi dapat
-                            dihubungkan ke beberapa kategori.
-                        </p>
-                    </div>
-                </div>
 
-                {/* Toolbar */}
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
-                        <form onSubmit={handleSearch} className="w-full sm:max-w-md">
-                            <Input
-                                name="search"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Cari destinasi berdasarkan nama atau alamat..."
-                                icon={<FaSearch />}
-                            />
-                        </form>
-
-                        {/* Filter sumber data (internal admin / hasil impor OSM) */}
-                        <select
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <Dropdown
+                            label={t('admin.places.filter_source_label')}
+                            name="source"
                             value={source}
-                            onChange={(e) => handleSourceChange(e.target.value)}
-                            className="w-full rounded-lg border border-primary-10 bg-white px-3 py-2 font-body text-small text-primary-100 outline-none focus:border-secondary-100 sm:w-48"
-                        >
-                            <option value="">Semua Sumber</option>
-                            <option value="internal">Internal (NuraLoka)</option>
-                            <option value="osm">OSM (Impor)</option>
-                        </select>
+                            onChange={(e) => setSource(e.target.value)}
+                            placeholder={t('admin.places.filter_source_placeholder')}
+                            options={SOURCE_OPTIONS}
+                        />
                     </div>
 
-                    <Button
-                        variant="primary"
-                        iconLeft={<FaPlus />}
-                        onClick={() => router.get(route('admin.places.create'))}
-                        className="shrink-0"
-                    >
-                        Tambah Destinasi
-                    </Button>
-                </div>
+                    <div className="flex flex-wrap justify-end gap-3">
+                        <Button type="button" variant="white" onClick={handleReset}>
+                            {t('admin.common.reset')}
+                        </Button>
 
-                {/* Table */}
-                <div className="mt-6 overflow-x-auto rounded-xl border border-primary-10">
-                    <table className="w-full border-collapse text-left">
-                        <thead>
-                            <tr className="bg-primary-10 text-primary-100">
-                                <th className="px-4 py-3 font-heading text-small font-semibold">Nama Destinasi</th>
-                                <th className="px-4 py-3 font-heading text-small font-semibold">Alamat</th>
-                                <th className="px-4 py-3 font-heading text-small font-semibold">Koordinat</th>
-                                <th className="px-4 py-3 font-heading text-small font-semibold">Kategori</th>
-                                <th className="px-4 py-3 font-heading text-small font-semibold">Sumber</th>
-                                <th className="px-4 py-3 text-center font-heading text-small font-semibold">Aksi</th>
+                        <Button type="submit">{t('admin.common.apply_filter')}</Button>
+                    </div>
+                </form>
+            </div>
+
+            {/* Add Place */}
+            <div className="flex justify-end">
+                <Button
+                    iconLeft={<FiPlus size={18} />}
+                    onClick={() => router.get(route('admin.places.create'))}
+                >
+                    {t('admin.places.add_button')}
+                </Button>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-hidden rounded-lg bg-white shadow-md">
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead className="bg-primary-100 font-heading text-body text-white">
+                            <tr className="text-center">
+                                <th className="min-w-56 whitespace-nowrap px-5 py-4">
+                                    {t('admin.places.th_name')}
+                                </th>
+                                <th className="min-w-56 whitespace-nowrap px-5 py-4">
+                                    {t('admin.places.th_address')}
+                                </th>
+                                <th className="min-w-40 whitespace-nowrap px-5 py-4">
+                                    {t('admin.places.th_coordinates')}
+                                </th>
+                                <th className="min-w-44 whitespace-nowrap px-5 py-4">
+                                    {t('admin.places.th_categories')}
+                                </th>
+                                <th className="min-w-28 whitespace-nowrap px-5 py-4">
+                                    {t('admin.places.th_source')}
+                                </th>
+                                <th className="min-w-32 whitespace-nowrap px-5 py-4">
+                                    {t('admin.places.th_actions')}
+                                </th>
                             </tr>
                         </thead>
+
                         <tbody>
                             {places.data && places.data.length > 0 ? (
                                 places.data.map((place) => (
                                     <tr
                                         key={place.id}
-                                        className="border-t border-primary-10 align-top transition-colors hover:bg-secondary-10"
+                                        className="border-b border-gray-20 align-top transition-colors last:border-b-0 hover:bg-primary-10"
                                     >
-                                        <td className="px-4 py-3">
+                                        <td className="px-5 py-4 font-body text-body text-gray-100">
                                             <span className="flex items-center gap-2 font-semibold text-primary-100">
-                                                <FaMapMarkerAlt className="shrink-0 text-error-dark" />
+                                                <FiMapPin className="shrink-0 text-error-dark" />
                                                 {place.name}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3 text-small text-gray-70">
+
+                                        <td className="px-5 py-4 font-body text-small text-gray-70">
                                             {place.address || (
-                                                <span className="italic text-gray-50">Alamat belum tersedia</span>
+                                                <span className="italic text-gray-50">
+                                                    {t('admin.places.address_unavailable')}
+                                                </span>
                                             )}
                                         </td>
-                                        <td className="px-4 py-3">
+
+                                        <td className="px-5 py-4">
                                             <span className="inline-block rounded-md bg-gray-10 px-2 py-1 font-body text-micro text-gray-70">
-                                                {parseFloat(place.latitude).toFixed(5)}, {parseFloat(place.longitude).toFixed(5)}
+                                                {parseFloat(place.latitude).toFixed(5)},{' '}
+                                                {parseFloat(place.longitude).toFixed(5)}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3">
+
+                                        <td className="px-5 py-4">
                                             <div className="flex flex-wrap gap-1.5">
                                                 {place.categories && place.categories.length > 0 ? (
                                                     place.categories.map((cat) => (
                                                         <span
                                                             key={cat.id}
-                                                            className="inline-flex rounded-full bg-secondary-10 px-2.5 py-1 text-micro font-semibold text-secondary-100"
+                                                            className="inline-flex rounded-full bg-secondary-10 px-2.5 py-1 font-body text-micro font-semibold text-secondary-100"
                                                         >
                                                             {cat.name}
                                                         </span>
                                                     ))
                                                 ) : (
-                                                    <span className="inline-flex rounded-full bg-gray-10 px-2.5 py-1 text-micro italic text-gray-50">
-                                                        Tidak ada
+                                                    <span className="inline-flex rounded-full bg-gray-10 px-2.5 py-1 font-body text-micro italic text-gray-50">
+                                                        {t('admin.places.no_categories')}
                                                     </span>
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3">
+
+                                        <td className="px-5 py-4 text-center">
                                             {place.source === 'osm' ? (
-                                                <span className="inline-flex rounded-full bg-info-light px-2.5 py-1 text-micro font-semibold text-info-dark">
-                                                    OSM
+                                                <span className="inline-flex rounded-full bg-info-light px-2.5 py-1 font-body text-micro font-semibold text-info-dark">
+                                                    {t('admin.places.source_badge_osm')}
                                                 </span>
                                             ) : (
-                                                <span className="inline-flex rounded-full bg-secondary-10 px-2.5 py-1 text-micro font-semibold text-secondary-100">
-                                                    Internal
+                                                <span className="inline-flex rounded-full bg-secondary-10 px-2.5 py-1 font-body text-micro font-semibold text-secondary-100">
+                                                    {t('admin.places.source_badge_internal')}
                                                 </span>
                                             )}
                                         </td>
-                                        <td className="px-4 py-3">
+
+                                        <td className="px-5 py-4 text-center">
                                             <div className="flex items-center justify-center gap-2">
                                                 <Button
                                                     variant="info"
                                                     size="btn-sm"
-                                                    iconLeft={<FaEdit />}
-                                                    onClick={() => router.get(route('admin.places.edit', place.id))}
-                                                    title="Edit Destinasi"
-                                                >
-                                                    Edit
-                                                </Button>
+                                                    className="h-9 w-9 p-0"
+                                                    iconLeft={<FiEdit2 size={17} />}
+                                                    onClick={() =>
+                                                        router.get(
+                                                            route('admin.places.edit', place.slug),
+                                                        )
+                                                    }
+                                                    title={t('admin.places.action_edit')}
+                                                    aria-label={t('admin.places.action_edit')}
+                                                />
+
                                                 <Button
                                                     variant="error"
                                                     size="btn-sm"
-                                                    iconLeft={<FaTrash />}
-                                                    onClick={() => setDeleteTarget({ id: place.id, name: place.name })}
-                                                    title="Hapus Destinasi"
-                                                >
-                                                    Hapus
-                                                </Button>
+                                                    className="h-9 w-9 p-0"
+                                                    iconLeft={<FiTrash2 size={17} />}
+                                                    onClick={() =>
+                                                        setDeleteTarget({
+                                                            slug: place.slug,
+                                                            name: place.name,
+                                                        })
+                                                    }
+                                                    title={t('admin.places.action_delete')}
+                                                    aria-label={t('admin.places.action_delete')}
+                                                />
                                             </div>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="6" className="px-4 py-12 text-center text-body text-gray-50">
-                                        {search
-                                            ? 'Tidak ada destinasi yang cocok dengan pencarian Anda.'
-                                            : 'Belum ada data destinasi wisata.'}
+                                    <td colSpan={6} className="px-6 py-8">
+                                        <EmptyState
+                                            title={t('admin.places.empty_title')}
+                                            description={
+                                                search
+                                                    ? t('admin.places.empty_description')
+                                                    : t('admin.places.empty_description_no_search')
+                                            }
+                                        />
                                     </td>
                                 </tr>
                             )}
@@ -209,66 +267,44 @@ export default function Index({ places, filters }) {
                 </div>
 
                 {/* Pagination */}
-                {places.links && places.links.length > 3 && (
-                    <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-                        {places.links.map((link, index) => {
-                            let label = link.label;
-                            if (label.includes('Previous')) label = 'Sebelumnya';
-                            else if (label.includes('Next')) label = 'Selanjutnya';
-
-                            const base =
-                                'min-w-9 rounded-lg px-3 py-2 text-small font-semibold transition-colors';
-
-                            if (!link.url) {
-                                return (
-                                    <span
-                                        key={index}
-                                        className={`${base} cursor-not-allowed bg-gray-10 text-gray-30`}
-                                        dangerouslySetInnerHTML={{ __html: label }}
-                                    />
-                                );
-                            }
-
-                            return (
-                                <button
-                                    key={index}
-                                    type="button"
-                                    onClick={() => router.get(link.url)}
-                                    className={`${base} ${
-                                        link.active
-                                            ? 'bg-primary-100 text-white'
-                                            : 'bg-primary-10 text-primary-100 hover:bg-primary-30'
-                                    }`}
-                                    dangerouslySetInnerHTML={{ __html: label }}
-                                />
-                            );
-                        })}
-                    </div>
-                )}
+                <Pagination
+                    links={places.links}
+                    from={places.from}
+                    to={places.to}
+                    total={places.total}
+                    itemLabel={t('admin.places.item_label')}
+                />
             </div>
 
+            {/* Delete Confirmation Modal */}
             <Modal
                 isOpen={!!deleteTarget}
                 onClose={() => setDeleteTarget(null)}
                 type="error"
-                title={`Apakah kamu yakin ingin menghapus "${deleteTarget?.name}"?`}
+                title={t('admin.places.modal_delete_title')}
                 actions={[
                     {
-                        label: 'Batal',
-                        variant: 'gray',
+                        label: t('admin.common.cancel'),
+                        variant: 'white',
                         onClick: () => setDeleteTarget(null),
                         disabled: deleting,
                     },
                     {
-                        label: 'Hapus Data',
+                        label: t('admin.common.delete'),
                         variant: 'error',
                         onClick: confirmDelete,
                         loading: deleting,
                     },
                 ]}
-            />
-        </>
+            >
+                {t('admin.places.modal_delete_message', {
+                    name: deleteTarget?.name,
+                })}
+            </Modal>
+        </div>
     );
 }
 
-Index.layout = (page) => <AdminLayout content={page}></AdminLayout>;
+Index.layout = (page) => (
+    <AdminLayout pageTitle="Kelola Destinasi" content={page} />
+);

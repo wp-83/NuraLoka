@@ -1,16 +1,19 @@
+import BrandText from '@components/Common/BrandText';
+import EmptyState from '@components/Common/EmptyState';
 import Modal from '@components/Common/Modal';
+import PageHeader from '@components/Common/PageHeader';
+import Pagination from '@components/Common/Pagination';
 import UserStatisticCard from '@components/Features/UserStatisticCard';
 import Button from '@components/Forms/Button';
 import Dropdown from '@components/Forms/Dropdown';
 import Input from '@components/Forms/Input';
 import AdminLayout from '@js/Layouts/AdminLayout';
+import { useTranslation } from '@js/i18n';
 
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 import {
-    FiChevronLeft,
-    FiChevronRight,
     FiEdit2,
     FiSearch,
     FiShield,
@@ -26,6 +29,7 @@ export default function Index({
     filters = {},
     statistics = {},
 }) {
+    const { t } = useTranslation();
     const authUser = usePage().props.auth.user;
 
     const [search, setSearch] = useState(
@@ -200,49 +204,31 @@ export default function Index({
     const modalConfig = {
         ban: {
             type: 'warning',
-            title: 'Blokir Pengguna',
-            message: (
-                <>
-                    Apakah kamu yakin ingin memblokir akun{' '}
-                    <span className="font-semibold">
-                        @{modal.user?.username}
-                    </span>
-                    ?
-                </>
-            ),
-            confirmLabel: 'Blokir',
+            title: t('admin.users.modal_ban_title'),
+            message: t('admin.users.modal_ban_message', {
+                username: modal.user?.username,
+            }),
+            confirmLabel: t('admin.users.modal_ban_confirm'),
             confirmVariant: 'warning',
         },
 
         unban: {
             type: 'success',
-            title: 'Buka Blokir Pengguna',
-            message: (
-                <>
-                    Apakah kamu yakin ingin membuka blokir akun{' '}
-                    <span className="font-semibold">
-                        @{modal.user?.username}
-                    </span>
-                    ?
-                </>
-            ),
-            confirmLabel: 'Buka Blokir',
+            title: t('admin.users.modal_unban_title'),
+            message: t('admin.users.modal_unban_message', {
+                username: modal.user?.username,
+            }),
+            confirmLabel: t('admin.users.modal_unban_confirm'),
             confirmVariant: 'success',
         },
 
         delete: {
             type: 'error',
-            title: 'Hapus Pengguna',
-            message: (
-                <>
-                    Apakah kamu yakin ingin menghapus akun{' '}
-                    <span className="font-semibold">
-                        @{modal.user?.username}
-                    </span>{' '}
-                    secara permanen?
-                </>
-            ),
-            confirmLabel: 'Hapus',
+            title: t('admin.users.modal_delete_title'),
+            message: t('admin.users.modal_delete_message', {
+                username: modal.user?.username,
+            }),
+            confirmLabel: t('admin.users.modal_delete_confirm'),
             confirmVariant: 'error',
         },
     };
@@ -258,10 +244,9 @@ export default function Index({
 
     const getGenderLabel = (gender) => {
         const labels = {
-            male: 'Laki-laki',
-            female: 'Perempuan',
-            unspecified:
-                'Tidak ingin memberi tahu',
+            male: t('admin.users.gender_male'),
+            female: t('admin.users.gender_female'),
+            unspecified: t('admin.users.gender_unspecified'),
         };
 
         return labels[gender] ?? '-';
@@ -270,21 +255,15 @@ export default function Index({
     return (
         <div className="flex w-full flex-col gap-6">
             {/* Header */}
-            <div>
-                <h1 className="font-heading text-title font-bold text-primary-100">
-                    Kelola Pengguna
-                </h1>
-
-                <p className="mt-1 font-body text-body text-gray-70">
-                    Kelola dan pantau akun pengguna yang
-                    terdaftar di NuraLoka.
-                </p>
-            </div>
+            <PageHeader
+                title={t('admin.users.page_title')}
+                description={<BrandText text={t('admin.users.page_description')} />}
+            />
 
             {/* Statistics */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <UserStatisticCard
-                    title="Total Pengguna"
+                    title={t('admin.users.stat_total')}
                     value={
                         statistics.total_users ?? 0
                     }
@@ -294,7 +273,7 @@ export default function Index({
                 />
 
                 <UserStatisticCard
-                    title="Pengguna Biasa"
+                    title={t('admin.users.stat_regular')}
                     variant="green"
                     value={
                         statistics.total_regular_users ??
@@ -306,7 +285,7 @@ export default function Index({
                 />
 
                 <UserStatisticCard
-                    title="Admin"
+                    title={t('admin.users.stat_admin')}
                     variant="yellow"
                     value={
                         statistics.total_admins ?? 0
@@ -317,7 +296,7 @@ export default function Index({
                 />
 
                 <UserStatisticCard
-                    title="Pengguna Diblokir"
+                    title={t('admin.users.stat_banned')}
                     variant="red"
                     value={
                         statistics.total_banned_users ??
@@ -336,13 +315,13 @@ export default function Index({
                     className="flex flex-col gap-4"
                 >
                     <Input
-                        label="Cari Pengguna"
+                        label={t('admin.users.filter_search_label')}
                         name="search"
                         value={search}
                         onChange={(e) =>
                             setSearch(e.target.value)
                         }
-                        placeholder="Cari nama, username, atau email..."
+                        placeholder={t('admin.users.filter_search_placeholder')}
                         icon={
                             <FiSearch size={20} />
                         }
@@ -350,7 +329,7 @@ export default function Index({
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <Dropdown
-                            label="Role"
+                            label={t('admin.users.filter_role_label')}
                             name="role"
                             value={role}
                             onChange={(e) =>
@@ -358,21 +337,21 @@ export default function Index({
                                     e.target.value,
                                 )
                             }
-                            placeholder="Semua role"
+                            placeholder={t('admin.users.filter_role_placeholder')}
                             options={[
                                 {
                                     value: 'admin',
-                                    label: 'Admin',
+                                    label: t('admin.users.role_admin'),
                                 },
                                 {
                                     value: 'user',
-                                    label: 'Pengguna',
+                                    label: t('admin.users.role_user'),
                                 },
                             ]}
                         />
 
                         <Dropdown
-                            label="Jenis Kelamin"
+                            label={t('admin.users.filter_gender_label')}
                             name="gender"
                             value={gender}
                             onChange={(e) =>
@@ -380,26 +359,25 @@ export default function Index({
                                     e.target.value,
                                 )
                             }
-                            placeholder="Semua jenis kelamin"
+                            placeholder={t('admin.users.filter_gender_placeholder')}
                             options={[
                                 {
                                     value: 'male',
-                                    label: 'Laki-laki',
+                                    label: t('admin.users.gender_male'),
                                 },
                                 {
                                     value: 'female',
-                                    label: 'Perempuan',
+                                    label: t('admin.users.gender_female'),
                                 },
                                 {
                                     value: 'unspecified',
-                                    label:
-                                        'Tidak ingin memberi tahu',
+                                    label: t('admin.users.gender_unspecified'),
                                 },
                             ]}
                         />
 
                         <Dropdown
-                            label="Status"
+                            label={t('admin.users.filter_status_label')}
                             name="status"
                             value={status}
                             onChange={(e) =>
@@ -407,15 +385,15 @@ export default function Index({
                                     e.target.value,
                                 )
                             }
-                            placeholder="Semua status"
+                            placeholder={t('admin.users.filter_status_placeholder')}
                             options={[
                                 {
                                     value: 'active',
-                                    label: 'Aktif',
+                                    label: t('admin.users.status_active'),
                                 },
                                 {
                                     value: 'banned',
-                                    label: 'Diblokir',
+                                    label: t('admin.users.status_banned'),
                                 },
                             ]}
                         />
@@ -427,11 +405,11 @@ export default function Index({
                             variant="white"
                             onClick={handleReset}
                         >
-                            Reset
+                            {t('admin.common.reset')}
                         </Button>
 
                         <Button type="submit">
-                            Terapkan Filter
+                            {t('admin.common.apply_filter')}
                         </Button>
                     </div>
                 </form>
@@ -448,7 +426,7 @@ export default function Index({
                         )
                     }
                 >
-                    Tambah Pengguna Baru
+                    {t('admin.users.add_button')}
                 </Button>
             </div>
 
@@ -459,39 +437,39 @@ export default function Index({
                         <thead className="bg-primary-100 font-heading text-body text-white">
                             <tr className="text-center">
                                 <th className="min-w-72 whitespace-nowrap px-5 py-4">
-                                    Pengguna
+                                    {t('admin.users.th_user')}
                                 </th>
 
                                 <th className="min-w-48 whitespace-nowrap px-5 py-4">
-                                    Username
+                                    {t('admin.users.th_username')}
                                 </th>
 
                                 <th className="min-w-68 whitespace-nowrap px-5 py-4">
-                                    Email
+                                    {t('admin.users.th_email')}
                                 </th>
 
                                 <th className="min-w-32 whitespace-nowrap px-5 py-4">
-                                    Jenis Kelamin
+                                    {t('admin.users.th_gender')}
                                 </th>
 
                                 <th className="min-w-44 whitespace-nowrap px-5 py-4">
-                                    Provinsi
+                                    {t('admin.users.th_province')}
                                 </th>
 
                                 <th className="min-w-28 whitespace-nowrap px-5 py-4">
-                                    Poin
+                                    {t('admin.users.th_points')}
                                 </th>
 
                                 <th className="min-w-24 whitespace-nowrap px-5 py-4">
-                                    Role
+                                    {t('admin.users.th_role')}
                                 </th>
 
                                 <th className="min-w-24 whitespace-nowrap px-5 py-4">
-                                    Status
+                                    {t('admin.users.th_status')}
                                 </th>
 
                                 <th className="min-w-40 whitespace-nowrap px-5 py-4">
-                                    Aksi
+                                    {t('admin.users.th_actions')}
                                 </th>
                             </tr>
                         </thead>
@@ -518,7 +496,7 @@ export default function Index({
                                                 }
                                             `}
                                         >
-                                            {/* Pengguna */}
+                                            {/* User */}
                                             <td className="px-5 py-4 font-body text-body text-gray-100">
                                                 <div className="flex items-center gap-3">
                                                     <img
@@ -538,13 +516,13 @@ export default function Index({
                                                                 authUser.id && (
                                                                 <span className="font-bold text-small text-primary-70">
                                                                     {' '}
-                                                                    (Kamu)
+                                                                    {t('admin.users.you_suffix')}
                                                                 </span>
                                                             )}
                                                         </p>
 
                                                         <p className="font-body text-small text-gray-50">
-                                                            ID: {user.id}
+                                                            {t('admin.users.id_prefix')}: {user.id}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -560,20 +538,20 @@ export default function Index({
                                                 {user.email}
                                             </td>
 
-                                            {/* Jenis Kelamin */}
+                                            {/* Gender */}
                                             <td className="px-5 py-4 font-body text-body text-gray-100">
                                                 {getGenderLabel(
                                                     user.user_detail?.gender,
                                                 )}
                                             </td>
 
-                                            {/* Provinsi */}
+                                            {/* Province */}
                                             <td className="px-5 py-4 font-body text-body text-gray-100">
                                                 {user.user_detail
                                                     ?.province?.name ?? '-'}
                                             </td>
 
-                                            {/* Poin */}
+                                            {/* Points */}
                                             <td className="px-5 py-4 font-body text-body text-gray-100">
                                                 {(
                                                     user.user_detail
@@ -594,8 +572,8 @@ export default function Index({
                                                         .join(' ')}
                                                 >
                                                     {user.is_admin
-                                                        ? 'Admin'
-                                                        : 'Pengguna'}
+                                                        ? t('admin.users.role_admin')
+                                                        : t('admin.users.role_user')}
                                                 </span>
                                             </td>
 
@@ -612,12 +590,12 @@ export default function Index({
                                                         .join(' ')}
                                                 >
                                                     {user.is_banned
-                                                        ? 'Diblokir'
-                                                        : 'Aktif'}
+                                                        ? t('admin.users.status_banned')
+                                                        : t('admin.users.status_active')}
                                                 </span>
                                             </td>
 
-                                            {/* Aksi */}
+                                            {/* Actions */}
                                             <td className="px-5 py-4 text-center">
                                                 <div className="flex items-center justify-center gap-2">
                                                     {/* Edit */}
@@ -638,8 +616,8 @@ export default function Index({
                                                                 ),
                                                             )
                                                         }
-                                                        title="Edit pengguna"
-                                                        aria-label="Edit pengguna"
+                                                        title={t('admin.users.action_edit')}
+                                                        aria-label={t('admin.users.action_edit')}
                                                     />
 
                                                     {/* Ban / Unban */}
@@ -647,7 +625,7 @@ export default function Index({
                                                         <Button
                                                             variant={
                                                                 isActionDisabled
-                                                                    ? 'disabled'
+                                                                    ? 'inactive'
                                                                     : 'success'
                                                             }
                                                             size="btn-sm"
@@ -669,18 +647,18 @@ export default function Index({
                                                             title={
                                                                 user.id ==
                                                                 authUser.id
-                                                                    ? 'Tidak dapat membuka blokir akun sendiri'
+                                                                    ? t('admin.users.action_disabled_self_unban')
                                                                     : user.is_admin
-                                                                    ? 'Admin tidak dapat diblokir'
-                                                                    : 'Buka blokir pengguna'
+                                                                    ? t('admin.users.action_disabled_admin_ban')
+                                                                    : t('admin.users.action_unban')
                                                             }
-                                                            aria-label="Buka blokir pengguna"
+                                                            aria-label={t('admin.users.action_unban')}
                                                         />
                                                     ) : (
                                                         <Button
                                                             variant={
                                                                 isActionDisabled
-                                                                    ? 'disabled'
+                                                                    ? 'inactive'
                                                                     : 'warning'
                                                             }
                                                             size="btn-sm"
@@ -702,12 +680,12 @@ export default function Index({
                                                             title={
                                                                 user.id ==
                                                                 authUser.id
-                                                                    ? 'Tidak dapat memblokir akun sendiri'
+                                                                    ? t('admin.users.action_disabled_self_ban')
                                                                     : user.is_admin
-                                                                    ? 'Admin tidak dapat diblokir'
-                                                                    : 'Blokir pengguna'
+                                                                    ? t('admin.users.action_disabled_admin_ban')
+                                                                    : t('admin.users.action_ban')
                                                             }
-                                                            aria-label="Blokir pengguna"
+                                                            aria-label={t('admin.users.action_ban')}
                                                         />
                                                     )}
 
@@ -715,7 +693,7 @@ export default function Index({
                                                     <Button
                                                         variant={
                                                             isActionDisabled
-                                                                ? 'disabled'
+                                                                ? 'inactive'
                                                                 : 'error'
                                                         }
                                                         size="btn-sm"
@@ -737,12 +715,12 @@ export default function Index({
                                                         title={
                                                             user.id ==
                                                             authUser.id
-                                                                ? 'Tidak dapat menghapus akun sendiri'
+                                                                ? t('admin.users.action_disabled_self_delete')
                                                                 : user.is_admin
-                                                                ? 'Admin tidak dapat dihapus'
-                                                                : 'Hapus pengguna'
+                                                                ? t('admin.users.action_disabled_admin_delete')
+                                                                : t('admin.users.action_delete')
                                                         }
-                                                        aria-label="Hapus pengguna"
+                                                        aria-label={t('admin.users.action_delete')}
                                                     />
                                                 </div>
                                             </td>
@@ -755,22 +733,10 @@ export default function Index({
                                         colSpan={9}
                                         className="px-6 py-8"
                                     >
-                                        <div className="flex w-full flex-col items-center justify-center text-center">
-                                            <img
-                                                src="/images/mascots/wait.png"
-                                                alt="Mascot"
-                                                className="w-28"
-                                            />
-
-                                            <p className="mt-3 font-heading text-paragraph text-gray-100">
-                                                Pengguna tidak ditemukan
-                                            </p>
-
-                                            <p className="mt-1 font-body text-body text-gray-50">
-                                                Coba ubah kata kunci atau filter
-                                                pencarian.
-                                            </p>
-                                        </div>
+                                        <EmptyState
+                                            title={t('admin.users.empty_title')}
+                                            description={t('admin.users.empty_description')}
+                                        />
                                     </td>
                                 </tr>
                             )}
@@ -779,85 +745,13 @@ export default function Index({
                 </div>
 
                 {/* Pagination */}
-                {users.links &&
-                    users.links.length > 3 && (
-                        <div className="flex flex-col gap-4 border-t border-gray-20 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                            <p className="font-body text-small text-gray-50">
-                                Menampilkan{' '}
-                                {users.from ?? 0}–
-                                {users.to ?? 0} dari{' '}
-                                {users.total ?? 0}{' '}
-                                pengguna
-                            </p>
-
-                            <div className="flex items-center gap-2">
-                                {users.links.map(
-                                    (
-                                        link,
-                                        index,
-                                    ) => {
-                                        const isPrevious =
-                                            index ===
-                                            0;
-
-                                        const isNext =
-                                            index ===
-                                            users
-                                                .links
-                                                .length -
-                                                1;
-
-                                        return (
-                                            <Button
-                                                key={`${link.label}-${index}`}
-                                                type="button"
-                                                variant={
-                                                    link.active
-                                                        ? 'primary'
-                                                        : 'white'
-                                                }
-                                                size="btn-sm"
-                                                disabled={
-                                                    !link.url
-                                                }
-                                                className="h-9 min-w-9 px-3"
-                                                onClick={() => {
-                                                    if (
-                                                        link.url
-                                                    ) {
-                                                        router.get(
-                                                            link.url,
-                                                            {},
-                                                            {
-                                                                preserveState: true,
-                                                                preserveScroll: true,
-                                                            },
-                                                        );
-                                                    }
-                                                }}
-                                            >
-                                                {isPrevious ? (
-                                                    <FiChevronLeft
-                                                        size={
-                                                            18
-                                                        }
-                                                    />
-                                                ) : isNext ? (
-                                                    <FiChevronRight
-                                                        size={
-                                                            18
-                                                        }
-                                                    />
-                                                ) : (
-                                                    link.label
-                                                )}
-                                            </Button>
-                                        );
-                                    },
-                                )}
-                            </div>
-                        </div>
-                    )}
+                <Pagination
+                    links={users.links}
+                    from={users.from}
+                    to={users.to}
+                    total={users.total}
+                    itemLabel={t('admin.users.item_label')}
+                />
             </div>
 
             {/* Confirmation Modal */}
@@ -869,7 +763,7 @@ export default function Index({
                     title={activeModal.title}
                     actions={[
                         {
-                            label: 'Batal',
+                            label: t('admin.common.cancel'),
                             variant: 'white',
                             onClick: closeModal,
                             disabled: processing,

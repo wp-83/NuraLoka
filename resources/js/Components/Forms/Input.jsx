@@ -170,10 +170,16 @@ export default function Input({
                 </div>
             )}
 
-            {error && (
+            {error ? (
                 <p className="text-error-dark text-small italic">
                     {error}
                 </p>
+            ) : (
+                helperText && (
+                    <p className="text-gray-50 text-small">
+                        {helperText}
+                    </p>
+                )
             )}
         </div>
     );

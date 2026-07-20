@@ -5,14 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Province;
 use App\Models\User;
 use App\Models\UserDetail;
+use App\Services\ImageCompressionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
 
 class UserController extends Controller
 {
@@ -222,7 +221,7 @@ class UserController extends Controller
                     'nullable',
                     'image',
                     'mimes:jpg,jpeg,png,webp',
-                    'max:2048',
+                    'max:5120',
                 ],
             ],
             [
@@ -232,7 +231,7 @@ class UserController extends Controller
 
                 'email.unique' => 'Email tersebut sudah digunakan oleh pengguna lain.',
 
-                'profile_photo.max' => 'Ukuran maksimal foto profil 2MB.',
+                'profile_photo.max' => 'Ukuran maksimal foto profil 5MB.',
             ]
         );
 
@@ -413,7 +412,7 @@ class UserController extends Controller
                     'nullable',
                     'image',
                     'mimes:jpg,jpeg,png,webp',
-                    'max:2048',
+                    'max:5120',
                 ],
             ],
             [
@@ -423,7 +422,7 @@ class UserController extends Controller
 
                 'email.unique' => 'Email tersebut sudah digunakan oleh pengguna lain.',
 
-                'profile_photo.max' => 'Ukuran maksimal foto profil 2MB.',
+                'profile_photo.max' => 'Ukuran maksimal foto profil 5MB.',
             ]
         );
 
@@ -694,81 +693,11 @@ class UserController extends Controller
             return null;
         }
 
-        $photo =
-            $request->file(
-                'profile_photo'
-            );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Create Image Manager
-        |--------------------------------------------------------------------------
-        */
-
-        $manager = new ImageManager(
-            new Driver
+        return app(ImageCompressionService::class)->compressToDisk(
+            $request->file('profile_photo'),
+            'profile-photos',
+            maxWidth: 800,
+            maxHeight: 800,
         );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Read Image
-        |--------------------------------------------------------------------------
-        */
-
-        $image = $manager->decodePath(
-            $photo->getPathname()
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Resize Image
-        |--------------------------------------------------------------------------
-        */
-
-        $image->scaleDown(
-            width: 800,
-            height: 800
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Convert to WebP
-        |--------------------------------------------------------------------------
-        */
-
-        $encoded =
-            $image->encodeUsingFileExtension(
-                'webp',
-                quality: 80
-            );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Generate Unique Filename
-        |--------------------------------------------------------------------------
-        */
-
-        $filename =
-            uniqid(
-                'profile_',
-                true
-            ).'.webp';
-
-        $path =
-            'profile-photos/'.
-            $filename;
-
-        /*
-        |--------------------------------------------------------------------------
-        | Store Image
-        |--------------------------------------------------------------------------
-        */
-
-        Storage::disk('public')->put(
-            $path,
-            $encoded->toString()
-        );
-
-        return $path;
     }
 }

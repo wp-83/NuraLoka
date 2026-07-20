@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Check-in kunjungan: 1 baris unik per (user, place). Dipakai untuk menghitung
-     * jumlah pengunjung unik pada ranking "Ramai Dikunjungi".
+     * Check-in visits: one unique row per (user, place), used for the
+     * "most visited" ranking.
      */
     public function up(): void
     {
@@ -16,12 +16,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('place_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
-            $table->decimal('latitude', 10, 7)->nullable();   // lokasi user saat check-in
+            $table->decimal('latitude', 10, 7)->nullable(); // user's location at check-in
             $table->decimal('longitude', 10, 7)->nullable();
             $table->timestamp('visited_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['user_id', 'place_id']); // 1 kunjungan unik per user/place
+            $table->unique(['user_id', 'place_id']); // one visit per user/place
             $table->index('place_id');
         });
     }

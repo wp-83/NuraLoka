@@ -156,9 +156,9 @@ Route::middleware(['auth', 'unbanned', 'admin'])->prefix('/admin')->name('admin.
         Route::get('/', [AdminPlaceController::class, 'index'])->name('index');
         Route::get('/create', [AdminPlaceController::class, 'create'])->name('create');
         Route::post('/', [AdminPlaceController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [AdminPlaceController::class, 'edit'])->name('edit');
-        Route::post('/{id}', [AdminPlaceController::class, 'update'])->name('update');
-        Route::delete('/{id}', [AdminPlaceController::class, 'destroy'])->name('destroy');
+        Route::get('/{place:slug}/edit', [AdminPlaceController::class, 'edit'])->name('edit');
+        Route::post('/{place:slug}', [AdminPlaceController::class, 'update'])->name('update');
+        Route::delete('/{place:slug}', [AdminPlaceController::class, 'destroy'])->name('destroy');
     });
 
     // OSM Import (impor data titik OSM dinamis dari panel admin)
@@ -173,9 +173,9 @@ Route::middleware(['auth', 'unbanned', 'admin'])->prefix('/admin')->name('admin.
         Route::get('/', [AdminCategoryController::class, 'index'])->name('index');
         Route::get('/create', [AdminCategoryController::class, 'create'])->name('create');
         Route::post('/', [AdminCategoryController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [AdminCategoryController::class, 'edit'])->name('edit');
-        Route::post('/{id}', [AdminCategoryController::class, 'update'])->name('update');
-        Route::delete('/{id}', [AdminCategoryController::class, 'destroy'])->name('destroy');
+        Route::get('/{category:slug}/edit', [AdminCategoryController::class, 'edit'])->name('edit');
+        Route::post('/{category:slug}', [AdminCategoryController::class, 'update'])->name('update');
+        Route::delete('/{category:slug}', [AdminCategoryController::class, 'destroy'])->name('destroy');
     });
 
     // Mission Management
@@ -183,9 +183,9 @@ Route::middleware(['auth', 'unbanned', 'admin'])->prefix('/admin')->name('admin.
         Route::get('/', [AdminMissionController::class, 'index'])->name('index');
         Route::get('/create', [AdminMissionController::class, 'create'])->name('create');
         Route::post('/', [AdminMissionController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [AdminMissionController::class, 'edit'])->name('edit');
-        Route::post('/{id}', [AdminMissionController::class, 'update'])->name('update');
-        Route::delete('/{id}', [AdminMissionController::class, 'destroy'])->name('destroy');
+        Route::get('/{mission:slug}/edit', [AdminMissionController::class, 'edit'])->name('edit');
+        Route::post('/{mission:slug}', [AdminMissionController::class, 'update'])->name('update');
+        Route::delete('/{mission:slug}', [AdminMissionController::class, 'destroy'])->name('destroy');
     });
 
     // Badge Management
@@ -193,9 +193,9 @@ Route::middleware(['auth', 'unbanned', 'admin'])->prefix('/admin')->name('admin.
         Route::get('/', [AdminBadgeController::class, 'index'])->name('index');
         Route::get('/create', [AdminBadgeController::class, 'create'])->name('create');
         Route::post('/', [AdminBadgeController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [AdminBadgeController::class, 'edit'])->name('edit');
-        Route::post('/{id}', [AdminBadgeController::class, 'update'])->name('update');
-        Route::delete('/{id}', [AdminBadgeController::class, 'destroy'])->name('destroy');
+        Route::get('/{badge:slug}/edit', [AdminBadgeController::class, 'edit'])->name('edit');
+        Route::post('/{badge:slug}', [AdminBadgeController::class, 'update'])->name('update');
+        Route::delete('/{badge:slug}', [AdminBadgeController::class, 'destroy'])->name('destroy');
     });
 
     // Level Management
@@ -203,9 +203,9 @@ Route::middleware(['auth', 'unbanned', 'admin'])->prefix('/admin')->name('admin.
         Route::get('/', [AdminLevelController::class, 'index'])->name('index');
         Route::get('/create', [AdminLevelController::class, 'create'])->name('create');
         Route::post('/', [AdminLevelController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [AdminLevelController::class, 'edit'])->name('edit');
-        Route::post('/{id}', [AdminLevelController::class, 'update'])->name('update');
-        Route::delete('/{id}', [AdminLevelController::class, 'destroy'])->name('destroy');
+        Route::get('/{level:slug}/edit', [AdminLevelController::class, 'edit'])->name('edit');
+        Route::post('/{level:slug}', [AdminLevelController::class, 'update'])->name('update');
+        Route::delete('/{level:slug}', [AdminLevelController::class, 'destroy'])->name('destroy');
     });
 
     // News Management
@@ -213,9 +213,9 @@ Route::middleware(['auth', 'unbanned', 'admin'])->prefix('/admin')->name('admin.
         Route::get('/', [AdminNewsController::class, 'index'])->name('index');
         Route::get('/create', [AdminNewsController::class, 'create'])->name('create');
         Route::post('/', [AdminNewsController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [AdminNewsController::class, 'edit'])->name('edit');
-        Route::post('/{id}', [AdminNewsController::class, 'update'])->name('update');
-        Route::delete('/{id}', [AdminNewsController::class, 'destroy'])->name('destroy');
+        Route::get('/{news:slug}/edit', [AdminNewsController::class, 'edit'])->name('edit');
+        Route::post('/{news:slug}', [AdminNewsController::class, 'update'])->name('update');
+        Route::delete('/{news:slug}', [AdminNewsController::class, 'destroy'])->name('destroy');
     });
 
     // User Management

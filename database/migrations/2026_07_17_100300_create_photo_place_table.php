@@ -7,8 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Pivot yang menghubungkan foto (tabel `photos`) dengan tempat (`places`).
-     * Satu foto bisa menempel ke satu place; kombinasi dijaga unik.
+     * Pivot linking `photos` to `places`; the combination stays unique.
      */
     public function up(): void
     {

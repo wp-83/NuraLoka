@@ -1,6 +1,8 @@
+import FormSection from '@components/Common/FormSection';
 import Button from '@components/Forms/Button';
 import Dropdown from '@components/Forms/Dropdown';
 import Input from '@components/Forms/Input';
+import { useTranslation } from '@js/i18n';
 
 import {
     useForm,
@@ -25,6 +27,8 @@ export default function UserForm({
     user = null,
     provinces = [],
 }) {
+    const { t } = useTranslation();
+
     const authUser =
         usePage().props.auth.user;
 
@@ -165,28 +169,21 @@ export default function UserForm({
                         window.history.back()
                     }
                 >
-                    Kembali
+                    {t('admin.common.back')}
                 </Button>
             </div>
 
-            {/* Foto Profil */}
-            <div className="rounded-xl bg-white p-6 shadow-sm">
-                <div className="mb-6">
-                    <h2 className="font-heading text-subtitle font-bold text-primary-100">
-                        Foto Profil
-                    </h2>
-
-                    <p className="mt-1 font-body text-body text-gray-50">
-                        Unggah foto profil pengguna. Maksimal 2 MB.
-                    </p>
-                </div>
-
+            {/* Profile Photo */}
+            <FormSection
+                title={t('admin.users.form_photo_title')}
+                description={t('admin.users.form_photo_description')}
+            >
                 <div className="flex flex-col items-center gap-4 sm:flex-row">
-                    {/* Preview hanya muncul jika ada foto */}
+                    {/* Preview is only shown when a photo exists */}
                     {photoPreview && (
                         <img
                             src={photoPreview}
-                            alt="Preview foto profil"
+                            alt={t('admin.users.form_photo_title')}
                             className="h-32 w-32 rounded-full p-0.5 border-3 border-secondary object-cover"
                         />
                     )}
@@ -216,8 +213,8 @@ export default function UserForm({
                             <FiCamera size={18} />
 
                             {photoPreview
-                                ? 'Ganti Foto'
-                                : 'Pilih Foto'}
+                                ? t('admin.users.form_photo_change')
+                                : t('admin.users.form_photo_choose')}
                         </label>
 
                         <input
@@ -248,24 +245,16 @@ export default function UserForm({
                         )}
                     </div>
                 </div>
-            </div>
+            </FormSection>
 
-            {/* Informasi Akun */}
-            <div className="rounded-xl bg-white p-6 shadow-sm">
-                <div className="mb-6">
-                    <h2 className="font-heading text-subtitle font-bold text-primary-100">
-                        Informasi Akun
-                    </h2>
-
-                    <p className="mt-1 font-body text-body text-gray-50">
-                        Atur informasi utama dan hak
-                        akses akun.
-                    </p>
-                </div>
-
+            {/* Account Information */}
+            <FormSection
+                title={t('admin.users.form_account_title')}
+                description={t('admin.users.form_account_description')}
+            >
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <Input
-                        label="Username"
+                        label={t('admin.users.label_username')}
                         name="username"
                         value={data.username}
                         onChange={(e) =>
@@ -274,7 +263,7 @@ export default function UserForm({
                                 e.target.value,
                             )
                         }
-                        placeholder="Masukkan username"
+                        placeholder={t('admin.users.placeholder_username')}
                         icon={
                             <FiUser size={20} />
                         }
@@ -283,7 +272,7 @@ export default function UserForm({
                     />
 
                     <Input
-                        label="Email"
+                        label={t('admin.users.label_email')}
                         name="email"
                         type="email"
                         value={data.email}
@@ -293,7 +282,7 @@ export default function UserForm({
                                 e.target.value,
                             )
                         }
-                        placeholder="Masukkan email"
+                        placeholder={t('admin.users.placeholder_email')}
                         icon={
                             <FiMail size={20} />
                         }
@@ -302,7 +291,7 @@ export default function UserForm({
                     />
 
                     <Dropdown
-                        label="Role"
+                        label={t('admin.users.label_role')}
                         name="is_admin"
                         value={data.is_admin}
                         onChange={(e) =>
@@ -314,11 +303,11 @@ export default function UserForm({
                         options={[
                             {
                                 value: '0',
-                                label: 'Pengguna',
+                                label: t('admin.users.role_user'),
                             },
                             {
                                 value: '1',
-                                label: 'Admin',
+                                label: t('admin.users.role_admin'),
                             },
                         ]}
                         error={errors.is_admin}
@@ -326,24 +315,16 @@ export default function UserForm({
                         required
                     />
                 </div>
-            </div>
+            </FormSection>
 
-            {/* Informasi Pribadi */}
-            <div className="rounded-xl bg-white p-6 shadow-sm">
-                <div className="mb-6">
-                    <h2 className="font-heading text-subtitle font-bold text-primary-100">
-                        Informasi Pribadi
-                    </h2>
-
-                    <p className="mt-1 font-body text-body text-gray-50">
-                        Lengkapi informasi pribadi
-                        Nuravers.
-                    </p>
-                </div>
-
+            {/* Personal Information */}
+            <FormSection
+                title={t('admin.users.form_personal_title')}
+                description={t('admin.users.form_personal_description')}
+            >
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <Input
-                        label="Nama Lengkap"
+                        label={t('admin.users.label_fullname')}
                         name="fullname"
                         value={data.fullname}
                         onChange={(e) =>
@@ -352,7 +333,7 @@ export default function UserForm({
                                 e.target.value,
                             )
                         }
-                        placeholder="Masukkan nama lengkap"
+                        placeholder={t('admin.users.placeholder_fullname')}
                         icon={
                             <FiUser size={20} />
                         }
@@ -361,7 +342,7 @@ export default function UserForm({
                     />
 
                     <Input
-                        label="Tanggal Lahir"
+                        label={t('admin.users.label_dob')}
                         name="dob"
                         type="date"
                         value={data.dob}
@@ -376,7 +357,7 @@ export default function UserForm({
                     />
 
                     <Dropdown
-                        label="Jenis Kelamin"
+                        label={t('admin.users.label_gender')}
                         name="gender"
                         value={data.gender}
                         onChange={(e) =>
@@ -388,16 +369,15 @@ export default function UserForm({
                         options={[
                             {
                                 value: 'male',
-                                label: 'Laki-laki',
+                                label: t('admin.users.gender_male'),
                             },
                             {
                                 value: 'female',
-                                label: 'Perempuan',
+                                label: t('admin.users.gender_female'),
                             },
                             {
                                 value: 'unspecified',
-                                label:
-                                    'Tidak ingin memberi tahu',
+                                label: t('admin.users.gender_unspecified'),
                             },
                         ]}
                         error={errors.gender}
@@ -405,7 +385,7 @@ export default function UserForm({
                     />
 
                     <Dropdown
-                        label="Provinsi Domisili"
+                        label={t('admin.users.label_province')}
                         name="province_id"
                         value={data.province_id}
                         onChange={(e) =>
@@ -414,7 +394,7 @@ export default function UserForm({
                                 e.target.value,
                             )
                         }
-                        placeholder="Pilih provinsi"
+                        placeholder={t('admin.users.placeholder_province')}
                         options={provinces.map(
                             (province) => ({
                                 value:
@@ -429,30 +409,27 @@ export default function UserForm({
                         required
                     />
                 </div>
-            </div>
+            </FormSection>
 
             {/* Password */}
-            <div className="rounded-xl bg-white p-6 shadow-sm">
-                <div className="mb-6">
-                    <h2 className="font-heading text-subtitle font-bold text-primary-100">
-                        {isEdit
-                            ? 'Ubah Kata Sandi'
-                            : 'Kata Sandi'}
-                    </h2>
-
-                    <p className="mt-1 font-body text-body text-gray-50">
-                        {isEdit
-                            ? 'Kosongkan kata sandi jika tidak ingin mengubahnya.'
-                            : 'Buat kata sandi untuk akun Nuravers.'}
-                    </p>
-                </div>
-
+            <FormSection
+                title={
+                    isEdit
+                        ? t('admin.users.form_password_title_edit')
+                        : t('admin.users.form_password_title')
+                }
+                description={
+                    isEdit
+                        ? t('admin.users.form_password_description_edit')
+                        : t('admin.users.form_password_description')
+                }
+            >
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <Input
                         label={
                             isEdit
-                                ? 'Kata Sandi Baru'
-                                : 'Kata Sandi'
+                                ? t('admin.users.label_password_new')
+                                : t('admin.users.label_password')
                         }
                         name="password"
                         type="password"
@@ -463,7 +440,7 @@ export default function UserForm({
                                 e.target.value,
                             )
                         }
-                        placeholder="Masukkan kata sandi"
+                        placeholder={t('admin.users.placeholder_password')}
                         icon={
                             <FiLock size={20} />
                         }
@@ -472,7 +449,7 @@ export default function UserForm({
                     />
 
                     <Input
-                        label="Konfirmasi Kata Sandi"
+                        label={t('admin.users.label_password_confirm')}
                         name="password_confirmation"
                         type="password"
                         value={
@@ -484,7 +461,7 @@ export default function UserForm({
                                 e.target.value,
                             )
                         }
-                        placeholder="Ulangi kata sandi"
+                        placeholder={t('admin.users.placeholder_password_confirm')}
                         icon={
                             <FiLock size={20} />
                         }
@@ -494,7 +471,7 @@ export default function UserForm({
                         required={!isEdit}
                     />
                 </div>
-            </div>
+            </FormSection>
 
             {/* Actions */}
             <div className="flex justify-end">
@@ -508,8 +485,8 @@ export default function UserForm({
                     }
                 >
                     {isEdit
-                        ? 'Simpan Perubahan'
-                        : 'Tambah Pengguna'}
+                        ? t('admin.users.submit_edit')
+                        : t('admin.users.submit_create')}
                 </Button>
             </div>
         </form>
