@@ -69,6 +69,7 @@ const news = [
 export default function Index({
     auth,
     latestNews = [],
+    ongoingMission = null,
 }) {
     const { t } = useTranslation()
 
@@ -260,47 +261,86 @@ export default function Index({
 
             {/* Mission */}
             <section className="container mt-10">
-                <div className="flex flex-col items-center gap-5 rounded-2xl border border-blue-100 bg-blue-50 p-5 shadow-sm sm:flex-row">
-                    <img
-                        src="/images/home/mission-badge.png"
-                        alt="Badge misi"
-                        className="h-24 w-24 shrink-0 rounded-full object-cover"
-                    />
+                {ongoingMission ? (
+                    <div className="flex flex-col items-center gap-5 rounded-2xl border border-blue-100 bg-blue-50 p-5 shadow-sm sm:flex-row">
+                        {ongoingMission.badge_icon ? (
+                            <img
+                                src={`/${ongoingMission.badge_icon}`}
+                                alt={ongoingMission.badge}
+                                className="h-24 w-24 shrink-0 rounded-full object-cover"
+                            />
+                        ) : (
+                            <img
+                                src="/images/home/mission-badge.png"
+                                alt="Badge misi"
+                                className="h-24 w-24 shrink-0 rounded-full object-cover"
+                            />
+                        )}
 
-                    <div className="flex-1 text-center sm:text-left">
-                        <h2 className="text-paragraph font-heading text-primary-100">
-                            <span className="font-bold">
-                                {t('home.mission_nearest')}
-                            </span>{' '}
-                            Kunjungi 10 lokasi kuliner lokal di Indonesia
-                        </h2>
+                        <div className="flex-1 text-center sm:text-left">
+                            <h2 className="text-paragraph font-heading text-primary-100">
+                                <span className="font-bold">
+                                    {t('home.mission_nearest')}
+                                </span>{' '}
+                                {ongoingMission.title}
+                            </h2>
 
-                        <p className="text-body text-secondary-100">
-                            Selesaikan misi ini untuk mendapatkan lencana perak kuliner dan poin Nura sebesar 100 poin.
-                        </p>
+                            <p className="text-body text-secondary-100">
+                                {ongoingMission.description}
+                            </p>
 
-                        <Button
-                            type="button"
-                            variant="primary"
-                            size="btn-md"
-                            className="mt-4"
-                        >
-                            {t('common.view_detail')}
-                        </Button>
-                    </div>
+                            <Link href={route('challenge.badges')} className="inline-block mt-4">
+                                <Button
+                                    type="button"
+                                    variant="primary"
+                                    size="btn-md"
+                                >
+                                    {t('common.view_detail')}
+                                </Button>
+                            </Link>
+                        </div>
 
-                    <div className="flex shrink-0 flex-col items-center gap-2">
-                        <span className="text-body text-secondary-100">
-                            {t('home.progress_you')}
-                        </span>
-
-                        <div className="flex h-20 w-20 items-center justify-center rounded-full border-[7px] border-primary-30 border-r-primary-100">
-                            <span className="font-semibold text-primary-100">
-                                40%
+                        <div className="flex shrink-0 flex-col items-center gap-2">
+                            <span className="text-body text-secondary-100">
+                                {t('home.progress_you')}
                             </span>
+
+                            <div
+                                className="flex h-20 w-20 items-center justify-center rounded-full"
+                                style={{
+                                    background: `conic-gradient(var(--color-primary-100, #1e3a5f) ${ongoingMission.percent * 3.6}deg, var(--color-primary-30, #dbeafe) ${ongoingMission.percent * 3.6}deg)`,
+                                }}
+                            >
+                                <div className="flex h-[3.25rem] w-[3.25rem] items-center justify-center rounded-full bg-blue-50">
+                                    <span className="font-semibold text-primary-100">
+                                        {ongoingMission.percent}%
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="flex flex-col items-center gap-5 rounded-2xl border border-blue-100 bg-blue-50 p-8 shadow-sm text-center">
+                        <img
+                            src="/images/home/mission-badge.png"
+                            alt="Badge misi"
+                            className="h-24 w-24 shrink-0 rounded-full object-cover opacity-50"
+                        />
+                        <div>
+                            <p className="font-heading font-bold text-paragraph text-primary-100">
+                                {t('challenge.missions_empty_title')}
+                            </p>
+                            <p className="mt-1 text-body text-secondary-100">
+                                {t('challenge.missions_empty_desc')}
+                            </p>
+                        </div>
+                        <Link href={route('challenge.index')} className="inline-block">
+                            <Button variant="primary" size="btn-md">
+                                {t('common.view_detail')}
+                            </Button>
+                        </Link>
+                    </div>
+                )}
             </section>
 
             {/* Album */}
