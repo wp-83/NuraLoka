@@ -11,6 +11,7 @@ import {
     FiChevronLeft,
     FiMapPin,
     FiUsers,
+    FiCamera,
 } from 'react-icons/fi';
 
 import {
@@ -31,6 +32,8 @@ export default function Show({
     gallery = [],
     isSaved: initialSaved = false,
     totalSaves = 0,
+    visitorsCount = 0,
+    albumPostersCount = 0,
 }) {
     const { t } = useTranslation();
     const [isSaved, setIsSaved] = useState(initialSaved);
@@ -363,9 +366,59 @@ export default function Show({
                                     </span>
                                 </div>
 
+                                {/* Visitors Count */}
+                                {visitorsCount > 0 && (
+                                    <div className="flex items-center gap-3">
+                                        <FiUsers
+                                            size={22}
+                                            className="
+                                                shrink-0
+                                                text-secondary
+                                            "
+                                        />
+
+                                        <span
+                                            className="
+                                                font-body text-small
+                                                font-medium
+                                                text-gray-85
+
+                                                md:text-body
+                                            "
+                                        >
+                                            {t('explore.card_visitors', { count: Number(visitorsCount).toLocaleString('id-ID') })}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Albums Count */}
+                                {albumPostersCount > 0 && (
+                                    <div className="flex items-center gap-3">
+                                        <FiCamera
+                                            size={22}
+                                            className="
+                                                shrink-0
+                                                text-secondary
+                                            "
+                                        />
+
+                                        <span
+                                            className="
+                                                font-body text-small
+                                                font-medium
+                                                text-gray-85
+
+                                                md:text-body
+                                            "
+                                        >
+                                            {t('explore.card_albums', { count: Number(albumPostersCount).toLocaleString('id-ID') })}
+                                        </span>
+                                    </div>
+                                )}
+
                                 {/* Total Saves */}
                                 <div className="flex items-center gap-3">
-                                    <FiUsers
+                                    <FiBookmark
                                         size={22}
                                         className="
                                             shrink-0
@@ -407,7 +460,25 @@ export default function Show({
                                             md:text-body
                                         "
                                     >
-                                        {t('explore.price_estimate')}
+                                        {(() => {
+                                            const min = place?.min_price;
+                                            const max = place?.max_price;
+                                            
+                                            const formatRp = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
+
+                                            if (min !== null && min !== undefined && max !== null && max !== undefined) {
+                                                if (min === max) {
+                                                    return min === 0 ? 'Gratis' : formatRp(min);
+                                                }
+                                                return `± ${formatRp(min)} - ${formatRp(max)}/orang`;
+                                            }
+                                            
+                                            if (min !== null && min !== undefined) {
+                                                return min === 0 ? 'Gratis' : `Mulai dari ${formatRp(min)}/orang`;
+                                            }
+
+                                            return 'Harga belum tersedia';
+                                        })()}
                                     </span>
                                 </div>
                             </div>

@@ -548,11 +548,21 @@ class ExploreController extends Controller
 
         $totalSaves = DB::table('saved_places')->where('place_id', $place->id)->count();
 
+        $visitorsCount = DB::table('place_visits')->where('place_id', $place->id)->count();
+        $albumPostersCount = DB::table('trip_photos')
+            ->join('albums', 'albums.id', '=', 'trip_photos.album_id')
+            ->join('trips', 'trips.id', '=', 'albums.trip_id')
+            ->where('trip_photos.place_id', $place->id)
+            ->distinct('trips.user_id')
+            ->count('trips.user_id');
+
         return inertia('Explore/Show', [
             'place' => $place,
             'gallery' => $this->galleryFor($place),
             'isSaved' => $isSaved,
             'totalSaves' => $totalSaves,
+            'visitorsCount' => $visitorsCount,
+            'albumPostersCount' => $albumPostersCount,
         ]);
     }
 
