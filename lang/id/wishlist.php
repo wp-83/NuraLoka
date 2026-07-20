@@ -8,7 +8,6 @@ return [
 
     // Index
     'title' => 'Impian dari Nuravers',
-    'subtitle' => 'Impianmu Nuravers',
     'empty_text' => 'Belum ada destinasi impianmu.',
     'empty_sub' => 'Ayo jelajahi dan simpan destinasi favoritmu!',
     'cta_explore' => 'Ayo cari lagi destinasi impianmu!',

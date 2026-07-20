@@ -40,48 +40,23 @@ export default function Index({
 
     return (
         <section className="container relative w-full overflow-hidden">
-            {/* Background Ornament */}
-            <div
-                className="
-                    pointer-events-none
-                    absolute right-0 top-0
-                    h-72 w-72
-                    opacity-10
-                "
-            >
-                <img
-                    src="/images/mascots/camera.png"
-                    alt=""
-                    className="h-full w-full object-contain"
-                />
-            </div>
-
             {/* Content */}
             <div className="relative z-10 py-10">
                 {/* Header */}
                 <div className="mb-8">
                     <h1
                         className="
-                            mb-2
                             font-heading text-title
-                            font-extrabold italic
+                            font-bold
                             text-primary-100
-                            drop-shadow-sm
-
-                            md:text-hero
+                            sm:text-hero
                         "
                     >
                         {t('wishlist.title')}
                     </h1>
 
-                    <p
-                        className="
-                            font-heading text-body
-                            font-medium italic
-                            text-primary-70
-                        "
-                    >
-                        {t('wishlist.subtitle')}
+                    <p className="local-language text-paragraph">
+                        Tetandhingan Nuravers
                     </p>
                 </div>
 
@@ -98,7 +73,7 @@ export default function Index({
                             src="/images/mascots/wait.png"
                             alt="NuraLoka Mascot"
                             className="
-                                h-32 w-32
+                                h-44 w-44
                                 object-contain
                                 opacity-50
                             "
@@ -107,16 +82,15 @@ export default function Index({
                         <p
                             className="
                                 text-center
-                                font-body text-paragraph
-                                font-medium text-gray-50
+                                font-heading text-paragraph text-gray-50
                             "
                         >
                             {t('wishlist.empty_text')}
 
                             <span
                                 className="
-                                    mt-1 block
-                                    text-body text-gray-30
+                                    block
+                                    text-body font-body text-gray-30
                                 "
                             >
                                 {t('wishlist.empty_sub')}
@@ -126,7 +100,7 @@ export default function Index({
                         <Button
                             onClick={handleExplore}
                             variant="primary"
-                            className="mt-2"
+                            className="mt-3"
                         >
                             {t('wishlist.cta_explore')}
                         </Button>

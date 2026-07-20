@@ -6,7 +6,6 @@ return [
 
     // 히어로
     'hero_title' => '힘차게 발걸음을 내딛으세요!',
-    'hero_subtitle' => '여정을 시작하세요',
     'hero_desc' => '유명한 명소부터 숨겨진 보석 같은 장소까지, :app와 함께 당신의 여행 스타일에 맞는 destination을 찾아보세요',
 
     // 검색
@@ -16,12 +15,12 @@ return [
 
     // 미션
     'mission_nearest' => '가까운 미션:',
-    'mission_example' => '인도네시아 전역의 현지 맛집 10곳 방문하기',
-    'mission_desc' => '이 미션을 완료하면 실버 미식 배지와 Nura 포인트 100점을 받을 수 있습니다.',
     'progress_you' => '나의 진행도',
 
     // 앨범
-    'album_card_subtitle' => 'Nuravers 앨범 둘러보기',
+    'album_title' => '누라버스의 순간들',
+    'album_desc' => '누라버스의 최고의 순간들을 담은 다양한 사진들을 통해 여행과 목적지에 대한 영감을 얻으세요.',
+    'album_link' => '모든 누라버스 앨범 보기',
 
     // 여행 정보(뉴스)
     'news_title' => '오늘의 여행 정보',

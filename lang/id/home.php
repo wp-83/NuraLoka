@@ -6,7 +6,6 @@ return [
 
     // Hero
     'hero_title' => 'Mantapkan Langkahmu!',
-    'hero_subtitle' => 'Mantapkan langkah perjalanan',
     'hero_desc' => 'Dari ikon wisata terkenal hingga hidden gem tersembunyi, temukan destinasi yang sesuai dengan gaya perjalanan kamu bersama :app',
 
     // Pencarian
@@ -16,12 +15,12 @@ return [
 
     // Misi
     'mission_nearest' => 'Misi Terdekat:',
-    'mission_example' => 'Kunjungi 10 lokasi kuliner lokal di Indonesia',
-    'mission_desc' => 'Selesaikan misi ini untuk mendapatkan lencana perak kuliner dan poin Nura sebesar 100 poin.',
     'progress_you' => 'Progress Kamu',
 
     // Album
-    'album_card_subtitle' => 'Periksa album Nuravers',
+    'album_title' => 'Momen dari Para Nuravers',
+    'album_desc' => 'Temukan inspirasi perjalanan dan destinasi wisata melalui berbagai potret momen terbaik dari para Nuravers.',
+    'album_link' => 'Lihat Semua Album Nuravers',
 
     // Wawasan wisata (news)
     'news_title' => 'Wawasan Wisata Hari Ini',
