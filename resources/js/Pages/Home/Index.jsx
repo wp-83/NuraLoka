@@ -356,7 +356,31 @@ export default function Index({
                     )}
                 />
 
-                {popularAlbums.length > 0 ? (
+                {popularAlbums.length === 1 ? (
+                    <div className="mt-6">
+                        <AlbumCard
+                            title={popularAlbums[0].title}
+                            image={popularAlbums[0].thumbnail ? `/storage/${popularAlbums[0].thumbnail}` : '/images/defaults/image.png'}
+                            slug={popularAlbums[0].slug}
+                            className="min-h-[420px]"
+                        />
+                    </div>
+                ) : popularAlbums.length === 2 ? (
+                    <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <AlbumCard
+                            title={popularAlbums[0].title}
+                            image={popularAlbums[0].thumbnail ? `/storage/${popularAlbums[0].thumbnail}` : '/images/defaults/image.png'}
+                            slug={popularAlbums[0].slug}
+                            className="min-h-[420px]"
+                        />
+                        <AlbumCard
+                            title={popularAlbums[1].title}
+                            image={popularAlbums[1].thumbnail ? `/storage/${popularAlbums[1].thumbnail}` : '/images/defaults/image.png'}
+                            slug={popularAlbums[1].slug}
+                            className="min-h-[420px]"
+                        />
+                    </div>
+                ) : popularAlbums.length > 2 ? (
                     <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                         {/* Gambar Besar Kiri */}
                         {popularAlbums[0] && (
@@ -380,26 +404,35 @@ export default function Index({
                                 />
                             )}
 
-                            {/* 2 Gambar Kecil Kanan Bawah */}
-                            <div className="grid grid-cols-2 gap-4">
-                                {popularAlbums[2] && (
-                                    <AlbumCard
-                                        title={popularAlbums[2].title}
-                                        image={popularAlbums[2].thumbnail ? `/storage/${popularAlbums[2].thumbnail}` : '/images/defaults/image.png'}
-                                        slug={popularAlbums[2].slug}
-                                        className="min-h-[200px]"
-                                    />
-                                )}
+                            {/* Gambar Kanan Bawah */}
+                            {popularAlbums.length === 3 ? (
+                                <AlbumCard
+                                    title={popularAlbums[2].title}
+                                    image={popularAlbums[2].thumbnail ? `/storage/${popularAlbums[2].thumbnail}` : '/images/defaults/image.png'}
+                                    slug={popularAlbums[2].slug}
+                                    className="min-h-[200px]"
+                                />
+                            ) : (
+                                <div className="grid grid-cols-2 gap-4">
+                                    {popularAlbums[2] && (
+                                        <AlbumCard
+                                            title={popularAlbums[2].title}
+                                            image={popularAlbums[2].thumbnail ? `/storage/${popularAlbums[2].thumbnail}` : '/images/defaults/image.png'}
+                                            slug={popularAlbums[2].slug}
+                                            className="min-h-[200px]"
+                                        />
+                                    )}
 
-                                {popularAlbums[3] && (
-                                    <AlbumCard
-                                        title={popularAlbums[3].title}
-                                        image={popularAlbums[3].thumbnail ? `/storage/${popularAlbums[3].thumbnail}` : '/images/defaults/image.png'}
-                                        slug={popularAlbums[3].slug}
-                                        className="min-h-[200px]"
-                                    />
-                                )}
-                            </div>
+                                    {popularAlbums[3] && (
+                                        <AlbumCard
+                                            title={popularAlbums[3].title}
+                                            image={popularAlbums[3].thumbnail ? `/storage/${popularAlbums[3].thumbnail}` : '/images/defaults/image.png'}
+                                            slug={popularAlbums[3].slug}
+                                            className="min-h-[200px]"
+                                        />
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 ) : (
