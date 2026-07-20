@@ -15,6 +15,8 @@ export default function Edit({ place, categories, photos = [] }) {
         latitude: place.latitude || '',
         longitude: place.longitude || '',
         address: place.address || '',
+        min_price: place.min_price ?? '',
+        max_price: place.max_price ?? '',
         categories: existingCategoryIds,
         photos: [],
         deleted_photos: [],
@@ -154,6 +156,27 @@ export default function Edit({ place, categories, photos = [] }) {
                             error={errors.description}
                             required
                         />
+
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                            <Input
+                                label="Harga Minimal (Rp)"
+                                name="min_price"
+                                type="number"
+                                value={data.min_price}
+                                onChange={(e) => setData('min_price', e.target.value)}
+                                placeholder="Contoh: 15000 (Kosongkan jika gratis)"
+                                error={errors.min_price}
+                            />
+                            <Input
+                                label="Harga Maksimal (Rp)"
+                                name="max_price"
+                                type="number"
+                                value={data.max_price}
+                                onChange={(e) => setData('max_price', e.target.value)}
+                                placeholder="Contoh: 50000 (Kosongkan jika gratis)"
+                                error={errors.max_price}
+                            />
+                        </div>
 
                         {/* Photos */}
                         <div className="flex flex-col gap-1.5">

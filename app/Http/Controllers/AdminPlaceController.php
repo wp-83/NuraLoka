@@ -72,6 +72,8 @@ class AdminPlaceController extends Controller
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
             'address' => 'required|string|max:500',
+            'min_price' => 'nullable|integer|min:0',
+            'max_price' => 'nullable|integer|min:0|gte:min_price',
             'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:categories,id',
             'photos' => 'nullable|array',
@@ -84,6 +86,8 @@ class AdminPlaceController extends Controller
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
             'address' => $request->address,
+            'min_price' => $request->min_price,
+            'max_price' => $request->max_price,
             // Tempat yang dibuat admin NuraLoka selalu bersumber 'internal'.
             'source' => 'internal',
         ]);
@@ -132,6 +136,8 @@ class AdminPlaceController extends Controller
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
             'address' => 'required|string|max:500',
+            'min_price' => 'nullable|integer|min:0',
+            'max_price' => 'nullable|integer|min:0|gte:min_price',
             'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:categories,id',
             'photos' => 'nullable|array',
@@ -146,6 +152,8 @@ class AdminPlaceController extends Controller
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
             'address' => $request->address,
+            'min_price' => $request->min_price,
+            'max_price' => $request->max_price,
         ]);
 
         // Sync categories (detach old, attach new)

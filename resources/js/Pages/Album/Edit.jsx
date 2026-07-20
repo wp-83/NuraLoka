@@ -41,6 +41,7 @@ export default function AlbumEdit({
     } = useForm({
         title: album?.title || '',
         location: album?.location || '',
+        place_id: album?.place_id || null,
         date: album?.date || '',
         is_public: album?.is_public ?? true,
     });
@@ -465,8 +466,8 @@ export default function AlbumEdit({
                                     id="location"
                                     type="text"
                                     value={data.location}
-                                    onChange={(event) => {
-                                        setData('location', event.target.value);
+                                    onChange={(e) => {
+                                        setData((prev) => ({ ...prev, location: e.target.value, place_id: null }));
                                         setShowLocationDropdown(true);
                                     }}
                                     onFocus={() => !isSystem && setShowLocationDropdown(true)}
@@ -510,7 +511,7 @@ export default function AlbumEdit({
                                                 key={place.id}
                                                 type="button"
                                                 onClick={() => {
-                                                    setData('location', place.name);
+                                                    setData((prev) => ({ ...prev, location: place.name, place_id: place.id }));
                                                     setShowLocationDropdown(false);
                                                 }}
                                                 className="

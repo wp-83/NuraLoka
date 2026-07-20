@@ -4,6 +4,7 @@ import MainLayout from '@js/Layouts/MainLayout';
 import ExploreMap from '@components/Features/ExploreMap';
 import LocationSearchInput from '@components/Features/LocationSearchInput';
 import PlaceCard from '@components/Features/PlaceCard';
+import Input from '@components/Forms/Input';
 import { useTranslation } from '@js/i18n';
 import { FiMapPin, FiSearch } from 'react-icons/fi';
 import { MdRestaurant, MdBeachAccess, MdDiamond, MdMuseum, MdWaterDrop, MdSportsHandball } from 'react-icons/md';
@@ -213,16 +214,14 @@ function ExplorePanel({
             {activeTab === 'Satu Titik' && (
                 <>
                     <div className="relative mb-4">
-                        <div className="flex items-center gap-2 border border-gray-30 rounded-xl px-3 py-2 bg-gray-10 focus-within:bg-white focus-within:border-accent focus-within:ring-2 focus-within:ring-accent-30 transition-all">
-                            <FiSearch size={14} className="text-gray-50 flex-shrink-0" />
-                            <input
-                                type="text"
-                                placeholder={t('explore.search_placeholder')}
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="bg-transparent w-full outline-none font-body text-body text-primary placeholder-gray-50"
-                            />
-                        </div>
+                        <Input
+                            type="search"
+                            name="searchQuery"
+                            icon={<FiSearch size={20} />}
+                            placeholder={t('explore.search_placeholder')}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                         {searchSuggestions.length > 0 && searchQuery.trim() !== '' && (
                             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-30 rounded-xl shadow-lg z-[500] overflow-y-auto max-h-56">
                                 {searchSuggestions.map((place) => (
@@ -905,7 +904,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
             {/* ── Map Section ──
                 Mobile/tablet: panels stack vertically in normal flow (control → map → secondary panel).
                 Desktop (lg+): panels are absolutely positioned overlays on top of a full-bleed map. */}
-            <section className="relative w-full flex flex-col gap-4 lg:block lg:gap-0 lg:h-[520px]">
+            <section className="relative w-full flex flex-col gap-4 lg:block lg:gap-0 lg:h-[620px]">
                 {/* ── Control Panel (top on mobile, left overlay on desktop) ── */}
                 <div className="order-1 lg:order-none w-full z-[400] lg:absolute lg:inset-x-0 lg:top-4 lg:pointer-events-none">
                     <div className="w-full lg:container lg:mx-auto lg:px-4 xl:px-8 lg:grid lg:grid-cols-12">
@@ -936,7 +935,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                 </div>
 
                 {/* ── Map ── */}
-                <div className="order-2 lg:order-none relative w-full h-[380px] sm:h-[460px] rounded-2xl overflow-hidden shadow-md lg:rounded-none lg:shadow-none lg:absolute lg:inset-0 lg:h-auto z-0">
+                <div className="order-2 lg:order-none relative w-full h-[460px] sm:h-[520px] rounded-2xl overflow-hidden shadow-md lg:rounded-none lg:shadow-none lg:absolute lg:inset-0 lg:h-auto z-0">
                     <ExploreMap
                         places={places}
                         points={displayedPoints}

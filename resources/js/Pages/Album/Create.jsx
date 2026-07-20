@@ -33,6 +33,7 @@ export default function AlbumCreate() {
     } = useForm({
         title: '',
         location: '',
+        place_id: null,
         date: '',
         is_public: true,
         photos: [],
@@ -410,8 +411,8 @@ export default function AlbumCreate() {
                                     id="location"
                                     type="text"
                                     value={data.location}
-                                    onChange={(event) => {
-                                        setData('location', event.target.value);
+                                    onChange={(e) => {
+                                        setData((prev) => ({ ...prev, location: e.target.value, place_id: null }));
                                         setShowLocationDropdown(true);
                                     }}
                                     onFocus={() => setShowLocationDropdown(true)}
@@ -449,7 +450,7 @@ export default function AlbumCreate() {
                                                 key={place.id}
                                                 type="button"
                                                 onClick={() => {
-                                                    setData('location', place.name);
+                                                    setData((prev) => ({ ...prev, location: place.name, place_id: place.id }));
                                                     setShowLocationDropdown(false);
                                                 }}
                                                 className="

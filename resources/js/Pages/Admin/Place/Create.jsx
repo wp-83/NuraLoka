@@ -12,6 +12,8 @@ export default function Create({ categories }) {
         latitude: '',
         longitude: '',
         address: '',
+        min_price: '',
+        max_price: '',
         categories: [],
         photos: [],
     });
@@ -150,6 +152,27 @@ export default function Create({ categories }) {
                             error={errors.description}
                             required
                         />
+
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                            <Input
+                                label="Harga Minimal (Rp)"
+                                name="min_price"
+                                type="number"
+                                value={data.min_price}
+                                onChange={(e) => setData('min_price', e.target.value)}
+                                placeholder="Contoh: 15000 (Kosongkan jika gratis)"
+                                error={errors.min_price}
+                            />
+                            <Input
+                                label="Harga Maksimal (Rp)"
+                                name="max_price"
+                                type="number"
+                                value={data.max_price}
+                                onChange={(e) => setData('max_price', e.target.value)}
+                                placeholder="Contoh: 50000 (Kosongkan jika gratis)"
+                                error={errors.max_price}
+                            />
+                        </div>
 
                         {/* Photos */}
                         <div className="flex flex-col gap-1.5">
