@@ -138,6 +138,7 @@ class AlbumController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'location' => 'required|string|max:255',
+            'place_id' => 'nullable|integer|exists:places,id',
             'date' => 'required|date',
             'is_public' => 'boolean',
             'photos' => 'nullable|array',
@@ -180,7 +181,7 @@ class AlbumController extends Controller
 
                 TripPhoto::create([
                     'album_id' => $album->id,
-                    'place_id' => null,
+                    'place_id' => $request->place_id,
                     'photo_path' => $path,
                 ]);
             }
@@ -241,6 +242,7 @@ class AlbumController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'location' => 'required|string|max:255',
+            'place_id' => 'nullable|integer|exists:places,id',
             'date' => 'required|date',
             'is_public' => 'boolean',
         ]);
@@ -252,6 +254,10 @@ class AlbumController extends Controller
             'trip_date' => $request->date,
             'is_public' => $request->is_public ?? $album->trip->is_public,
         ]);
+
+        if ($request->has('place_id')) {
+            TripPhoto::where('album_id', $album->id)->update(['place_id' => $request->place_id]);
+        }
 
         return redirect()->route('album.index')->with('success', 'Album berhasil diperbarui!');
     }
@@ -393,7 +399,7 @@ class AlbumController extends Controller
 
             TripPhoto::create([
                 'album_id' => $album->id,
-                'place_id' => null,
+                'place_id' => $album->tripPhotos->first()->place_id ?? request('place_id'),
                 'photo_path' => $path,
             ]);
         }
@@ -435,6 +441,7 @@ class AlbumController extends Controller
             'slug' => $album->slug,
             'title' => $trip->title,
             'location' => $trip->destination_name,
+            'place_id' => $firstPhoto?->place_id,
             'date' => $trip->trip_date,
             'is_public' => (bool) $trip->is_public,
             'is_system' => (bool) $trip->is_system,
