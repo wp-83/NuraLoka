@@ -4,7 +4,8 @@ import NewsCard from '@components/Features/NewsCard';
 import MainLayout from '@js/Layouts/MainLayout';
 import { useTranslation } from '@js/i18n';
 
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
     FiChevronRight,
     FiMapPin,
@@ -79,6 +80,66 @@ export default function Index({
     const heroDescParts = t('home.hero_desc').split(':app');
     const greetingParts = t('home.search_greeting').split(':name');
 
+    // ── Search "Satu Titik" — sama persis dengan logika di halaman Jelajah ──
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchSuggestions, setSearchSuggestions] = useState([]);
+    const skipSearchRef = useRef(false);
+
+    // Debounced fetch saran dari /jelajah/cari (300ms)
+    useEffect(() => {
+        if (skipSearchRef.current) {
+            skipSearchRef.current = false;
+            setSearchSuggestions([]);
+            return;
+        }
+        const q = searchQuery.trim();
+        if (q === '') { setSearchSuggestions([]); return; }
+
+        const controller = new AbortController();
+        const timer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/jelajah/cari?q=${encodeURIComponent(q)}`, {
+                    signal: controller.signal,
+                    headers: { Accept: 'application/json' },
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                setSearchSuggestions(data.suggestions || []);
+            } catch (err) {
+                if (!controller.signal.aborted) console.error('[HomeSearch] gagal memuat saran:', err.message);
+            }
+        }, 300);
+
+        return () => { clearTimeout(timer); controller.abort(); };
+    }, [searchQuery]);
+
+    // Klik saran → navigasi ke halaman Jelajah dengan koordinat tempat
+    const handleSuggestionSelect = useCallback((place) => {
+        skipSearchRef.current = true;
+        setSearchQuery(place.name);
+        setSearchSuggestions([]);
+
+        // Kirim data tempat lewat URL params agar Jelajah bisa langsung zoom + popup
+        const url = new URL(route('explore.index'), window.location.origin);
+        url.searchParams.set('focus_id', place.id);
+        url.searchParams.set('focus_lat', place.latitude);
+        url.searchParams.set('focus_lng', place.longitude);
+        url.searchParams.set('focus_name', place.name);
+        if (place.slug) url.searchParams.set('focus_slug', place.slug);
+        if (place.address) url.searchParams.set('focus_address', place.address);
+        router.visit(url.toString());
+    }, []);
+
+    // Submit form → jika ada saran, ambil yang teratas; jika tidak, pindah ke Jelajah biasa
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        if (searchSuggestions.length > 0) {
+            handleSuggestionSelect(searchSuggestions[0]);
+        } else {
+            router.visit(route('explore.index'));
+        }
+    };
+
     return (
         <div className="flex flex-col">
             {/* Hero */}
@@ -150,13 +211,41 @@ export default function Index({
                         {auth.user.fullname}?
                     </p>
 
-                    <form className="mt-5 flex flex-col gap-3 sm:flex-row">
-                        <Input
-                            type="search"
-                            name="placeSearch"
-                            icon={<FiSearch size={20} />}
-                            placeholder="Temukan destinasi wisatamu sekarang..."
-                        />
+                    <form className="mt-5 flex flex-col gap-3 sm:flex-row" onSubmit={handleSearchSubmit}>
+                        <div className="relative flex-1">
+                            <Input
+                                type="search"
+                                name="placeSearch"
+                                icon={<FiSearch size={20} />}
+                                placeholder="Temukan destinasi wisatamu sekarang..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+
+                            {/* Dropdown Saran */}
+                            {searchSuggestions.length > 0 && searchQuery.trim() !== '' && (
+                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-[500] overflow-y-auto max-h-56">
+                                    {searchSuggestions.map((place) => (
+                                        <div
+                                            key={place.id}
+                                            onClick={() => handleSuggestionSelect(place)}
+                                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-secondary-100/10 cursor-pointer transition-colors"
+                                        >
+                                            <FiMapPin className="text-gray-400 flex-shrink-0" size={14} />
+                                            <div className="min-w-0 flex-grow">
+                                                <p className="text-sm font-bold text-primary-100 truncate">{place.name}</p>
+                                                <p className="text-xs text-gray-400 truncate">{place.address || 'Tidak ada alamat'}</p>
+                                            </div>
+                                            {place.categories?.[0]?.name && (
+                                                <span className="flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold bg-secondary-100/10 text-secondary-100">
+                                                    {place.categories[0].name}
+                                                </span>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
 
                         <Button
                             type="submit"

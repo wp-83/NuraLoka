@@ -542,6 +542,36 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
     // Sinkronkan ref dengan state agar bisa dibaca dari handler event peta.
     useEffect(() => { searchLoadingRef.current = searchLoading; }, [searchLoading]);
 
+    // ── Auto-focus dari navigasi Beranda: baca URL params focus_* saat halaman pertama dimuat ──
+    // Ini meniru persis logika handleSuggestionSelect agar peta langsung zoom + popup ke tempat
+    // yang dipilih pengguna di kotak pencarian halaman Beranda.
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const focusId  = params.get('focus_id');
+        const focusLat = parseFloat(params.get('focus_lat'));
+        const focusLng = parseFloat(params.get('focus_lng'));
+        const focusName = params.get('focus_name') || '';
+
+        if (!focusId || isNaN(focusLat) || isNaN(focusLng)) return;
+
+        const place = {
+            id:        parseInt(focusId, 10),
+            name:      focusName,
+            slug:      params.get('focus_slug') || '',
+            address:   params.get('focus_address') || '',
+            latitude:  focusLat,
+            longitude: focusLng,
+        };
+
+        // Sama persis dengan handleSuggestionSelect di halaman ini
+        skipSearchRef.current = true;
+        setSearchQuery(focusName);
+        setSelectedPlace(place);   // memicu flyTo + popup otomatis di ExploreMap
+        setSearchLoading(true);    // tampilkan flashscreen
+        if (searchSafetyRef.current) clearTimeout(searchSafetyRef.current);
+        searchSafetyRef.current = setTimeout(() => setSearchLoading(false), 4000);
+    }, []); // hanya saat mount
+
     // ── Ambil titik/klaster dari server sendiri (DB admin + OSM), tanpa rate-limit ──
     const fetchMapPoints = useCallback(async (bounds) => {
         if (!bounds) return;
