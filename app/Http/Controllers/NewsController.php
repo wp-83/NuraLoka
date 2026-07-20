@@ -24,12 +24,10 @@ class NewsController extends Controller
     /**
      * Display the specified news article.
      */
-    public function show(string $id)
+    public function show(News $news)
     {
-        $newsItem = News::with('user.userDetails')->findOrFail($id);
-
         return Inertia::render('News/Show', [
-            'newsItem' => $newsItem,
+            'newsItem' => $news,
         ]);
     }
 }

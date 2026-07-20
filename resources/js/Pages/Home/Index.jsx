@@ -530,7 +530,7 @@ function SectionHeader({
 
             <Link
                 href={href}
-                className="flex shrink-0 items-center gap-1 text-sm text-secondary-100 transition-opacity hover:opacity-70"
+                className="flex shrink-0 items-center gap-1 text-body"
             >
                 {linkLabel}
 

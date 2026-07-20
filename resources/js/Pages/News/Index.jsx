@@ -1,13 +1,19 @@
-import { Link, Head, usePage } from '@inertiajs/react';
+import MainLayout from '@js/Layouts/MainLayout';
+import { Link, usePage } from '@inertiajs/react';
 import { useTranslation } from '@js/i18n';
-import '@css/News/Index.css';
+import Button from '@components/Forms/Button';
+import { IoIosArrowBack } from 'react-icons/io';
 
-const LOCALE_TAG = { id: 'id-ID', en: 'en-US', ko: 'ko-KR' };
+const LOCALE_TAG = {
+    id: 'id-ID',
+    en: 'en-US',
+    ko: 'ko-KR',
+};
 
 export default function Index({ news }) {
     const { auth } = usePage().props;
     const { t, locale } = useTranslation();
-    // Waktu relatif mengikuti bahasa aktif (baru saja / menit / jam / hari yang lalu).
+
     const getRelativeTime = (dateString) => {
         const now = new Date();
         const date = new Date(dateString);
@@ -18,130 +24,215 @@ export default function Index({ news }) {
         }
 
         const diffInMinutes = Math.floor(diffInSeconds / 60);
+
         if (diffInMinutes < 60) {
-            return t('news.minutes_ago', { count: diffInMinutes });
+            return t('news.minutes_ago', {
+                count: diffInMinutes,
+            });
         }
 
         const diffInHours = Math.floor(diffInMinutes / 60);
+
         if (diffInHours < 24) {
-            return t('news.hours_ago', { count: diffInHours });
+            return t('news.hours_ago', {
+                count: diffInHours,
+            });
         }
 
         const diffInDays = Math.floor(diffInHours / 24);
+
         if (diffInDays < 30) {
-            return t('news.days_ago', { count: diffInDays });
+            return t('news.days_ago', {
+                count: diffInDays,
+            });
         }
 
-        return date.toLocaleDateString(LOCALE_TAG[locale] || 'id-ID', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+        return date.toLocaleDateString(
+            LOCALE_TAG[locale] || 'id-ID',
+            {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            },
+        );
     };
 
-    // Helper to truncate text
-    const getExcerpt = (text, maxLength = 120) => {
+    const getExcerpt = (
+        text,
+        maxLength = 120,
+    ) => {
         if (!text) return '';
-        if (text.length <= maxLength) return text;
-        return text.substring(0, maxLength) + '...';
+
+        if (text.length <= maxLength) {
+            return text;
+        }
+
+        return `${text.substring(0, maxLength)}...`;
     };
 
     return (
-        <>
-            <Head>
-                <title>{`NuraLoka | ${t('news.meta_title')}`}</title>
-                <meta name="description" content={t('news.meta_description')} />
-            </Head>
+        <div className="pb-20 pt-8">
+            {/* Back Navigation */}
 
-            <div className="news-index-container">
-                {/* Back button */}
-                <div className="back-navigation">
-                    <Link href={route('home.index')} className="back-to-home-link">
-                        &larr; {t('news.back_to_home')}
-                    </Link>
+            <div className="mb-6">
+                <Link href={route('home.index')}>
+                    <Button type="primary" iconLeft={<IoIosArrowBack />}>
+                        {t('news.back_to_home')}
+                    </Button>
+                </Link>
+            </div>
+
+            {/* Header */}
+
+            <section className="mb-12 flex flex-colpb-2 sm:flex-row sm:items-center">
+
+                <img
+                    src="/images/mascots/hi.png"
+                    alt="NuraLoka Mascot"
+                    className="h-32 shrink-0 object-contain sm:h-40"
+                />
+
+                <div className="space-y-1">
+
+                    <h1 className="font-heading text-title font-extrabold text-primary-100">
+                        {t('news.index_title')}
+                    </h1>
+
+                    <p className="local-language">
+                        Kawruh Wisata Nuravers
+                    </p>
+
                 </div>
 
-                {/* Page Title & Mascot */}
-                <div className="news-index-header">
-                    <img
-                        src="/images/mascots/welcome.png"
-                        alt="NuraLoka Mascot"
-                        className="news-index-mascot"
-                    />
-                    <div className="news-index-title-wrapper">
-                        <h1 className="news-index-title">{t('news.index_title')}</h1>
-                        <p className="news-index-subtitle">
-                            {t('news.index_subtitle')}
+            </section>
+
+            {/* News Grid */}
+
+            <section className="mb-16 grid grid-cols-1 gap-10 md:grid-cols-2 xl:grid-cols-3">
+                {news.data && news.data.length > 0 ? (
+                    news.data.map((item) => (
+                        <article
+                            key={item.id}
+                            className="group flex flex-col overflow-hidden rounded-2xl border border-primary-30 bg-[#FCF7F4] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                        >
+                            {/* Thumbnail */}
+
+                            <div className="relative h-52 w-full overflow-hidden">
+
+                                <img
+                                    src={
+                                        item.thumbnail ||
+                                        '/images/defaults/image.png'
+                                    }
+                                    alt={item.title}
+                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                />
+
+                            </div>
+
+                            {/* Content */}
+
+                            <div className="flex flex-1 flex-col p-6">
+
+                                <span className="mb-1 text-small italic text-gray-50">
+                                    {getRelativeTime(
+                                        item.publish_date,
+                                    )}
+                                </span>
+
+                                <h2 className="mb-2 line-clamp-2 min-h-[3.4rem] font-heading text-paragraph font-bold leading-[1.35] text-primary-100">
+                                    {item.title}
+                                </h2>
+
+                                <p className="mb-4 flex-1 text-justify text-body leading-relaxed text-gray-85 line-clamp-3">
+                                    {getExcerpt(
+                                        item.content,
+                                    )}
+                                </p>
+
+                                <div className="flex justify-end">
+
+                                    <Link
+                                        href={route(
+                                            'news.show',
+                                            item.slug,
+                                        )}
+                                    >
+                                        <Button type="primary">
+                                            {t('news.read_more')}
+                                        </Button>
+                                    </Link>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+                    ))
+                ) : (
+                    <div className="col-span-full rounded-2xl border border-dashed border-primary-30 bg-white px-8 py-16 text-center">
+
+                        <p className="text-body text-gray-50">
+                            {t('news.empty')}
                         </p>
 
                     </div>
-                </div>
+                )}
+            </section>
 
-                {/* Grid of News Cards */}
-                <div className="news-grid">
-                    {news.data && news.data.length > 0 ? (
-                        news.data.map((item) => (
-                            <article key={item.id} className="news-grid-card">
-                                <div className="news-grid-image-wrapper">
-                                    <img
-                                        src={item.thumbnail || '/images/defaults/image.png'}
-                                        alt={item.title}
-                                        className="news-grid-thumbnail"
-                                    />
-                                </div>
-                                <div className="news-grid-content">
-                                    <span className="news-grid-date">{getRelativeTime(item.publish_date)}</span>
-                                    <h3 className="news-grid-title">{item.title}</h3>
-                                    <p className="news-grid-excerpt">{getExcerpt(item.content)}</p>
-                                    <div className="news-grid-action">
-                                        <Link href={route('news.show', item.id)} className="btn-primary btn-sm news-read-more-btn">
-                                            {t('news.read_more')}
-                                        </Link>
-                                    </div>
-                                </div>
-                            </article>
-                        ))
-                    ) : (
-                        <div className="news-grid-empty">
-                            <p>{t('news.empty')}</p>
-                        </div>
-                    )}
-                </div>
+            {/* Pagination */}
 
-                {/* Pagination */}
-                {news.links && news.links.length > 3 && (
-                    <div className="news-pagination">
-                        {news.links.map((link, index) => {
-                            // Convert HTML entities like &laquo; and &raquo; to normal text
-                            let label = link.label;
-                            if (label.includes('Previous')) {
-                                label = t('common.previous');
-                            } else if (label.includes('Next')) {
-                                label = t('common.next');
-                            }
+            {news.links && news.links.length > 3 && (
+                <nav className="mt-8 flex flex-wrap items-center justify-center gap-2">
 
-                            if (!link.url) {
-                                return (
-                                    <span
-                                        key={index}
-                                        className="pagination-link pagination-disabled"
-                                        dangerouslySetInnerHTML={{ __html: label }}
-                                    />
-                                );
-                            }
+                    {news.links.map((link, index) => {
+                        let label = link.label;
 
+                        if (label.includes('Previous')) {
+                            label = t('common.previous');
+                        } else if (label.includes('Next')) {
+                            label = t('common.next');
+                        }
+
+                        if (!link.url) {
                             return (
-                                <Link
+                                <span
                                     key={index}
-                                    href={link.url}
-                                    className={`pagination-link ${link.active ? 'pagination-active' : ''}`}
-                                    dangerouslySetInnerHTML={{ __html: label }}
+                                    className="cursor-not-allowed rounded-lg border border-gray-10 bg-white px-4 py-2 text-small font-semibold text-gray-30"
+                                    dangerouslySetInnerHTML={{
+                                        __html: label,
+                                    }}
                                 />
                             );
-                        })}
-                    </div>
-                )}
-            </div>
-        </>
+                        }
+
+                        return (
+                            <Link
+                                key={index}
+                                href={link.url}
+                                className={`rounded-lg border px-4 py-2 text-small font-semibold transition-all duration-200 ${
+                                    link.active
+                                        ? 'border-primary-100 bg-primary-100 text-white'
+                                        : 'border-primary-30 bg-white text-primary-100 hover:border-primary-85 hover:bg-primary-10 hover:text-primary-85'
+                                }`}
+                                dangerouslySetInnerHTML={{
+                                    __html: label,
+                                }}
+                            />
+                        );
+                    })}
+
+                </nav>
+            )}
+
+        </div>
     );
 }
+
+Index.layout = (page) => (
+    <MainLayout
+        pageTitle="News"
+        pageDescription="Temukan berita, cerita, dan informasi terbaru seputar NuraLoka."
+        content={page}
+    />
+);

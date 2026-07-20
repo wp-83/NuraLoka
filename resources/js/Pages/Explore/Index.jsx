@@ -992,8 +992,8 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
             {(trendingLoading || (trending && trending.length > 0)) && (
             <section id="trending-section" className="w-full py-10">
                 <div className="overflow-hidden">
-                    <div className="container mx-auto px-4 md:px-6 lg:px-8 my-5">
-                        <div className="grid grid-cols-12 gap-5">
+                    <div className="mb-8">
+                        <div className="grid">
                             <div className="col-span-12 sm:col-start-2 sm:col-end-12 flex flex-col sm:flex-row items-center gap-4 mb-6 text-center sm:text-left">
                                 <div className="w-28 sm:w-32 lg:w-40 flex-shrink-0 scale-x-[-1]">
                                     <img
@@ -1007,7 +1007,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                                     <h2 className="font-heading text-subtitle sm:text-title font-bold text-primary leading-tight">
                                         {t('explore.trending_title')}
                                     </h2>
-                                    <p className="font-body text-body text-gray-50 mt-1 max-w-[28rem]">
+                                    <p className="font-body text-body text-gray-50 mt-1 max-w-[40rem]">
                                         {t('explore.trending_desc')}
                                     </p>
                                 </div>
