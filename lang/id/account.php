@@ -104,6 +104,7 @@ return [
 
     // ── Akun diblokir ──
     'banned' => [
+        'meta_title' => 'Akun Diblokir',
         'title' => 'Akun Anda Telah Diblokir',
         'desc' => 'Maaf, akun Anda telah diblokir dan saat ini tidak dapat mengakses layanan NuraLoka. Silakan hubungi administrator jika Anda merasa ini adalah sebuah kesalahan.',
         'back_home' => 'Kembali ke Beranda',

@@ -8,7 +8,6 @@ return [
 
     // Index
     'title' => 'Wishlist from Nuravers',
-    'subtitle' => 'Your Nuravers Wishlist',
     'empty_text' => 'You have no dream destinations yet.',
     'empty_sub' => "Let's explore and save your favorite destinations!",
     'cta_explore' => "Let's find more dream destinations!",

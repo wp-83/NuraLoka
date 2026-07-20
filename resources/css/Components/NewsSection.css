@@ -184,18 +184,18 @@
     .news-card {
         flex-direction: column;
     }
-    
+
     .news-card-image-wrapper {
         width: 100%;
         max-width: none;
         height: 200px;
     }
-    
+
     .news-header {
         align-items: flex-start;
         flex-direction: column;
     }
-    
+
     .news-header-right {
         align-self: flex-end;
     }

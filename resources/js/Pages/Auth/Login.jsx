@@ -64,7 +64,7 @@ export default function Login() {
     return (
         <>
             <Head>
-                <title>NuraLoka | {t('account.login.meta_title')}</title>
+                <title>{`NuraLoka | ${t('account.login.meta_title')}`}</title>
 
                 <meta
                     name="description"

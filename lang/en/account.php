@@ -104,6 +104,7 @@ return [
 
     // ── Account banned ──
     'banned' => [
+        'meta_title' => 'Account Banned',
         'title' => 'Your Account Has Been Banned',
         'desc' => 'Sorry, your account has been banned and currently cannot access NuraLoka services. Please contact the administrator if you believe this is a mistake.',
         'back_home' => 'Back to Home',
