@@ -58,7 +58,6 @@ class HomeController extends Controller
             $ongoingMission = $result;
         }
 
-
         // Album populer minggu ini (publik, dari semua user, sorted by view_count, constraint seminggu)
         $popularAlbums = Album::with(['trip.user.userDetails', 'tripPhotos'])
             ->whereHas('trip', function ($q) {
@@ -74,6 +73,7 @@ class HomeController extends Controller
             ->map(function ($album) {
                 $trip = $album->trip;
                 $firstPhoto = $album->tripPhotos->first();
+
                 return [
                     'id' => $album->id,
                     'slug' => $album->slug,
@@ -83,9 +83,9 @@ class HomeController extends Controller
             });
 
         return inertia('Home/Index', [
-            'latestNews'     => $latestNews,
+            'latestNews' => $latestNews,
             'ongoingMission' => $ongoingMission,
-            'popularAlbums'  => $popularAlbums,
+            'popularAlbums' => $popularAlbums,
         ]);
     }
 }
