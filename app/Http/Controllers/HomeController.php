@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Album;
 use App\Models\Mission;
 use App\Models\News;
 
@@ -57,9 +58,34 @@ class HomeController extends Controller
             $ongoingMission = $result;
         }
 
+
+        // Album populer minggu ini (publik, dari semua user, sorted by view_count, constraint seminggu)
+        $popularAlbums = Album::with(['trip.user.userDetails', 'tripPhotos'])
+            ->whereHas('trip', function ($q) {
+                $q->where('is_public', true)
+                    ->where('trip_date', '>=', now()->subWeek())
+                    ->whereHas('user', function ($uq) {
+                        $uq->where('is_banned', false);
+                    });
+            })
+            ->orderByDesc('view_count')
+            ->take(4)
+            ->get()
+            ->map(function ($album) {
+                $trip = $album->trip;
+                $firstPhoto = $album->tripPhotos->first();
+                return [
+                    'id' => $album->id,
+                    'slug' => $album->slug,
+                    'title' => $trip->title,
+                    'thumbnail' => $firstPhoto?->photo_path,
+                ];
+            });
+
         return inertia('Home/Index', [
-            'latestNews' => $latestNews,
+            'latestNews'     => $latestNews,
             'ongoingMission' => $ongoingMission,
+            'popularAlbums'  => $popularAlbums,
         ]);
     }
 }

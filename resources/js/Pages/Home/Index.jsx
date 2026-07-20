@@ -70,6 +70,7 @@ export default function Index({
     auth,
     latestNews = [],
     ongoingMission = null,
+    popularAlbums = [],
 }) {
     const { t } = useTranslation()
 
@@ -355,35 +356,57 @@ export default function Index({
                     )}
                 />
 
-                <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-                    {/* Gambar Besar Kiri */}
-                    <AlbumCard
-                        {...albums[0]}
-                        className="min-h-[420px]"
-                    />
-
-                    {/* Bagian Kanan */}
-                    <div className="grid grid-rows-2 gap-4">
-                        {/* Gambar Lebar Kanan Atas */}
-                        <AlbumCard
-                            {...albums[1]}
-                            className="min-h-[200px]"
-                        />
-
-                        {/* 2 Gambar Kecil Kanan Bawah */}
-                        <div className="grid grid-cols-2 gap-4">
+                {popularAlbums.length > 0 ? (
+                    <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                        {/* Gambar Besar Kiri */}
+                        {popularAlbums[0] && (
                             <AlbumCard
-                                {...albums[2]}
-                                className="min-h-[200px]"
+                                title={popularAlbums[0].title}
+                                image={popularAlbums[0].thumbnail ? `/storage/${popularAlbums[0].thumbnail}` : '/images/defaults/image.png'}
+                                slug={popularAlbums[0].slug}
+                                className="min-h-[420px]"
                             />
+                        )}
 
-                            <AlbumCard
-                                {...albums[3]}
-                                className="min-h-[200px]"
-                            />
+                        {/* Bagian Kanan */}
+                        <div className="grid grid-rows-2 gap-4">
+                            {/* Gambar Lebar Kanan Atas */}
+                            {popularAlbums[1] && (
+                                <AlbumCard
+                                    title={popularAlbums[1].title}
+                                    image={popularAlbums[1].thumbnail ? `/storage/${popularAlbums[1].thumbnail}` : '/images/defaults/image.png'}
+                                    slug={popularAlbums[1].slug}
+                                    className="min-h-[200px]"
+                                />
+                            )}
+
+                            {/* 2 Gambar Kecil Kanan Bawah */}
+                            <div className="grid grid-cols-2 gap-4">
+                                {popularAlbums[2] && (
+                                    <AlbumCard
+                                        title={popularAlbums[2].title}
+                                        image={popularAlbums[2].thumbnail ? `/storage/${popularAlbums[2].thumbnail}` : '/images/defaults/image.png'}
+                                        slug={popularAlbums[2].slug}
+                                        className="min-h-[200px]"
+                                    />
+                                )}
+
+                                {popularAlbums[3] && (
+                                    <AlbumCard
+                                        title={popularAlbums[3].title}
+                                        image={popularAlbums[3].thumbnail ? `/storage/${popularAlbums[3].thumbnail}` : '/images/defaults/image.png'}
+                                        slug={popularAlbums[3].slug}
+                                        className="min-h-[200px]"
+                                    />
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="mt-6 rounded-2xl border border-gray-10 bg-white">
+                        <EmptyState title={t('album.my_empty')} description={t('album.start_cta')} />
+                    </div>
+                )}
             </section>
 
             {/* News */}
@@ -478,12 +501,13 @@ function SectionHeader({
 function AlbumCard({
     title,
     image,
+    slug,
     className = '',
 }) {
     const { t } = useTranslation();
     return (
         <Link
-            href="#"
+            href={slug ? route('album.show', slug) : '#'}
             className={`group relative min-h-[180px] overflow-hidden rounded-2xl ${className}`}
         >
             <img
@@ -504,6 +528,54 @@ function AlbumCard({
                 </p>
             </div>
         </Link>
+    );
+}
+
+// ============================================================
+// EMPTY STATE
+// ============================================================
+function EmptyState({
+    title,
+    description,
+}) {
+    return (
+        <div
+            className="
+                flex flex-col
+                items-center justify-center
+                py-12 text-center
+            "
+        >
+            <img
+                src="/images/mascots/wait.png"
+                alt="Maskot NuraLoka"
+                className="
+                    mb-4 h-24 w-24
+                    object-contain
+                    opacity-50
+                "
+            />
+
+            <p
+                className="
+                    font-body text-small
+                    font-medium text-gray-50
+                "
+            >
+                {title}
+            </p>
+
+            {description && (
+                <p
+                    className="
+                        mt-1 font-body
+                        text-micro text-gray-30
+                    "
+                >
+                    {description}
+                </p>
+            )}
+        </div>
     );
 }
 
