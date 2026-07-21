@@ -504,7 +504,15 @@ class ExploreController extends Controller
         ]);
 
         // Gamification: finishing a two-point journey counts as creating an album.
-        app(GamificationService::class)->record(auth()->user(), 'create_album');
+        // syncAlbumBadges() must follow record(): this endpoint creates a real
+        // Album, which feeds the album-derived tiers (Si Paling Trip is literally
+        // an album count). Without the sync the badge page's progress ring climbs
+        // while the tier icon stays gray — the row is reached but never awarded.
+        // AlbumController does the same pairing after every album mutation.
+        $journeyUser = auth()->user();
+        $gamification = app(GamificationService::class);
+        $gamification->record($journeyUser, 'create_album');
+        $gamification->syncAlbumBadges($journeyUser);
 
         return response()->json([
             'ok' => true,

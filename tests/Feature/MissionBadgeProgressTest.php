@@ -306,6 +306,52 @@ class MissionBadgeProgressTest extends TestCase
         }
     }
 
+    public function test_menyelesaikan_perjalanan_langsung_menyalakan_lencana_yang_tercapai(): void
+    {
+        // ExploreController::startJourney membuat Album sungguhan, jadi hitungan
+        // "Si Paling Trip" (= jumlah album) langsung naik. Dulu endpoint itu hanya
+        // memanggil record() tanpa syncAlbumBadges(), sehingga cincin progres naik
+        // tapi ikon tingkatnya tetap abu-abu: tercapai, tapi tidak pernah diberikan.
+        $user = User::factory()->create();
+        UserDetail::create([
+            'user_id' => $user->id,
+            'province_id' => 1,
+            'fullname' => 'Penguji Perjalanan',
+            'dob' => '2000-01-01',
+            'gender' => 'unspecified',
+            'total_points' => 0,
+            'level_id' => Level::idForPoints(0),
+        ]);
+
+        // user_lat/lng disamakan dengan tujuan supaya lolos verifikasi jarak,
+        // baik journey_demo_mode menyala maupun mati.
+        $this->actingAs($user)
+            ->postJson(route('explore.journey'), [
+                'origin_name' => 'Titik Awal',
+                'origin_lat' => -6.2000,
+                'origin_lng' => 106.8000,
+                'destination_name' => 'Titik Tujuan',
+                'destination_lat' => -6.2100,
+                'destination_lng' => 106.8100,
+                'user_lat' => -6.2100,
+                'user_lng' => 106.8100,
+            ])
+            ->assertOk()
+            ->assertJson(['ok' => true]);
+
+        foreach ($this->generalBadges($user) as $kategori) {
+            foreach ($kategori['tiers'] as $tier) {
+                if ($kategori['progressCount'] >= $tier['target']) {
+                    $this->assertTrue(
+                        $tier['earned'],
+                        "{$kategori['name']} — {$tier['name']} (target {$tier['target']}) masih abu-abu "
+                        ."padahal progresnya sudah {$kategori['progressCount']} setelah perjalanan selesai.",
+                    );
+                }
+            }
+        }
+    }
+
     // ── dari MissionPointSyncTest ────────────────────────────────
     private function poinLencana(User $user): int
     {

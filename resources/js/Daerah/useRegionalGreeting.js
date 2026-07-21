@@ -18,10 +18,12 @@ import {
  * SENGAJA tidak memakai useTranslation(): sapaan daerah tidak boleh ikut berubah
  * saat pengguna mengganti bahasa aplikasi ke en/ko.
  *
- * Sumber payload, berurutan:
- *   1. props Inertia `daerah` bila server memakai provinsi profil user
- *   2. hasil deteksi klien (Geolocation → IP), disimpan di store modul
- *   3. payload default dari server (Bahasa Indonesia)
+ * Sumber payload, dari yang paling menang:
+ *   1. forced       — DAERAH_FORCE_PROVINCE / ?daerah=, alat pengujian
+ *   2. geolocation  — lokasi GPS user SAAT INI, sumber utama fitur ini
+ *   3. ip           — perkiraan lokasi dari alamat IP
+ *   4. user_profile — provinsi tersimpan di profil, hanya cadangan
+ *   5. default      — Bahasa Indonesia
  *
  * @param {string} key          kunci di lang/daerah/*.php, mis. 'album_index'
  * @param {object} replacements placeholder gaya Laravel, mis. { name: 'Andi' }
@@ -39,14 +41,23 @@ export function useRegionalGreeting(key, replacements = {}) {
         ensureDetection(serverPayload);
     }, [serverPayload]);
 
-    // Payload server menang atas hasil deteksi perangkat untuk dua sumber:
-    //   user_profile — provinsi tersimpan milik user, sumber paling tepercaya;
-    //   forced       — DAERAH_FORCE_PROVINCE / ?daerah=, memang untuk memaksa.
-    // Tanpa 'forced', nilai di .env kalah oleh cache deteksi di localStorage,
-    // sehingga tampilan tidak berubah sama sekali.
+    // Deteksi perangkat (GPS → IP) menang atas payload server, karena sapaan
+    // harus mengikuti lokasi user SAAT INI — bukan provinsi di profil, yang
+    // sudah usang begitu user bepergian. Pengecualiannya cuma 'forced': tanpa
+    // itu, nilai di .env kalah oleh cache deteksi di localStorage sehingga
+    // tampilan tidak berubah sama sekali saat diuji.
+    //
+    // Deteksi yang GAGAL mengembalikan source 'default' (provinsi null); itu
+    // tidak boleh menang atas provinsi profil, jadi hanya hasil yang benar-benar
+    // menemukan lokasi yang dipakai.
+    const detectedWins =
+        detectedPayload?.source === 'geolocation' || detectedPayload?.source === 'ip';
+
     const payload = isAuthoritative(serverPayload)
         ? serverPayload
-        : detectedPayload ?? serverPayload;
+        : detectedWins
+          ? detectedPayload
+          : serverPayload ?? detectedPayload;
 
     let greeting = payload?.phrases?.[key] ?? '';
 
