@@ -18,7 +18,7 @@ return [
     'hero_desc_mid1' => ', plan',
     'hero_desc_bold2' => 'travel routes without the hassle',
     'hero_desc_mid2' => ', and explore',
-    'hero_desc_highlight' => "the beauty of Indonesia, full of stories.",
+    'hero_desc_highlight' => 'the beauty of Indonesia, full of stories.',
     'hero_cta' => 'Try NuraLoka Now!',
 
     // About + carousel
