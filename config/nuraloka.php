@@ -13,6 +13,6 @@ return [
     |         tujuan (sama seperti check-in) sebelum trip & album dibuat.
     |
     */
-    'journey_demo_mode' => (bool) env('JOURNEY_DEMO_MODE', true),
+    'journey_demo_mode' => (bool) env('JOURNEY_DEMO_MODE', false),
 
 ];
