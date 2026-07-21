@@ -393,7 +393,7 @@ return [
         // artinya IP pengunjung dikirim keluar. Nonaktif secara default; aktifkan
         // secara sadar lewat DAERAH_IP_LOOKUP=true.
         'ip_lookup' => [
-            'enabled' => env('DAERAH_IP_LOOKUP', false),
+            'enabled' => env('DAERAH_IP_LOOKUP', true),
             'endpoint' => env('DAERAH_IP_LOOKUP_ENDPOINT', 'http://ip-api.com/json/{ip}'),
             'timeout' => 2,
             'cache_ttl' => 60 * 60 * 24,
@@ -436,7 +436,7 @@ return [
         'enabled' => env('DAERAH_DEBUG', env('APP_ENV', 'production') !== 'production'),
 
         // Provinsi yang dipaksa untuk seluruh request. Kosongkan untuk normal.
-        'force_province' => env('DAERAH_FORCE_PROVINCE', 'betawi'),
+        // 'force_province' => env('DAERAH_FORCE_PROVINCE', 'betawi'),
 
         // Nama query string untuk memaksa provinsi per request.
         'query_parameter' => 'daerah',
