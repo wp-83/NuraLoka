@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Album;
 use App\Models\Badge;
 use App\Models\Level;
 use App\Models\User;
@@ -170,7 +171,7 @@ class ProductionUserSeeder extends Seeder
 
         $owned = DB::table('user_badges')->where('user_id', $userId)->count();
         $total = Badge::count();
-        $this->command?->info("Akun \"completed all\" dibuat: ".self::SHOWCASE_EMAIL." — {$owned}/{$total} lencana, {$points} poin.");
+        $this->command?->info('Akun "completed all" dibuat: '.self::SHOWCASE_EMAIL." — {$owned}/{$total} lencana, {$points} poin.");
     }
 
     /**
@@ -218,7 +219,7 @@ class ProductionUserSeeder extends Seeder
 
             // Dibuat lewat model agar HasSlug menurunkan slug dari judul album,
             // sama seperti album buatan pengguna.
-            $albumIds[] = \App\Models\Album::create([
+            $albumIds[] = Album::create([
                 'trip_id' => $tripId,
                 'caption' => $title,
                 'view_count' => 0,
