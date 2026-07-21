@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class XullTripSeeder extends Seeder
+class TripSeeder extends Seeder
 {
     /**
      * 20 trip realistis antar lokasi di Jabodetabek.

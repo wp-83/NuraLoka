@@ -218,6 +218,7 @@ export default function Index({ categories, filters = {} }) {
                                                     ? t('admin.categories.empty_description')
                                                     : t('admin.categories.empty_description_no_search')
                                             }
+                                            size="compact"
                                         />
                                     </td>
                                 </tr>
@@ -266,5 +267,5 @@ export default function Index({ categories, filters = {} }) {
 }
 
 Index.layout = (page) => (
-    <AdminLayout pageTitle="Kelola Kategori" content={page} />
+    <AdminLayout pageTitle="title.admin_categories" content={page} />
 );

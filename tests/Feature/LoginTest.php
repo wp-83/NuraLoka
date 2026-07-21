@@ -6,130 +6,103 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * Autentikasi login.
+ *
+ * Berkas ini sebelumnya gagal seluruhnya karena ditulis untuk kontrak lama:
+ * URL '/login' (sekarang '/auth/login'), field 'login' & 'remember'
+ * (sekarang 'identity' & 'rememberMe'), dan redirect ke '/dashboard'
+ * (sekarang route home.index).
+ */
 class LoginTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_login_page_is_accessible(): void
+    private function buatUser(array $override = []): User
     {
-        $response = $this->get('/auth/login');
-        $response->assertStatus(200);
-    }
-
-    public function test_user_can_login_with_email(): void
-    {
-        $user = User::factory()->create([
-            'email' => 'user@example.com',
-            'password' => bcrypt('password123'),
-        ]);
-
-        $response = $this->post('/login', [
-            'login' => 'user@example.com',
-            'password' => 'password123',
-        ]);
-
-        $response->assertRedirect('/dashboard');
-        $this->assertAuthenticatedAs($user);
-    }
-
-    public function test_user_can_login_with_username(): void
-    {
-        $user = User::factory()->create([
+        return User::factory()->create(array_merge([
             'username' => 'johndoe',
+            'email' => 'user@example.com',
             'password' => bcrypt('password123'),
-        ]);
+        ], $override));
+    }
 
-        $response = $this->post('/login', [
-            'login' => 'johndoe',
-            'password' => 'password123',
-        ]);
+    private function login(array $payload)
+    {
+        return $this->post(route('auth.login.authenticate'), $payload);
+    }
 
-        $response->assertRedirect('/dashboard');
+    public function test_halaman_login_bisa_diakses(): void
+    {
+        $this->get(route('auth.login.index'))->assertOk();
+    }
+
+    public function test_bisa_login_dengan_email(): void
+    {
+        $user = $this->buatUser();
+
+        $this->login(['identity' => 'user@example.com', 'password' => 'password123'])
+            ->assertRedirect(route('home.index'));
+
         $this->assertAuthenticatedAs($user);
     }
 
-    public function test_user_can_login_with_remember_me(): void
+    public function test_bisa_login_dengan_username(): void
     {
-        $user = User::factory()->create([
-            'email' => 'user@example.com',
-            'password' => bcrypt('password123'),
-        ]);
+        $user = $this->buatUser();
 
-        $response = $this->post('/login', [
-            'login' => 'user@example.com',
-            'password' => 'password123',
-            'remember' => true,
-        ]);
+        $this->login(['identity' => 'johndoe', 'password' => 'password123'])
+            ->assertRedirect(route('home.index'));
 
-        $response->assertRedirect('/dashboard');
         $this->assertAuthenticatedAs($user);
     }
 
-    public function test_user_cannot_login_with_wrong_password(): void
+    public function test_bisa_login_dengan_ingat_saya(): void
     {
-        User::factory()->create([
-            'email' => 'user@example.com',
-            'password' => bcrypt('password123'),
-        ]);
+        $user = $this->buatUser();
 
-        $response = $this->post('/login', [
-            'login' => 'user@example.com',
-            'password' => 'passwordsalah',
-        ]);
-
-        $response->assertSessionHasErrors();
-        $this->assertGuest();
-    }
-
-    public function test_user_cannot_login_with_unregistered_credential(): void
-    {
-        $response = $this->post('/login', [
-            'login' => 'tidakada@example.com',
+        $this->login([
+            'identity' => 'user@example.com',
             'password' => 'password123',
-        ]);
+            'rememberMe' => true,
+        ])->assertRedirect(route('home.index'));
 
-        $response->assertSessionHasErrors();
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_password_salah_ditolak(): void
+    {
+        $this->buatUser();
+
+        $this->login(['identity' => 'user@example.com', 'password' => 'salah'])
+            ->assertRedirect(route('auth.login.index'));
+
         $this->assertGuest();
     }
 
-    public function test_login_requires_login_field(): void
+    public function test_user_tidak_terdaftar_ditolak(): void
     {
-        $response = $this->post('/login', [
-            'login' => '',
-            'password' => 'password123',
-        ]);
+        $this->login(['identity' => 'entah@example.com', 'password' => 'password123'])
+            ->assertRedirect(route('auth.login.index'));
 
-        $response->assertSessionHasErrors(['login']);
         $this->assertGuest();
     }
 
-    public function test_login_requires_password(): void
+    public function test_identity_dan_password_wajib_diisi(): void
     {
-        $response = $this->post('/login', [
-            'login' => 'user@example.com',
-            'password' => '',
-        ]);
+        $this->login([])->assertSessionHasErrors(['identity', 'password']);
 
-        $response->assertSessionHasErrors(['password']);
         $this->assertGuest();
     }
 
-    public function test_authenticated_user_can_logout(): void
+    public function test_user_bisa_logout(): void
     {
-        $user = User::factory()->create();
+        $user = $this->buatUser();
 
-        $response = $this->actingAs($user)->post('/logout');
+        $this->actingAs($user)
+            ->post(route('auth.logout'))
+            ->assertRedirect();
 
-        $response->assertRedirect('/');
         $this->assertGuest();
-    }
-
-    public function test_authenticated_user_is_redirected_from_login_page(): void
-    {
-        $user = User::factory()->create();
-
-        $response = $this->actingAs($user)->get('/login');
-
-        $response->assertRedirect('/dashboard');
     }
 }

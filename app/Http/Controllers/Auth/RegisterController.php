@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Level;
 use App\Models\Province;
 use App\Models\User;
 use App\Models\UserDetail;
@@ -81,6 +82,7 @@ class RegisterController extends Controller
             'gender' => $validatedData['gender'],
             'province_id' => $validatedData['province'],
             'user_id' => $user->id,
+            'level_id' => Level::idForPoints(0),
         ]);
 
         session()->forget([

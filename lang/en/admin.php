@@ -533,6 +533,10 @@ return [
         'label_longitude' => 'Longitude',
         'label_description' => 'Destination Description',
         'placeholder_description' => 'Write a full description of this tourist destination...',
+        'label_min_price' => 'Minimum Price (Rp)',
+        'placeholder_min_price' => 'e.g. 15000 (leave blank if free)',
+        'label_max_price' => 'Maximum Price (Rp)',
+        'placeholder_max_price' => 'e.g. 50000 (leave blank if free)',
 
         'section_categories_title' => 'Destination Categories',
         'section_categories_description' => 'Select one or more categories that fit this destination.',

@@ -13,5 +13,4 @@ return [
     'my_profile' => '내 프로필',
     'admin_panel' => '관리자 패널',
     'logout' => '로그아웃',
-    'badge_label' => '칭호/배지',
 ];

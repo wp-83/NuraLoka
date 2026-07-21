@@ -369,7 +369,7 @@ export default function Edit({ user, provinces }) {
 
 Edit.layout = (page) => (
     <MainLayout
-        pageTitle="Perbarui Profil"
+        pageTitle="title.profile_edit"
         pageDescription="Perbarui informasi dan foto profil kamu di NuraLoka."
         content={page}
     />

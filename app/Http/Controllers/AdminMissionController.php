@@ -129,7 +129,7 @@ class AdminMissionController extends Controller
         return redirect()->route('admin.missions.index');
     }
 
-    /** Opsi aksi pemicu untuk dropdown form. */
+    /** Trigger-action options for the form dropdown. */
     private function actionOptions(): array
     {
         $options = [['value' => '', 'label' => 'Manual (tidak otomatis)', 'category' => false]];
@@ -144,7 +144,7 @@ class AdminMissionController extends Controller
         return $options;
     }
 
-    /** Bersihkan data: category_id hanya bermakna untuk aksi berbasis kategori. */
+    /** Normalise the payload: category_id is only meaningful for category-based actions. */
     private function normalize(array $data): array
     {
         $action = $data['action_type'] ?? null;

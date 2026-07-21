@@ -533,6 +533,10 @@ return [
         'label_longitude' => '경도',
         'label_description' => '여행지 설명',
         'placeholder_description' => '이 관광지에 대한 전체 설명을 작성하세요...',
+        'label_min_price' => '최소 가격 (Rp)',
+        'placeholder_min_price' => '예: 15000 (무료라면 비워 두세요)',
+        'label_max_price' => '최대 가격 (Rp)',
+        'placeholder_max_price' => '예: 50000 (무료라면 비워 두세요)',
 
         'section_categories_title' => '여행지 카테고리',
         'section_categories_description' => '이 여행지에 맞는 카테고리를 하나 이상 선택하세요.',

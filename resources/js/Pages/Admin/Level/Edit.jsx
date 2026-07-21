@@ -103,5 +103,5 @@ export default function Edit({ level }) {
 }
 
 Edit.layout = (page) => (
-    <AdminLayout pageTitle="Edit Level" content={page} />
+    <AdminLayout pageTitle="title.admin_level_edit" content={page} />
 );

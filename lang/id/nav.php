@@ -13,5 +13,4 @@ return [
     'my_profile' => 'Profil Saya',
     'admin_panel' => 'Panel Admin',
     'logout' => 'Keluar',
-    'badge_label' => 'Gelar/Badge',
 ];

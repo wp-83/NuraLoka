@@ -7,6 +7,28 @@ use Illuminate\Database\Seeder;
 
 class BadgeSeeder extends Seeder
 {
+    /**
+     * Poin per tingkat lencana bertingkat.
+     *
+     * Dinaikkan dari 50/100/150/250. Dengan nilai lama, seluruh lencana yang
+     * mungkin diraih hanya berjumlah ±5.300 poin — di bawah ambang level
+     * tertinggi (15.000), sehingga level 5 & 6 mustahil dicapai dan hampir semua
+     * user tertahan di "Perintis". Lihat LevelSeeder untuk ambang tiap level.
+     */
+    private const TIER_POINTS = [
+        1 => 250,   // Perunggu
+        2 => 500,   // Perak
+        3 => 1000,  // Emas
+        4 => 2000,  // Berlian
+    ];
+
+    private const TIER_NAMES = [
+        1 => 'Perunggu',
+        2 => 'Perak',
+        3 => 'Emas',
+        4 => 'Berlian',
+    ];
+
     public function run(): void
     {
         $badges = [
@@ -17,7 +39,7 @@ class BadgeSeeder extends Seeder
                 'icon_path' => 'images/badges/sahabatNuka/1.png',
                 'type' => 'special',
                 'category' => null,
-                'points' => 100,
+                'points' => 500,
                 'tier_level' => 0,
                 'tier_target' => 1,
             ],
@@ -27,7 +49,7 @@ class BadgeSeeder extends Seeder
                 'icon_path' => 'images/badges/special/2.png',
                 'type' => 'special',
                 'category' => null,
-                'points' => 250,
+                'points' => 1500,
                 'tier_level' => 0,
                 'tier_target' => 0,
             ],
@@ -37,7 +59,7 @@ class BadgeSeeder extends Seeder
                 'icon_path' => 'images/badges/special/3.png',
                 'type' => 'special',
                 'category' => null,
-                'points' => 300,
+                'points' => 1500,
                 'tier_level' => 0,
                 'tier_target' => 0,
             ],
@@ -47,41 +69,97 @@ class BadgeSeeder extends Seeder
                 'icon_path' => 'images/badges/special/1.png',
                 'type' => 'special',
                 'category' => null,
-                'points' => 250,
+                'points' => 1000,
                 'tier_level' => 0,
                 'tier_target' => 0,
             ],
-
-            // ── Si Paling Pantai ────────────────────────────────────────────
-            ['name' => 'Si Paling Pantai (Perunggu)', 'requirement_description' => 'Jelajahi berbagai destinasi pantai untuk meningkatkan lencana ini hingga tingkat tertinggi.', 'icon_path' => 'images/badges/siPalingPantai/1.png', 'type' => 'general', 'category' => 'Si Paling Pantai', 'points' => 50, 'tier_level' => 1, 'tier_target' => 1],
-            ['name' => 'Si Paling Pantai (Perak)', 'requirement_description' => 'Jelajahi berbagai destinasi pantai untuk meningkatkan lencana ini hingga tingkat tertinggi.', 'icon_path' => 'images/badges/siPalingPantai/2.png', 'type' => 'general', 'category' => 'Si Paling Pantai', 'points' => 100, 'tier_level' => 2, 'tier_target' => 10],
-            ['name' => 'Si Paling Pantai (Emas)', 'requirement_description' => 'Jelajahi berbagai destinasi pantai untuk meningkatkan lencana ini hingga tingkat tertinggi.', 'icon_path' => 'images/badges/siPalingPantai/3.png', 'type' => 'general', 'category' => 'Si Paling Pantai', 'points' => 150, 'tier_level' => 3, 'tier_target' => 20],
-            ['name' => 'Si Paling Pantai (Berlian)', 'requirement_description' => 'Jelajahi berbagai destinasi pantai untuk meningkatkan lencana ini hingga tingkat tertinggi.', 'icon_path' => 'images/badges/siPalingPantai/4.png', 'type' => 'general', 'category' => 'Si Paling Pantai', 'points' => 250, 'tier_level' => 4, 'tier_target' => 40],
-
-            // ── Si Paling Puncak ────────────────────────────────────────────
-            ['name' => 'Si Paling Puncak (Perunggu)', 'requirement_description' => 'Kunjungi gunung, bukit, atau spot sunrise untuk membuktikan semangatmu menaklukkan ketinggian.', 'icon_path' => 'images/badges/siPalingPuncak/1.png', 'type' => 'general', 'category' => 'Si Paling Puncak', 'points' => 50, 'tier_level' => 1, 'tier_target' => 1],
-            ['name' => 'Si Paling Puncak (Perak)', 'requirement_description' => 'Kunjungi gunung, bukit, atau spot sunrise untuk membuktikan semangatmu menaklukkan ketinggian.', 'icon_path' => 'images/badges/siPalingPuncak/2.png', 'type' => 'general', 'category' => 'Si Paling Puncak', 'points' => 100, 'tier_level' => 2, 'tier_target' => 10],
-            ['name' => 'Si Paling Puncak (Emas)', 'requirement_description' => 'Kunjungi gunung, bukit, atau spot sunrise untuk membuktikan semangatmu menaklukkan ketinggian.', 'icon_path' => 'images/badges/siPalingPuncak/3.png', 'type' => 'general', 'category' => 'Si Paling Puncak', 'points' => 150, 'tier_level' => 3, 'tier_target' => 20],
-            ['name' => 'Si Paling Puncak (Berlian)', 'requirement_description' => 'Kunjungi gunung, bukit, atau spot sunrise untuk membuktikan semangatmu menaklukkan ketinggian.', 'icon_path' => 'images/badges/siPalingPuncak/4.png', 'type' => 'general', 'category' => 'Si Paling Puncak', 'points' => 250, 'tier_level' => 4, 'tier_target' => 40],
-
-            // ── Si Paling Kuliner ───────────────────────────────────────────
-            ['name' => 'Si Paling Kuliner (Perunggu)', 'requirement_description' => 'Temukan dan jelajahi berbagai kuliner khas Nusantara selama perjalananmu.', 'icon_path' => 'images/badges/siPalingKuliner/1.png', 'type' => 'general', 'category' => 'Si Paling Kuliner', 'points' => 50, 'tier_level' => 1, 'tier_target' => 3],
-            ['name' => 'Si Paling Kuliner (Perak)', 'requirement_description' => 'Temukan dan jelajahi berbagai kuliner khas Nusantara selama perjalananmu.', 'icon_path' => 'images/badges/siPalingKuliner/2.png', 'type' => 'general', 'category' => 'Si Paling Kuliner', 'points' => 100, 'tier_level' => 2, 'tier_target' => 10],
-            ['name' => 'Si Paling Kuliner (Emas)', 'requirement_description' => 'Temukan dan jelajahi berbagai kuliner khas Nusantara selama perjalananmu.', 'icon_path' => 'images/badges/siPalingKuliner/3.png', 'type' => 'general', 'category' => 'Si Paling Kuliner', 'points' => 150, 'tier_level' => 3, 'tier_target' => 25],
-            ['name' => 'Si Paling Kuliner (Berlian)', 'requirement_description' => 'Temukan dan jelajahi berbagai kuliner khas Nusantara selama perjalananmu.', 'icon_path' => 'images/badges/siPalingKuliner/4.png', 'type' => 'general', 'category' => 'Si Paling Kuliner', 'points' => 250, 'tier_level' => 4, 'tier_target' => 50],
-
-            // ── Si Paling Hidden Gem ────────────────────────────────────────
-            ['name' => 'Si Paling Hidden Gem (Perunggu)', 'requirement_description' => 'Temukan dan kunjungi berbagai destinasi Hidden Gem untuk membuktikan pengalamanmu menjelajahmu.', 'icon_path' => 'images/badges/siPalingHiddenGem/1.png', 'type' => 'general', 'category' => 'Si Paling Hidden Gem', 'points' => 50, 'tier_level' => 1, 'tier_target' => 1],
-            ['name' => 'Si Paling Hidden Gem (Perak)', 'requirement_description' => 'Temukan dan kunjungi berbagai destinasi Hidden Gem untuk membuktikan pengalamanmu menjelajahmu.', 'icon_path' => 'images/badges/siPalingHiddenGem/2.png', 'type' => 'general', 'category' => 'Si Paling Hidden Gem', 'points' => 100, 'tier_level' => 2, 'tier_target' => 10],
-            ['name' => 'Si Paling Hidden Gem (Emas)', 'requirement_description' => 'Temukan dan kunjungi berbagai destinasi Hidden Gem untuk membuktikan pengalamanmu menjelajahmu.', 'icon_path' => 'images/badges/siPalingHiddenGem/3.png', 'type' => 'general', 'category' => 'Si Paling Hidden Gem', 'points' => 150, 'tier_level' => 3, 'tier_target' => 20],
-            ['name' => 'Si Paling Hidden Gem (Berlian)', 'requirement_description' => 'Temukan dan kunjungi berbagai destinasi Hidden Gem untuk membuktikan pengalamanmu menjelajahmu.', 'icon_path' => 'images/badges/siPalingHiddenGem/4.png', 'type' => 'general', 'category' => 'Si Paling Hidden Gem', 'points' => 250, 'tier_level' => 4, 'tier_target' => 40],
-
-            // ── Si Paling Cerita ────────────────────────────────────────────
-            ['name' => 'Si Paling Cerita (Perunggu)', 'requirement_description' => 'Bagikan momen terbaik perjalananmu melalui Trip Album untuk mengembangkan lencana ini.', 'icon_path' => 'images/badges/siPalingCerita/1.png', 'type' => 'general', 'category' => 'Si Paling Cerita', 'points' => 50, 'tier_level' => 1, 'tier_target' => 5],
-            ['name' => 'Si Paling Cerita (Perak)', 'requirement_description' => 'Bagikan momen terbaik perjalananmu melalui Trip Album untuk mengembangkan lencana ini.', 'icon_path' => 'images/badges/siPalingCerita/2.png', 'type' => 'general', 'category' => 'Si Paling Cerita', 'points' => 100, 'tier_level' => 2, 'tier_target' => 15],
-            ['name' => 'Si Paling Cerita (Emas)', 'requirement_description' => 'Bagikan momen terbaik perjalananmu melalui Trip Album untuk mengembangkan lencana ini.', 'icon_path' => 'images/badges/siPalingCerita/3.png', 'type' => 'general', 'category' => 'Si Paling Cerita', 'points' => 150, 'tier_level' => 3, 'tier_target' => 30],
-            ['name' => 'Si Paling Cerita (Berlian)', 'requirement_description' => 'Bagikan momen terbaik perjalananmu melalui Trip Album untuk mengembangkan lencana ini.', 'icon_path' => 'images/badges/siPalingCerita/4.png', 'type' => 'general', 'category' => 'Si Paling Cerita', 'points' => 250, 'tier_level' => 4, 'tier_target' => 50],
         ];
+
+        // ── Lencana bertingkat ──────────────────────────────────────────────
+        // Satu entri per folder gambar di public/images/badges. Setiap folder
+        // berisi 1.png–4.png untuk Perunggu → Berlian.
+        //
+        // 'targets' DISESUAIKAN dengan jumlah tempat yang benar-benar ada di
+        // katalog (lihat PlaceSeeder). Sebelumnya beberapa tingkat menuntut 40–100
+        // tempat berbeda padahal katalognya hanya 38 tempat — mis. Hidden Gem cuma
+        // punya 7 tempat, jadi tingkat Perak ke atas mustahil diraih siapa pun.
+        // Kalau katalog tempat bertambah banyak, angka di sini boleh dinaikkan.
+        $tiered = [
+            [
+                // Wisata Alam: 15 tempat.
+                'category' => 'Si Paling Pantai',
+                'folder' => 'siPalingPantai',
+                'description' => 'Jelajahi berbagai destinasi pantai untuk meningkatkan lencana ini hingga tingkat tertinggi.',
+                'targets' => [1, 4, 8, 12],
+            ],
+            [
+                // Wisata Alam: 15 tempat.
+                'category' => 'Si Paling Puncak',
+                'folder' => 'siPalingPuncak',
+                'description' => 'Kunjungi gunung, bukit, atau spot sunrise untuk membuktikan semangatmu menaklukkan ketinggian.',
+                'targets' => [1, 4, 8, 12],
+            ],
+            [
+                // Kuliner: 10 tempat.
+                'category' => 'Si Paling Kuliner',
+                'folder' => 'siPalingKuliner',
+                'description' => 'Temukan dan jelajahi berbagai kuliner khas Nusantara selama perjalananmu.',
+                'targets' => [1, 3, 6, 9],
+            ],
+            [
+                // Hidden Gem: 7 tempat.
+                'category' => 'Si Paling Hidden Gem',
+                'folder' => 'siPalingHiddenGem',
+                'description' => 'Temukan dan kunjungi berbagai destinasi Hidden Gem untuk membuktikan pengalaman menjelajahmu.',
+                'targets' => [1, 2, 4, 6],
+            ],
+            [
+                // Jumlah foto — tidak dibatasi katalog tempat.
+                'category' => 'Si Paling Cerita',
+                'folder' => 'siPalingCerita',
+                'description' => 'Bagikan momen terbaik perjalananmu melalui Trip Album untuk mengembangkan lencana ini.',
+                'targets' => [5, 15, 30, 50],
+            ],
+
+            // ── Kategori baru: gambarnya sudah ada di repo tapi belum pernah
+            // dimasukkan ke seeder, sehingga tiga folder ini tidak terpakai.
+            [
+                // Wisata Budaya: 7 tempat.
+                'category' => 'Si Paling Budaya',
+                'folder' => 'siPalingBudaya',
+                'description' => 'Kunjungi candi, keraton, museum, dan pusat budaya untuk mendalami warisan Nusantara.',
+                'targets' => [1, 2, 4, 6],
+            ],
+            [
+                // Seluruh katalog: 38 tempat.
+                'category' => 'Si Paling Penjelajah',
+                'folder' => 'siPalingPenjelajah',
+                'description' => 'Kunjungi sebanyak mungkin destinasi berbeda, apa pun kategorinya.',
+                'targets' => [3, 10, 20, 30],
+            ],
+            [
+                // Jumlah album — tidak dibatasi katalog tempat.
+                'category' => 'Si Paling Trip',
+                'folder' => 'siPalingTrip',
+                'description' => 'Buat semakin banyak Trip Album untuk mencatat setiap perjalananmu.',
+                'targets' => [1, 5, 15, 30],
+            ],
+        ];
+
+        foreach ($tiered as $group) {
+            foreach (self::TIER_NAMES as $level => $tierName) {
+                $badges[] = [
+                    'name' => "{$group['category']} ({$tierName})",
+                    'requirement_description' => $group['description'],
+                    'icon_path' => "images/badges/{$group['folder']}/{$level}.png",
+                    'type' => 'general',
+                    'category' => $group['category'],
+                    'points' => self::TIER_POINTS[$level],
+                    'tier_level' => $level,
+                    'tier_target' => $group['targets'][$level - 1],
+                ];
+            }
+        }
 
         foreach ($badges as $badge) {
             Badge::updateOrCreate(

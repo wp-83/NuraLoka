@@ -38,6 +38,7 @@ return [
     'all_meta_description' => 'Explore travel album collections and discover various travel stories and experiences with the Nuravers community on NuraLoka.',
     'all_title' => 'All Your Albums',
     'all_empty' => "You don't have any albums yet.",
+    'all_empty_owner' => ':name does not have any public albums yet.',
 
     // ── Create ──
     'create_meta_title' => 'Create New Album',
@@ -55,6 +56,7 @@ return [
     // ── Edit ──
     'edit_meta_title' => 'Edit Album',
     'edit_meta_description' => 'Update the information, visibility, and photo collection in your travel album on NuraLoka so every moment and travel experience stays well kept.',
+    'photos_empty' => 'No photos in this album yet.',
     'photos_label' => 'Album Photos',
     'delete_photo' => 'Delete photo',
     'delete_photo_confirm' => 'Are you sure you want to delete this photo?',

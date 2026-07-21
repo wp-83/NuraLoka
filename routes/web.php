@@ -13,6 +13,7 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ChallengeController;
+use App\Http\Controllers\DaerahGreetingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExploreController;
 use App\Http\Controllers\HomeController;
@@ -26,6 +27,12 @@ use Illuminate\Support\Facades\Route;
 
 // Ganti bahasa (id/en/ko) — dapat diakses semua pengunjung (tamu & login).
 Route::get('/bahasa/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
+
+// Sapaan bahasa daerah — SISTEM TERPISAH dari lokalisasi id/en/ko di atas.
+// Dipakai saat provinsi tidak bisa ditentukan dari profil user, sehingga perlu
+// koordinat browser atau geolokasi IP.
+Route::post('/bahasa-daerah/deteksi', [DaerahGreetingController::class, 'resolve'])
+    ->name('daerah.resolve');
 
 // Landing Page
 Route::prefix('/')->name('landing-page.')->controller(LandingPageController::class)->group(function () {

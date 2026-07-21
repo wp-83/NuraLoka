@@ -25,6 +25,8 @@ return new class extends Migration
             $table->decimal('latitude', 10, 8);
             $table->decimal('longitude', 11, 8);
             $table->string('address')->nullable();
+            $table->integer('min_price')->nullable();
+            $table->integer('max_price')->nullable();
             $table->timestamps();
         });
 

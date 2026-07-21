@@ -1,4 +1,5 @@
 import BrandText from '@components/Common/BrandText';
+import EmptyState from '@components/Common/EmptyState';
 import UserStatisticCard from '@components/Features/UserStatisticCard';
 import { Link } from '@inertiajs/react';
 import { useTranslation } from '@js/i18n';
@@ -271,9 +272,10 @@ export default function Dashboard({ stats, recentUsers = [], recentNews = [] }) 
                             ))}
                         </div>
                     ) : (
-                        <p className="font-body text-small text-gray-50">
-                            {t('admin.dashboard.recent_users_empty')}
-                        </p>
+                        <EmptyState
+                            title={t('admin.dashboard.recent_users_empty')}
+                            size="compact"
+                        />
                     )}
                 </div>
 
@@ -318,9 +320,10 @@ export default function Dashboard({ stats, recentUsers = [], recentNews = [] }) 
                             ))}
                         </div>
                     ) : (
-                        <p className="font-body text-small text-gray-50">
-                            {t('admin.dashboard.recent_news_empty')}
-                        </p>
+                        <EmptyState
+                            title={t('admin.dashboard.recent_news_empty')}
+                            size="compact"
+                        />
                     )}
                 </div>
             </section>
@@ -425,5 +428,5 @@ export default function Dashboard({ stats, recentUsers = [], recentNews = [] }) 
 }
 
 Dashboard.layout = (page) => (
-    <AdminLayout pageTitle="Dasbor" content={page} />
+    <AdminLayout pageTitle="title.admin_dashboard" content={page} />
 );

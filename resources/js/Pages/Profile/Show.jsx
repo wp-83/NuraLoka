@@ -1,10 +1,14 @@
 import { Head, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import MainLayout from '@js/Layouts/MainLayout';
+import BadgeIcon from '@components/Common/BadgeIcon';
+import Button from '@components/Forms/Button';
+import AlbumCard from '@components/Features/AlbumCard';
 import ProfileStatisticCard from '@components/Features/ProfileStatisticCard';
 import { useTranslation } from '@js/i18n';
 import { FiMapPin, FiCalendar, FiUser } from 'react-icons/fi';
 import { FaGenderless, FaMars, FaVenus } from 'react-icons/fa6';
+import { IoChevronBackSharp } from 'react-icons/io5';
 
 // =========================================================
 // FORMATTER
@@ -27,11 +31,10 @@ export default function Show({ targetUser, totalUser, rank, totalBadge, statisti
         <section className="w-full py-8">
             {/* BACK BUTTON */}
             <div className="mb-6">
-                <Link
-                    href={route('challenge.leaderboard')}
-                    className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-85 transition-colors font-medium text-sm"
-                >
-                    <span className="mr-2">‹</span> {t('challenge.leaderboard_page_title')}
+                <Link href={route('challenge.leaderboard')}>
+                    <Button iconLeft={<IoChevronBackSharp />}>
+                        {t('challenge.leaderboard_page_title')}
+                    </Button>
                 </Link>
             </div>
 
@@ -59,8 +62,12 @@ export default function Show({ targetUser, totalUser, rank, totalBadge, statisti
                         <h2 className="font-heading text-subtitle text-primary">
                             {targetUser.user_detail?.fullname}
                         </h2>
+                        {/* Gelar level user — sama seperti di profil sendiri
+                            (Profile/Index) dan di leaderboard, agar satu user
+                            selalu disebut dengan gelar yang sama di mana pun. */}
                         <p className="mt-1 font-heading text-body text-secondary">
-                            {t('common.community')}
+                            {targetUser.user_detail?.level?.name
+                                || t('common.community')}
                         </p>
 
                         {/* PROFILE INFORMATION */}
@@ -135,12 +142,7 @@ export default function Show({ targetUser, totalUser, rank, totalBadge, statisti
                         <div className="flex flex-wrap gap-4">
                             {allBadges.map((badge) => (
                                 <div key={badge.id} className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl shadow-sm border border-gray-100 w-24">
-                                    <img
-                                        src={`/${badge.icon_path}`}
-                                        alt={badge.name}
-                                        title={badge.name}
-                                        className="h-14 w-14 object-contain"
-                                    />
+                                    <BadgeIcon iconPath={badge.icon_path} alt={badge.name} size="md" />
                                     <span className="text-xs font-bold text-center text-primary leading-tight">
                                         {badge.name.replace(/\s\([^)]+\)/, '')}
                                     </span>
@@ -163,32 +165,11 @@ export default function Show({ targetUser, totalUser, rank, totalBadge, statisti
                             </Link>
                         )}
                     </div>
-                    
+
                     {albums?.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {albums.map((album) => (
-                                <Link key={album.id} href={route('album.show', { album: album.slug })} className="block group">
-                                    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 group-hover:shadow-md transition-shadow">
-                                        <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
-                                            {album.thumbnail ? (
-                                                <img src={`/storage/${album.thumbnail}`} alt={album.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-gray-400 font-medium">Tanpa Foto</div>
-                                            )}
-                                            <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" /></svg>
-                                                {album.photo_count}
-                                            </div>
-                                        </div>
-                                        <div className="p-4">
-                                            <h3 className="font-bold text-primary truncate group-hover:text-secondary transition-colors">{album.title}</h3>
-                                            <div className="flex items-center gap-1 mt-1 text-gray-500 text-xs">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-accent" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" /></svg>
-                                                <span className="truncate">{album.location}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Link>
+                                <AlbumCard key={album.id} album={album} />
                             ))}
                         </div>
                     ) : (
@@ -206,7 +187,7 @@ export default function Show({ targetUser, totalUser, rank, totalBadge, statisti
 // =========================================================
 Show.layout = (page) => (
     <MainLayout
-        pageTitle="Profil Pengguna"
+        pageTitle="title.profile_show"
         pageDescription="Lihat profil pengguna NuraLoka."
         content={page}
     />

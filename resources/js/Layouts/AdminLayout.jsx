@@ -2,6 +2,7 @@ import Flash from '@components/Common/Flash';
 import AdminFooter from '@components/Layouts/Admin/Footer';
 import AdminHeader from '@components/Layouts/Admin/Header';
 import AdminSidebar from '@components/Layouts/Admin/Sidebar';
+import { useTranslation } from '@js/i18n';
 
 import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
@@ -11,6 +12,7 @@ export default function AdminLayout({
     content,
 }) {
     const { flash } = usePage().props;
+    const { t } = useTranslation();
 
     const [isCollapsed, setIsCollapsed] =
         useState(false);
@@ -38,9 +40,13 @@ export default function AdminLayout({
     const currentYear =
         new Date().getFullYear();
 
+    // pageTitle boleh berupa kunci terjemahan maupun teks biasa — lihat catatan
+    // yang sama di MainLayout.
+    const resolvedTitle = pageTitle ? t(pageTitle) : '';
+
     const title =
         `NuraLoka Admin${
-            pageTitle ? ` | ${pageTitle}` : ''
+            resolvedTitle ? ` | ${resolvedTitle}` : ''
         }`;
 
     return (

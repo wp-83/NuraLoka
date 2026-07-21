@@ -9,6 +9,14 @@ use Illuminate\Http\Request;
 class AdminNewsController extends Controller
 {
     /**
+     * Every image upload goes through this service so size, format and file
+     * naming stay consistent across the application.
+     */
+    public function __construct(
+        private readonly ImageCompressionService $images,
+    ) {}
+
+    /**
      * Display a listing of the news for admin dashboard.
      */
     public function index(Request $request)
@@ -58,7 +66,7 @@ class AdminNewsController extends Controller
 
         $thumbnailPath = null;
         if ($request->hasFile('thumbnail')) {
-            $filename = app(ImageCompressionService::class)->compressToPublic(
+            $filename = $this->images->compressToPublic(
                 $request->file('thumbnail'),
                 public_path('images/news'),
                 maxWidth: 1200,
@@ -131,7 +139,7 @@ class AdminNewsController extends Controller
                 }
             }
 
-            $filename = app(ImageCompressionService::class)->compressToPublic(
+            $filename = $this->images->compressToPublic(
                 $request->file('thumbnail'),
                 public_path('images/news'),
                 maxWidth: 1200,

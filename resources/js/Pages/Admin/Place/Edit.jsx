@@ -64,7 +64,6 @@ export default function Edit({ place, categories, photos = [] }) {
                 {/* Back */}
                 <div>
                     <Button
-                        type="button"
                         variant="white"
                         iconLeft={<FiArrowLeft size={18} />}
                         onClick={() => router.get(route('admin.places.index'))}
@@ -136,75 +135,33 @@ export default function Edit({ place, categories, photos = [] }) {
                             error={errors.description}
                             required
                         />
-                    </div>
-                </FormSection>
 
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                             <Input
-                                label="Harga Minimal (Rp)"
+                                label={t('admin.places.label_min_price')}
                                 name="min_price"
                                 type="number"
+                                min="0"
                                 value={data.min_price}
                                 onChange={(e) => setData('min_price', e.target.value)}
-                                placeholder="Contoh: 15000 (Kosongkan jika gratis)"
+                                placeholder={t('admin.places.placeholder_min_price')}
                                 error={errors.min_price}
                             />
+
                             <Input
-                                label="Harga Maksimal (Rp)"
+                                label={t('admin.places.label_max_price')}
                                 name="max_price"
                                 type="number"
+                                min="0"
                                 value={data.max_price}
                                 onChange={(e) => setData('max_price', e.target.value)}
-                                placeholder="Contoh: 50000 (Kosongkan jika gratis)"
+                                placeholder={t('admin.places.placeholder_max_price')}
                                 error={errors.max_price}
                             />
                         </div>
+                    </div>
+                </FormSection>
 
-                        {/* Photos */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="font-heading text-paragraph text-primary-100">
-                                Foto Destinasi
-                            </label>
-                            <p className="text-small text-gray-70">
-                                Kelola foto yang tampil di galeri detail. Klik tanda silang untuk
-                                menandai foto yang akan dihapus saat disimpan.
-                            </p>
-
-                            {photos.length > 0 && (
-                                <div className="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-4">
-                                    {photos.map((photo) => {
-                                        const marked = data.deleted_photos.includes(photo.id);
-                                        return (
-                                            <div key={photo.id} className="relative">
-                                                <img
-                                                    src={photo.url}
-                                                    alt="Foto destinasi"
-                                                    className={`h-24 w-full rounded-lg object-cover transition ${marked ? 'opacity-30 grayscale' : ''}`}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => toggleRemoveExisting(photo.id)}
-                                                    title={marked ? 'Batalkan hapus' : 'Tandai untuk dihapus'}
-                                                    className={`absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full text-white shadow ${marked ? 'bg-gray-50' : 'bg-error-dark'}`}
-                                                >
-                                                    <FaTimes size={11} />
-                                                </button>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-
-                            <input
-                                type="file"
-                                accept="image/jpeg,image/png,image/jpg,image/webp"
-                                multiple
-                                onChange={handlePhotos}
-                                className="mt-3 block w-full cursor-pointer rounded-xl border border-primary-10 bg-gray-10 px-3 py-2 font-body text-small text-gray-70 file:mr-3 file:rounded-lg file:border-0 file:bg-primary-100 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-primary-85"
-                            />
-                            {data.photos.length > 0 && (
-                                <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4">
-                                    {data.photos.map((file, i) => (
                 {/* Categories */}
                 <FormSection
                     title={t('admin.places.section_categories_title')}
@@ -258,8 +215,8 @@ export default function Edit({ place, categories, photos = [] }) {
                                                 .join(' ')}
                                         />
 
-                                        <button
-                                            type="button"
+                                        <Button
+                                            unstyled
                                             onClick={() => toggleRemoveExisting(photo.id)}
                                             title={
                                                 marked
@@ -272,7 +229,7 @@ export default function Edit({ place, categories, photos = [] }) {
                                             ].join(' ')}
                                         >
                                             <FiX size={13} />
-                                        </button>
+                                        </Button>
                                     </div>
                                 );
                             })}
@@ -323,5 +280,5 @@ export default function Edit({ place, categories, photos = [] }) {
 }
 
 Edit.layout = (page) => (
-    <AdminLayout pageTitle="Edit Destinasi" content={page} />
+    <AdminLayout pageTitle="title.admin_place_edit" content={page} />
 );

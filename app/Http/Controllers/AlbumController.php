@@ -16,10 +16,18 @@ use Illuminate\Support\Facades\Storage;
 class AlbumController extends Controller
 {
     /**
-     * Halaman utama album (Gambar 1 + 5)
-     * - Album populer minggu ini (publik, paling banyak views)
-     * - Album milik user login
-     * - Search user jika ada query 'search'
+     * Every image upload goes through this service so size, format and file
+     * naming stay consistent across the application.
+     */
+    public function __construct(
+        private readonly ImageCompressionService $images,
+    ) {}
+
+    /**
+     * Album index page.
+     * - This week's popular albums (public, most viewed)
+     * - Albums owned by the signed-in user
+     * - User search when a 'search' query is present
      */
     public function index(Request $request)
     {
@@ -42,12 +50,18 @@ class AlbumController extends Controller
                         'id' => $u->id,
                         'fullname' => $u->userDetails?->fullname ?? $u->username,
                         'province' => $u->userDetails?->province?->name ?? '-',
-                        'profile_path' => $u->userDetails?->profile_path,
+                        // A ready-made profile photo URL (see
+                        // User::getPublicProfilePhotoAttribute), not a raw path.
+                        // That accessor also picks a gender-appropriate default
+                        // avatar; sending a raw path here would make users
+                        // without a photo look different from the profile page
+                        // and the leaderboard.
+                        'profile_path' => $u->public_profile_photo,
                     ];
                 });
         }
 
-        // Album populer minggu ini (publik, dari semua user, sorted by view_count, constraint seminggu)
+        // This week's popular albums: public, from any user, ordered by view_count.
         $popularAlbums = Album::with(['trip.user.userDetails', 'tripPhotos'])
             ->whereHas('trip', function ($q) {
                 $q->where('is_public', true)
@@ -63,7 +77,7 @@ class AlbumController extends Controller
                 return $this->formatAlbumData($album);
             });
 
-        // Album milik user login (max 6 untuk halaman index)
+        // Albums owned by the signed-in user (max 6 on the index page).
         $myAlbums = Album::with(['trip', 'tripPhotos'])
             ->whereHas('trip', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
@@ -75,7 +89,7 @@ class AlbumController extends Controller
                 return $this->formatAlbumData($album);
             });
 
-        // Total album milik user (untuk tombol lihat semua)
+        // Total albums owned by the user, for the "see all" button.
         $totalMyAlbums = Album::whereHas('trip', function ($q) use ($user) {
             $q->where('user_id', $user->id);
         })->count();
@@ -90,7 +104,7 @@ class AlbumController extends Controller
     }
 
     /**
-     * Detail album (Gambar 2)
+     * Album detail page.
      */
     public function show(Album $album)
     {
@@ -99,7 +113,7 @@ class AlbumController extends Controller
         $user = Auth::user();
         $isOwner = $album->trip->user_id === $user->id;
 
-        // Increment view count hanya jika bukan pemilik
+        // Only count a view when the viewer is not the owner.
         if (! $isOwner) {
             $album->increment('view_count');
         }
@@ -116,13 +130,15 @@ class AlbumController extends Controller
             'isOwner' => $isOwner,
             'author' => [
                 'fullname' => $album->trip->user->userDetails?->fullname ?? $album->trip->user->username,
-                'profile_path' => $album->trip->user->userDetails?->profile_path,
+                // Ready-made URL plus a gender-appropriate default avatar, the same
+                // one used by the navbar, the leaderboard and the profile page.
+                'profile_path' => $album->trip->user->public_profile_photo,
             ],
         ]);
     }
 
     /**
-     * Halaman buat album baru
+     * New album form.
      */
     public function create()
     {
@@ -130,7 +146,7 @@ class AlbumController extends Controller
     }
 
     /**
-     * Simpan album baru
+     * Store a new album.
      */
     public function store(Request $request)
     {
@@ -146,7 +162,7 @@ class AlbumController extends Controller
 
         $user = Auth::user();
 
-        // Buat trip sebagai basis album
+        // A trip is the basis of every album.
         $trip = Trip::create([
             'user_id' => $user->id,
             'title' => $request->title,
@@ -167,10 +183,8 @@ class AlbumController extends Controller
         ]);
 
         if ($request->hasFile('photos')) {
-            $compressor = app(ImageCompressionService::class);
-
             foreach ($request->file('photos') as $photo) {
-                $path = $compressor->compressToDisk($photo, 'album-photos');
+                $path = $this->images->compressToDisk($photo, 'album-photos');
 
                 TripPhoto::create([
                     'album_id' => $album->id,
@@ -180,21 +194,24 @@ class AlbumController extends Controller
             }
         }
 
-        // Gamifikasi: catat aksi membuat album (aksi tanpa filter kategori).
-        app(GamificationService::class)->record($user, 'create_album');
+        // Gamification: record the album-creation action (no category filter), then
+        // auto-detect tiered badges from this album's photos and place categories.
+        $gamification = app(GamificationService::class);
+        $gamification->record($user, 'create_album');
+        $gamification->syncAlbumBadges($user);
 
         return redirect()->route('album.index')->with('success', 'Album berhasil dibuat!');
     }
 
     /**
-     * Halaman edit album (Gambar 3)
+     * Album edit form.
      */
     public function edit(Album $album)
     {
         $user = Auth::user();
         $album->load(['trip', 'tripPhotos']);
 
-        // Pastikan hanya pemilik yang bisa edit
+        // Only the owner may edit.
         if ($album->trip->user_id !== $user->id) {
             abort(403);
         }
@@ -212,7 +229,7 @@ class AlbumController extends Controller
     }
 
     /**
-     * Update data album (dari Gambar 3)
+     * Update an album.
      */
     public function update(Request $request, Album $album)
     {
@@ -224,7 +241,7 @@ class AlbumController extends Controller
         }
 
         // Album sistem (perjalanan 2 titik): judul/lokasi/tanggal dibuat otomatis
-        // dan tidak boleh diubah. Blokir upaya edit info dari sisi server.
+        // and must not be edited. Reject the attempt server-side.
         if ($album->trip->is_system) {
             session()->flash('flash.type', 'error');
             session()->flash('flash.message', 'Album perjalanan dibuat otomatis oleh sistem — hanya foto yang dapat diubah.');
@@ -248,15 +265,30 @@ class AlbumController extends Controller
             'is_public' => $request->is_public ?? $album->trip->is_public,
         ]);
 
+        // The album title lives on the trip, so updating the trip alone never
+        // touches the album row: caption and slug would keep the old title.
+        // Done only when the title actually changes, so the album URL stays put
+        // when the user edits just the location or the date.
+        if ($album->trip->wasChanged('title')) {
+            $album->setRelation('trip', $album->trip->fresh());
+            $album->caption = $request->title;
+
+            // Clearing the slug marks the row dirty so the updating event really
+            // fires; HasSlug then regenerates it from the title.
+            $album->slug = null;
+            $album->save();
+        }
+
         if ($request->has('place_id')) {
             TripPhoto::where('album_id', $album->id)->update(['place_id' => $request->place_id]);
+            app(GamificationService::class)->syncAlbumBadges($user);
         }
 
         return redirect()->route('album.index')->with('success', 'Album berhasil diperbarui!');
     }
 
     /**
-     * Hapus album
+     * Delete an album.
      */
     public function destroy(Album $album)
     {
@@ -267,7 +299,7 @@ class AlbumController extends Controller
             abort(403);
         }
 
-        // Hapus foto-foto dari storage
+        // Remove the photo files from storage.
         foreach ($album->tripPhotos as $photo) {
             if (Storage::disk('public')->exists($photo->photo_path)) {
                 Storage::disk('public')->delete($photo->photo_path);
@@ -305,7 +337,7 @@ class AlbumController extends Controller
     }
 
     /**
-     * Album milik user tertentu (dari Gambar 5 → klik Lihat Album)
+     * Albums belonging to a specific user.
      */
     public function userAlbums($userId)
     {
@@ -355,7 +387,7 @@ class AlbumController extends Controller
     }
 
     /**
-     * Tambah foto ke album
+     * Add photos to an album.
      */
     public function addPhoto(Request $request, Album $album)
     {
@@ -371,10 +403,8 @@ class AlbumController extends Controller
             'photos.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120', // Max 5MB sebelum kompresi
         ]);
 
-        $compressor = app(ImageCompressionService::class);
-
         foreach ($request->file('photos') as $photo) {
-            $path = $compressor->compressToDisk($photo, 'album-photos');
+            $path = $this->images->compressToDisk($photo, 'album-photos');
 
             TripPhoto::create([
                 'album_id' => $album->id,
@@ -383,11 +413,14 @@ class AlbumController extends Controller
             ]);
         }
 
+        // New photos may push the user over a badge tier they had not reached yet.
+        app(GamificationService::class)->syncAlbumBadges($user);
+
         return back()->with('success', 'Foto berhasil ditambahkan!');
     }
 
     /**
-     * Hapus foto dari album
+     * Delete a photo from an album.
      */
     public function removePhoto($photoId)
     {
@@ -408,7 +441,7 @@ class AlbumController extends Controller
     }
 
     /**
-     * Format album data untuk frontend
+     * Shape album data for the frontend.
      */
     private function formatAlbumData(Album $album): array
     {
@@ -430,12 +463,12 @@ class AlbumController extends Controller
             'photo_count' => $album->tripPhotos->count(),
             'user_id' => $trip->user_id,
             'author_name' => $trip->user?->userDetails?->fullname ?? $trip->user?->username ?? '-',
-            'author_profile' => $trip->user?->userDetails?->profile_path,
+            'author_profile' => $trip->user?->public_profile_photo,
         ];
     }
 
     /**
-     * Cari lokasi (untuk autocomplete)
+     * Location search, used for autocomplete.
      */
     public function searchLocation(Request $request)
     {

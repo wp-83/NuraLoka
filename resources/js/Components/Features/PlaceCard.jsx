@@ -1,6 +1,7 @@
 import React from 'react';
 import { FiMapPin, FiBookmark, FiUsers, FiCamera } from 'react-icons/fi';
 import { FaBookmark } from 'react-icons/fa';
+import CategoryChip from '@components/Features/CategoryChip';
 import { useTranslation } from '@js/i18n';
 
 export default function PlaceCard({ place, onVisit, isSaved = false, onToggleSave }) {
@@ -11,14 +12,23 @@ export default function PlaceCard({ place, onVisit, isSaved = false, onToggleSav
             onClick={() => onVisit(place)}
             className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 group cursor-pointer relative"
         >
-            <div className="relative h-44 bg-gray-200 overflow-hidden">
-                {place.img ? (
-                    <img src={place.img} alt={place.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
-                        <img src="/images/defaults/image.png" alt="" />
-                    </div>
-                )}
+            {/* Bidang foto — SELALU terisi penuh, termasuk saat memakai gambar
+                bawaan. /images/defaults/image.png memang placeholder selebar
+                bidang (570×321), jadi diperlakukan sama seperti foto asli:
+                object-cover, bukan ikon kecil di tengah. */}
+            <div className="relative h-44 bg-gray-10 overflow-hidden">
+                <img
+                    src={place.img || '/images/defaults/image.png'}
+                    alt={place.img ? place.name : ''}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    // Foto bisa saja terhapus dari storage — jangan sampai
+                    // kartunya menampilkan ikon gambar rusak.
+                    onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = '/images/defaults/image.png';
+                    }}
+                />
             </div>
             <div className="p-4 relative z-10">
                 <div className="flex justify-between items-start gap-2 w-full overflow-hidden">
@@ -42,9 +52,7 @@ export default function PlaceCard({ place, onVisit, isSaved = false, onToggleSav
                 <p className="text-gray-100 mb-3 text-small truncate">{place.address}</p>
                 <div className="flex flex-wrap gap-1.5 mb-3">
                     {place.categories && place.categories.map((cat) => (
-                        <span key={cat.id} className="bg-secondary text-white px-2.5 py-1 rounded-md flex items-center gap-1 text-small">
-                            {cat.name}
-                        </span>
+                        <CategoryChip key={cat.id} category={cat} size="sm" />
                     ))}
                 </div>
                 <div className="flex items-center gap-3 mt-5 text-small text-gray">

@@ -7,17 +7,17 @@ use App\Models\Category;
 use App\Models\Place;
 use App\Models\PlaceVisit;
 use App\Models\Trip;
-use App\Models\TripPhoto;
 use App\Services\GamificationService;
+use App\Services\PlaceDetailPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ExploreController extends Controller
 {
-    // Jumlah titik maksimal yang dikirim per zoom (level-of-detail ala Google Maps).
-    // Titik muncul BERTAHAP: sedikit saat zoom jauh, makin banyak saat mendekat —
-    // sehingga peta tidak langsung penuh. Berlaku SAMA untuk internal & OSM (satu
-    // jenis titik). Di bawah zoom terkecil pada peta ini → tidak ada titik.
+    // Maximum number of points sent per zoom level (level-of-detail, like Google Maps).
+    // Points appear GRADUALLY: few when zoomed out, more as you zoom in, so the map
+    // never fills up all at once. Applies EQUALLY to internal and OSM places (they
+    // are one kind of point). Below the smallest zoom here, no points are returned.
     private const ZOOM_BUDGET = [
         16 => 1500,
         15 => 400,
@@ -27,28 +27,28 @@ class ExploreController extends Controller
         11 => 18,
     ];
 
-    // Bobot skor "Ramai Dikunjungi": pengunjung > pemosting album > saves.
+    // Scoring weights for "Trending Places": visitors > album posters > saves.
     private const WEIGHT_VISIT = 3;
 
     private const WEIGHT_ALBUM = 2;
 
     private const WEIGHT_SAVE = 1;
 
-    // Radius maksimal (meter) agar check-in dianggap sah (verifikasi lokasi).
+    // Maximum distance (metres) for a check-in to count as valid (location proof).
     private const CHECKIN_RADIUS_M = 300;
 
-    // Radius default (km) untuk section "Ramai Dikunjungi": hanya place di sekitar
-    // lokasi user login. Tempat yang jauh dari daerah user tidak ikut direkomendasikan.
+    // Default radius (km) for the "Trending Places" section: only places near the
+    // signed-in user. Places far from them are not recommended.
     private const TRENDING_RADIUS_KM = 100;
 
     /**
-     * Endpoint peta: GET /jelajah/titik?south=&west=&north=&east=&zoom=&categories=
+     * Map endpoint: GET /jelajah/titik?south=&west=&north=&east=&zoom=&categories=
      *
-     * Membaca dari SATU sumber (tabel places), semua titik diperlakukan seragam.
-     * Kepadatan diatur level-of-detail (ala Google Maps): jumlah titik dibatasi per
-     * zoom & diprioritaskan (kurasi internal + terpopuler lebih dulu) supaya titik
-     * "penting" muncul lebih awal dan sisanya menyusul saat diperbesar. 'source'
-     * tidak dikirim ke client.
+     * Reads from a SINGLE source (the places table); every point is treated alike.
+     * Density is controlled by level-of-detail: the number of points is capped per
+     * zoom and prioritised (curated internal places and the most popular first) so
+     * the "important" ones appear early and the rest follow as you zoom in.
+     * 'source' is never sent to the client.
      */
     public function points(Request $request)
     {
@@ -64,7 +64,7 @@ class ExploreController extends Controller
         $zoom = (int) $v['zoom'];
         $budget = $this->pointBudget($zoom);
 
-        // Zoom masih terlalu jauh → belum ada titik (peta bersih).
+        // Still zoomed too far out, so no points yet (clean map).
         if ($budget <= 0) {
             return response()->json(['points' => []]);
         }
@@ -80,7 +80,7 @@ class ExploreController extends Controller
             ->whereBetween('latitude', [$south, $north])
             ->whereBetween('longitude', [$west, $east])
             ->when($categories, fn ($q) => $q->whereHas('categories', fn ($c) => $c->whereIn('name', $categories)))
-            // Prioritas kemunculan: kurasi internal dulu, lalu terpopuler (kunjungan).
+            // Display priority: curated internal places first, then the most visited.
             ->orderByRaw("FIELD(source, 'internal', 'osm')")
             ->orderByDesc('visits_count')
             ->orderBy('id')
@@ -91,7 +91,7 @@ class ExploreController extends Controller
         return response()->json(['points' => $points->values()]);
     }
 
-    /** Anggaran jumlah titik untuk suatu zoom (level-of-detail progresif). */
+    /** Point budget for a given zoom level (progressive level-of-detail). */
     private function pointBudget(int $zoom): int
     {
         foreach (self::ZOOM_BUDGET as $minZoom => $cap) {
@@ -103,7 +103,7 @@ class ExploreController extends Controller
         return 0;
     }
 
-    /** Bentuk seragam satu titik peta untuk sisi user (tanpa membocorkan source). */
+    /** Uniform shape of a single map point for the client (never exposes source). */
     private function mapPoint(Place $p): array
     {
         return [
@@ -120,23 +120,24 @@ class ExploreController extends Controller
     }
 
     /**
-     * Endpoint pencarian saran (autocomplete): GET /jelajah/cari?q=
+     * Autocomplete suggestion endpoint: GET /jelajah/cari?q=
      *
-     * Membaca dari satu sumber (tabel places). Hanya field ringkas yang dikirim
-     * (bukan seluruh baris) agar payload kecil; tanpa membocorkan asal data.
+     * Reads from one source (the places table). Only a compact set of fields is
+     * returned rather than whole rows, keeping the payload small and not exposing
+     * where the data came from.
      */
     public function search(Request $request)
     {
         $q = trim((string) $request->query('q', ''));
 
-        // Minimal 2 karakter agar tidak memindai seluruh tabel untuk 1 huruf.
+        // Require at least 2 characters so a single letter cannot scan the whole table.
         if (mb_strlen($q) < 2) {
             return response()->json(['suggestions' => []]);
         }
 
-        // Susun ekspresi boolean FULLTEXT: tiap kata jadi prefix (kata*) & operator
-        // boolean dibersihkan agar aman. FULLTEXT butuh token >= ft_min_token_size
-        // (default 3). Untuk kueri pendek, pakai fallback LIKE.
+        // Build a FULLTEXT boolean expression: each word becomes a prefix (word*) and
+        // boolean operators are stripped for safety. FULLTEXT needs tokens of at
+        // least ft_min_token_size (3 by default), so short queries fall back to LIKE.
         $like = '%'.$q.'%';
         $tokens = collect(preg_split('/\s+/', $q, -1, PREG_SPLIT_NO_EMPTY))
             ->map(fn ($t) => preg_replace('/[+\-><()~*"@]/', '', $t))
@@ -154,7 +155,7 @@ class ExploreController extends Controller
 
         $suggestions = Place::with('categories:id,name,icon_path')
             ->where($nameFilter)
-            // Utamakan tempat kurasi (internal) di atas hasil OSM.
+            // Prefer curated (internal) places over OSM results.
             ->orderByRaw("FIELD(source, 'internal', 'osm')")
             ->limit(10)
             ->get()
@@ -176,23 +177,24 @@ class ExploreController extends Controller
 
     public function index(Request $request)
     {
-        // 1. Titik untuk kalkulasi center awal peta — cukup tempat kurasi (internal)
-        //    agar payload tetap ringan meski tabel places berisi ribuan titik OSM.
+        // 1. Points used only to compute the map's initial centre. Curated (internal)
+        //    places are enough, keeping the payload small even when the places table
+        //    holds thousands of OSM points.
         $places = Place::where('source', 'internal')
             ->get(['id', 'latitude', 'longitude']);
 
-        // 2. Ambil semua kategori untuk filter (beserta icon_path dari DB)
+        // 2. All categories for the filter bar (including icon_path from the database).
         $categories = Category::all();
 
-        // 3. Trending Places ("Ramai Dikunjungi") — skor berbobot dari data realtime:
-        //    pengunjung (check-in) ×3 + pemosting album unik ×2 + saves ×1.
-        //    Semua dihitung langsung dari DB tiap request (tidak di-cache).
-        //    Daftar ini adalah FALLBACK global: dipakai bila user menolak/ tidak
-        //    memberi izin lokasi. Bila lokasi tersedia, frontend memanggil endpoint
-        //    trending() agar hasil dibatasi pada radius sekitar user.
+        // 3. Trending Places, scored from live data:
+        //    visitors (check-ins) x3 + unique album posters x2 + saves x1.
+        //    Computed straight from the database on every request (not cached).
+        //    This list is the GLOBAL fallback, used when the visitor denies or
+        //    cannot provide location. When location is available the frontend calls
+        //    trending() instead, which limits results to a radius around them.
         $trendingPlaces = $this->trendingPlaces(10);
 
-        // 4. Recently Visited: ambil array place_id dari session, misal maksimal 5
+        // 4. Recently visited: place_id list from the session, capped at 5.
         $recentlyVisitedIds = $request->session()->get('recently_visited_places', []);
 
         $recentlyVisited = collect();
@@ -204,7 +206,7 @@ class ExploreController extends Controller
                 ->get();
         }
 
-        // 5. Saved Place IDs: untuk state bookmark pada PlaceCard
+        // 5. Saved place ids, used for the bookmark state on PlaceCard.
         $savedPlaceIds = [];
         if (auth()->check()) {
             $savedPlaceIds = auth()->user()->savedPlaces()->pluck('places.id')->toArray();
@@ -216,36 +218,37 @@ class ExploreController extends Controller
             'trendingPlaces' => $trendingPlaces,
             'recentlyVisited' => $recentlyVisited,
             'savedPlaceIds' => $savedPlaceIds,
-            // Mode demo: animasi cukup (tanpa validasi lokasi). false = validasi lokasi real.
+            // Demo mode: animation only, no location check. false = real location check.
             'journeyDemoMode' => (bool) config('nuraloka.journey_demo_mode'),
         ]);
     }
 
-    // Koridor SEMPIT (meter) untuk via-point WAJIB: hanya tempat yang benar-benar di
-    // jalur yang dipaksa dilewati OSRM, agar rute nyaris tak berbelok. Sengaja jauh lebih
-    // ketat dari radius tampilan marker "dekat rute" di frontend.
+    // NARROW corridor (metres) for mandatory via-points: only places genuinely on
+    // the path are forced into the OSRM route, so it barely detours. Deliberately far
+    // stricter than the "near the route" marker radius used by the frontend.
     private const ROUTE_VIA_CORRIDOR_M = 800;
 
-    // Jarak minimal (meter) antar via-point agar menyebar (tak menumpuk berdekatan).
+    // Minimum spacing (metres) between via-points so they spread out instead of clustering.
     private const ROUTE_MIN_SPACING_M = 1500;
 
-    // Batas via-point WAJIB. Sengaja sedikit: makin banyak titik dipaksa dilewati =
-    // makin banyak belokan/detour.
+    // Cap on mandatory via-points. Deliberately low: the more points the route is
+    // forced through, the more turns and detours it takes.
     private const ROUTE_MAX_VIA = 3;
 
-    // Jarak maksimal (meter) titik OSM ke JALAN rute nyata agar dianggap "di jalur" dan
-    // boleh jadi via-point fallback (dipakai endpoint snap 2-pass). Kecil → dipaksa
-    // mampir nyaris tanpa menambah belokan.
+    // Maximum distance (metres) from an OSM point to the actual route line for it to
+    // count as "on the path" and qualify as a fallback via-point (used by the two-pass
+    // snap endpoint). Kept small so detouring to it adds almost no turns.
     private const ROUTE_SNAP_M = 300;
 
     /**
-     * Endpoint: GET /jelajah/rute-titik — via-point WAJIB untuk membentuk rute OSRM.
+     * Endpoint: GET /jelajah/rute-titik — mandatory via-points for building an OSRM route.
      *
-     * HANYA place kurasi admin (source=internal) yang benar-benar dekat jalur (koridor
-     * sempit ROUTE_VIA_CORRIDOR_M) dan dibatasi sedikit (ROUTE_MAX_VIA), agar rute tidak
-     * zigzag. Titik OSM SENGAJA tidak dipaksa dilewati — cukup ditampilkan sebagai marker
-     * "dekat rute" oleh frontend lewat sistem titik peta biasa. Bila tak ada tempat admin
-     * di jalur, waypoints kosong → rute jadi jalur alami A→B (mulus), OSM tetap terlihat.
+     * ONLY admin-curated places (source=internal) that sit genuinely close to the path
+     * (the narrow ROUTE_VIA_CORRIDOR_M corridor), capped at ROUTE_MAX_VIA, so the route
+     * does not zigzag. OSM points are DELIBERATELY not forced into the route; the
+     * frontend simply shows them as "near the route" markers through the normal map
+     * point system. With no admin place on the path the waypoint list is empty, so the
+     * route stays the natural A-to-B line while OSM points remain visible.
      */
     public function routeWaypoints(Request $request)
     {
@@ -261,7 +264,7 @@ class ExploreController extends Controller
         $dLat = (float) $v['dest_lat'];
         $dLng = (float) $v['dest_lng'];
 
-        // Kotak pembatas A→B diperlebar selebar koridor via, dipakai untuk prefilter SQL.
+        // A-to-B bounding box widened by the corridor width, used to prefilter in SQL.
         $latPad = self::ROUTE_VIA_CORRIDOR_M / 111320;
         $lngPad = self::ROUTE_VIA_CORRIDOR_M / (111320 * max(0.01, cos(deg2rad($oLat))));
         $bbox = [
@@ -271,20 +274,20 @@ class ExploreController extends Controller
             'east' => max($oLng, $dLng) + $lngPad,
         ];
 
-        // Via-point: HANYA place admin (internal) dalam koridor sempit, diurut sepanjang
-        // garis A→B. Dengan koridor 800m & ≤3 titik, titik nyaris kolinear dengan garis
-        // sehingga urutan garis ≈ urutan rute (tak mundur-maju).
+        // Via-points: ONLY admin (internal) places inside the narrow corridor, ordered
+        // along the A-to-B line. With an 800 m corridor and at most 3 points they are
+        // near-collinear, so line order matches route order (no doubling back).
         $candidates = $this->corridorCandidates('internal', $bbox, $oLat, $oLng, $dLat, $dLng, self::ROUTE_VIA_CORRIDOR_M);
 
-        // Jarangkan: lewati titik yang terlalu dekat dengan via-point sebelumnya.
+        // Thin out: skip points that sit too close to the previous via-point.
         $waypoints = [];
         foreach ($candidates as $p) {
             $last = end($waypoints);
             if ($last && $this->haversineMeters($last['latitude'], $last['longitude'], (float) $p->latitude, (float) $p->longitude) < self::ROUTE_MIN_SPACING_M) {
                 continue;
             }
-            // Bentuk seragam dengan titik peta (slug + kategori) agar marker via-point
-            // tampil identik: ikon kategori & tombol "Lihat Detail" berfungsi.
+            // Same shape as a map point (slug + categories) so via-point markers render
+            // identically: category icon and the "View detail" button both work.
             $waypoints[] = $this->mapPoint($p);
             if (count($waypoints) >= self::ROUTE_MAX_VIA) {
                 break;
@@ -295,13 +298,14 @@ class ExploreController extends Controller
     }
 
     /**
-     * Endpoint: POST /jelajah/rute-osm — via-point OSM FALLBACK yang "di-snap" ke rute nyata.
+     * Endpoint: POST /jelajah/rute-osm — fallback OSM via-points snapped to the real route.
      *
-     * Dipakai frontend HANYA bila tak ada via-point admin (2-pass): frontend menghitung
-     * rute alami A→B dulu, mengirim geometri jalannya (`path`), lalu endpoint ini memilih
-     * titik OSM yang benar-benar dekat JALAN (≤ ROUTE_SNAP_M meter dari polyline rute),
-     * diurut sepanjang rute & dibatasi sedikit. Karena titik sudah di pinggir jalan yang
-     * dilalui, memaksanya jadi via-point nyaris tak menambah belokan (anti-zigzag).
+     * Used by the frontend ONLY when there are no admin via-points (two-pass): the
+     * frontend first computes the natural A-to-B route and sends its geometry (`path`),
+     * then this endpoint picks OSM points that genuinely hug that line (within
+     * ROUTE_SNAP_M metres of the polyline), ordered along the route and capped. Because
+     * those points already sit beside the road being driven, forcing the route through
+     * them adds almost no turns.
      */
     public function routeOsmWaypoints(Request $request)
     {
@@ -313,7 +317,7 @@ class ExploreController extends Controller
 
         $path = $v['path']; // [[lat, lng], ...] geometri rute alami dari OSRM.
 
-        // Proyeksi lokal (equirectangular) berpusat di titik awal path → jarak dalam meter.
+        // Local equirectangular projection centred on the path start, giving metres.
         $R = 6371000;
         $baseLat = (float) $path[0][0];
         $baseLng = (float) $path[0][1];
@@ -323,7 +327,7 @@ class ExploreController extends Controller
             deg2rad($lat - $baseLat) * $R,
         ];
 
-        // Precompute XY tiap titik path + panjang kumulatif (untuk posisi sepanjang rute).
+        // Precompute XY per path point plus cumulative length (for position along the route).
         $xy = [];
         $cum = [0.0];
         foreach ($path as $i => $pt) {
@@ -335,7 +339,7 @@ class ExploreController extends Controller
             }
         }
 
-        // Kotak pembatas dari rentang path + pad snap (prefilter SQL).
+        // Bounding box from the path extent plus the snap padding (SQL prefilter).
         $lats = array_map(fn ($p) => (float) $p[0], $path);
         $lngs = array_map(fn ($p) => (float) $p[1], $path);
         $latPad = self::ROUTE_SNAP_M / 111320;
@@ -353,12 +357,12 @@ class ExploreController extends Controller
 
                 return $p;
             })
-            // Hanya titik yang benar-benar menempel jalan rute; urut sepanjang rute.
+            // Keep only points genuinely hugging the route line, ordered along it.
             ->filter(fn ($p) => $p->snap_dist <= self::ROUTE_SNAP_M)
             ->sortBy('arc')
             ->values();
 
-        // Jarangkan + batasi jumlah (sama seperti via-point admin).
+        // Thin out and cap the count, same as for admin via-points.
         $waypoints = [];
         foreach ($candidates as $p) {
             $last = end($waypoints);
@@ -375,13 +379,14 @@ class ExploreController extends Controller
     }
 
     /**
-     * Jarak tegak lurus (meter) titik ke polyline rute + posisi sepanjang rute (meter).
-     * Memproyeksikan titik ke tiap ruas (segmen) lalu mengambil yang terdekat.
+     * Perpendicular distance (metres) from a point to the route polyline, plus its
+     * position along that route (metres). Projects the point onto every segment and
+     * keeps the nearest.
      *
-     * @param  callable  $toXY  konversi (lat,lng) → [x,y] meter (proyeksi lokal)
-     * @param  array<int, array{0:float,1:float}>  $xy  XY tiap titik path
-     * @param  array<int, float>  $cum  panjang kumulatif path di tiap titik
-     * @return array{0:float, 1:float} [jarak_meter, posisi_sepanjang_rute_meter]
+     * @param  callable  $toXY  converts (lat,lng) to [x,y] in metres (local projection)
+     * @param  array<int, array{0:float,1:float}>  $xy  XY of each path point
+     * @param  array<int, float>  $cum  cumulative path length at each point
+     * @return array{0:float, 1:float} [distance_metres, position_along_route_metres]
      */
     private function snapToPath(callable $toXY, array $xy, array $cum, float $pLat, float $pLng): array
     {
@@ -410,10 +415,10 @@ class ExploreController extends Controller
     }
 
     /**
-     * Kandidat via-point dari satu $source ('internal'/'osm') di sepanjang koridor rute:
-     * di-prefilter kotak pembatas $bbox (SQL) lalu diproyeksikan ke garis asal→tujuan,
-     * disaring hanya yang berada di antara A & B dan dalam koridor selebar $corridorM,
-     * diurut sepanjang garis (nilai t).
+     * Via-point candidates from one $source ('internal'/'osm') along the route corridor:
+     * prefiltered by the $bbox bounding box in SQL, projected onto the origin-to-
+     * destination line, kept only when they fall between A and B and inside a corridor
+     * $corridorM wide, then ordered along the line by t.
      *
      * @param  array{south:float,north:float,west:float,east:float}  $bbox
      */
@@ -431,18 +436,19 @@ class ExploreController extends Controller
 
                 return $p;
             })
-            // Berada di antara asal & tujuan (sepanjang garis) dan dalam koridor.
+            // Between origin and destination along the line, and inside the corridor.
             ->filter(fn ($p) => $p->t > 0.02 && $p->t < 0.98 && $p->perp <= $corridorM)
             ->sortBy('t')
             ->values();
     }
 
     /**
-     * Endpoint: POST /jelajah/perjalanan — user menekan "Mulai Perjalanan" & menyelesaikannya.
-     * Mengisi tabel trips (2 titik) + membuat album SPECIAL otomatis (tanpa foto).
+     * Endpoint: POST /jelajah/perjalanan — the user starts and finishes a journey.
+     * Fills the trips table (two points) and creates a SPECIAL album automatically,
+     * without photos.
      *
-     * Mode real (journey_demo_mode=false): validasi lokasi user harus dalam radius
-     * CHECKIN_RADIUS_M dari titik tujuan (seperti check-in) — otoritatif di server.
+     * Real mode (journey_demo_mode=false): the user's location must be within
+     * CHECKIN_RADIUS_M of the destination, same as a check-in. Verified server-side.
      */
     public function startJourney(Request $request)
     {
@@ -490,14 +496,14 @@ class ExploreController extends Controller
             'is_system' => true, // album otomatis sistem: judul/lokasi/tanggal terkunci
         ]);
 
-        // Album SPECIAL dibuat sistem (tanpa foto). Reuse struktur album yang ada.
+        // SPECIAL album created by the system, with no photos. Reuses the album structure.
         $album = Album::create([
             'trip_id' => $trip->id,
             'caption' => $title,
             'view_count' => 0,
         ]);
 
-        // Gamifikasi: menyelesaikan perjalanan 2 titik dihitung sebagai membuat album.
+        // Gamification: finishing a two-point journey counts as creating an album.
         app(GamificationService::class)->record(auth()->user(), 'create_album');
 
         return response()->json([
@@ -508,8 +514,9 @@ class ExploreController extends Controller
     }
 
     /**
-     * Proyeksikan titik ke garis asal→tujuan (equirectangular lokal).
-     * Kembalikan [t, perp]: t = posisi 0..1 sepanjang garis, perp = jarak tegak lurus (meter).
+     * Projects a point onto the origin-to-destination line (local equirectangular).
+     * Returns [t, perp]: t is the 0..1 position along the line, perp the perpendicular
+     * distance in metres.
      */
     private function projectOnLine(float $oLat, float $oLng, float $dLat, float $dLng, float $pLat, float $pLng): array
     {
@@ -537,65 +544,16 @@ class ExploreController extends Controller
     {
         $place = Place::with(['categories', 'photos'])->where('slug', $slug)->firstOrFail();
 
-        // Catat "baru saja dikunjungi" saat detail dibuka (sebelumnya lewat POST
-        // terpisah yang me-redirect-back → memicu reload halaman Jelajah).
+        // Record "recently visited" when the detail page opens. This used to be a
+        // separate POST that redirected back, which reloaded the Explore page.
         $this->pushRecentlyVisited($request, $place->id);
 
-        $isSaved = false;
-        if (auth()->check()) {
-            $isSaved = auth()->user()->savedPlaces()->where('place_id', $place->id)->exists();
-        }
-
-        $totalSaves = DB::table('saved_places')->where('place_id', $place->id)->count();
-
-        $visitorsCount = DB::table('place_visits')->where('place_id', $place->id)->count();
-        $albumPostersCount = DB::table('trip_photos')
-            ->join('albums', 'albums.id', '=', 'trip_photos.album_id')
-            ->join('trips', 'trips.id', '=', 'albums.trip_id')
-            ->where('trip_photos.place_id', $place->id)
-            ->distinct('trips.user_id')
-            ->count('trips.user_id');
-
-        return inertia('Explore/Show', [
-            'place' => $place,
-            'gallery' => $this->galleryFor($place),
-            'isSaved' => $isSaved,
-            'totalSaves' => $totalSaves,
-            'visitorsCount' => $visitorsCount,
-            'albumPostersCount' => $albumPostersCount,
-        ]);
-    }
-
-    /**
-     * Galeri foto untuk halaman detail place, gabungan dari:
-     *  1. Foto yang diunggah admin (relasi photos → pivot photo_place).
-     *  2. Foto milik user dari album POPULER yang menandai tempat ini
-     *     (reuse logika "populer": album publik, user tak dibanned, urut view_count).
-     */
-    private function galleryFor(Place $place): array
-    {
-        $adminPhotos = $place->photos
-            ->map(fn ($ph) => [
-                'id' => 'admin-'.$ph->id,
-                'url' => '/storage/'.$ph->path,
-            ]);
-
-        $albumPhotos = TripPhoto::query()
-            ->join('albums', 'albums.id', '=', 'trip_photos.album_id')
-            ->join('trips', 'trips.id', '=', 'albums.trip_id')
-            ->join('users', 'users.id', '=', 'trips.user_id')
-            ->where('trip_photos.place_id', $place->id)
-            ->where('trips.is_public', true)
-            ->where('users.is_banned', false)
-            ->orderByDesc('albums.view_count')
-            ->limit(20)
-            ->get(['trip_photos.id', 'trip_photos.photo_path'])
-            ->map(fn ($ph) => [
-                'id' => 'album-'.$ph->id,
-                'url' => '/storage/'.$ph->photo_path,
-            ]);
-
-        return $adminPhotos->concat($albumPhotos)->values()->all();
+        // PlaceDetailPresenter builds the props so the Wishlist page
+        // (WishlistController::show) shows exactly the same thing.
+        return inertia(
+            'Explore/Show',
+            app(PlaceDetailPresenter::class)->props($place, auth()->user()),
+        );
     }
 
     public function trackVisit(Request $request)
@@ -610,14 +568,14 @@ class ExploreController extends Controller
     }
 
     /**
-     * Simpan place_id ke daftar "baru saja dikunjungi" di session (paling depan,
-     * unik, maksimal 5). Dipakai saat membuka halaman detail.
+     * Pushes a place_id onto the session's "recently visited" list: newest first,
+     * unique, capped at 5. Called when a detail page is opened.
      */
     private function pushRecentlyVisited(Request $request, int $placeId): void
     {
         $recent = $request->session()->get('recently_visited_places', []);
 
-        // Pindahkan ke paling depan bila sudah ada.
+        // Move it to the front if it is already there.
         if (($key = array_search($placeId, $recent)) !== false) {
             unset($recent[$key]);
         }
@@ -629,8 +587,8 @@ class ExploreController extends Controller
     }
 
     /**
-     * Check-in: rekam kunjungan bila lokasi user (dari Geolocation browser) berada
-     * dalam radius CHECKIN_RADIUS_M dari koordinat place. 1 kunjungan unik per user/place.
+     * Check-in: records a visit when the user's browser location falls within
+     * CHECKIN_RADIUS_M of the place. One unique visit per user and place.
      */
     public function checkIn(Request $request)
     {
@@ -655,14 +613,14 @@ class ExploreController extends Controller
             ], 422);
         }
 
-        // updateOrCreate → unik per (user, place); check-in ulang hanya memperbarui waktu.
+        // updateOrCreate keeps it unique per (user, place); checking in again only bumps the time.
         $visit = PlaceVisit::updateOrCreate(
             ['user_id' => auth()->id(), 'place_id' => $place->id],
             ['latitude' => $data['latitude'], 'longitude' => $data['longitude'], 'visited_at' => now()]
         );
 
-        // Gamifikasi: hanya hitung untuk KUNJUNGAN BARU (tahan-farm; check-in ulang
-        // ke tempat sama tidak menambah progres misi).
+        // Gamification: only count NEW visits, so repeatedly checking in at the same
+        // place cannot farm mission progress.
         if ($visit->wasRecentlyCreated) {
             app(GamificationService::class)->record(auth()->user(), 'checkin', $place);
         }
@@ -676,10 +634,10 @@ class ExploreController extends Controller
     /**
      * Endpoint JSON: GET /jelajah/trending?lat=&lng=&radius=
      *
-     * Mengembalikan daftar "Ramai Dikunjungi" yang DIBATASI pada radius sekitar lokasi
-     * user (dari Geolocation browser) — supaya rekomendasi tidak memunculkan place yang
-     * jauh dari daerah user (mis. user di Sulawesi tidak melihat rekomendasi di Jawa).
-     * Bila lat/lng tidak dikirim, hasilnya sama dengan fallback global.
+     * Returns the "Trending Places" list LIMITED to a radius around the user's
+     * browser location, so recommendations never surface places far from them (a
+     * user in Sulawesi should not be shown places in Java). Without lat/lng the
+     * result matches the global fallback.
      */
     public function trending(Request $request)
     {
@@ -701,15 +659,15 @@ class ExploreController extends Controller
     }
 
     /**
-     * Ambil top-N place berdasarkan skor "ramai": pengunjung unik, pemosting album unik,
-     * dan jumlah saves — masing-masing diberi bobot. Dihitung live dari DB.
+     * Top-N places by "trending" score: unique visitors, unique album posters and
+     * save count, each weighted. Computed live from the database.
      *
-     * Bila $lat & $lng diberikan, hasil dibatasi hanya place dalam radius $radiusKm
-     * (haversine) dari lokasi user, lalu diurutkan berdasar skor & dibatasi $limit.
+     * When $lat and $lng are given, results are limited to places within $radiusKm
+     * (haversine) of the user, then ordered by score and capped at $limit.
      */
     private function trendingPlaces(int $limit, ?float $lat = null, ?float $lng = null, ?float $radiusKm = null)
     {
-        // Ekspresi skor dipakai untuk ORDER BY. Bobot berupa konstanta int (aman diinterpolasi).
+        // Score expression used for ORDER BY. The weights are int constants, so interpolating them is safe.
         $scoreSql =
             '((SELECT COUNT(*) FROM place_visits WHERE place_visits.place_id = places.id) * '.self::WEIGHT_VISIT.') + '
             .'((SELECT COUNT(DISTINCT trips.user_id) FROM trip_photos '
@@ -718,7 +676,10 @@ class ExploreController extends Controller
             .'WHERE trip_photos.place_id = places.id) * '.self::WEIGHT_ALBUM.') + '
             .'((SELECT COUNT(*) FROM saved_places WHERE saved_places.place_id = places.id) * '.self::WEIGHT_SAVE.')';
 
-        $query = Place::with('categories')
+        // photos and tripPhotos are eager-loaded for the card cover image (the img
+        // accessor). Loading them together here keeps a row of cards from firing
+        // an extra query per card.
+        $query = Place::with(['categories', 'photos', 'tripPhotos'])
             ->select('places.*')
             ->selectRaw("$scoreSql as trending_score")
             ->selectSub(
@@ -738,8 +699,8 @@ class ExploreController extends Controller
                 'saves_count'
             );
 
-        // Filter jarak: hanya place dalam radius (km) dari lokasi user (rumus haversine).
-        // least(1, ...) mencegah NaN dari acos akibat pembulatan floating point.
+        // Distance filter: only places within the radius (km) of the user, by haversine.
+        // least(1, ...) prevents acos returning NaN from floating-point rounding.
         if ($lat !== null && $lng !== null) {
             $radiusKm ??= self::TRENDING_RADIUS_KM;
             $haversineKm = '(6371 * acos(least(1, '
@@ -754,9 +715,13 @@ class ExploreController extends Controller
             ->orderByDesc('trending_score')
             ->limit($limit)
             ->get()
-            // Sembunyikan place tanpa aktivitas (skor 0) agar section benar-benar "ramai".
+            // Hide places with no activity (score 0) so the section is genuinely "trending".
             ->filter(fn ($p) => (int) $p->trending_score > 0)
-            ->values();
+            ->values()
+            // 'img' is appended only here, not via $appends on the model, so the map
+            // endpoint (which returns up to 1,500 points) does not load photos it
+            // never uses.
+            ->each(fn (Place $place) => $place->append('img'));
     }
 
     private function haversineMeters(float $lat1, float $lng1, float $lat2, float $lng2): float

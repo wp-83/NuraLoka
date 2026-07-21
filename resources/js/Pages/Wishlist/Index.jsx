@@ -1,8 +1,10 @@
 import { router } from '@inertiajs/react';
 
+import EmptyState from '@components/Common/EmptyState';
 import PlaceCard from '@components/Features/PlaceCard';
 import Button from '@components/Forms/Button';
 import MainLayout from '@js/Layouts/MainLayout';
+import RegionalGreeting from '@js/Daerah/RegionalGreeting';
 import { useTranslation } from '@js/i18n';
 
 export default function Index({
@@ -39,7 +41,7 @@ export default function Index({
     };
 
     return (
-        <section className="container relative w-full overflow-hidden">
+        <section className="relative overflow-hidden">
             {/* Content */}
             <div className="relative z-10 py-10">
                 {/* Header */}
@@ -55,56 +57,26 @@ export default function Index({
                         {t('wishlist.title')}
                     </h1>
 
-                    <p className="local-language text-paragraph">
-                        Tetandhingan Nuravers
-                    </p>
+                    <RegionalGreeting
+                        phrase="wishlist_index"
+                        className="text-paragraph mt-2 local-language"
+                    />
                 </div>
 
                 {/* Empty State */}
                 {!hasSavedPlaces ? (
-                    <div
-                        className="
-                            flex flex-col
-                            items-center justify-center
-                            gap-4 py-20
-                        "
-                    >
-                        <img
-                            src="/images/mascots/wait.png"
-                            alt="NuraLoka Mascot"
-                            className="
-                                h-44 w-44
-                                object-contain
-                                opacity-50
-                            "
-                        />
-
-                        <p
-                            className="
-                                text-center
-                                font-heading text-paragraph text-gray-50
-                            "
-                        >
-                            {t('wishlist.empty_text')}
-
-                            <span
-                                className="
-                                    block
-                                    text-body font-body text-gray-30
-                                "
+                    <EmptyState
+                        title={t('wishlist.empty_text')}
+                        description={t('wishlist.empty_sub')}
+                        action={
+                            <Button
+                                onClick={handleExplore}
+                                variant="primary"
                             >
-                                {t('wishlist.empty_sub')}
-                            </span>
-                        </p>
-
-                        <Button
-                            onClick={handleExplore}
-                            variant="primary"
-                            className="mt-3"
-                        >
-                            {t('wishlist.cta_explore')}
-                        </Button>
-                    </div>
+                                {t('wishlist.cta_explore')}
+                            </Button>
+                        }
+                    />
                 ) : (
                     <>
                         {/* Action */}
@@ -148,7 +120,7 @@ export default function Index({
 
 Index.layout = (page) => (
     <MainLayout
-        pageTitle="Impian"
+        pageTitle="title.wishlist"
         pageDescription="Lihat dan kelola daftar destinasi wisata impian yang telah kamu simpan di NuraLoka. Temukan kembali tempat favoritmu dan rencanakan perjalanan berikutnya dengan lebih mudah."
         content={page}
     />

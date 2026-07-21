@@ -1,22 +1,36 @@
 <?php
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Localization BAHASA DAERAH — Bahasa: Aceh (SCAFFOLD, menunggu diisi).
-// Isi tiap nilai dengan terjemahan bahasa Aceh. Kunci harus SAMA dgn jawa.php.
-// Komentar berisi acuan makna (Bahasa Indonesia) untuk memudahkan penerjemahan.
+// Localization BAHASA DAERAH — terpisah dari localization utama (id/en/ko).
+// Mengganti bahasa aplikasi TIDAK memengaruhi file ini.
+// Berisi subtitle bahasa daerah yang tampil di bawah judul halaman & hero Home.
+// Struktur: lang/daerah/{bahasa}.php ; satu file per bahasa daerah.
+// Kunci di SEMUA file bahasa daerah harus SAMA (lihat jawa.php sebagai acuan).
+// Nilai '' berarti BELUM diterjemahkan — resolver otomatis mundur ke bahasa
+// pulau, lalu ke Bahasa Indonesia. Jadi aman dibiarkan kosong.
+//
+// Bahasa: ACEH (DRAF — PERLU REVIEW PENUTUR ASLI).
+// Terjemahan draf oleh AI; belum diverifikasi. Mohon diperiksa penutur asli
+// sebelum dipakai di produksi.
 // ─────────────────────────────────────────────────────────────────────────────
 return [
-    // Ref: "Dari ikon wisata terkenal hingga hidden gem tersembunyi, temukan destinasi yang sesuai dengan gaya perjalanan kamu bersama NuraLoka."
-    'home_hero_desc' => '',
-    // Ref: "Mau ke mana hari ini, :name?"
-    'home_search_greeting' => '',
+    // ── Home ──
+    'home_hero' => 'Peuteugoh Langkah Droeneuh!',
+    'home_hero_desc' => 'Nibak ikon wisata nyang meushuhu sampoe hidden gem nyang teusom, mita destinasi nyang cocok ngon gaya jak droeneuh meusajan NuraLoka.',
+    'home_search_greeting' => 'Keuneuk jak ho uroe nyoe, :name?',
 
-    // Ref: "Tantangan Nuravers"
-    'challenge_index' => '',
-    // Ref: "Lencana Nuravers"
-    'challenge_badges' => '',
-    // Ref: "Perjalanan Level Kamu"
-    'challenge_levels' => '',
-    // Ref: "Papan Peringkat Para Nuravers"
-    'challenge_leaderboard' => '',
+    // ── Wawasan Wisata ──
+    'news_index' => 'Wawasan Jak-Jak Nuravers',
+
+    // ── Tantangan ──
+    'challenge_index' => 'Tantangan Geutanyoe Nuravers',
+    'challenge_badges' => 'Lencana Geutanyoe Nuravers',
+    'challenge_levels' => 'Perjalanan Level Droeneuh',
+    'challenge_leaderboard' => 'Papan Peringkat Geutanyoe Nuravers',
+
+    // ── Wishlist ──
+    'wishlist_index' => 'Impian nibak Nuravers',
+
+    // ── Album ──
+    'album_index' => 'Album Geutanyoe Nuravers',
 ];

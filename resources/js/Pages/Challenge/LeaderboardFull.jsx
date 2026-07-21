@@ -1,9 +1,15 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { route } from 'ziggy-js';
 import MainLayout from '@js/Layouts/MainLayout';
+import RegionalGreeting from '@js/Daerah/RegionalGreeting';
+import BadgeIcon from '@components/Common/BadgeIcon';
+import EmptyState from '@components/Common/EmptyState';
+import Button from '@components/Forms/Button';
+import Input from '@components/Forms/Input';
 import { useTranslation } from '@js/i18n';
 import { FiSearch, FiX } from 'react-icons/fi';
+import { IoChevronBackSharp } from 'react-icons/io5';
 
 export default function LeaderboardFull({ leaderboard = [], search = '', totalResults = null }) {
     const { t } = useTranslation();
@@ -21,18 +27,18 @@ export default function LeaderboardFull({ leaderboard = [], search = '', totalRe
 
     return (
         <>
-            <Head title={`${t('challenge.leaderboard_meta_title')} | NuraLoka`} />
-            <div className="w-full min-h-screen bg-[#FAF8F4]">
-                <main className="mx-auto w-full max-w-5xl px-4 py-8 md:px-8">
+            <div>
+                <main className="w-full pt-8 pb-16">
                     {/* Header */}
                     <div className="mb-6">
-                        <h1 className="font-heading text-3xl font-bold text-primary">{t('challenge.leaderboard_page_title')}</h1>
-                        <p className="text-sm text-info font-medium mt-0.5 italic text-[#1B86FF]">Papan Undhakan Para Nuraver</p>
-                        <div className="h-0.5 w-16 bg-[#1B86FF] mt-1 mb-6" />
+                        <h1 className="font-heading text-title font-bold text-primary mb-2">{t('challenge.leaderboard_page_title')}</h1>
+                        <RegionalGreeting phrase="challenge_leaderboard" className="local-language mb-5" />
 
                         <div className="flex justify-between items-end">
-                            <Link href={route('challenge.index')} className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-85 transition-colors font-medium text-sm">
-                                <span className="mr-2">‹</span> {t('challenge.back_to_challenge')}
+                            <Link href={route('challenge.index')}>
+                                <Button iconLeft={<IoChevronBackSharp />}>
+                                    {t('challenge.back_to_challenge')}
+                                </Button>
                             </Link>
 
                             {totalResults !== null && (
@@ -43,27 +49,31 @@ export default function LeaderboardFull({ leaderboard = [], search = '', totalRe
 
                     {/* Search Bar */}
                     <div className="mb-8">
-                        <form onSubmit={handleSearch} className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <FiSearch className="text-gray-400" />
-                            </div>
-                            <input
-                                type="text"
-                                className="block w-full pl-10 pr-10 py-3 bg-[#FEF0E6] border-none rounded-xl text-sm placeholder-gray-500 focus:ring-0 focus:outline-none"
-                                placeholder={t('challenge.leaderboard_search_placeholder')}
+                        <form onSubmit={handleSearch}>
+                            <Input
+                                name="search"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder={t('challenge.leaderboard_search_placeholder')}
+                                icon={<FiSearch size={18} />}
+                                iconRight={
+                                    searchTerm && (
+                                        <Button
+                                            unstyled
+                                            onClick={clearSearch}
+                                            className="text-gray-50 transition-colors hover:text-gray-85"
+                                            aria-label={t('challenge.leaderboard_search_placeholder')}
+                                        >
+                                            <FiX size={18} />
+                                        </Button>
+                                    )
+                                }
                             />
-                            {searchTerm && (
-                                <button type="button" onClick={clearSearch} className="absolute inset-y-0 right-0 pr-4 flex items-center">
-                                    <FiX className="text-gray-400 hover:text-gray-600" />
-                                </button>
-                            )}
                         </form>
                     </div>
 
                     {/* Leaderboard List */}
-                    <div className="space-y-3">
+                    <div className="space-y-6">
                         {leaderboard.length > 0 ? (
                             leaderboard.map((user) => {
                                 // Background based on rank or if current user in search
@@ -80,11 +90,11 @@ export default function LeaderboardFull({ leaderboard = [], search = '', totalRe
 
                                 return (
                                     <Link
-                                        key={user.rank}
+                                        key={user.user_id}
                                         href={route('profile.show', { username: user.username })}
                                         className={`flex items-center p-4 rounded-xl ${bgClass} ${rowBorder} transition-colors relative overflow-hidden shadow-sm ${!rowBorder ? 'border border-black/5' : ''} cursor-pointer hover:shadow-md`}
                                     >
-                                        
+
                                         {/* Avatar */}
                                         <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-amber-100 mr-4 border border-white/50">
                                             {user.profile_path ? (
@@ -98,48 +108,41 @@ export default function LeaderboardFull({ leaderboard = [], search = '', totalRe
 
                                         {/* Info */}
                                         <div className="flex-1 min-w-0 mr-4">
-                                            <div className="font-bold text-primary text-base">
+                                            <div className="text-paragraph text-primary font-heading">
                                                 {user.name} {user.is_current ? <span className="text-secondary">{t('challenge.you')}</span> : ''}
                                             </div>
-                                            <div className="flex items-center gap-1.5 mt-0.5 text-xs">
+                                            <div className="flex items-center gap-1.5 mt-0.5 text-body">
                                                 <span className="text-secondary font-bold">{user.level}</span>
-                                                <span className="text-gray-400">•</span>
-                                                <span className="text-gray-600 font-medium">{t('challenge.podium_points', { points: user.points.toLocaleString('id-ID') })}</span>
+                                                <span className="text-accent">•</span>
+                                                <span className="text-secondary font-medium">{t('challenge.podium_points', { points: user.points.toLocaleString('id-ID') })}</span>
                                             </div>
                                         </div>
 
                                         {/* Badges Preview */}
-                                        <div className="hidden sm:flex items-center mr-6">
-                                            <div className="flex -space-x-2">
+                                        <div className="hidden sm:flex items-center mr-12">
+                                            <div className="flex items-center gap-1.5">
                                                 {user.badge_icons.map((icon, idx) => (
-                                                    <div key={idx} className="w-10 h-10 rounded-full border-2 border-white bg-amber-50 shadow-sm overflow-hidden flex items-center justify-center relative z-10">
-                                                        <img src={`/${icon}`} alt="badge" className="w-[85%] h-[85%] object-contain" />
-                                                    </div>
+                                                    <BadgeIcon key={idx} iconPath={icon} alt="badge" size="sm" />
                                                 ))}
                                                 {user.badge_count > 5 && (
-                                                    <div className="w-10 h-10 rounded-full border-2 border-white bg-white shadow-sm flex items-center justify-center relative z-20 text-xs font-bold text-gray-500">
-                                                        {user.badge_count}+
-                                                    </div>
-                                                )}
-                                                {user.badge_count <= 5 && user.badge_count > 0 && (
-                                                    <div className="w-10 h-10 rounded-full border-2 border-white bg-white shadow-sm flex items-center justify-center relative z-20 text-xs font-bold text-gray-500">
-                                                        {user.badge_count}+
-                                                    </div>
+                                                    <span className="text-xs font-bold text-gray-500">
+                                                        +{user.badge_count - 5}
+                                                    </span>
                                                 )}
                                             </div>
                                         </div>
 
                                         {/* Rank */}
-                                        <div className="text-2xl font-black text-primary min-w-[3rem] text-right">
+                                        <div className="text-subtitle font-bold font-heading text-accent min-w-[3rem] text-right">
                                             #{user.rank}
                                         </div>
                                     </Link>
                                 );
                             })
                         ) : (
-                            <div className="text-center py-10 text-gray-500">
-                                {search ? t('challenge.no_match') : t('challenge.no_data')}
-                            </div>
+                            <EmptyState
+                                title={search ? t('challenge.no_match') : t('challenge.no_data')}
+                            />
                         )}
                     </div>
 
@@ -149,4 +152,4 @@ export default function LeaderboardFull({ leaderboard = [], search = '', totalRe
     );
 }
 
-LeaderboardFull.layout = (page) => <MainLayout pageTitle="Leaderboard" content={page}></MainLayout>
+LeaderboardFull.layout = (page) => <MainLayout pageTitle="title.leaderboard" content={page}></MainLayout>

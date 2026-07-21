@@ -1,7 +1,9 @@
+import EmptyState from '@components/Common/EmptyState';
 import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
 import NewsCard from '@components/Features/NewsCard';
 import MainLayout from '@js/Layouts/MainLayout';
+import RegionalGreeting from '@js/Daerah/RegionalGreeting';
 import { useTranslation } from '@js/i18n';
 
 import { Link, router } from '@inertiajs/react';
@@ -165,9 +167,10 @@ export default function Index({
                             {t('home.hero_title')}
                         </h1>
 
-                        <p className="mt-2 text-paragraph local-language !text-info-light">
-                            Mantêpaken lampah panjenengan
-                        </p>
+                        <RegionalGreeting
+                            phrase="home_hero"
+                            className="mt-2 text-paragraph !text-info-light"
+                        />
 
                         <div className="mt-20 max-w-2xl font-heading">
                             <p className="leading-relaxed text-paragraph">
@@ -181,12 +184,10 @@ export default function Index({
                                 {heroDescParts[1]}
                             </p>
 
-                            <p className="mt-2 text-small local-language !text-info-light max-w-xl">
-                                Saking ikon wisata ingkang misuwur dumugi papan
-                                wisata istimewa ingkang kasimpen, temokake
-                                destinasi ingkang cocog kaliyan gaya lelampahan
-                                panjenengan sesarengan kaliyan NuraLoka.
-                            </p>
+                            <RegionalGreeting
+                                phrase="home_hero_desc"
+                                className="mt-2 max-w-xl text-small !text-info-light"
+                            />
                         </div>
                     </div>
 
@@ -209,10 +210,12 @@ export default function Index({
                         {greetingParts[1]}
                     </h2>
 
-                    <p className="local-language">
-                        Panjenengan badhé tindak pundi dinten menika,{' '}
-                        {auth?.user?.fullname || 'Pengunjung'}?
-                    </p>
+                    <RegionalGreeting
+                        phrase="home_search_greeting"
+                        replacements={{
+                            name: auth?.user?.fullname || 'Pengunjung',
+                        }}
+                    />
 
                     <form className="mt-5 flex flex-col gap-3 sm:flex-row" onSubmit={handleSearchSubmit}>
                         <div className="relative flex-1">
@@ -322,26 +325,17 @@ export default function Index({
                         </div>
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center gap-5 rounded-2xl border border-blue-100 bg-blue-50 p-8 shadow-sm text-center">
-                        <img
-                            src="/images/home/mission-badge.png"
-                            alt="Badge misi"
-                            className="h-24 w-24 shrink-0 rounded-full object-cover opacity-50"
-                        />
-                        <div>
-                            <p className="font-heading font-bold text-paragraph text-primary-100">
-                                {t('challenge.missions_empty_title')}
-                            </p>
-                            <p className="mt-1 text-body text-secondary-100">
-                                {t('challenge.missions_empty_desc')}
-                            </p>
-                        </div>
-                        <Link href={route('challenge.index')} className="inline-block">
-                            <Button variant="primary" size="btn-md">
-                                {t('common.view_detail')}
-                            </Button>
-                        </Link>
-                    </div>
+                    <EmptyState
+                        title={t('challenge.missions_empty_title')}
+                        description={t('challenge.missions_empty_desc')}
+                        action={
+                            <Link href={route('challenge.index')}>
+                                <Button variant="primary" size="btn-md">
+                                    {t('common.view_detail')}
+                                </Button>
+                            </Link>
+                        }
+                    />
                 )}
             </section>
 
@@ -479,21 +473,10 @@ export default function Index({
                             ),
                         )
                     ) : (
-                        <div className="flex flex-col items-center justify-center py-16 text-center">
-                            <img
-                                src="/images/mascots/wait.png"
-                                alt="Tidak ada wawasan wisata"
-                                className="w-28"
-                            />
-
-                            <p className="mt-3 font-heading text-paragraph text-gray-100">
-                                {t('home.news_empty_title')}
-                            </p>
-
-                            <p className="mt-1 font-body text-body text-gray-50">
-                                {t('home.news_empty_desc')}
-                            </p>
-                        </div>
+                        <EmptyState
+                            title={t('home.news_empty_title')}
+                            description={t('home.news_empty_desc')}
+                        />
                     )}
                 </div>
             </section>
@@ -551,7 +534,12 @@ function AlbumCard({
     return (
         <Link
             href={slug ? route('album.show', slug) : '#'}
-            className={`group relative min-h-[180px] overflow-hidden rounded-2xl ${className}`}
+            // 'block' WAJIB: Link merender <a> yang defaultnya display:inline,
+            // dan elemen inline mengabaikan min-height. Karena seluruh isi kartu
+            // diposisikan absolute, tanpa ini kartunya runtuh setinggi nol.
+            // Sebelumnya hanya terlihat benar saat kartunya kebetulan menjadi
+            // anak grid (grid membuat anaknya jadi block secara otomatis).
+            className={`group relative block min-h-[180px] overflow-hidden rounded-2xl ${className}`}
         >
             <img
                 src={image}
@@ -577,57 +565,10 @@ function AlbumCard({
     );
 }
 
-// ============================================================
-// EMPTY STATE
-// ============================================================
-function EmptyState({
-    title,
-    description,
-}) {
-    return (
-        <div
-            className="
-                flex flex-col
-                items-center justify-center
-                py-12 text-center
-            "
-        >
-            <img
-                src="/images/mascots/wait.png"
-                alt="Maskot NuraLoka"
-                className="
-                    mb-4 h-24 w-24
-                    object-contain
-                    opacity-50
-                "
-            />
-
-            <p
-                className="
-                    font-body text-small
-                    font-medium text-gray-50
-                "
-            >
-                {title}
-            </p>
-
-            {description && (
-                <p
-                    className="
-                        mt-1 font-body
-                        text-micro text-gray-30
-                    "
-                >
-                    {description}
-                </p>
-            )}
-        </div>
-    );
-}
 
 Index.layout = (page) => (
     <MainLayout
-        pageTitle="Beranda"
+        pageTitle="title.home"
         pageDescription="Temukan destinasi wisata, misi perjalanan, momen Nuravers, dan wawasan wisata terbaik bersama NuraLoka."
         content={page}
     />

@@ -3,6 +3,7 @@ import { router, useForm } from '@inertiajs/react';
 
 import MainLayout from '@js/Layouts/MainLayout';
 import Button from '@components/Forms/Button';
+import Input from '@components/Forms/Input';
 import { useTranslation } from '@js/i18n';
 
 import {
@@ -221,8 +222,8 @@ export default function AlbumEdit({
                         {t('album.field_visibility')}
                     </span>
 
-                    <button
-                        type="button"
+                    <Button
+                        unstyled
                         onClick={handleToggleVisibility}
                         className="
                             flex items-center gap-2
@@ -275,7 +276,7 @@ export default function AlbumEdit({
                                 ? t('common.public')
                                 : t('common.private')}
                         </span>
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -367,69 +368,18 @@ export default function AlbumEdit({
 
                     {/* Title */}
                     <div className="mb-5">
-                        <label
-                            htmlFor="title"
-                            className="
-                                mb-1.5 block
-                                font-heading text-small
-                                font-semibold text-gray-85
-                            "
-                        >
-                            {t('album.field_title')}
-
-                            <span className="ml-1 text-error-dark">
-                                *
-                            </span>
-                        </label>
-
-                        <input
-                            id="title"
-                            type="text"
+                        <Input
+                            name="title"
+                            label={t('album.field_title')}
                             value={data.title}
                             onChange={(event) =>
-                                setData(
-                                    'title',
-                                    event.target.value
-                                )
+                                setData('title', event.target.value)
                             }
+                            placeholder={t('album.field_title_placeholder')}
+                            error={errors.title}
                             required={!isSystem}
                             disabled={isSystem}
-                            placeholder={t('album.field_title_placeholder')}
-                            className={`
-                                w-full
-                                rounded-lg
-                                border border-gray-30
-                                px-4 py-2.5
-                                font-body text-small
-                                text-gray-85
-                                outline-none
-                                transition-all
-
-                                placeholder:text-gray-30
-
-                                focus:border-primary-85
-                                focus:ring-2
-                                focus:ring-primary-30
-
-                                ${
-                                    isSystem
-                                        ? 'cursor-not-allowed bg-gray-10 text-gray-50'
-                                        : 'bg-white'
-                                }
-                            `}
                         />
-
-                        {errors.title && (
-                            <p
-                                className="
-                                    mt-1
-                                    font-body text-micro
-                                    text-error-dark
-                                "
-                            >
-                                {errors.title}
-                            </p>
-                        )}
                     </div>
 
                     {/* Location & Date */}
@@ -443,28 +393,12 @@ export default function AlbumEdit({
                     >
                         {/* Location */}
                         <div>
-                            <label
-                                htmlFor="location"
-                                className="
-                                    mb-1.5 block
-                                    font-heading text-small
-                                    font-semibold text-gray-85
-                                "
-                            >
-                                {t('album.field_location')}
-
-                                <span className="ml-1 text-error-dark">
-                                    *
-                                </span>
-                            </label>
-
+                            {/* Dibungkus relative agar daftar saran di bawah
+                                menempel pada kolomnya. */}
                             <div className="relative">
-                                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                                    <FiSearch className="text-gray-40" />
-                                </div>
-                                <input
-                                    id="location"
-                                    type="text"
+                                <Input
+                                    name="location"
+                                    label={t('album.field_location')}
                                     value={data.location}
                                     onChange={(e) => {
                                         setData((prev) => ({ ...prev, location: e.target.value, place_id: null }));
@@ -472,30 +406,11 @@ export default function AlbumEdit({
                                     }}
                                     onFocus={() => !isSystem && setShowLocationDropdown(true)}
                                     onBlur={() => setTimeout(() => setShowLocationDropdown(false), 200)}
+                                    placeholder={t('album.field_location_placeholder')}
+                                    icon={<FiSearch size={18} />}
+                                    error={errors.location}
                                     required={!isSystem}
                                     disabled={isSystem}
-                                    placeholder={t('album.field_location_placeholder')}
-                                    className={`
-                                        w-full
-                                        rounded-full
-                                        border-2 border-primary-30
-                                        pl-11 pr-4 py-2.5
-                                        font-body text-small
-                                        text-gray-85
-                                        outline-none
-                                        transition-all
-
-                                        placeholder:text-gray-40
-
-                                        focus:border-primary-100
-                                        focus:ring-0
-
-                                        ${
-                                            isSystem
-                                                ? 'cursor-not-allowed bg-gray-10 text-gray-50'
-                                                : 'bg-white'
-                                        }
-                                    `}
                                 />
 
                                 {/* Dropdown Suggestions */}
@@ -507,9 +422,9 @@ export default function AlbumEdit({
                                         overflow-hidden
                                     ">
                                         {locationSuggestions.map((place) => (
-                                            <button
+                                            <Button
+                                                unstyled
                                                 key={place.id}
-                                                type="button"
                                                 onClick={() => {
                                                     setData((prev) => ({ ...prev, location: place.name, place_id: place.id }));
                                                     setShowLocationDropdown(false);
@@ -534,88 +449,28 @@ export default function AlbumEdit({
                                                         {place.address}
                                                     </p>
                                                 </div>
-                                            </button>
+                                            </Button>
                                         ))}
                                     </div>
                                 )}
                             </div>
-
-                            {errors.location && (
-                                <p
-                                    className="
-                                        mt-1
-                                        font-body text-micro
-                                        text-error-dark
-                                    "
-                                >
-                                    {errors.location}
-                                </p>
-                            )}
                         </div>
 
                         {/* Date */}
                         <div>
-                            <label
-                                htmlFor="date"
-                                className="
-                                    mb-1.5 block
-                                    font-heading text-small
-                                    font-semibold text-gray-85
-                                "
-                            >
-                                {t('album.field_date')}
-
-                                <span className="ml-1 text-error-dark">
-                                    *
-                                </span>
-                            </label>
-
-                            <input
-                                id="date"
+                            <Input
+                                name="date"
                                 type="date"
+                                label={t('album.field_date')}
                                 max={maxDate}
                                 value={data.date}
                                 onChange={(event) =>
-                                    setData(
-                                        'date',
-                                        event.target.value
-                                    )
+                                    setData('date', event.target.value)
                                 }
+                                error={errors.date}
                                 required={!isSystem}
                                 disabled={isSystem}
-                                className={`
-                                    w-full
-                                    rounded-lg
-                                    border border-gray-30
-                                    px-4 py-2.5
-                                    font-body text-small
-                                    text-gray-85
-                                    outline-none
-                                    transition-all
-
-                                    focus:border-primary-85
-                                    focus:ring-2
-                                    focus:ring-primary-30
-
-                                    ${
-                                        isSystem
-                                            ? 'cursor-not-allowed bg-gray-10 text-gray-50'
-                                            : 'bg-white'
-                                    }
-                                `}
                             />
-
-                            {errors.date && (
-                                <p
-                                    className="
-                                        mt-1
-                                        font-body text-micro
-                                        text-error-dark
-                                    "
-                                >
-                                    {errors.date}
-                                </p>
-                            )}
                         </div>
                     </div>
                 </div>
@@ -658,7 +513,6 @@ export default function AlbumEdit({
                         </div>
 
                         <Button
-                            type="button"
                             variant="secondary"
                             size="btn-sm"
                             iconLeft={
@@ -759,8 +613,8 @@ export default function AlbumEdit({
                                     </div>
 
                                     {/* Remove */}
-                                    <button
-                                        type="button"
+                                    <Button
+                                        unstyled
                                         onClick={() =>
                                             handleRemovePhoto(
                                                 photo.id
@@ -786,13 +640,13 @@ export default function AlbumEdit({
                                         }`}
                                     >
                                         <FiX size={17} />
-                                    </button>
+                                    </Button>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <button
-                            type="button"
+                        <Button
+                            unstyled
                             onClick={handleAddPhotos}
                             className="
                                 flex w-full
@@ -846,7 +700,7 @@ export default function AlbumEdit({
                                 Klik untuk menambahkan foto
                                 ke dalam album ini.
                             </p>
-                        </button>
+                        </Button>
                     )}
                 </div>
 
@@ -882,7 +736,7 @@ export default function AlbumEdit({
 // ============================================================
 AlbumEdit.layout = (page) => (
     <MainLayout
-        pageTitle="Edit Album"
+        pageTitle="title.album_edit"
         pageDescription="Perbarui informasi, visibilitas, dan koleksi foto dalam album perjalananmu di NuraLoka agar setiap momen dan pengalaman wisata tetap tersimpan dengan baik."
         content={page}
     />

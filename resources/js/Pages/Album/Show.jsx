@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
 
 import MainLayout from '@js/Layouts/MainLayout';
+import EmptyState from '@components/Common/EmptyState';
 import Button from '@components/Forms/Button';
 import { useTranslation } from '@js/i18n';
 
@@ -34,10 +35,10 @@ function formatViews(count = 0) {
     return Number(count).toLocaleString('id-ID');
 }
 
-function getProfileImage(profilePath) {
-    return profilePath
-        ? `/storage/${profilePath}`
-        : '/images/defaults/profile-general.png';
+// Server sudah mengirim URL foto profil yang jadi (User::public_profile_photo),
+// termasuk avatar bawaan sesuai gender. Jangan menempelkan /storage/ lagi.
+function getProfileImage(profileUrl) {
+    return profileUrl || '/images/defaults/profile-general.png';
 }
 
 function getPhotoPath(photoPath) {
@@ -222,8 +223,8 @@ export default function AlbumShow({
                                 {t('album.field_visibility')}
                             </span>
 
-                            <button
-                                type="button"
+                            <Button
+                                unstyled
                                 onClick={handleToggleVisibility}
                                 className="
                                     flex items-center gap-2
@@ -274,7 +275,7 @@ export default function AlbumShow({
                                         ? t('common.public')
                                         : t('common.private')}
                                 </span>
-                            </button>
+                            </Button>
                         </div>
                     ) : (
                         /* Author Information */
@@ -443,123 +444,81 @@ export default function AlbumShow({
                     PHOTO GALLERY
                 ==================================================== */}
                 {photos.length > 0 ? (
+                    /*
+                     * Semua foto memakai rasio yang SAMA (4:3) dan ukurannya
+                     * mengikuti lebar kolom.
+                     *
+                     * Sebelumnya tingginya dipatok piksel dan berbeda-beda —
+                     * dua foto pertama h-72, sisanya h-56 — sehingga barisnya
+                     * tidak rata dan pemotongan gambar berubah-ubah mengikuti
+                     * lebar layar. Foto terakhir pada jumlah ganjil juga
+                     * dilebarkan dua kolom, jadi tampil sebagai pita sangat
+                     * lebar tapi pendek (sekitar 4:1).
+                     */
                     <div
                         className="
                             grid grid-cols-1
                             gap-4
 
-                            md:grid-cols-2
+                            sm:grid-cols-2
+                            lg:grid-cols-3
                         "
                     >
-                        {photos.map(
-                            (photo, index) => {
-                                const isLastOddPhoto =
-                                    index ===
-                                    photos.length - 1 &&
-                                    photos.length % 2 !== 0;
+                        {photos.map((photo, index) => (
+                            <Button
+                                unstyled
+                                key={photo.id}
+                                onClick={() => openLightbox(index)}
+                                className="
+                                    group
+                                    aspect-[4/3]
+                                    overflow-hidden
+                                    rounded-2xl
+                                    bg-gray-10
+                                    shadow-md
+                                    transition-all
+                                    duration-300
 
-                                return (
-                                    <button
-                                        key={photo.id}
-                                        type="button"
-                                        onClick={() =>
-                                            openLightbox(
-                                                index
-                                            )
-                                        }
-                                        className={`
-                                            group
-                                            overflow-hidden
-                                            rounded-2xl
-                                            bg-gray-10
-                                            text-left
-                                            shadow-md
-                                            transition-all
-                                            duration-300
+                                    hover:-translate-y-1
+                                    hover:shadow-xl
+                                "
+                            >
+                                <img
+                                    src={getPhotoPath(photo.photo_path)}
+                                    alt={
+                                        photo.filename ||
+                                        `${album.title} - Foto ${index + 1}`
+                                    }
+                                    loading="lazy"
+                                    className="
+                                        h-full w-full
+                                        object-cover
+                                        transition-transform
+                                        duration-500
 
-                                            hover:-translate-y-1
-                                            hover:shadow-xl
-
-                                            ${isLastOddPhoto
-                                                ? 'md:col-span-2'
-                                                : ''
-                                            }
-                                        `}
-                                    >
-                                        <div
-                                            className={`
-                                                w-full
-                                                overflow-hidden
-                                                bg-gray-10
-
-                                                ${index < 2
-                                                    ? 'h-72'
-                                                    : 'h-56'
-                                                }
-                                            `}
-                                        >
-                                            <img
-                                                src={getPhotoPath(
-                                                    photo.photo_path
-                                                )}
-                                                alt={
-                                                    photo.filename ||
-                                                    `${album.title} - Foto ${index + 1
-                                                    }`
-                                                }
-                                                className="
-                                                    h-full w-full
-                                                    object-cover
-                                                    transition-transform
-                                                    duration-500
-
-                                                    group-hover:scale-105
-                                                "
-                                                onError={(
-                                                    event
-                                                ) => {
-                                                    event.currentTarget.src =
-                                                        '/images/defaults/image.png';
-                                                }}
-                                            />
-                                        </div>
-                                    </button>
-                                );
-                            }
-                        )}
+                                        group-hover:scale-105
+                                    "
+                                    onError={(event) => {
+                                        event.currentTarget.onerror = null;
+                                        event.currentTarget.src =
+                                            '/images/defaults/image.png';
+                                    }}
+                                />
+                            </Button>
+                        ))}
                     </div>
                 ) : (
-                    /* Empty State */
                     <div
                         className="
-                            flex flex-col
-                            items-center
-                            justify-center
                             rounded-2xl
                             border border-gray-10
-                            bg-white
-                            px-6 py-16
-                            text-center
+                            bg-white px-6
                         "
                     >
-                        <img
-                            src="/images/mascots/camera.png"
-                            alt="Maskot NuraLoka dengan kamera"
-                            className="
-                                mb-4 h-24 w-24
-                                object-contain
-                                opacity-50
-                            "
+                        <EmptyState
+                            title={t('album.photos_empty')}
+                            image="/images/mascots/camera.png"
                         />
-
-                        <p
-                            className="
-                                font-body text-small
-                                text-gray-50
-                            "
-                        >
-                            Belum ada foto dalam album ini.
-                        </p>
                     </div>
                 )}
             </section>
@@ -584,8 +543,8 @@ export default function AlbumShow({
                     onClick={closeLightbox}
                 >
                     {/* Close */}
-                    <button
-                        type="button"
+                    <Button
+                        unstyled
                         onClick={(event) => {
                             event.stopPropagation();
                             closeLightbox();
@@ -607,12 +566,12 @@ export default function AlbumShow({
                         aria-label={t('album.photo_close')}
                     >
                         <FiX size={26} />
-                    </button>
+                    </Button>
 
                     {/* Previous */}
                     {hasMultiplePhotos && (
-                        <button
-                            type="button"
+                        <Button
+                            unstyled
                             onClick={(event) => {
                                 event.stopPropagation();
                                 showPreviousPhoto();
@@ -637,7 +596,7 @@ export default function AlbumShow({
                             aria-label={t('album.photo_prev')}
                         >
                             <FiChevronLeft size={24} />
-                        </button>
+                        </Button>
                     )}
 
                     {/* Image */}
@@ -679,8 +638,8 @@ export default function AlbumShow({
 
                     {/* Next */}
                     {hasMultiplePhotos && (
-                        <button
-                            type="button"
+                        <Button
+                            unstyled
                             onClick={(event) => {
                                 event.stopPropagation();
                                 showNextPhoto();
@@ -705,7 +664,7 @@ export default function AlbumShow({
                             aria-label={t('album.photo_next')}
                         >
                             <FiChevronRight size={24} />
-                        </button>
+                        </Button>
                     )}
 
                     {/* Counter */}
@@ -735,7 +694,7 @@ export default function AlbumShow({
 // ============================================================
 AlbumShow.layout = (page) => (
     <MainLayout
-        pageTitle="Detail Album"
+        pageTitle="title.album_show"
         pageDescription="Jelajahi album perjalanan dan berbagai momen wisata yang dibagikan oleh komunitas Nuravers di NuraLoka."
         content={page}
     />

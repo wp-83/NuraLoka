@@ -140,7 +140,7 @@ export default function Show({ newsItem }) {
 
 Show.layout = (page) => (
     <MainLayout
-        pageTitle="Detail Wawasan Wisata"
+        pageTitle="title.news_show"
         content={page}
     />
 );

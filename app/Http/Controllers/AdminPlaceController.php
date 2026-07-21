@@ -12,6 +12,14 @@ use Illuminate\Support\Facades\Storage;
 class AdminPlaceController extends Controller
 {
     /**
+     * Every image upload goes through this service so size, format and file
+     * naming stay consistent across the application.
+     */
+    public function __construct(
+        private readonly ImageCompressionService $images,
+    ) {}
+
+    /**
      * Display a listing of places for admin dashboard.
      */
     public function index(Request $request)
@@ -86,7 +94,7 @@ class AdminPlaceController extends Controller
             'address' => $request->address,
             'min_price' => $request->min_price,
             'max_price' => $request->max_price,
-            // Tempat yang dibuat admin NuraLoka selalu bersumber 'internal'.
+            // Places created by a NuraLoka admin always have source 'internal'.
             'source' => 'internal',
         ]);
 
@@ -155,7 +163,7 @@ class AdminPlaceController extends Controller
         // Sync categories (detach old, attach new)
         $place->categories()->sync($request->categories ?? []);
 
-        // Hapus foto yang ditandai untuk dihapus (hanya foto milik place ini).
+        // Delete photos flagged for removal (only those belonging to this place).
         if ($request->filled('deleted_photos')) {
             $this->deletePhotos($place, $request->deleted_photos);
         }
@@ -175,7 +183,7 @@ class AdminPlaceController extends Controller
     {
         $place->load('photos');
 
-        // Hapus file foto yang tidak lagi dipakai place lain, lalu detach.
+        // Delete photo files no longer used by any other place, then detach.
         $this->deletePhotos($place, $place->photos->pluck('id')->all());
 
         // Detach all categories before deleting
@@ -189,8 +197,8 @@ class AdminPlaceController extends Controller
     }
 
     /**
-     * Kompres & simpan foto yang diunggah admin ke disk publik, buat record Photo,
-     * lalu tautkan ke place lewat pivot photo_place.
+     * Compress and store an admin-uploaded photo on the public disk, create the
+     * Photo record, then link it to the place through the photo_place pivot.
      */
     private function storeUploadedPhotos(Request $request, Place $place): void
     {
@@ -198,10 +206,8 @@ class AdminPlaceController extends Controller
             return;
         }
 
-        $compressor = app(ImageCompressionService::class);
-
         foreach ($request->file('photos') as $file) {
-            $path = $compressor->compressToDisk($file, 'place-photos', maxWidth: 1600);
+            $path = $this->images->compressToDisk($file, 'place-photos', maxWidth: 1600);
 
             $photo = Photo::create([
                 'path' => $path,
@@ -213,8 +219,8 @@ class AdminPlaceController extends Controller
     }
 
     /**
-     * Lepas tautan foto dari place. Jika foto tidak lagi dipakai place mana pun,
-     * hapus record & filenya agar storage tidak menumpuk.
+     * Detach a photo from a place. When no other place still uses it, delete the
+     * record and the file so storage does not pile up.
      */
     private function deletePhotos(Place $place, array $photoIds): void
     {

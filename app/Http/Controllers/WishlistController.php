@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Place;
 use App\Services\GamificationService;
+use App\Services\PlaceDetailPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,13 +18,17 @@ class WishlistController extends Controller
     {
         $user = Auth::user();
 
-        // Get all saved places with categories for the current user
-        $savedPlaces = $user->savedPlaces()->with('categories')->get();
+        // photos and tripPhotos are eager-loaded for the card cover image (the img
+        // accessor), then 'img' is appended so it reaches the frontend.
+        $savedPlaces = $user->savedPlaces()
+            ->with(['categories', 'photos', 'tripPhotos'])
+            ->get()
+            ->each(fn (Place $place) => $place->append('img'));
 
         // Get the saved place IDs for bookmark state
         $savedPlaceIds = $savedPlaces->pluck('id')->toArray();
 
-        // Count total saves per place (for "Ramai disimpan" text)
+        // Total saves per place, for the "frequently saved" label.
         $saveCounts = DB::table('saved_places')
             ->select('place_id', DB::raw('count(*) as total_saves'))
             ->whereIn('place_id', $savedPlaceIds)
@@ -43,21 +48,16 @@ class WishlistController extends Controller
      */
     public function show(string $slug)
     {
-        $place = Place::with('categories')->where('slug', $slug)->firstOrFail();
+        $place = Place::with(['categories', 'photos'])->where('slug', $slug)->firstOrFail();
 
-        $isSaved = false;
-        if (Auth::check()) {
-            $isSaved = Auth::user()->savedPlaces()->where('place_id', $place->id)->exists();
-        }
-
-        // Count total saves
-        $totalSaves = DB::table('saved_places')->where('place_id', $place->id)->count();
-
-        return inertia('Wishlist/Show', [
-            'place' => $place,
-            'isSaved' => $isSaved,
-            'totalSaves' => $totalSaves,
-        ]);
+        // The SAME data source as the detail page under Explore, so both pages show
+        // an identical gallery, visitor count, album count and price. This page used
+        // to send only place/isSaved/totalSaves, so its gallery just repeated a
+        // single image eight times.
+        return inertia(
+            'Wishlist/Show',
+            app(PlaceDetailPresenter::class)->props($place, Auth::user()),
+        );
     }
 
     /**
@@ -84,7 +84,7 @@ class WishlistController extends Controller
             $user->savedPlaces()->attach($placeId);
             $saved = true;
 
-            // Gamifikasi: catat aksi menyimpan tempat (dengan filter kategori tempat).
+            // Gamification: record the save action, filtered by the place's categories.
             app(GamificationService::class)->record($user, 'save_place', Place::find($placeId));
         }
 

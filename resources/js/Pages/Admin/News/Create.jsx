@@ -63,7 +63,6 @@ export default function Create() {
                 {/* Back */}
                 <div>
                     <Button
-                        type="button"
                         variant="white"
                         iconLeft={<FiArrowLeft size={18} />}
                         onClick={() => router.get(route('admin.news.index'))}
@@ -126,23 +125,23 @@ export default function Create() {
                                     />
 
                                     <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                                        <button
-                                            type="button"
+                                        <Button
+                                            unstyled
                                             onClick={() => setIsPreviewOpen(true)}
                                             title={t('admin.news.thumbnail_view')}
                                             className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary-100 hover:opacity-80"
                                         >
                                             <FiSearch size={16} />
-                                        </button>
+                                        </Button>
 
-                                        <button
-                                            type="button"
+                                        <Button
+                                            unstyled
                                             onClick={handleRemoveImage}
                                             title={t('admin.news.thumbnail_remove')}
                                             className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-error-dark hover:opacity-80"
                                         >
                                             <FiTrash2 size={16} />
-                                        </button>
+                                        </Button>
                                     </div>
                                 </>
                             ) : (
@@ -164,7 +163,6 @@ export default function Create() {
 
                             <div className="flex items-center gap-3">
                                 <Button
-                                    type="button"
                                     variant="white"
                                     size="btn-sm"
                                     iconLeft={<FiUpload size={16} />}
@@ -228,13 +226,13 @@ export default function Create() {
                     onClick={() => setIsPreviewOpen(false)}
                 >
                     <div className="relative" onClick={(e) => e.stopPropagation()}>
-                        <button
-                            type="button"
+                        <Button
+                            unstyled
                             onClick={() => setIsPreviewOpen(false)}
                             className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-100 shadow-md hover:opacity-80"
                         >
                             &times;
-                        </button>
+                        </Button>
 
                         <img
                             src={previewUrl}
@@ -249,5 +247,5 @@ export default function Create() {
 }
 
 Create.layout = (page) => (
-    <AdminLayout pageTitle="Tambah Wawasan Wisata" content={page} />
+    <AdminLayout pageTitle="title.admin_news_create" content={page} />
 );

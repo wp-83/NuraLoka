@@ -22,6 +22,22 @@ export default function Input({
     const [showPassword, setShowPassword] = useState(false);
     const [focused, setFocused] = useState(false);
 
+    // onFocus/onBlur milik pemanggil dipisahkan dari sisa props, lalu DIGABUNG
+    // dengan handler internal. Tanpa ini, {...restProps} yang ditulis setelah
+    // onFocus/onBlur akan menimpanya sehingga sorotan fokus berhenti bekerja —
+    // diam-diam, tanpa error.
+    const { onFocus: onFocusProp, onBlur: onBlurProp, ...restProps } = props;
+
+    const handleFocus = (event) => {
+        setFocused(true);
+        onFocusProp?.(event);
+    };
+
+    const handleBlur = (event) => {
+        setFocused(false);
+        onBlurProp?.(event);
+    };
+
     const inputType =
         type === "password"
             ? showPassword
@@ -111,11 +127,14 @@ export default function Input({
                         onChange={onChange}
                         placeholder={placeholder}
                         disabled={disabled}
-                        required={props.required}
-                        onFocus={() => setFocused(true)}
-                        onBlur={() => setFocused(false)}
+                        // 'required' sudah didestrukturisasi di atas, jadi
+                        // props.required selalu undefined — textarea tidak
+                        // pernah benar-benar wajib diisi.
+                        required={required}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
                         className={`${inputClass} resize-none px-4 py-3 w-full bg-transparent`}
-                        {...props}
+                        {...restProps}
                     />
                 </div>
             ) : (
@@ -135,14 +154,18 @@ export default function Input({
                             onChange={onChange}
                             placeholder={placeholder}
                             disabled={disabled}
-                            onFocus={() => setFocused(true)}
-                            onBlur={() => setFocused(false)}
+                            // Sebelumnya 'required' hanya memunculkan tanda
+                            // bintang di label, tidak pernah sampai ke elemen
+                            // input — jadi validasi bawaan browser tidak jalan.
+                            required={required}
+                            onFocus={handleFocus}
+                            onBlur={handleBlur}
                             className={`${inputClass} ${
                                 icon ? "pl-3" : ""
                             } ${
                                 type === "password" || iconRight ? "pr-3" : ""
                             }`}
-                            {...props}
+                            {...restProps}
                         />
 
                         {type === "password" ? (

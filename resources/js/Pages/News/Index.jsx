@@ -1,4 +1,5 @@
 import MainLayout from '@js/Layouts/MainLayout';
+import RegionalGreeting from '@js/Daerah/RegionalGreeting';
 import { Link, usePage } from '@inertiajs/react';
 import { useTranslation } from '@js/i18n';
 import Button from '@components/Forms/Button';
@@ -98,9 +99,7 @@ export default function Index({ news }) {
                         {t('news.index_title')}
                     </h1>
 
-                    <p className="local-language">
-                        Kawruh Wisata Nuravers
-                    </p>
+                    <RegionalGreeting phrase="news_index" />
 
                 </div>
 
@@ -231,7 +230,7 @@ export default function Index({ news }) {
 
 Index.layout = (page) => (
     <MainLayout
-        pageTitle="News"
+        pageTitle="title.news"
         pageDescription="Temukan berita, cerita, dan informasi terbaru seputar NuraLoka."
         content={page}
     />

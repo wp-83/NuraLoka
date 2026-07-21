@@ -125,6 +125,7 @@ export default function Index({ levels = [] }) {
                                         <EmptyState
                                             title={t('admin.levels.empty_title')}
                                             description={t('admin.levels.empty_description')}
+                                            size="compact"
                                         />
                                     </td>
                                 </tr>
@@ -164,5 +165,5 @@ export default function Index({ levels = [] }) {
 }
 
 Index.layout = (page) => (
-    <AdminLayout pageTitle="Kelola Level" content={page} />
+    <AdminLayout pageTitle="title.admin_levels" content={page} />
 );

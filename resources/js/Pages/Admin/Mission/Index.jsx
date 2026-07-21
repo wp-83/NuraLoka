@@ -247,6 +247,7 @@ export default function Index({ missions, filters = {} }) {
                                                     ? t('admin.missions.empty_description')
                                                     : t('admin.missions.empty_description_no_search')
                                             }
+                                            size="compact"
                                         />
                                     </td>
                                 </tr>
@@ -295,5 +296,5 @@ export default function Index({ missions, filters = {} }) {
 }
 
 Index.layout = (page) => (
-    <AdminLayout pageTitle="Kelola Tantangan" content={page} />
+    <AdminLayout pageTitle="title.admin_missions" content={page} />
 );

@@ -9,6 +9,14 @@ use Illuminate\Http\Request;
 class AdminCategoryController extends Controller
 {
     /**
+     * Every image upload goes through this service so size, format and file
+     * naming stay consistent across the application.
+     */
+    public function __construct(
+        private readonly ImageCompressionService $images,
+    ) {}
+
+    /**
      * Display a listing of categories for admin dashboard.
      */
     public function index(Request $request)
@@ -53,7 +61,7 @@ class AdminCategoryController extends Controller
 
         $iconPath = null;
         if ($request->hasFile('icon_path')) {
-            $filename = app(ImageCompressionService::class)->compressToPublic(
+            $filename = $this->images->compressToPublic(
                 $request->file('icon_path'),
                 public_path('images/categories'),
             );
@@ -120,7 +128,7 @@ class AdminCategoryController extends Controller
                 }
             }
 
-            $filename = app(ImageCompressionService::class)->compressToPublic(
+            $filename = $this->images->compressToPublic(
                 $request->file('icon_path'),
                 public_path('images/categories'),
             );

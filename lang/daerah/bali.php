@@ -1,22 +1,36 @@
 <?php
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Localization BAHASA DAERAH — Bahasa: BALI (SCAFFOLD, menunggu diisi).
-// Isi tiap nilai dengan terjemahan bahasa Bali. Kunci harus SAMA dgn jawa.php.
-// Komentar berisi acuan makna (Bahasa Indonesia) untuk memudahkan penerjemahan.
+// Localization BAHASA DAERAH — terpisah dari localization utama (id/en/ko).
+// Mengganti bahasa aplikasi TIDAK memengaruhi file ini.
+// Berisi subtitle bahasa daerah yang tampil di bawah judul halaman & hero Home.
+// Struktur: lang/daerah/{bahasa}.php ; satu file per bahasa daerah.
+// Kunci di SEMUA file bahasa daerah harus SAMA (lihat jawa.php sebagai acuan).
+// Nilai '' berarti BELUM diterjemahkan — resolver otomatis mundur ke bahasa
+// pulau, lalu ke Bahasa Indonesia. Jadi aman dibiarkan kosong.
+//
+// Bahasa: BALI (DRAF — PERLU REVIEW PENUTUR ASLI).
+// Terjemahan draf oleh AI; belum diverifikasi. Mohon diperiksa penutur asli
+// sebelum dipakai di produksi.
 // ─────────────────────────────────────────────────────────────────────────────
 return [
-    // Ref: "Dari ikon wisata terkenal hingga hidden gem tersembunyi, temukan destinasi yang sesuai dengan gaya perjalanan kamu bersama NuraLoka."
-    'home_hero_desc' => '',
-    // Ref: "Mau ke mana hari ini, :name?"
-    'home_search_greeting' => '',
+    // ── Home ──
+    'home_hero' => 'Mantepang Langkah Ragané!',
+    'home_hero_desc' => 'Saking ikon wisata sané kasub kantos genah wisata sané kasingidang, rereh destinasi sané cocok ring gaya pamargin ragané sareng NuraLoka.',
+    'home_search_greeting' => 'Jagi lunga kija rahinané mangkin, :name?',
 
-    // Ref: "Tantangan Nuravers"
-    'challenge_index' => '',
-    // Ref: "Lencana Nuravers"
-    'challenge_badges' => '',
-    // Ref: "Perjalanan Level Kamu"
-    'challenge_levels' => '',
-    // Ref: "Papan Peringkat Para Nuravers"
-    'challenge_leaderboard' => '',
+    // ── Wawasan Wisata ──
+    'news_index' => 'Pangweruh Wisata Nuravers',
+
+    // ── Tantangan ──
+    'challenge_index' => 'Pacentokan Nuravers',
+    'challenge_badges' => 'Tanda Pangargan Nuravers',
+    'challenge_levels' => 'Pamargin Level Ragané',
+    'challenge_leaderboard' => 'Papan Tingkatan Para Nuravers',
+
+    // ── Wishlist ──
+    'wishlist_index' => 'Pangapti saking Nuravers',
+
+    // ── Album ──
+    'album_index' => 'Albumnyané Nuravers',
 ];

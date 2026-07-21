@@ -104,5 +104,5 @@ export default function Create({ nextOrder = 1 }) {
 }
 
 Create.layout = (page) => (
-    <AdminLayout pageTitle="Tambah Level" content={page} />
+    <AdminLayout pageTitle="title.admin_level_create" content={page} />
 );

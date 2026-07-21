@@ -21,7 +21,7 @@ export default function Create({ provinces = [] }) {
 
 Create.layout = (page) => (
     <AdminLayout
-        pageTitle="Tambah Pengguna Baru"
+        pageTitle="title.admin_user_create"
         content={page}
     />
 );

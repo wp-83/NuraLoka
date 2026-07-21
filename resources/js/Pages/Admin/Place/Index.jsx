@@ -258,6 +258,7 @@ export default function Index({ places, filters = {} }) {
                                                     ? t('admin.places.empty_description')
                                                     : t('admin.places.empty_description_no_search')
                                             }
+                                            size="compact"
                                         />
                                     </td>
                                 </tr>
@@ -306,5 +307,5 @@ export default function Index({ places, filters = {} }) {
 }
 
 Index.layout = (page) => (
-    <AdminLayout pageTitle="Kelola Destinasi" content={page} />
+    <AdminLayout pageTitle="title.admin_places" content={page} />
 );
