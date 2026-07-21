@@ -17,7 +17,15 @@ use Illuminate\Validation\Rule;
 class ProfileController extends Controller
 {
     /**
-     * Menampilkan halaman profil.
+     * Every image upload goes through this service so size, format and file
+     * naming stay consistent across the application.
+     */
+    public function __construct(
+        private readonly ImageCompressionService $images,
+    ) {}
+
+    /**
+     * Show the profile page.
      */
     public function index(Request $request)
     {
@@ -74,7 +82,7 @@ class ProfileController extends Controller
     {
         $currentUser = auth()->user();
 
-        // Jika user melihat profil sendiri, redirect ke halaman profil pribadi
+        // Viewing your own profile redirects to the private profile page.
         if ($currentUser && $currentUser->username === $username) {
             return redirect()->route('profile.index');
         }
@@ -131,6 +139,7 @@ class ProfileController extends Controller
                     'slug' => $album->slug,
                     'title' => $album->trip->title,
                     'location' => $album->trip->destination_name,
+                    'date' => $album->trip->trip_date,
                     'thumbnail' => $firstPhoto ? $firstPhoto->photo_path : null,
                     'photo_count' => $album->tripPhotos->count(),
                 ];
@@ -149,7 +158,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Menampilkan halaman edit profil.
+     * Show the profile edit page.
      */
     public function edit(Request $request)
     {
@@ -276,7 +285,7 @@ class ProfileController extends Controller
                 'email' => $validated['email'],
             ];
 
-            // Password hanya diubah jika user mengisi password baru.
+            // The password changes only when the user supplies a new one.
             if (! empty($validated['password'])) {
                 $userData['password'] = $validated['password'];
             }
@@ -303,21 +312,21 @@ class ProfileController extends Controller
             */
 
             if ($request->hasFile('profile_photo')) {
-                $path = app(ImageCompressionService::class)->compressToDisk(
+                $path = $this->images->compressToDisk(
                     $request->file('profile_photo'),
                     'profile-photos',
                     maxWidth: 800,
                     maxHeight: 800,
                 );
 
-                // Hapus foto lama.
+                // Remove the previous photo.
                 if ($user->userDetail?->profile_path) {
                     Storage::disk('public')->delete(
                         $user->userDetail->profile_path
                     );
                 }
 
-                // Simpan path baru ke database.
+                // Store the new path.
                 $userDetailData['profile_path'] = $path;
             }
 

@@ -736,6 +736,7 @@ export default function Index({
                                         <EmptyState
                                             title={t('admin.users.empty_title')}
                                             description={t('admin.users.empty_description')}
+                                            size="compact"
                                         />
                                     </td>
                                 </tr>
@@ -788,7 +789,7 @@ export default function Index({
 
 Index.layout = (page) => (
     <AdminLayout
-        pageTitle="Kelola Pengguna"
+        pageTitle="title.admin_users"
         content={page}
     />
 );

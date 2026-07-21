@@ -534,6 +534,10 @@ return [
         'label_longitude' => 'Longitude',
         'label_description' => 'Deskripsi Destinasi',
         'placeholder_description' => 'Tuliskan deskripsi lengkap tentang destinasi wisata ini...',
+        'label_min_price' => 'Harga Minimal (Rp)',
+        'placeholder_min_price' => 'Contoh: 15000 (kosongkan jika gratis)',
+        'label_max_price' => 'Harga Maksimal (Rp)',
+        'placeholder_max_price' => 'Contoh: 50000 (kosongkan jika gratis)',
 
         'section_categories_title' => 'Kategori Destinasi',
         'section_categories_description' => 'Pilih satu atau lebih kategori yang sesuai untuk destinasi ini.',

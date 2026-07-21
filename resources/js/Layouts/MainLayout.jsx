@@ -2,6 +2,7 @@ import Flash from '@components/Common/Flash';
 import Footer from '@components/Layouts/User/Footer';
 import Navbar from '@components/Layouts/User/Navbar';
 import { FlashContext } from '@js/Contexts/FlashContext';
+import { useTranslation } from '@js/i18n';
 
 import { Head, usePage } from '@inertiajs/react';
 import { useCallback, useEffect, useState } from 'react';
@@ -14,6 +15,7 @@ export default function MainLayout({
     pageUrl = '',
 }) {
     const { flash } = usePage().props;
+    const { t } = useTranslation();
 
     const [currentFlash, setCurrentFlash] = useState({
         type: flash?.type ?? null,
@@ -63,8 +65,13 @@ export default function MainLayout({
         }
     };
 
+    // pageTitle boleh berupa kunci terjemahan ("album.meta_title") maupun teks
+    // biasa. translate() mengembalikan kuncinya apa adanya bila tidak ditemukan,
+    // jadi halaman yang masih memakai teks langsung tetap tampil seperti semula.
+    const resolvedTitle = pageTitle ? t(pageTitle) : '';
+
     const title =
-        `NuraLoka${pageTitle ? ` | ${pageTitle}` : ''}`;
+        `NuraLoka${resolvedTitle ? ` | ${resolvedTitle}` : ''}`;
 
     const description =
         pageDescription ||

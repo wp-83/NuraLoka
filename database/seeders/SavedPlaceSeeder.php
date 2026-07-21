@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class XullSavedPlaceSeeder extends Seeder
+class SavedPlaceSeeder extends Seeder
 {
     /**
      * Membuat data saved_places (tempat-tempat yang disimpan user).

@@ -51,6 +51,15 @@ class AdminLevelController extends Controller
 
     public function destroy(Level $level)
     {
+        // Every user_details row must keep a level_id — block deletion while
+        // users are still assigned to this level (FK would otherwise null it out).
+        if ($level->userDetails()->exists()) {
+            session()->flash('flash.type', 'error');
+            session()->flash('flash.message', 'Level tidak bisa dihapus karena masih dimiliki oleh pengguna.');
+
+            return redirect()->route('admin.levels.index');
+        }
+
         $level->delete();
 
         session()->flash('flash.type', 'success');
@@ -61,9 +70,9 @@ class AdminLevelController extends Controller
 
     /**
      * Validasi data level. Minimal poin divalidasi relatif terhadap urutan
-     * (order): level dengan urutan lebih tinggi wajib memiliki ambang poin
-     * lebih besar daripada level sebelumnya, dan lebih kecil daripada level
-     * berikutnya — supaya tangga level tetap monoton naik.
+     * (order): a level higher in the order must have a larger point threshold
+     * than the one before it and a smaller one than the level after, keeping the
+     * ladder strictly increasing.
      */
     private function validateData(Request $request, ?Level $level = null): array
     {

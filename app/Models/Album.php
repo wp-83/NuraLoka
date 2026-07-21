@@ -12,10 +12,22 @@ class Album extends Model
 
     protected $guarded = ['id'];
 
+    /**
+     * Slug diambil dari JUDUL album.
+     *
+     * Judul album tinggal di trips.title (lihat getTitleAttribute), bukan di
+     * kolom albums.caption. Sebelumnya slug dibuat dari 'caption', sehingga
+     * begitu judul diubah lewat AlbumController::update — yang hanya menyentuh
+     * trip — slug dan caption tertinggal memakai judul lama.
+     *
+     * Memakai closure, bukan nama kolom, supaya sumbernya selalu judul yang
+     * sedang berlaku. caption dipakai sebagai cadangan kalau relasi trip belum
+     * ada (mis. saat album dibuat sebelum trip ter-assign).
+     */
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
-            ->generateSlugsFrom('caption')
+            ->generateSlugsFrom(fn (Album $album) => $album->trip?->title ?: $album->caption)
             ->saveSlugsTo('slug');
     }
 

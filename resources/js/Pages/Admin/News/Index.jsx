@@ -219,6 +219,7 @@ export default function Index({ news, filters = {} }) {
                                                     ? t('admin.news.empty_description')
                                                     : t('admin.news.empty_description_no_search')
                                             }
+                                            size="compact"
                                         />
                                     </td>
                                 </tr>
@@ -267,5 +268,5 @@ export default function Index({ news, filters = {} }) {
 }
 
 Index.layout = (page) => (
-    <AdminLayout pageTitle="Kelola Wawasan Wisata" content={page} />
+    <AdminLayout pageTitle="title.admin_news" content={page} />
 );

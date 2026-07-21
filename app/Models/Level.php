@@ -23,4 +23,18 @@ class Level extends Model
             ->generateSlugsFrom('name')
             ->saveSlugsTo('slug');
     }
+
+    public function userDetails()
+    {
+        return $this->hasMany(UserDetail::class);
+    }
+
+    /** Resolve the id of the highest level whose min_points a given point total satisfies. */
+    public static function idForPoints(int $points): ?int
+    {
+        return static::query()
+            ->where('min_points', '<=', $points)
+            ->orderByDesc('order')
+            ->value('id');
+    }
 }

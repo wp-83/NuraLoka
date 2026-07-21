@@ -38,6 +38,7 @@ return [
     'all_meta_description' => 'NuraLoka에서 Nuravers 커뮤니티와 함께 여행 앨범 컬렉션을 탐색하고 다양한 여행 이야기와 경험을 발견하세요.',
     'all_title' => '내 모든 앨범',
     'all_empty' => '아직 앨범이 없습니다.',
+    'all_empty_owner' => ':name님은 아직 공개 앨범이 없습니다.',
 
     // ── Create ──
     'create_meta_title' => '새 앨범 만들기',
@@ -55,6 +56,7 @@ return [
     // ── Edit ──
     'edit_meta_title' => '앨범 수정',
     'edit_meta_description' => 'NuraLoka에서 여행 앨범의 정보, 공개 범위, 사진 컬렉션을 업데이트하여 모든 순간과 여행 경험을 잘 보관하세요.',
+    'photos_empty' => '이 앨범에는 아직 사진이 없습니다.',
     'photos_label' => '앨범 사진',
     'delete_photo' => '사진 삭제',
     'delete_photo_confirm' => '이 사진을 삭제하시겠습니까?',

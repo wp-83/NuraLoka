@@ -256,6 +256,7 @@ export default function Index({ badges, filters = {} }) {
                                                     ? t('admin.badges.empty_description')
                                                     : t('admin.badges.empty_description_no_search')
                                             }
+                                            size="compact"
                                         />
                                     </td>
                                 </tr>
@@ -304,5 +305,5 @@ export default function Index({ badges, filters = {} }) {
 }
 
 Index.layout = (page) => (
-    <AdminLayout pageTitle="Kelola Lencana" content={page} />
+    <AdminLayout pageTitle="title.admin_badges" content={page} />
 );

@@ -16,6 +16,14 @@ use Illuminate\Validation\Rule;
 class UserController extends Controller
 {
     /**
+     * Every image upload goes through this service so size, format and file
+     * naming stay consistent across the application.
+     */
+    public function __construct(
+        private readonly ImageCompressionService $images,
+    ) {}
+
+    /**
      * Display a listing of users.
      */
     public function index(Request $request)
@@ -445,8 +453,8 @@ class UserController extends Controller
                 ];
 
                 /*
-                 * Akun sendiri tidak dapat
-                 * mengubah role-nya.
+                 * An admin cannot
+                 * change their own role.
                  */
                 if ($user->id !== Auth::id()) {
                     $userData['is_admin'] =
@@ -454,8 +462,8 @@ class UserController extends Controller
                 }
 
                 /*
-                 * Password hanya diubah
-                 * jika password baru diisi.
+                 * The password changes only
+                 * when a new one is supplied.
                  */
                 if (
                     ! empty(
@@ -514,8 +522,8 @@ class UserController extends Controller
                     ] = $profilePath;
 
                     /*
-                     * Hapus foto lama setelah
-                     * foto baru berhasil disimpan.
+                     * Remove the previous photo once
+                     * the new one is stored.
                      */
                     if ($oldProfilePath) {
                         Storage::disk(
@@ -693,7 +701,7 @@ class UserController extends Controller
             return null;
         }
 
-        return app(ImageCompressionService::class)->compressToDisk(
+        return $this->images->compressToDisk(
             $request->file('profile_photo'),
             'profile-photos',
             maxWidth: 800,

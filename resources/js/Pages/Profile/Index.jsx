@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import Button from '@components/Forms/Button';
+import BadgeIcon from '@components/Common/BadgeIcon';
 import ProfileStatisticCard from '@components/Features/ProfileStatisticCard';
 import MainLayout from '@js/Layouts/MainLayout';
 import { useTranslation } from '@js/i18n';
@@ -52,7 +53,8 @@ export default function Index({ user, totalUser, rank, recentBadges, totalBadge,
                         {user.user_detail.fullname}
                     </h2>
                     <p className="mt-1 font-heading text-body text-secondary">
-                        {user.user_detail?.level?.name || 'Nuravers'}
+                        {user.user_detail?.level?.name
+                            || t('common.community')}
                     </p>
 
                     {/* PROFILE INFORMATION */}
@@ -117,12 +119,11 @@ export default function Index({ user, totalUser, rank, recentBadges, totalBadge,
                     {recentBadges?.length > 0 ? (
                         <div className="flex justify-end gap-3">
                             {recentBadges.map((badge) => (
-                                <img
+                                <BadgeIcon
                                     key={badge.id}
-                                    src={`/${badge.icon_path}`}
+                                    iconPath={badge.icon_path}
                                     alt={badge.name}
-                                    title={badge.name}
-                                    className="h-14 w-14 object-contain sm:h-16 sm:w-16"
+                                    size="lg"
                                 />
                             ))}
                         </div>
@@ -174,7 +175,7 @@ export default function Index({ user, totalUser, rank, recentBadges, totalBadge,
 // =========================================================
 Index.layout = (page) => (
     <MainLayout
-        pageTitle="Profil"
+        pageTitle="title.profile"
         pageDescription="Lihat profil, pencapaian, lencana, album, dan poin Nura kamu."
         content={page}
     />

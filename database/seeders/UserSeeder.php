@@ -2,107 +2,184 @@
 
 namespace Database\Seeders;
 
-use App\Models\Badge;
-use App\Models\Mission;
-use App\Models\User;
-use App\Models\UserBadge;
-use App\Models\UserDetail;
-use App\Models\UserMission;
+use App\Models\Level;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
+    /**
+     * 10 user fiktif namun realistis dari Jabodetabek.
+     * Semua user sudah terverifikasi email.
+     * province_id mengacu pada urutan ProvinceSeeder:
+     *   11 = DKI Jakarta, 12 = Jawa Barat, 13 = Banten
+     * total_points sengaja tidak di-hardcode — lihat catatan di dalam run().
+     * Data final untuk presentasi NuraLoka.
+     */
     public function run(): void
     {
-        // ── 1. ADMIN ──────────────────────────────────────────────────────────
-        $admin = User::factory()->create([
-            'username' => 'admin_nuraloka',
-            'email' => 'admin@nuraloka.id',
-            'password' => bcrypt('Admin@1234'),
-            'is_admin' => true,
-        ]);
-        UserDetail::factory()->create([
-            'user_id' => $admin->id,
-            'fullname' => 'Admin NuraLoka',
-            'gender' => 'male',
-            'total_points' => 9999,
-            'province_id' => DB::table('provinces')->where('name', 'DKI Jakarta')->value('id') ?? 1,
-        ]);
+        $users = [
+            // ─── Admin ─────────────────────────────────────────────────────
+            [
+                'username' => 'admin_nuraloka',
+                'email' => 'admin@nuraloka.id',
+                'password' => Hash::make('nuraloka2026'),
+                'is_admin' => true,
+                'email_verified_at' => now(),
+                'detail' => [
+                    'province_id' => 11, // DKI Jakarta
+                    'fullname' => 'Admin NuraLoka',
+                    'dob' => '1995-03-15',
+                    'gender' => 'male',
+                ],
+            ],
 
-        // ── 2. DEMO USER (user tetap untuk login demo) ────────────────────────
-        $demo = User::factory()->create([
-            'username' => 'demo_traveler',
-            'email' => 'demo@nuraloka.id',
-            'password' => bcrypt('Demo@1234'),
-        ]);
-        $this->attachDetails($demo, 'Demo Traveler', 'female', 1200);
-        $this->attachBadgesAndMissions($demo, ['Penjelajah Pemula', 'Fotografer Jalan'], 3);
+            // ─── Regular Users ──────────────────────────────────────────────
+            [
+                'username' => 'jayadi_christopher',
+                'email' => 'jayadi.christopher@gmail.com',
+                'password' => Hash::make('password123'),
+                'is_admin' => false,
+                'email_verified_at' => now(),
+                'detail' => [
+                    'province_id' => 11, // DKI Jakarta
+                    'fullname' => 'Jayadi Christopher Alam',
+                    'dob' => '2001-08-17',
+                    'gender' => 'male',
+                ],
+            ],
+            [
+                'username' => 'sari_rahayu',
+                'email' => 'sari.rahayu@gmail.com',
+                'password' => Hash::make('password123'),
+                'is_admin' => false,
+                'email_verified_at' => now(),
+                'detail' => [
+                    'province_id' => 12, // Jawa Barat
+                    'fullname' => 'Sari Rahayu Putri',
+                    'dob' => '1999-05-22',
+                    'gender' => 'female',
+                ],
+            ],
+            [
+                'username' => 'budi_santoso_jkt',
+                'email' => 'budi.santoso@yahoo.com',
+                'password' => Hash::make('password123'),
+                'is_admin' => false,
+                'email_verified_at' => now(),
+                'detail' => [
+                    'province_id' => 11, // DKI Jakarta
+                    'fullname' => 'Budi Santoso',
+                    'dob' => '1997-11-30',
+                    'gender' => 'male',
+                ],
+            ],
+            [
+                'username' => 'dewi_anggraini',
+                'email' => 'dewi.anggraini23@gmail.com',
+                'password' => Hash::make('password123'),
+                'is_admin' => false,
+                'email_verified_at' => now(),
+                'detail' => [
+                    'province_id' => 13, // Banten
+                    'fullname' => 'Dewi Anggraini',
+                    'dob' => '2000-02-14',
+                    'gender' => 'female',
+                ],
+            ],
+            [
+                'username' => 'rizky_fauzan',
+                'email' => 'rizky.fauzan@outlook.com',
+                'password' => Hash::make('password123'),
+                'is_admin' => false,
+                'email_verified_at' => now(),
+                'detail' => [
+                    'province_id' => 12, // Jawa Barat
+                    'fullname' => 'Rizky Fauzan Ramadhan',
+                    'dob' => '2002-07-10',
+                    'gender' => 'male',
+                ],
+            ],
+            [
+                'username' => 'anita_kusuma',
+                'email' => 'anita.kusuma@gmail.com',
+                'password' => Hash::make('password123'),
+                'is_admin' => false,
+                'email_verified_at' => now(),
+                'detail' => [
+                    'province_id' => 11, // DKI Jakarta
+                    'fullname' => 'Anita Kusuma Wardani',
+                    'dob' => '1998-09-03',
+                    'gender' => 'female',
+                ],
+            ],
+            [
+                'username' => 'hendra_wijaya',
+                'email' => 'hendra.wijaya88@gmail.com',
+                'password' => Hash::make('password123'),
+                'is_admin' => false,
+                'email_verified_at' => now(),
+                'detail' => [
+                    'province_id' => 12, // Jawa Barat
+                    'fullname' => 'Hendra Wijaya',
+                    'dob' => '1988-12-25',
+                    'gender' => 'male',
+                ],
+            ],
+            [
+                'username' => 'novia_permata',
+                'email' => 'novia.permata@gmail.com',
+                'password' => Hash::make('password123'),
+                'is_admin' => false,
+                'email_verified_at' => now(),
+                'detail' => [
+                    'province_id' => 13, // Banten
+                    'fullname' => 'Novia Permata Sari',
+                    'dob' => '2003-04-18',
+                    'gender' => 'female',
+                ],
+            ],
+            [
+                'username' => 'fajar_pratama',
+                'email' => 'fajar.pratama@gmail.com',
+                'password' => Hash::make('password123'),
+                'is_admin' => false,
+                'email_verified_at' => now(),
+                'detail' => [
+                    'province_id' => 11, // DKI Jakarta
+                    'fullname' => 'Fajar Pratama Putra',
+                    'dob' => '1996-06-06',
+                    'gender' => 'male',
+                ],
+            ],
+        ];
 
-        // ── 3. PENGGUNA AKTIF (10 users dengan data lengkap) ──────────────────
-        User::factory(10)->create()->each(function (User $user) {
-            $this->attachDetails($user);
-            $this->attachBadgesAndMissions($user, $this->randomBadgeNames(rand(1, 3)), rand(1, 4));
-        });
+        foreach ($users as $userData) {
+            $detail = $userData['detail'];
+            unset($userData['detail']);
 
-        // ── 4. TOP LEADERBOARD USERS (3 users poin tinggi) ────────────────────
-        collect(['Budi Santoso', 'Siti Rahayu', 'Ahmad Fauzi'])->each(function ($name, $i) {
-            $user = User::factory()->create([
-                'username' => Str::slug($name).'_'.($i + 1),
-                'email' => Str::slug($name).'@nuraloka.id',
+            $userData['created_at'] = now();
+            $userData['updated_at'] = now();
+
+            $userId = DB::table('users')->insertGetId($userData);
+
+            DB::table('user_details')->insert([
+                'user_id' => $userId,
+                'province_id' => $detail['province_id'],
+                'fullname' => $detail['fullname'],
+                'dob' => $detail['dob'],
+                'gender' => $detail['gender'],
+                'profile_path' => null,
+                // Mulai dari 0: poin BUKAN angka karangan, melainkan dihitung dari
+                // lencana yang benar-benar diraih user. DatabaseSeeder memanggil
+                // GamificationService::recalculatePoints() di akhir seeding, setelah
+                // trip & album (sumber lencana) terbentuk.
+                'total_points' => 0,
+                'level_id' => Level::idForPoints(0),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
-            $this->attachDetails($user, $name, ['male', 'female', 'male'][$i], 3000 + ($i * 500));
-            $this->attachBadgesAndMissions($user, $this->randomBadgeNames(5), 6);
-        });
-    }
-
-    // ── Helper: buat UserDetails ──────────────────────────────────────────────
-    private function attachDetails(
-        User $user,
-        ?string $fullname = null,
-        ?string $gender = null,
-        int $points = -1,
-        ?int $provinceId = null
-    ): void {
-        UserDetail::factory()->create([
-            'user_id' => $user->id,
-            'province_id' => $provinceId
-                ?? DB::table('provinces')->inRandomOrder()->value('id')
-                ?? 1,
-            'fullname' => $fullname ?? fake()->name(),
-            'dob' => fake()->date(), // atau fake()->dateTimeBetween('-50 years', '-15 years')->format('Y-m-d')
-            'gender' => $gender ?? 'unspecified',
-            'total_points' => $points >= 0 ? $points : fake()->numberBetween(0, 2000),
-        ]);
-    }
-
-    // ── Helper: pasang badge & misi ───────────────────────────────────────────
-    private function attachBadgesAndMissions(User $user, array $badgeNames, int $missionCount): void
-    {
-        foreach ($badgeNames as $badgeName) {
-            $badge = Badge::where('name', $badgeName)->first();
-            if ($badge) {
-                UserBadge::firstOrCreate([
-                    'user_id' => $user->id,
-                    'badge_id' => $badge->id,
-                ]);
-            }
         }
-
-        Mission::inRandomOrder()->take($missionCount)->get()->each(function ($mission) use ($user) {
-            UserMission::firstOrCreate(
-                ['user_id' => $user->id, 'mission_id' => $mission->id],
-            );
-        });
-    }
-
-    // ── Helper: ambil nama badge acak ─────────────────────────────────────────
-    private function randomBadgeNames(int $count): array
-    {
-        return Badge::inRandomOrder()
-            ->take($count)
-            ->pluck('name')
-            ->toArray();
     }
 }

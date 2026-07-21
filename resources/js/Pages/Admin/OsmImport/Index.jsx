@@ -397,5 +397,5 @@ export default function Index({ regions = [], runs = [], osmTotal = 0 }) {
 }
 
 Index.layout = (page) => (
-    <AdminLayout pageTitle="Impor Titik OSM" content={page} />
+    <AdminLayout pageTitle="title.admin_osm_import" content={page} />
 );

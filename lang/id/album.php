@@ -38,6 +38,7 @@ return [
     'all_meta_description' => 'Jelajahi koleksi album perjalanan dan temukan berbagai cerita serta pengalaman wisata bersama komunitas Nuravers di NuraLoka.',
     'all_title' => 'Semua Album Kamu',
     'all_empty' => 'Kamu belum memiliki album.',
+    'all_empty_owner' => ':name belum memiliki album publik.',
 
     // ── Create ──
     'create_meta_title' => 'Buat Album Baru',
@@ -55,6 +56,7 @@ return [
     // ── Edit ──
     'edit_meta_title' => 'Edit Album',
     'edit_meta_description' => 'Perbarui informasi, visibilitas, dan koleksi foto dalam album perjalananmu di NuraLoka agar setiap momen dan pengalaman wisata tetap tersimpan dengan baik.',
+    'photos_empty' => 'Belum ada foto dalam album ini.',
     'photos_label' => 'Foto Album',
     'delete_photo' => 'Hapus foto',
     'delete_photo_confirm' => 'Yakin ingin menghapus foto ini?',

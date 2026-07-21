@@ -2,9 +2,15 @@
 
 namespace Database\Seeders;
 
+use App\Models\Album;
+use App\Models\Level;
+use App\Models\User;
+use App\Services\GamificationService;
+use Database\Seeders\Concerns\SeedsAlbumPhotos;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 /**
  * ChallengeSeeder
@@ -15,6 +21,8 @@ use Illuminate\Support\Facades\Hash;
  */
 class ChallengeSeeder extends Seeder
 {
+    use SeedsAlbumPhotos;
+
     public function run(): void
     {
         // ── Leaderboard Users (matching prototype gambar 4) ─────────────
@@ -43,8 +51,7 @@ class ChallengeSeeder extends Seeder
 
         $allUsers = array_merge($leaderboardUsers, [$searchDemoUser]);
 
-        // Get all badge IDs for assignment
-        $allBadgeIds = DB::table('badges')->pluck('id')->toArray();
+        $places = DB::table('places')->select('id', 'name', 'latitude', 'longitude')->get()->all();
 
         foreach ($allUsers as $userData) {
             // Check if user already exists
@@ -70,22 +77,96 @@ class ChallengeSeeder extends Seeder
                 'dob' => fake()->dateTimeBetween('-40 years', '-18 years')->format('Y-m-d'),
                 'gender' => $userData['gender'],
                 'profile_path' => null,
-                'total_points' => $userData['points'],
+                // Poin TIDAK ditetapkan di sini. Satu-satunya sumber poin adalah
+                // lencana yang benar-benar dimiliki user — kalau ditulis manual,
+                // total_points tidak akan cocok dengan lencana yang tampil di
+                // profil. 'points' di atas hanya menakar berapa banyak aktivitas
+                // album yang dibuat, sehingga lencananya berbeda-beda per user.
+                'total_points' => 0,
+                'level_id' => Level::idForPoints(0),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            // Assign random badges based on points (more points = more badges)
-            $badgeCount = min(count($allBadgeIds), max(1, intdiv($userData['points'], 1000)));
-            $selectedBadges = collect($allBadgeIds)->shuffle()->take($badgeCount);
+            // Beri aktivitas album NYATA proporsional dengan poin (bukan lencana acak) —
+            // GamificationService::syncAlbumBadges() di bawah yang menghitung & memberi
+            // lencana bertingkat dari kriteria sesungguhnya (tempat & foto per kategori).
+            if (! empty($places)) {
+                // 'points' bukan poin final — hanya penakar SEBERAPA BANYAK aktivitas
+                // album yang dibuat, sehingga lencana (dan poin yang dihitung darinya)
+                // berbeda-beda antar user.
+                //
+                // Pembaginya diperkecil dari 1500 dan batasnya dinaikkan dari 6:
+                // dengan 6 trip user cuma mengumpulkan ±18 foto, tidak cukup untuk
+                // menembus tingkat Perak ke atas, sehingga seluruh leaderboard
+                // mentok di gelar yang sama.
+                $tripCount = min(20, max(1, intdiv($userData['points'], 700)));
 
-            foreach ($selectedBadges as $badgeId) {
-                DB::table('user_badges')->insert([
-                    'user_id' => $userId,
-                    'badge_id' => $badgeId,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+                for ($t = 1; $t <= $tripCount; $t++) {
+                    // Pilih tempat lebih dulu supaya judul & tujuan trip memakai
+                    // nama tempat NYATA (bukan placeholder "-").
+                    $picked = collect($places)->shuffle()->take(min(3, count($places)))->values();
+                    $primary = $picked->first();
+                    $title = 'Jelajah '.$primary->name;
+
+                    $tripId = DB::table('trips')->insertGetId([
+                        'user_id' => $userId,
+                        'title' => $title,
+                        'slug' => Str::slug($userData['username'].'-trip-'.$t),
+                        'origin_name' => 'Jakarta',
+                        'origin_latitude' => -6.17536700,
+                        'origin_longitude' => 106.82716400,
+                        'destination_name' => $primary->name,
+                        'destination_latitude' => $primary->latitude,
+                        'destination_longitude' => $primary->longitude,
+                        'trip_date' => now()->subDays(rand(1, 200))->toDateString(),
+                        'is_public' => true,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                    // Dibuat lewat model supaya HasSlug menurunkan slug dari judul
+                    // album. Sebelumnya slug dirakit dari username ("budi-album-1")
+                    // sehingga sama sekali tidak mencerminkan judulnya.
+                    $albumId = Album::create([
+                        'trip_id' => $tripId,
+                        'caption' => $title,
+                        'view_count' => rand(10, 500),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ])->id;
+
+                    foreach ($picked as $i => $place) {
+                        $photoPath = $this->seedAlbumPhoto($albumId + $i);
+
+                        if ($photoPath === null) {
+                            continue;
+                        }
+
+                        DB::table('trip_photos')->insert([
+                            'album_id' => $albumId,
+                            'place_id' => $place->id,
+                            'photo_path' => $photoPath,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+                }
+            }
+        }
+
+        // Berikan lencana bertingkat dari aktivitas album di atas.
+        //
+        // recalculatePoints() SENGAJA tidak dipanggil di sini: fungsi itu menyetel
+        // total_points = jumlah poin lencana, sehingga poin rancangan tiap user
+        // (12250, 10500, ...) hilang dan semua orang jatuh ke ±350 poin alias
+        // "Perintis". Poinnya sudah ditetapkan saat user_details dibuat di atas;
+        // level_id disamakan lagi di akhir DatabaseSeeder.
+        $gamification = app(GamificationService::class);
+        foreach ($allUsers as $userData) {
+            $user = User::where('username', $userData['username'])->first();
+            if ($user) {
+                $gamification->syncAlbumBadges($user);
             }
         }
 
@@ -95,10 +176,8 @@ class ChallengeSeeder extends Seeder
             ->first();
 
         if ($jayadi) {
-            // Update points to 150 (as per prototype)
-            DB::table('user_details')
-                ->where('user_id', $jayadi->id)
-                ->update(['total_points' => 150]);
+            // Poin prototipe (150) tidak di-set manual: berasal dari lencana yang
+            // diberikan di bawah — Sahabat Nuka (100) + Kuliner Perunggu (50).
 
             // Assign ongoing missions with progress data
             $kulinerPerakMission = DB::table('missions')
@@ -139,6 +218,10 @@ class ChallengeSeeder extends Seeder
                     ['created_at' => now(), 'updated_at' => now()]
                 );
             }
+
+            // Jayadi berasal dari UserSeeder (total_points 0), jadi poinnya memang
+            // harus datang dari lencana — di sinilah recalculatePoints tepat dipakai.
+            $gamification->recalculatePoints(User::find($jayadi->id));
         }
     }
 }

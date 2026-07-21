@@ -1,131 +1,158 @@
-import { Head, Link } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import MainLayout from '@js/Layouts/MainLayout';
+import RegionalGreeting from '@js/Daerah/RegionalGreeting';
+import BadgeIcon from '@components/Common/BadgeIcon';
+import Button from '@components/Forms/Button';
 import { useTranslation } from '@js/i18n';
+import { IoChevronBackSharp } from 'react-icons/io5';
 
 export default function Badges({ generalBadges = [], specialBadges = [] }) {
     const { t } = useTranslation();
     return (
         <>
-            <Head title={`${t('challenge.badges_meta_title')} | NuraLoka`} />
             <div className="w-full min-h-screen bg-[#FAF8F4]">
-                <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-8">
+                <main className="pt-8 pb-16">
                     {/* Header */}
                     <div className="mb-8">
-                        <h1 className="font-heading text-3xl font-bold text-primary">{t('challenge.badges_page_title')}</h1>
-                        <p className="text-sm text-info font-medium mt-0.5 italic text-[#1B86FF]">Tandha Penggali Nuravers</p>
-                        <div className="h-0.5 w-16 bg-[#1B86FF] mt-1 mb-6" />
+                        <h1 className="font-heading text-title font-bold text-primary">{t('challenge.badges_page_title')}</h1>
+                        <RegionalGreeting phrase="challenge_badges" className="local-language text-body mb-6" />
 
-                        <Link href={route('challenge.index')} className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-85 transition-colors font-medium text-sm">
-                            <span className="mr-2">‹</span> {t('challenge.back_to_challenge')}
+                        <Link href={route('challenge.index')}>
+                            <Button iconLeft={<IoChevronBackSharp />}>
+                                {t('challenge.back_to_challenge')}
+                            </Button>
                         </Link>
                     </div>
 
-                    {/* Lencana Umum */}
-                    <div className="mb-10">
-                        <h2 className="text-xl font-bold text-primary mb-4">{t('challenge.general_badges')}</h2>
+                    {/*
+                        Lencana Umum.
 
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm text-left">
-                                <thead className="border-b-2 border-gray-200">
-                                    <tr>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_name')}</th>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_desc')}</th>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_progress')}</th>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_badge')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {generalBadges.map((cat, idx) => (
-                                        <tr key={idx} className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
-                                            <td className="py-6 px-4 font-semibold text-gray-800 w-1/6 align-top pt-8">{cat.name}</td>
-                                            <td className="py-6 px-4 text-gray-600 w-1/4 align-top pt-8 text-xs leading-relaxed">{cat.description}</td>
-                                            <td className="py-6 px-4 w-1/5 align-top pt-8">
-                                                <div className="flex flex-col items-center justify-center">
-                                                    <div className="relative w-16 h-16 flex items-center justify-center">
-                                                        {/* Circular Progress SVG */}
-                                                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                                            {/* Background Circle */}
-                                                            <circle cx="18" cy="18" r="16" fill="none" className="stroke-gray-200" strokeWidth="3" />
-                                                            {/* Progress Circle */}
-                                                            <circle 
-                                                                cx="18" cy="18" r="16" fill="none" 
-                                                                className="stroke-primary" strokeWidth="3" 
-                                                                strokeDasharray="100 100" 
-                                                                strokeDashoffset={100 - (cat.progress || 0)} 
-                                                                strokeLinecap="round"
-                                                            />
-                                                        </svg>
-                                                        <div className="absolute flex flex-col items-center justify-center text-center">
-                                                            <div className="font-bold text-primary text-xs">{cat.progress}%</div>
-                                                            <div className="text-[8px] font-bold text-gray-500">{cat.progressCount}/{cat.progressTarget}</div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="text-[10px] text-primary font-bold mt-2 text-center uppercase tracking-wider">
-                                                        {t('challenge.toward_tier', { tier: cat.nextTier.toLowerCase() })}
-                                                    </div>
+                        Sebelumnya berupa tabel 4 kolom di dalam overflow-x-auto:
+                        di ponsel harus digeser ke samping, dan teksnya mengecil
+                        sampai 8–10px agar muat. Sekarang tiap kategori jadi satu
+                        kartu yang menumpuk ke bawah, sehingga lencananya bisa
+                        ditampilkan jauh lebih besar.
+                    */}
+                    <div className="mb-10">
+                        <h2 className="text-subtitle font-heading font-bold text-primary mb-4">{t('challenge.general_badges')}</h2>
+
+                        <div className="flex flex-col gap-5">
+                            {generalBadges.map((cat, idx) => (
+                                <div
+                                    key={idx}
+                                    className="rounded-2xl border border-gray-10 bg-white p-5 shadow-sm sm:p-6"
+                                >
+                                    {/* Kepala kartu: nama, keterangan, lingkaran progres */}
+                                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                        <div className="min-w-0">
+                                            <h3 className="font-heading text-paragraph font-bold text-primary">
+                                                {cat.name}
+                                            </h3>
+
+                                            <p className="mt-1 max-w-2xl font-body text-small leading-relaxed text-gray-70">
+                                                {cat.description}
+                                            </p>
+                                        </div>
+
+                                        <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:gap-1.5">
+                                            <div className="relative flex h-20 w-20 items-center justify-center">
+                                                <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 36 36">
+                                                    <circle cx="18" cy="18" r="16" fill="none" className="stroke-gray-200" strokeWidth="3" />
+                                                    <circle
+                                                        cx="18" cy="18" r="16" fill="none"
+                                                        className="stroke-primary" strokeWidth="3"
+                                                        strokeDasharray="100 100"
+                                                        strokeDashoffset={100 - (cat.progress || 0)}
+                                                        strokeLinecap="round"
+                                                    />
+                                                </svg>
+
+                                                <div className="absolute flex flex-col items-center justify-center text-center">
+                                                    <div className="font-body text-small font-bold text-primary">{cat.progress}%</div>
+                                                    <div className="font-body text-micro font-bold text-gray-50">{cat.progressCount}/{cat.progressTarget}</div>
                                                 </div>
-                                            </td>
-                                            <td className="py-6 px-4 w-2/5">
-                                                <div className="grid grid-cols-4 gap-2">
-                                                    {cat.tiers.map((tier, tIdx) => (
-                                                        <div key={tIdx} className="flex flex-col items-center">
-                                                            <div className="text-[10px] font-medium text-gray-600 mb-1 text-center h-6">{tier.name}<br/>{tier.target} {cat.name.split(' ')[2]}</div>
-                                                            <div className={`w-14 h-14 rounded-full border-2 ${tier.earned ? 'border-primary' : 'border-gray-200'} bg-white p-1 mb-1 shadow-sm`}>
-                                                                <img 
-                                                                    src={`/${tier.icon_path}`} 
-                                                                    alt={tier.name} 
-                                                                    className={`w-full h-full object-contain ${tier.earned ? '' : 'grayscale opacity-50'}`}
-                                                                />
-                                                            </div>
-                                                            <div className={`text-[10px] font-bold ${tier.earned ? 'text-secondary' : 'text-gray-400'}`}>{t('challenge.podium_points', { points: tier.points })}</div>
-                                                        </div>
-                                                    ))}
+                                            </div>
+
+                                            <div className="font-body text-micro font-bold uppercase tracking-wider text-primary sm:text-center">
+                                                {t('challenge.toward_tier', { tier: cat.nextTier.toLowerCase() })}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Tingkatan lencana — 2 kolom di ponsel, 4 mulai sm */}
+                                    <div className="mt-5 grid grid-cols-2 gap-4 border-t border-gray-10 pt-5 sm:grid-cols-4">
+                                        {cat.tiers.map((tier, tIdx) => (
+                                            <div key={tIdx} className="flex flex-col items-center text-center">
+                                                <BadgeIcon
+                                                    iconPath={tier.icon_path}
+                                                    alt={tier.name}
+                                                    earned={tier.earned}
+                                                    size="xl"
+                                                />
+
+                                                <div className="mt-2 font-body text-small font-semibold text-gray-85">
+                                                    {tier.name}
                                                 </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+
+                                                <div className="font-body text-micro text-gray-50">
+                                                    {tier.target} {cat.name.split(' ')[2]}
+                                                </div>
+
+                                                <div className={`mt-1 font-body text-micro font-bold ${tier.earned ? 'text-secondary' : 'text-gray-40'}`}>
+                                                    {t('challenge.podium_points', { points: tier.points })}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
                     {/* Lencana Khusus */}
                     <div>
-                        <h2 className="text-xl font-bold text-primary mb-4">{t('challenge.special_badges')}</h2>
+                        <h2 className="text-subtitle font-heading font-bold text-primary mb-4">{t('challenge.special_badges')}</h2>
 
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm text-left">
-                                <thead className="border-b-2 border-gray-200">
-                                    <tr>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_name')}</th>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_desc')}</th>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_how_to')}</th>
-                                        <th className="py-3 px-4 font-bold text-primary text-center">{t('challenge.col_badge')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {specialBadges.map((badge, idx) => (
-                                        <tr key={idx} className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
-                                            <td className="py-6 px-4 font-semibold text-gray-800 w-1/5">{badge.name}</td>
-                                            <td className="py-6 px-4 text-gray-600 w-1/3 text-xs leading-relaxed">{badge.description}</td>
-                                            <td className="py-6 px-4 text-gray-600 w-1/4 text-xs leading-relaxed">{badge.how_to}</td>
-                                            <td className="py-6 px-4 w-1/5">
-                                                <div className="flex flex-col items-center">
-                                                    <div className={`w-20 h-20 bg-white mb-2`}>
-                                                        <img 
-                                                            src={`/${badge.icon_path}`} 
-                                                            alt={badge.name} 
-                                                            className={`w-full h-full object-contain ${badge.earned ? 'drop-shadow-md' : 'grayscale opacity-50'}`}
-                                                        />
-                                                    </div>
-                                                    <div className={`text-xs font-bold ${badge.earned ? 'text-secondary' : 'text-gray-400'}`}>{badge.points} Poin</div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        {/* Kartu, bukan tabel — alasan sama seperti Lencana Umum:
+                            tabel 4 kolom memaksa geser ke samping di ponsel. */}
+                        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                            {specialBadges.map((badge, idx) => (
+                                <div
+                                    key={idx}
+                                    className="
+                                        flex flex-col items-center
+                                        rounded-2xl border border-gray-10
+                                        bg-white p-6 text-center
+                                        shadow-sm transition-all duration-300
+
+                                        hover:-translate-y-1 hover:shadow-md
+                                    "
+                                >
+                                    <BadgeIcon
+                                        iconPath={badge.icon_path}
+                                        alt={badge.name}
+                                        earned={badge.earned}
+                                        size="2xl"
+                                    />
+
+                                    <h3 className="mt-4 font-heading text-paragraph font-bold text-primary">
+                                        {badge.name}
+                                    </h3>
+
+                                    <div className={`mt-1 font-body text-small font-bold ${badge.earned ? 'text-secondary' : 'text-gray-40'}`}>
+                                        {t('challenge.podium_points', { points: badge.points })}
+                                    </div>
+
+                                    <p className="mt-3 font-body text-small leading-relaxed text-gray-70">
+                                        {badge.description}
+                                    </p>
+
+                                    <p className="mt-2 font-body text-micro leading-relaxed text-gray-50">
+                                        {badge.how_to}
+                                    </p>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
@@ -135,4 +162,4 @@ export default function Badges({ generalBadges = [], specialBadges = [] }) {
     );
 }
 
-Badges.layout = (page) => <MainLayout pageTitle="Lencana" content={page}></MainLayout>
+Badges.layout = (page) => <MainLayout pageTitle="title.badges" content={page}></MainLayout>

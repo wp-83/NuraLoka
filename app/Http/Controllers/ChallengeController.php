@@ -4,12 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Badge;
 use App\Models\Level;
-use App\Models\Mission;
 use App\Models\UserDetail;
-use App\Models\UserMission;
+use App\Services\GamificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
 
 class ChallengeController extends Controller
 {
@@ -24,8 +22,8 @@ class ChallengeController extends Controller
     {
         $levels = $this->getLevels();
 
-        // Guard: bila tabel levels kosong/belum ter-seed, jangan sampai crash
-        // ($levels[0]/[1] undefined). Kembalikan default aman.
+        // Guard: if the levels table is empty or unseeded, do not crash on
+        // $levels[0]/[1]. Return a safe default instead.
         if (empty($levels)) {
             return [['name' => '-', 'min' => 0], null];
         }
@@ -42,6 +40,20 @@ class ChallengeController extends Controller
         }
 
         return [$currentLevel, $nextLevel];
+    }
+
+    /** Highest level whose threshold $points still meets. Shared by the leaderboard and index. */
+    private function levelNameForPoints(array $levels, int $points): string
+    {
+        $name = $levels[0]['name'] ?? '-';
+        for ($i = count($levels) - 1; $i >= 0; $i--) {
+            if ($points >= $levels[$i]['min']) {
+                $name = $levels[$i]['name'];
+                break;
+            }
+        }
+
+        return $name;
     }
 
     public function index()
@@ -70,67 +82,35 @@ class ChallengeController extends Controller
             return $badge;
         });
 
-        $ongoingMissions = [];
-        if ($user) {
-            $ongoingMissions = Mission::leftJoin('user_missions', function ($join) use ($user) {
-                $join->on('missions.id', '=', 'user_missions.mission_id')
-                    ->where('user_missions.user_id', '=', $user->id);
-            })
-                ->join('badges', 'missions.badge_id', '=', 'badges.id')
-                ->where(function ($query) {
-                    $query->where('user_missions.status', '!=', 'completed')
-                        ->orWhereNull('user_missions.status');
-                })
-                ->select(
-                    'missions.id',
-                    'missions.title',
-                    'missions.description',
-                    'missions.points_reward as points',
-                    'badges.icon_path as badge_icon',
-                    'badges.name as badge',
-                    'badges.tier_level',
-                    \DB::raw('COALESCE(user_missions.progress, 0) as progress'),
-                    'missions.target'
-                )
-                // Prioritaskan: 1) misi yang hampir selesai (>= 50%), 2) misi termudah berdasarkan tier badge
-                ->orderByRaw('CASE WHEN COALESCE(user_missions.progress, 0) >= (missions.target * 0.5) AND COALESCE(user_missions.progress, 0) > 0 THEN 0 ELSE 1 END ASC')
-                ->orderBy('badges.tier_level', 'asc')
-                ->orderBy('missions.target', 'asc')
-                ->take(1)
-                ->get()
-                ->map(function ($mission) {
-                    $mission->percent = $mission->target > 0 ? min(100, round(($mission->progress / $mission->target) * 100)) : 0;
-
-                    return $mission;
-                });
-        }
+        // The SAME source as the home page; see GamificationService::ongoingMissions.
+        $ongoingMissions = $user
+            ? app(GamificationService::class)->ongoingMissions($user)
+            : [];
 
         $levels = $this->getLevels();
-        $leaderboard = UserDetail::with('user')
+        // The level name comes from the user's stored level relation
+        // (user_details.level_id), NOT recomputed from points, so the leaderboard,
+        // the navbar and the profile page always name the same level for a user.
+        // levelNameForPoints() is only a fallback when level_id is not set.
+        $leaderboard = UserDetail::with(['user', 'level'])
             ->orderByDesc('total_points')
+            ->orderBy('id')
             ->take(6)
             ->get()
             ->map(function ($detail, $index) use ($levels, $user) {
-                $levelName = $levels[0]['name'];
-                for ($i = count($levels) - 1; $i >= 0; $i--) {
-                    if ($detail->total_points >= $levels[$i]['min']) {
-                        $levelName = $levels[$i]['name'];
-                        break;
-                    }
-                }
-
                 return [
                     'rank' => $index + 1,
                     'name' => $detail->fullname,
                     'username' => $detail->user->username ?? '',
                     'points' => $detail->total_points,
                     'profile_path' => $detail->user->public_profile_photo ?? null,
-                    'level' => $levelName,
+                    'level' => $detail->level?->name
+                        ?? $this->levelNameForPoints($levels, $detail->total_points),
                     'is_current' => $user && $user->id === $detail->user_id,
                 ];
             });
 
-        return Inertia::render('Challenge/Index', [
+        return inertia('Challenge/Index', [
             'user' => $user,
             'totalPoints' => $totalPoints,
             'currentLevel' => $currentLevel,
@@ -143,10 +123,11 @@ class ChallengeController extends Controller
         ]);
     }
 
-    public function badges()
+    public function badges(GamificationService $gamification)
     {
         $user = auth()->user();
         $userBadgeIds = $user ? $user->badges()->pluck('badges.id')->toArray() : [];
+        $categoryCounts = $user ? $gamification->albumCategoryCounts($user) : [];
 
         $badges = Badge::orderBy('tier_level')->get();
 
@@ -165,21 +146,23 @@ class ChallengeController extends Controller
         $generalBadges = [];
         $categories = $badges->where('type', 'general')->groupBy('category');
 
+        $tierNames = ['Perunggu', 'Perak', 'Emas', 'Berlian'];
+
         foreach ($categories as $categoryName => $categoryBadges) {
             $tiers = [];
-            $maxProgress = 0;
             $maxTarget = 1;
+            $earnedTarget = 0;
 
             foreach ($categoryBadges as $badge) {
                 $earned = in_array($badge->id, $userBadgeIds);
-                if ($earned) {
-                    $maxProgress = max($maxProgress, $badge->tier_target);
-                }
-
                 $maxTarget = max($maxTarget, $badge->tier_target);
 
+                if ($earned) {
+                    $earnedTarget = max($earnedTarget, (int) $badge->tier_target);
+                }
+
                 $tiers[] = [
-                    'name' => ['Perunggu', 'Perak', 'Emas', 'Berlian'][$badge->tier_level - 1] ?? 'Tingkat',
+                    'name' => $tierNames[$badge->tier_level - 1] ?? 'Tingkat',
                     'target' => $badge->tier_target,
                     'icon_path' => $badge->icon_path,
                     'points' => $badge->points,
@@ -187,26 +170,32 @@ class ChallengeController extends Controller
                 ];
             }
 
-            // Estimate current progress based on earned badges (for demo purposes)
-            // Ideally we should track this in another table, but let's derive it
-            $currentProgress = $maxProgress;
-            if ($currentProgress == 0 && $user) {
-                // If they have no badges, maybe they have ongoing mission?
-                $ongoing = UserMission::where('user_id', $user->id)
-                    ->join('missions', 'user_missions.mission_id', '=', 'missions.id')
-                    ->where('missions.badge_id', $categoryBadges->first()->id)
-                    ->first();
-                if ($ongoing) {
-                    $currentProgress = $ongoing->progress;
-                }
-            }
+            // Progress from the user's own albums and photos, the same criteria
+            // GamificationService::syncAlbumBadges uses to award these badges.
+            $dataProgress = (int) ($categoryCounts[$categoryName] ?? 0);
 
-            // Next tier logic
-            $nextTierTarget = $categoryBadges->where('tier_target', '>', $currentProgress)->sortBy('tier_target')->first();
-            $nextTierTargetVal = $nextTierTarget ? $nextTierTarget->tier_target : $maxTarget;
-            $nextTierName = $nextTierTarget ? (['Perunggu', 'Perak', 'Emas', 'Berlian'][$nextTierTarget->tier_level - 1] ?? '') : 'Maksimal';
+            // ... BUT badges can also come from completing MISSIONS, which count
+            // actions rather than album data. A user can therefore own a tier
+            // while their album data still reads zero: the icon lights up as
+            // earned while the progress ring shows 0%, contradicting each other
+            // on the same screen.
+            //
+            // The progress shown must therefore never be lower than the highest
+            // tier already owned.
+            $currentProgress = max($dataProgress, $earnedTarget);
 
-            $progressPercent = $nextTierTargetVal > 0 ? min(100, round(($currentProgress / $nextTierTargetVal) * 100)) : 100;
+            // Next tier: the first target not yet passed.
+            $nextTier = $categoryBadges
+                ->where('tier_target', '>', $currentProgress)
+                ->sortBy('tier_target')
+                ->first();
+
+            $nextTierTargetVal = $nextTier ? (int) $nextTier->tier_target : $maxTarget;
+            $nextTierName = $nextTier ? ($tierNames[$nextTier->tier_level - 1] ?? '') : 'Maksimal';
+
+            $progressPercent = $nextTierTargetVal > 0
+                ? min(100, (int) round(($currentProgress / $nextTierTargetVal) * 100))
+                : 100;
 
             $generalBadges[] = [
                 'name' => $categoryName,
@@ -219,7 +208,7 @@ class ChallengeController extends Controller
             ];
         }
 
-        return Inertia::render('Challenge/Badges', [
+        return inertia('Challenge/Badges', [
             'generalBadges' => array_values($generalBadges),
             'specialBadges' => $specialBadges,
         ]);
@@ -232,7 +221,7 @@ class ChallengeController extends Controller
 
         $levels = $this->getLevels();
 
-        $query = UserDetail::with('user');
+        $query = UserDetail::with(['user', 'level']);
 
         if ($search) {
             $query->where('fullname', 'like', "%{$search}%");
@@ -243,23 +232,24 @@ class ChallengeController extends Controller
             $totalResults = $query->count();
         }
 
+        // The tiebreaker on id is what keeps the displayed order and the "#rank"
+        // agreeing. total_points alone is not unique — several users share a score
+        // — and two separate queries may order tied rows differently, so a user
+        // could sit third in the list while showing #4.
         $leaderboardData = $query->orderByDesc('total_points')
+            ->orderBy('id')
             ->take(50)
             ->get();
 
-        // Calculate global rank by fetching all users ordered by points (simplistic, could be heavy in prod)
-        $rankings = UserDetail::orderByDesc('total_points')->pluck('id')->toArray();
+        // Global rank, so a searched user still shows their true position rather
+        // than their index in the filtered result. Must use the SAME ordering as
+        // the query above.
+        $rankings = array_flip(
+            UserDetail::orderByDesc('total_points')->orderBy('id')->pluck('id')->toArray()
+        );
 
         $leaderboard = $leaderboardData->map(function ($detail) use ($levels, $user, $rankings) {
-            $levelName = $levels[0]['name'];
-            for ($i = count($levels) - 1; $i >= 0; $i--) {
-                if ($detail->total_points >= $levels[$i]['min']) {
-                    $levelName = $levels[$i]['name'];
-                    break;
-                }
-            }
-
-            $rank = array_search($detail->id, $rankings) + 1;
+            $rank = ($rankings[$detail->id] ?? 0) + 1;
 
             // Get user's badges
             $badges = DB::table('user_badges')
@@ -278,14 +268,16 @@ class ChallengeController extends Controller
                 'user_id' => $detail->user_id,
                 'points' => $detail->total_points,
                 'profile_path' => $detail->user->public_profile_photo ?? null,
-                'level' => $levelName,
+                // As in index(): follow the user's stored level.
+                'level' => $detail->level?->name
+                    ?? $this->levelNameForPoints($levels, $detail->total_points),
                 'is_current' => $user && $user->id === $detail->user_id,
                 'badge_icons' => $badges,
                 'badge_count' => $badgeCount,
             ];
         });
 
-        return Inertia::render('Challenge/LeaderboardFull', [
+        return inertia('Challenge/LeaderboardFull', [
             'leaderboard' => $leaderboard,
             'search' => $search,
             'totalResults' => $totalResults,
@@ -295,13 +287,21 @@ class ChallengeController extends Controller
     public function levels()
     {
         $user = auth()->user();
-        $detail = UserDetail::where('user_id', $user->id)->first();
+        $detail = UserDetail::with('level')->where('user_id', $user->id)->first();
         $totalPoints = $detail ? $detail->total_points : 0;
 
         $levels = $this->getLevels();
-        [$currentLevel, $nextLevel] = $this->calculateLevel($totalPoints);
 
-        return Inertia::render('Challenge/Levels', [
+        // Follow the user's stored level (user_details.level_id), the same as
+        // the navbar, the profile page and the leaderboard, rather than
+        // recomputing from points. That way the level named here can never differ
+        // from the other pages. calculateLevel() is only a fallback when level_id
+        // is not set.
+        $currentLevel = $detail?->level
+            ? ['name' => $detail->level->name, 'min' => $detail->level->min_points]
+            : $this->calculateLevel($totalPoints)[0];
+
+        return inertia('Challenge/Levels', [
             'totalPoints' => $totalPoints,
             'currentLevel' => $currentLevel,
             'allLevels' => $levels,

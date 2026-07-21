@@ -200,7 +200,7 @@ export default function Navbar() {
                                     </h5>
 
                                     <p className="font-body text-micro italic text-secondary">
-                                        {t('nav.badge_label')}
+                                        {user.level || 'Nuravers'}
                                     </p>
                                 </div>
 
@@ -268,7 +268,7 @@ export default function Navbar() {
                             </h5>
 
                             <p className="font-body text-micro italic text-secondary">
-                                {t('nav.badge_label')}
+                                {user.level || 'Nuravers'}
                             </p>
                         </div>
 

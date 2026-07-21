@@ -1,7 +1,9 @@
 import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, Polyline, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { FiCrosshair } from 'react-icons/fi';
+import { categoryEmoji, categoryIconUrl } from '@js/categoryIcons';
 
 // Fix for default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -36,35 +38,19 @@ const createMarkerIcon = (iconPath) => {
 const escapeHtml = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-// Ikon default per-kategori (dipakai bila kategori belum punya icon_path di DB).
-// Emoji dipilih agar ringan & tanpa aset; fallback terakhir 📍.
-const CATEGORY_EMOJI = {
-  'Wisata Alam': '🌿',
-  'Wisata Budaya': '🏛️',
-  'Wisata Sejarah': '🏯',
-  'Wisata Gunung': '⛰️',
-  'Wisata Edukasi': '📚',
-  'Kuliner': '🍽️',
-  'Wisata Kuliner': '🍽️',
-  'Museum': '🏛️',
-  'Taman Hiburan': '🎡',
-  'Belanja': '🛍️',
-  'Religi': '🕌',
-  'Wisata Religi': '🕌',
-  'Hidden Gem': '💎',
-  'Pantai': '🏖️',
-  'Wisata Pantai': '🏖️',
-  'Air Terjun': '💧',
-};
+// Peta emoji & resolusi gambar kategori kini tinggal di @js/categoryIcons agar
+// pin peta, kartu tempat, dan halaman detail memakai ikon yang sama persis.
 
 // Ikon POI: pin peta (teardrop) berisi ikon kategori + label nama menempel di
 // sampingnya. Pin & label berada dalam SATU divIcon sehingga keduanya sama-sama
 // bisa diinteraksikan (hover/klik memicu event marker yang sama).
 const createPlaceIcon = (place) => {
   const category = place.categories?.[0];
-  const inner = category?.icon_path
-    ? `<img src="${escapeHtml(category.icon_path)}" alt="" />`
-    : `<span class="nl-pin__emoji">${CATEGORY_EMOJI[category?.name] || '📍'}</span>`;
+  const iconUrl = categoryIconUrl(category);
+
+  const inner = iconUrl
+    ? `<img src="${escapeHtml(iconUrl)}" alt="" />`
+    : `<span class="nl-pin__emoji">${categoryEmoji(category?.name)}</span>`;
 
   return L.divIcon({
     className: 'nl-pin',
@@ -393,6 +379,125 @@ function JourneyCar({ routeData, running, demo, userPosition, onComplete }) {
   return <Marker position={carPos} icon={journeyCarIcon} zIndexOffset={1000} />;
 }
 
+// Titik biru "lokasi saya" — dibedakan dari pin tempat (yang berbentuk teardrop)
+// supaya jelas ini posisi pengguna, bukan destinasi.
+const createMyLocationIcon = () =>
+  L.divIcon({
+    className: 'nl-mylocation',
+    html:
+      `<span style="` +
+        `display:block;width:16px;height:16px;border-radius:9999px;` +
+        `background:#1B86FF;border:3px solid #fff;` +
+        `box-shadow:0 0 0 1px rgba(0,0,0,.25),0 2px 6px rgba(0,0,0,.35);` +
+      `"></span>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+  });
+
+/**
+ * Tombol "Lokasi Saya".
+ *
+ * Harus berada DI DALAM MapContainer karena memakai useMap() untuk menggeser
+ * peta ke posisi pengguna. Klik pada tombol dicegah menembus ke peta
+ * (disableClickPropagation) agar peta tidak ikut bergeser/zoom saat ditekan.
+ */
+function MyLocationControl({ onLocated }) {
+  const map = useMap();
+  const holderRef = React.useRef(null);
+
+  // idle | locating | denied | unavailable
+  const [status, setStatus] = React.useState('idle');
+
+  React.useEffect(() => {
+    if (holderRef.current) {
+      L.DomEvent.disableClickPropagation(holderRef.current);
+      L.DomEvent.disableScrollPropagation(holderRef.current);
+    }
+  }, []);
+
+  const locate = () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setStatus('unavailable');
+      return;
+    }
+
+    setStatus('locating');
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const found = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        };
+
+        setStatus('idle');
+        onLocated?.(found);
+
+        // Jangan menjauhkan pandangan bila pengguna sudah zoom lebih dekat.
+        map.flyTo([found.lat, found.lng], Math.max(map.getZoom(), 16), {
+          duration: 1.2,
+        });
+      },
+      (err) => {
+        setStatus(
+          err.code === err.PERMISSION_DENIED ? 'denied' : 'unavailable',
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
+    );
+  };
+
+  const label = {
+    idle: 'Lokasi Saya',
+    locating: 'Mencari lokasi…',
+    denied: 'Izin lokasi ditolak',
+    unavailable: 'Lokasi tidak tersedia',
+  }[status];
+
+  return (
+    // Ditempatkan di TENGAH ATAS: pojok kanan bawah sudah dipakai MapTooltip
+    // (maskot), sedangkan di desktop panel kiri mengisi kolom 1–4 dan panel
+    // kanan kolom 10–13 — bagian tengah atas satu-satunya area yang lapang.
+    // Kontrol zoom Leaflet ada di kiri atas, jadi juga tidak bertabrakan.
+    //
+    // z-index mengikuti tingkat kontrol Leaflet (1000). Pane bawaan Leaflet
+    // mencapai 600 untuk marker dan 700 untuk popup, jadi nilai di bawah itu
+    // akan membuat tombolnya tertutup marker.
+    <div
+      ref={holderRef}
+      className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000]"
+    >
+      <button
+        type="button"
+        onClick={locate}
+        disabled={status === 'locating'}
+        title={label}
+        aria-label={label}
+        className="
+          flex items-center gap-2
+          whitespace-nowrap rounded-xl
+          border border-gray-20 bg-white
+          px-3 py-2.5
+          font-body text-small font-semibold
+          text-primary shadow-lg
+          transition-colors
+
+          hover:bg-primary-10
+          disabled:cursor-not-allowed disabled:opacity-70
+        "
+      >
+        <FiCrosshair
+          size={18}
+          className={`shrink-0 ${status === 'locating' ? 'animate-spin' : ''}`}
+        />
+
+        <span className="hidden sm:inline">{label}</span>
+      </button>
+    </div>
+  );
+}
+
 export default function ExploreMap({
   places = [],            // hanya dipakai untuk menghitung center awal peta
   points = [],            // titik individual dari server
@@ -411,6 +516,11 @@ export default function ExploreMap({
   const defaultCenter = [-8.0, 113.0];
   const [center, setCenter] = React.useState(defaultCenter);
   const [currentZoom, setCurrentZoom] = React.useState(selectedPlace ? 15 : 5);
+
+  // Hasil tombol "Lokasi Saya". Disimpan terpisah dari prop userPosition —
+  // prop itu dipakai untuk mengikuti GPS saat perjalanan berlangsung, sedangkan
+  // ini sekadar menandai posisi pengguna saat tombol ditekan.
+  const [myLocation, setMyLocation] = React.useState(null);
 
   React.useEffect(() => {
     if (routeData && routeData.coordinates && routeData.coordinates.length > 0) {
@@ -500,6 +610,35 @@ export default function ExploreMap({
           excludeLng={!routeData && selectedPlace?.longitude != null ? parseFloat(selectedPlace.longitude) : null}
           excludeIds={routeData?.waypoints?.length ? new Set(routeData.waypoints.map((w) => Number(w.id))) : null}
         />
+
+        {/* ── Lokasi pengguna (hasil tombol "Lokasi Saya") ── */}
+        {myLocation && (
+          <>
+            {/* Lingkaran akurasi: memberi tahu seberapa presisi pembacaan GPS-nya. */}
+            {myLocation.accuracy > 0 && (
+              <Circle
+                center={[myLocation.lat, myLocation.lng]}
+                radius={myLocation.accuracy}
+                pathOptions={{
+                  color: '#1B86FF',
+                  weight: 1,
+                  fillColor: '#1B86FF',
+                  fillOpacity: 0.12,
+                }}
+              />
+            )}
+
+            <Marker
+              position={[myLocation.lat, myLocation.lng]}
+              icon={createMyLocationIcon()}
+              zIndexOffset={1000}
+            >
+              <Popup>Lokasi kamu sekarang</Popup>
+            </Marker>
+          </>
+        )}
+
+        <MyLocationControl onLocated={setMyLocation} />
       </MapContainer>
     </div>
   );

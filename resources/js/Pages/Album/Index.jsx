@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { router } from '@inertiajs/react';
 
 import MainLayout from '@js/Layouts/MainLayout';
+import RegionalGreeting from '@js/Daerah/RegionalGreeting';
+import EmptyState from '@components/Common/EmptyState';
 import Button from '@components/Forms/Button';
+import Input from '@components/Forms/Input';
 import { useTranslation } from '@js/i18n';
 
 import {
@@ -40,10 +43,10 @@ function getAlbumThumbnail(thumbnail) {
         : '/images/defaults/image.png';
 }
 
-function getProfileImage(profilePath) {
-    return profilePath
-        ? `/storage/${profilePath}`
-        : '/images/defaults/profile-general.png';
+// Server sudah mengirim URL foto profil yang jadi (User::public_profile_photo),
+// termasuk avatar bawaan sesuai gender. Jangan menempelkan /storage/ lagi.
+function getProfileImage(profileUrl) {
+    return profileUrl || '/images/defaults/profile-general.png';
 }
 
 // ============================================================
@@ -87,10 +90,10 @@ function PopularAlbumCard({ album }) {
             <div className="flex flex-1 flex-col p-4">
                 <h3
                     className="
-                        mb-2 line-clamp-2
-                        font-heading text-small
+                        mb-6 line-clamp-2
+                        font-heading text-subtitle
                         font-bold leading-snug
-                        text-gray-85
+                        text-primary
                     "
                 >
                     {album.title}
@@ -99,11 +102,11 @@ function PopularAlbumCard({ album }) {
                 <div
                     className="
                         mb-1 flex items-center gap-1.5
-                        font-body text-micro
-                        text-gray-50
+                        font-body text-body
+                        text-secondary
                     "
                 >
-                    <FiUsers size={14} className="shrink-0" />
+                    <FiUsers size={20} className="shrink-0" />
 
                     <span className="truncate">
                         {album.author_name}
@@ -113,11 +116,11 @@ function PopularAlbumCard({ album }) {
                 <div
                     className="
                         mb-4 flex items-center gap-1.5
-                        font-body text-micro
-                        text-gray-50
+                        font-body text-body
+                        text-secondary
                     "
                 >
-                    <HiOutlineEye size={14} className="shrink-0" />
+                    <HiOutlineEye size={20} className="shrink-0" />
 
                     <span>
                         {t('album.views_count', { count: formatViews(album.view_count) })}
@@ -127,7 +130,8 @@ function PopularAlbumCard({ album }) {
                 <div className="mt-auto">
                     <Button
                         variant="primary"
-                        size="btn-sm"
+                        size="btn-md"
+                        fullWidth={true}
                         onClick={handleVisit}
                     >
                         {t('common.view_detail')}
@@ -141,7 +145,7 @@ function PopularAlbumCard({ album }) {
 // ============================================================
 // MY ALBUM CARD
 // ============================================================
-function MyAlbumCard({ album, onDelete }) {
+function    MyAlbumCard({ album, onDelete }) {
     const { t } = useTranslation();
     const handleToggleVisibility = () => {
         router.post(
@@ -195,9 +199,11 @@ function MyAlbumCard({ album, onDelete }) {
                 <h3
                     className="
                         mb-2 line-clamp-2
-                        font-heading text-small
+                        font-heading text-subtitle
                         font-bold leading-snug
-                        text-gray-85
+                        text-primary
+
+
                     "
                 >
                     {album.title}
@@ -207,13 +213,13 @@ function MyAlbumCard({ album, onDelete }) {
                 <div
                     className="
                         mb-2 flex flex-wrap
-                        items-center gap-x-4 gap-y-2
-                        font-body text-micro
-                        text-gray-50
+                        items-center gap-x-8 gap-y-2
+                        font-body text-body
+                        text-secondary
                     "
                 >
                     <span className="flex min-w-0 items-center gap-1">
-                        <FiMapPin size={13} className="shrink-0" />
+                        <FiMapPin size={20} className="shrink-0" />
 
                         <span className="truncate">
                             {album.location || '-'}
@@ -221,7 +227,7 @@ function MyAlbumCard({ album, onDelete }) {
                     </span>
 
                     <span className="flex items-center gap-1">
-                        <FiCalendar size={13} className="shrink-0" />
+                        <FiCalendar size={20} className="shrink-0" />
 
                         {formatDate(album.date)}
                     </span>
@@ -242,12 +248,12 @@ function MyAlbumCard({ album, onDelete }) {
                     <div
                         className="
                             flex items-center gap-1.5
-                            font-body text-micro
-                            font-medium text-gray-85
+                            font-body text-small
+                            font-medium text-gray-100
                         "
                     >
                         <HiOutlineEye
-                            size={17}
+                            size={20}
                             className="shrink-0 text-accent"
                         />
 
@@ -266,8 +272,8 @@ function MyAlbumCard({ album, onDelete }) {
                         "
                     >
                         {/* Visibility Toggle */}
-                        <button
-                            type="button"
+                        <Button
+                            unstyled
                             onClick={handleToggleVisibility}
                             className="
                                 flex items-center gap-2
@@ -287,7 +293,7 @@ function MyAlbumCard({ album, onDelete }) {
                                     transition-colors duration-300
 
                                     ${album.is_public
-                                        ? 'border-primary-100 bg-primary-30'
+                                        ? 'border-primary-100 bg-primary-10'
                                         : 'border-gray-30 bg-gray-10'
                                     }
                                 `}
@@ -310,7 +316,7 @@ function MyAlbumCard({ album, onDelete }) {
 
                             <span
                                 className="
-                                    font-body text-micro
+                                    font-body text-small
                                     font-bold text-gray-85
                                 "
                             >
@@ -318,63 +324,39 @@ function MyAlbumCard({ album, onDelete }) {
                                     ? t('common.public')
                                     : t('common.private')}
                             </span>
-                        </button>
+                        </Button>
 
                         {/* Actions */}
                         <div className="flex items-center gap-1.5">
-                            <button
-                                type="button"
+                            <Button
                                 onClick={handleVisit}
-                                className="
-                                    flex h-8 w-8
-                                    items-center justify-center
-                                    rounded-lg
-                                    bg-accent text-white
-                                    shadow-sm
-                                    transition-opacity
-                                    hover:opacity-80
-                                "
+                                variant="primary"
+                                size="btn-sm"
+                                className="shadow-sm"
+                                iconLeft={<HiOutlineEye size={20} />}
                                 title={t('album.view_detail')}
                                 aria-label={`${t('album.view_detail')} ${album.title}`}
-                            >
-                                <HiOutlineEye size={15} />
-                            </button>
+                            />
 
-                            <button
-                                type="button"
+                            <Button
                                 onClick={handleEdit}
-                                className="
-                                    flex h-8 w-8
-                                    items-center justify-center
-                                    rounded-lg
-                                    bg-secondary text-white
-                                    shadow-sm
-                                    transition-opacity
-                                    hover:opacity-80
-                                "
+                                variant="secondary"
+                                size="btn-sm"
+                                className="shadow-sm"
+                                iconLeft={<FiEdit2 size={20} />}
                                 title={t('album.edit_title')}
                                 aria-label={`${t('album.edit_title')} ${album.title}`}
-                            >
-                                <FiEdit2 size={14} />
-                            </button>
+                            />
 
-                            <button
-                                type="button"
+                            <Button
                                 onClick={() => onDelete(album.slug)}
-                                className="
-                                    flex h-8 w-8
-                                    items-center justify-center
-                                    rounded-lg
-                                    bg-error-dark text-white
-                                    shadow-sm
-                                    transition-opacity
-                                    hover:opacity-80
-                                "
+                                variant="error"
+                                size="btn-sm"
+                                className="shadow-sm"
+                                iconLeft={<FiTrash2 size={20} />}
                                 title={t('album.delete_title')}
                                 aria-label={`${t('album.delete_title')} ${album.title}`}
-                            >
-                                <FiTrash2 size={14} />
-                            </button>
+                            />
                         </div>
                     </div>
                 </div>
@@ -457,54 +439,6 @@ function UserSearchResult({ user }) {
                 {t('common.view_detail')}
             </Button>
         </article>
-    );
-}
-
-// ============================================================
-// EMPTY STATE
-// ============================================================
-function EmptyState({
-    title,
-    description,
-}) {
-    return (
-        <div
-            className="
-                flex flex-col
-                items-center justify-center
-                py-12 text-center
-            "
-        >
-            <img
-                src="/images/mascots/wait.png"
-                alt="Maskot NuraLoka"
-                className="
-                    mb-4 h-24 w-24
-                    object-contain
-                    opacity-50
-                "
-            />
-
-            <p
-                className="
-                    font-body text-small
-                    font-medium text-gray-50
-                "
-            >
-                {title}
-            </p>
-
-            {description && (
-                <p
-                    className="
-                        mt-1 font-body
-                        text-micro text-gray-30
-                    "
-                >
-                    {description}
-                </p>
-            )}
-        </div>
     );
 }
 
@@ -592,7 +526,7 @@ export default function Index({
                     src="/images/mascots/camera.png"
                     alt="Maskot NuraLoka dengan kamera"
                     className="
-                        h-24 w-24
+                        h-32 w-32
                         shrink-0 object-contain
                     "
                 />
@@ -601,7 +535,7 @@ export default function Index({
                     <h1
                         className="
                             font-heading text-title
-                            font-extrabold
+                            font-bold
                             text-primary-100
 
                             md:text-hero
@@ -610,15 +544,10 @@ export default function Index({
                         {t('album.meta_title')} {t('common.community')}
                     </h1>
 
-                    <p
-                        className="
-                            font-heading text-body
-                            font-medium italic
-                            text-primary-70
-                        "
-                    >
-                        Albumipun Nuravers
-                    </p>
+                    <RegionalGreeting
+                        phrase="album_index"
+                        className="local-language text-paragraph"
+                    />
                 </div>
             </div>
 
@@ -629,58 +558,31 @@ export default function Index({
                 onSubmit={handleSearch}
                 className="relative mb-8"
             >
-                <div
-                    className="
-                        flex items-center
-                        overflow-hidden
-                        rounded-xl
-                        border border-gray-30
-                        bg-white
-                        shadow-sm
-                        transition-shadow
-                        focus-within:border-primary-50
-                        focus-within:shadow-md
-                        hover:shadow-md
-                    "
-                >
-                    <div className="pl-4 text-gray-50">
-                        <FiSearch size={20} />
-                    </div>
-
-                    <input
-                        type="text"
-                        value={search}
-                        onChange={(event) =>
-                            setSearch(event.target.value)
-                        }
-                        placeholder={t('album.search_placeholder')}
-                        className="
-                            w-full
-                            border-none bg-transparent
-                            px-3 py-3
-                            font-body text-small
-                            text-gray-85
-                            outline-none
-                            focus:ring-0
-                        "
-                    />
-
-                    {search && (
-                        <button
-                            type="button"
-                            onClick={handleClearSearch}
-                            className="
-                                p-4
-                                text-gray-50
-                                transition-colors
-                                hover:text-gray-85
-                            "
-                            aria-label="Hapus pencarian"
-                        >
-                            <FiX size={18} />
-                        </button>
-                    )}
-                </div>
+                <Input
+                    name="search"
+                    value={search}
+                    onChange={(event) =>
+                        setSearch(event.target.value)
+                    }
+                    placeholder={t('album.search_placeholder')}
+                    icon={<FiSearch size={18} />}
+                    iconRight={
+                        search && (
+                            <Button
+                                unstyled
+                                onClick={handleClearSearch}
+                                className="
+                                    text-gray-50
+                                    transition-colors
+                                    hover:text-gray-85
+                                "
+                                aria-label="Hapus pencarian"
+                            >
+                                <FiX size={18} />
+                            </Button>
+                        )
+                    }
+                />
             </form>
 
             {/* ========================================================
@@ -718,17 +620,8 @@ export default function Index({
                     {/* ====================================================
                         POPULAR ALBUMS
                     ==================================================== */}
-                    <section className="mb-10">
-                        <div
-                            className="
-                                rounded-2xl
-                                border border-primary-30/30
-                                bg-gradient-to-r
-                                from-primary-10
-                                to-warning-light
-                                p-6
-                            "
-                        >
+                    <section className="mb-20 mt-12">
+                        <div>
                             <h2
                                 className="
                                     mb-5
@@ -790,7 +683,7 @@ export default function Index({
 
                             <Button
                                 variant="primary"
-                                size="btn-sm"
+                                size="btn-md"
                                 onClick={handleCreateAlbum}
                             >
                                 {t('album.create_submit')}
@@ -805,6 +698,7 @@ export default function Index({
                                     gap-5
 
                                     sm:grid-cols-2
+                                    lg:grid-cols-3
                                 "
                             >
                                 {myAlbums.map((album) => (
@@ -835,7 +729,7 @@ export default function Index({
                             <div className="mt-6 flex justify-end">
                                 <Button
                                     variant="primary"
-                                    size="btn-sm"
+                                    size="btn-md"
                                     onClick={handleViewAllAlbums}
                                 >
                                     {t('common.see_all')}
@@ -854,7 +748,7 @@ export default function Index({
 // ============================================================
 Index.layout = (page) => (
     <MainLayout
-        pageTitle="Album"
+        pageTitle="title.album"
         pageDescription="Jelajahi album perjalanan dari komunitas Nuravers, temukan cerita wisata dari pengguna lain, dan dokumentasikan pengalaman perjalananmu sendiri bersama NuraLoka."
         content={page}
     />

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Daerah\GreetingResolver;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -43,12 +44,14 @@ class HandleInertiaRequests extends Middleware
     /** Grup file lang yang dikirim ke frontend (dikecualikan: validation & passwords — server-side). */
     private const FRONTEND_GROUPS = [
         'nav', 'common', 'home', 'explore', 'footer', 'auth',
-        'account', 'challenge', 'album', 'news', 'profile', 'wishlist', 'error', 'pagination', 'admin',
+        'account', 'challenge', 'album', 'news', 'profile', 'wishlist', 'error', 'pagination', 'admin', 'landing',
+        'title', // Judul halaman (<title>) — dipakai MainLayout & AdminLayout.
     ];
 
     public function share(Request $request): array
     {
         $user = $request->user();
+        $user?->loadMissing('userDetail.level');
 
         return array_merge(parent::share($request), [
             'auth' => [
@@ -58,6 +61,8 @@ class HandleInertiaRequests extends Middleware
                     'fullname' => $user->userDetail?->fullname,
                     'is_admin' => $user->is_admin,
                     'public_profile_photo' => $user->public_profile_photo,
+                    // Gelar/level pengguna — sumber tunggal dipakai bersama oleh Navbar & halaman Profil.
+                    'level' => $user->userDetail?->level?->name,
                 ] : null,
             ],
 
@@ -73,6 +78,12 @@ class HandleInertiaRequests extends Middleware
             'locale' => fn () => app()->getLocale(),
             'locales' => self::LOCALES,
             'translations' => fn () => $this->translations(app()->getLocale()),
+
+            // Sapaan bahasa daerah — SENGAJA tidak bergantung pada 'locale' di atas.
+            // Untuk user login, provinsi tersimpan (prioritas 1) sudah cukup, jadi
+            // sapaan tersedia sejak render pertama tanpa kedipan teks. Tamu dapat
+            // payload default lalu frontend menyempurnakannya lewat deteksi lokasi.
+            'daerah' => fn () => app(GreetingResolver::class)->forUser($request->user()),
         ]);
     }
 

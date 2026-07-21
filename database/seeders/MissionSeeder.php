@@ -49,17 +49,23 @@ class MissionSeeder extends Seeder
         ];
 
         foreach ($missions as $m) {
-            $badgeId = DB::table('badges')->where('name', $m['badge'])->value('id');
+            $badge = DB::table('badges')->where('name', $m['badge'])->first(['id', 'points', 'tier_target']);
 
-            if ($badgeId) {
+            if ($badge) {
                 DB::table('missions')->updateOrInsert(
                     ['title' => $m['title']],
                     [
-                        'badge_id' => $badgeId,
+                        'badge_id' => $badge->id,
                         'slug' => Str::slug($m['title']),
                         'description' => $m['description'],
-                        'points_reward' => $m['points_reward'],
-                        'target' => $m['target'],
+                        // points_reward & target DIAMBIL DARI LENCANANYA, bukan dari
+                        // angka di array di atas. Setiap misi memang mencerminkan
+                        // satu lencana, jadi menyimpan angkanya dua kali membuat
+                        // keduanya gampang berbeda — persis yang terjadi saat poin
+                        // lencana dinaikkan tapi points_reward tertinggal di nilai
+                        // lama (50/100/150/250).
+                        'points_reward' => $badge->points,
+                        'target' => $badge->tier_target > 0 ? $badge->tier_target : $m['target'],
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]

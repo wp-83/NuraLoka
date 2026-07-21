@@ -186,5 +186,5 @@ export default function Edit({ mission, badges, categories = [], actions = [] })
 }
 
 Edit.layout = (page) => (
-    <AdminLayout pageTitle="Edit Tantangan" content={page} />
+    <AdminLayout pageTitle="title.admin_mission_edit" content={page} />
 );

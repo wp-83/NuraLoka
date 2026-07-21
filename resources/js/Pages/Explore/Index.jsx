@@ -4,11 +4,14 @@ import MainLayout from '@js/Layouts/MainLayout';
 import ExploreMap from '@components/Features/ExploreMap';
 import LocationSearchInput from '@components/Features/LocationSearchInput';
 import PlaceCard from '@components/Features/PlaceCard';
+import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
 import { useTranslation } from '@js/i18n';
 import { FiMapPin, FiSearch } from 'react-icons/fi';
 import { MdRestaurant, MdBeachAccess, MdDiamond, MdMuseum, MdWaterDrop, MdSportsHandball } from 'react-icons/md';
 import { FaMountain } from 'react-icons/fa6';
+import { GiPathDistance } from 'react-icons/gi';
+import { IoTimeOutline } from 'react-icons/io5';
 
 // Ambil nilai cookie (untuk header CSRF pada fetch non-Inertia).
 function getCookie(name) {
@@ -38,7 +41,7 @@ function CategoryIcon({ category }) {
             <img
                 src={category.icon_path}
                 alt=""
-                className="w-4 h-4 object-contain"
+                className="w-6 h-6 object-contain"
                 onError={(e) => { e.target.style.display = 'none'; }}
             />
         );
@@ -106,39 +109,53 @@ function JourneyPanel({
     // State 2/3 — 2 titik terkunci (fixed / running).
     return (
         <div className="flex flex-col mt-2 gap-3">
-            <div className="rounded-xl border border-gray-30 overflow-hidden">
-                <div className="flex items-center gap-2 px-3 py-2">
+            <div className="rounded-lg border border-gray-30 overflow-hidden">
+                <div className="flex items-center gap-4 px-3 py-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-secondary shrink-0" />
                     <div className="min-w-0">
-                        <p className="text-micro text-gray-50">Keberangkatan</p>
-                        <p className="text-small font-semibold text-primary truncate">{origin?.name}</p>
+                        <p className="text-small text-gray-70">Keberangkatan</p>
+                        <p className="text-body font-bold text-primary truncate">{origin?.name}</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-2 border-t border-gray-20">
+                <div className="flex items-center gap-4 px-3 py-2 border-t border-gray-20">
                     <span className="w-2.5 h-2.5 rounded-full bg-accent shrink-0" />
                     <div className="min-w-0">
-                        <p className="text-micro text-gray-50">Tujuan</p>
-                        <p className="text-small font-semibold text-primary truncate">{destination?.name}</p>
+                        <p className="text-small text-gray-70">Tujuan</p>
+                        <p className="text-body font-bold text-primary truncate">{destination?.name}</p>
                     </div>
                 </div>
             </div>
 
             {routeData && (
-                <div className="flex items-center gap-4 text-micro font-semibold text-gray-70">
-                    <span><span className="text-accent">🛣</span> ± {routeData.distance} km</span>
-                    <span><span className="text-accent">⏱</span> ± {formatDuration(routeData.duration, t)}</span>
+                <div className="flex items-center gap-4 text-body text-secondary">
+                    <div className='flex gap-2 items-center'>
+                        <GiPathDistance size={16} />
+                        <span> ± {routeData.distance} km</span>
+                    </div>
+                    <div className='flex gap-2 items-center'>
+                        <IoTimeOutline size={16} />
+                        <span> ± {formatDuration(routeData.duration, t)}</span>
+                    </div>
                 </div>
             )}
 
             {state === 'fixed' && (
                 <>
-                    <button onClick={onStart}
-                        className="w-full rounded-xl bg-accent text-white font-body text-btn-sm font-semibold py-2.5 shadow-sm transition-all hover:bg-accent-85 active:scale-[0.98]">
+                    <Button
+                        onClick={onStart}
+                        variant="primary"
+                        size="btn-sm"
+                        fullWidth
+                    >
                         Mulai Perjalanan
-                    </button>
-                    <button onClick={onCancel} className="text-micro text-gray-50 hover:text-primary self-center">
+                    </Button>
+                    <Button
+                        onClick={onCancel}
+                        unstyled
+                        className="text-micro text-gray-50 hover:text-primary self-center"
+                    >
                         Ganti titik
-                    </button>
+                    </Button>
                 </>
             )}
 
@@ -149,18 +166,25 @@ function JourneyPanel({
                             <span className="animate-pulse">🚗 Perjalanan sedang berlangsung…</span>
                         </div>
                     ) : (
-                        <button onClick={onFinish} disabled={!finishReady || saving}
-                            className={`w-full rounded-xl font-body text-btn-sm font-semibold py-2.5 transition-all ${
-                                finishReady && !saving ? 'bg-secondary text-white hover:bg-secondary-85 active:scale-[0.98]' : 'bg-gray-30 text-gray-50 cursor-not-allowed'
-                            }`}>
+                        <Button
+                            onClick={onFinish}
+                            disabled={!finishReady || saving}
+                            variant={finishReady && !saving ? 'secondary' : 'inactive'}
+                            size="btn-sm"
+                            fullWidth
+                        >
                             {saving ? 'Menyimpan…' : (finishReady ? 'Selesaikan Perjalanan' : 'Mendekatlah ke tujuan…')}
-                        </button>
+                        </Button>
                     )}
                     {msg && <p className="text-micro text-center text-gray-70">{msg}</p>}
-                    <button onClick={onCancel}
-                        className="w-full rounded-xl border border-gray-30 text-gray-70 font-body text-btn-sm font-semibold py-2 hover:bg-gray-10">
+                    <Button
+                        onClick={onCancel}
+                        variant="gray"
+                        size="btn-sm"
+                        fullWidth
+                    >
                         Batal
-                    </button>
+                    </Button>
                 </div>
             )}
         </div>
@@ -246,14 +270,14 @@ function ExplorePanel({
                         )}
                     </div>
 
-                    <span className="block font-body text-small font-semibold text-primary mb-2">{t('explore.filter_title')}</span>
+                    <span className="block font-body text-body font-bold text-primary mb-2">{t('explore.filter_title')}</span>
                     <div className="flex flex-wrap gap-2">
                         {categories.map((cat) => (
                             <div
                                 key={cat.id}
                                 role="button"
                                 onClick={() => toggleFilter(cat.name)}
-                                className={`cursor-pointer flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl border font-body text-micro font-semibold transition-all duration-150 ${
+                                className={`cursor-pointer flex items-center justify-center gap-1 px-4 py-1.5 rounded-md border font-body text-small transition-all duration-150 ${
                                     activeFilters.includes(cat.name)
                                         ? 'bg-secondary text-white border-secondary'
                                         : 'bg-white text-primary border-gray-30 hover:border-accent hover:text-accent'
@@ -301,7 +325,7 @@ function RecentlyVisitedPanel({ recentlyVisited = [], onVisit }) {
 
     return (
         <div className="bg-white rounded-2xl shadow-xl p-4 w-full">
-            <h3 className="font-heading text-small font-bold text-primary mb-3">
+            <h3 className="font-heading text-body font-bold text-primary mb-3">
                 {t('explore.recently_visited')}
             </h3>
             <div className="flex flex-col gap-2">
@@ -315,13 +339,13 @@ function RecentlyVisitedPanel({ recentlyVisited = [], onVisit }) {
                             {place.img ? (
                                 <img src={place.img} alt={place.name} className="w-full h-full object-cover" />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gray-30">
-                                    <FiMapPin size={16} className="text-gray-50" />
+                                <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                                    <FiMapPin size={16} className="text-white" />
                                 </div>
                             )}
                         </div>
                         <div className="min-w-0">
-                            <p className="font-body text-micro font-bold text-primary truncate">{place.name}</p>
+                            <p className="font-body text-small font-bold text-primary truncate">{place.name}</p>
                             <p className="font-body text-micro text-gray-50 truncate">{place.address || t('explore.address_fallback')}</p>
                         </div>
                     </div>
@@ -336,7 +360,7 @@ function RouteFilterPanel({ routeData, categories, activeFilters, toggleFilter, 
     const { t } = useTranslation();
     return (
         <div className="bg-white rounded-2xl shadow-xl p-4 w-full relative z-[500]">
-            <div className="flex justify-between items-center mb-3">
+            <div className="flex flex-col justify-between items-start mb-6 gap-2">
                 <h3 className="font-heading text-small font-bold text-primary">
                     {t('explore.filter_title')}
                 </h3>
@@ -344,7 +368,7 @@ function RouteFilterPanel({ routeData, categories, activeFilters, toggleFilter, 
                     <select
                         value={routeRadius}
                         onChange={(e) => setRouteRadius(Number(e.target.value))}
-                        className="font-body text-micro bg-gray-10 border border-gray-30 rounded-lg px-2 py-1 outline-none text-primary font-medium cursor-pointer hover:border-accent transition-colors"
+                        className="font-body text-small bg-gray-10 border border-gray-30 rounded-lg px-2 py-1 outline-none text-primary font-medium cursor-pointer hover:border-accent transition-colors"
                     >
                         <option value={1}>{t('explore.route_radius', { km: 1 })}</option>
                         <option value={3}>{t('explore.route_radius', { km: 3 })}</option>
@@ -360,27 +384,16 @@ function RouteFilterPanel({ routeData, categories, activeFilters, toggleFilter, 
                         key={cat.id}
                         role="button"
                         onClick={() => toggleFilter(cat.name)}
-                        className={`cursor-pointer flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl border font-body text-micro font-semibold transition-all duration-150 ${
+                        className={`cursor-pointer flex items-center justify-center gap-1 px-2 py-1.5 rounded-sm border font-body text-small transition-all duration-150 ${
                             activeFilters.includes(cat.name)
                                 ? 'bg-secondary text-white border-secondary'
                                 : 'bg-white text-primary border-gray-30 hover:border-accent hover:text-accent'
                         }`}
                     >
-                        {filterIconMap[cat.name] || <FiMapPin size={13} />}{cat.name}
+                        {filterIconMap[cat.name] || <FiMapPin size={16} />}{cat.name}
                     </div>
                 ))}
             </div>
-
-            {routeData && (
-                <div className="flex flex-col xl:flex-row xl:items-center gap-3 mt-4 pt-3 border-t border-gray-30">
-                    <div className="flex items-center gap-2 font-body text-small font-bold text-primary">
-                        <span className="text-accent">🛣</span> ± {routeData.distance} km
-                    </div>
-                    <div className="flex items-center gap-2 font-body text-small font-bold text-primary">
-                        <span className="text-accent">⏱</span> ± {formatDuration(routeData.duration, t)}
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
@@ -403,7 +416,7 @@ function MapTooltip({ isVisible }) {
             className="flex flex-col items-end cursor-pointer hover:scale-105 transition-transform duration-300"
         >
             <div className="bg-white rounded-2xl shadow-xl px-5 py-3 max-w-xs relative mr-16 z-10">
-                <p className="font-body text-small font-bold text-primary mb-0.5">{t('explore.tooltip_title')}</p>
+                <p className="font-body text-body font-bold text-primary mb-0.5">{t('explore.tooltip_title')}</p>
                 <p className="font-body text-micro text-gray-50">{t('explore.tooltip_desc')}</p>
                 <div className="absolute -bottom-2 right-2 w-4 h-4 bg-white rotate-45 shadow-sm" style={{ zIndex: -1 }} />
             </div>
@@ -429,21 +442,21 @@ function SearchLoadingOverlay({ show, isRoute = false }) {
         : t('explore.overlay_search');
 
     return (
-        <div className="fixed inset-0 z-[3000] flex flex-col items-center justify-center bg-gray-10/95 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[3000] flex flex-col items-center justify-center bg-gray-10">
             <img
                 src="/images/gif/run.gif"
                 alt="Memuat"
-                className="w-32 h-32 sm:w-40 sm:h-40 object-contain"
+                className="w-44 h-44 sm:w-52 sm:h-52 object-contain"
                 onError={(e) => { e.target.style.display = 'none'; }}
             />
-            <p className="mt-4 font-body text-body text-primary-100 text-center px-6 max-w-md">
+            <p className="mt-4 font-heading text-paragraph text-primary-100 text-center px-6">
                 <span className="font-heading font-bold">
                     <span style={{ color: '#E1740A' }}>Nura</span>
                     <span className="text-secondary-100">Loka</span>
                 </span>{' '}
                 {message}
             </p>
-            <div className="mt-6 h-1.5 w-72 max-w-[80vw] overflow-hidden rounded-full" style={{ backgroundColor: '#E8EEFB' }}>
+            <div className="mt-6 h-1.75 w-[80vw] overflow-hidden rounded-full" style={{ backgroundColor: '#E8EEFB' }}>
                 <div
                     className="h-full rounded-full"
                     style={{ width: '35%', backgroundColor: '#1D4ED8', animation: 'nl-loading-bar 1.2s ease-in-out infinite' }}
@@ -1050,12 +1063,15 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                         <p className="mt-2 font-body text-body text-gray-70">
                             Kamu telah menyelesaikan perjalanan dan album telah berhasil dibuat oleh sistem.
                         </p>
-                        <button
+                        <Button
                             onClick={() => router.visit(route('album.show', completedAlbum))}
-                            className="mt-5 w-full rounded-xl bg-accent py-2.5 font-body text-btn-sm font-semibold text-white transition-all hover:bg-accent-85 active:scale-[0.98]"
+                            variant="primary"
+                            size="btn-sm"
+                            fullWidth
+                            className="mt-5"
                         >
                             Lihat Album Perjalanan
-                        </button>
+                        </Button>
                     </div>
                 </div>
             )}
@@ -1063,4 +1079,4 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
     );
 }
 
-Index.layout = (page) => <MainLayout pageTitle="Jelajah" pageDescription="Jelajahi destinasi wisata, kuliner, dan tempat menarik di seluruh Nusantara bersama NuraLoka." content={page}></MainLayout>
+Index.layout = (page) => <MainLayout pageTitle="title.explore" pageDescription="Jelajahi destinasi wisata, kuliner, dan tempat menarik di seluruh Nusantara bersama NuraLoka." content={page}></MainLayout>

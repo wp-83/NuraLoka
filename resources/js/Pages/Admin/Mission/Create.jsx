@@ -187,5 +187,5 @@ export default function Create({ badges, categories = [], actions = [] }) {
 }
 
 Create.layout = (page) => (
-    <AdminLayout pageTitle="Tambah Tantangan" content={page} />
+    <AdminLayout pageTitle="title.admin_mission_create" content={page} />
 );

@@ -1,40 +1,15 @@
-import { Head, Link } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { route } from 'ziggy-js';
 import MainLayout from '@js/Layouts/MainLayout';
+import RegionalGreeting from '@js/Daerah/RegionalGreeting';
+import BadgeIcon from '@components/Common/BadgeIcon';
+import EmptyState from '@components/Common/EmptyState';
+import Button from '@components/Forms/Button';
 import { useTranslation } from '@js/i18n';
-
-// ─── Badge Icon Component ──────────────────────────────────────────────────
-function BadgeIcon({ badge, size = 'md' }) {
-    const sizeClass = size === 'lg' ? 'w-20 h-20' : size === 'sm' ? 'w-12 h-12' : 'w-16 h-16';
-    const colors = badge.earned
-        ? 'bg-amber-100 border-amber-400 shadow-amber-200'
-        : 'bg-gray-100 border-gray-300 shadow-gray-100';
-
-    const initials = badge.name
-        .split(' ')
-        .slice(0, 2)
-        .map(w => w[0])
-        .join('');
-
-    return (
-        <div className={`${sizeClass} rounded-full border-2 ${colors} flex items-center justify-center shadow-md transition-transform hover:scale-105 flex-shrink-0 bg-white`}>
-            {badge.icon_path ? (
-                <img
-                    src={badge.icon_path.startsWith('http') ? badge.icon_path : `/${badge.icon_path}`}
-                    alt={badge.name}
-                    className={`w-[85%] h-[85%] object-contain ${badge.earned ? '' : 'grayscale opacity-45'}`}
-                    onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
-                />
-            ) : null}
-            <span
-                className={`text-sm font-bold ${badge.earned ? 'text-amber-700' : 'text-gray-400'} ${badge.icon_path ? 'hidden' : 'flex'} items-center justify-center w-full h-full`}
-            >
-                {initials}
-            </span>
-        </div>
-    );
-}
+import { SlBadge } from 'react-icons/sl';
+import { PiRanking } from 'react-icons/pi';
+import { FaCoins } from 'react-icons/fa';
 
 // ─── Progress Bar ────────────────────────────────────────────────────────────
 function ProgressBar({ percent, color = 'bg-green-500' }) {
@@ -113,13 +88,13 @@ function PodiumColumn({ entry, t }) {
             </div>
 
             <div className={`w-full ${config.bg} ${config.height} rounded-t-3xl pt-14 sm:pt-16 pb-4 px-2 flex flex-col items-center justify-start shadow-sm border border-black/5 group-hover:shadow-md transition-shadow`}>
-                <div className={`font-black text-sm sm:text-base ${config.pointColor}`}>
+                <div className={`font-heading text-paragraph font-bold ${config.pointColor}`}>
                     {t('challenge.podium_points', { points: entry.points?.toLocaleString('id-ID') })}
                 </div>
-                <div className="text-[10px] sm:text-xs font-bold text-gray-500 mt-1 uppercase tracking-wider text-center">
+                <div className="text-body font-bold text-accent mt-1 uppercase tracking-wider text-center">
                     {entry.level}
                 </div>
-                <div className="text-xs sm:text-sm font-bold text-gray-800 mt-auto mb-2 text-center max-w-[8rem] leading-tight px-1 truncate w-full">
+                <div className="text-paragraph font-bold text-primary mt-auto mb-2 text-center max-w-[8rem] leading-tight px-1 truncate w-full">
                     {entry.name}
                 </div>
             </div>
@@ -165,20 +140,18 @@ export default function ChallengeIndex({
 
     return (
         <>
-            <Head title={`${t('challenge.meta_title')} | NuraLoka`} />
             <div className="w-full min-h-screen bg-[#FAF8F4]">
-                <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-8">
+                <main className="w-full py-8">
                     {/* ── Page Title ── */}
-                    <div className="mb-6">
-                        <h1 className="font-heading text-3xl font-bold text-primary">{t('challenge.title')}</h1>
-                        <p className="text-sm text-info font-medium mt-0.5 italic text-[#1B86FF]">Tetandingan Nuravers</p>
-                        <div className="h-0.5 w-16 bg-[#1B86FF] mt-1" />
+                    <div className="mb-10">
+                        <h1 className="font-heading text-hero font-bold text-primary mb-2">{t('challenge.title')}</h1>
+                        <RegionalGreeting phrase="challenge_index" className="locale-language text-paragraph mt-1" />
                     </div>
 
                     {/* ── TOP CARDS: Poin + Level ── */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-16">
                         {/* Total Poin Card */}
-                        <div className="relative overflow-hidden bg-[#FAF0D9] border border-amber-200 rounded-2xl p-5 shadow-sm flex flex-col justify-center min-h-[7.5rem]">
+                        <div className="relative overflow-hidden bg-primary-10 rounded-2xl p-5 shadow-md flex flex-col justify-center min-h-[7.5rem]">
                             <img
                                 src="/images/patterns/object.png"
                                 alt=""
@@ -187,8 +160,8 @@ export default function ChallengeIndex({
                             />
                             <div className="relative z-10 flex items-center justify-between">
                                 <div>
-                                    <div className="text-sm font-bold text-primary mb-1">{t('challenge.total_points')}</div>
-                                    <div className="text-4xl font-black text-secondary tracking-wide flex items-center gap-2">
+                                    <div className="text-subtitle font-heading font-bold text-primary mb-4">{t('challenge.total_points')}</div>
+                                    <div className="text-title font-black text-secondary tracking-wide flex items-center gap-2">
                                         {(totalPoints ?? 0).toLocaleString('id-ID')} {t('challenge.points_suffix')}
                                     </div>
                                 </div>
@@ -196,7 +169,7 @@ export default function ChallengeIndex({
                         </div>
 
                         {/* Level Card */}
-                        <div className="relative overflow-hidden bg-[#FAF0D9] border border-amber-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between min-h-[7.5rem]">
+                        <div className="relative overflow-hidden bg-primary-10 rounded-2xl p-5 shadow-sm flex flex-col justify-between min-h-[7.5rem]">
                             <img
                                 src="/images/patterns/object.png"
                                 alt=""
@@ -204,21 +177,21 @@ export default function ChallengeIndex({
                                 className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none opacity-[0.06]"
                             />
                             <div className="relative z-10 flex flex-col justify-between h-full w-full">
-                                <div className="flex justify-between items-center w-full mb-1">
-                                    <span className="font-bold text-lg text-primary">{t('challenge.level_current')}</span>
-                                    <Link href={route('challenge.levels')} className="text-xs text-accent hover:text-accent-85 font-bold transition-colors">
+                                <div className="flex justify-between items-center w-full mb-4">
+                                    <span className="font-bold text-subtitle font-heading text-primary">{t('challenge.level_current')}</span>
+                                    <Link href={route('challenge.levels')}>
                                         {t('challenge.see_all_levels')}
                                     </Link>
                                 </div>
                                 {nextLevel ? (
-                                    <div className="flex justify-between items-end w-full mb-2">
-                                        <span className="text-xs font-bold text-gray-500">
+                                    <div className="flex justify-between items-end w-full mb-1">
+                                        <span className="text-small font-bold text-gray-70">
                                             {(() => {
                                                 const [a, b] = t('challenge.points_to_next', { points: pointsForNextLevel.toLocaleString('id-ID') }).split(':level');
                                                 return (<>{a}<span className="font-bold">{nextLevel.name}</span>{b}</>);
                                             })()}
                                         </span>
-                                        <span className="text-xs font-bold text-gray-500">
+                                        <span className="text-small font-bold text-gray-70">
                                             {t('challenge.points_progress', { current: totalPoints.toLocaleString('id-ID'), max: nextLevel.min.toLocaleString('id-ID') })}
                                         </span>
                                     </div>
@@ -238,21 +211,18 @@ export default function ChallengeIndex({
                     </div>
 
                     {/* ── DAFTAR LENCANA ── */}
-                    <section className="mb-8">
+                    <section className="mb-16">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
-                                <img src="/images/badges/special/2.png" alt="icon" className="w-6 h-6 object-contain drop-shadow-sm" />
-                                <h2 className="font-heading text-xl font-bold text-primary">{t('challenge.badges_title')}</h2>
+                            <div className="flex items-center gap-4">
+                                <SlBadge size={32} className='text-secondary' />
+                                <h2 className="font-heading text-subtitle font-bold text-primary">{t('challenge.badges_title')}</h2>
                             </div>
-                            <Link
-                                href={route('challenge.badges')}
-                                className="text-sm text-accent hover:text-accent-85 font-bold transition-colors"
-                            >
+                            <Link href={route('challenge.badges')}>
                                 {t('challenge.badges_link')}
                             </Link>
                         </div>
 
-                        <div className="bg-[#FAF0D9] rounded-2xl border border-amber-200 shadow-sm p-5 relative overflow-hidden">
+                        <div className="bg-primary-10 rounded-2xl shadow-md p-5 relative overflow-hidden">
                             <img
                                 src="/images/patterns/object.png"
                                 alt=""
@@ -262,11 +232,11 @@ export default function ChallengeIndex({
                             <div className="relative z-10 flex gap-5 overflow-x-auto pb-2 justify-around hide-scrollbar">
                                 {previewBadges.map((badge) => (
                                     <div key={badge.id} className="flex flex-col items-center gap-1.5 min-w-[5rem] text-center">
-                                        <BadgeIcon badge={badge} size="lg" />
-                                        <span className={`text-xs font-bold leading-tight max-w-[6rem] ${badge.earned ? 'text-primary' : 'text-gray-400'}`}>
+                                        <BadgeIcon iconPath={badge.icon_path} alt={badge.name} earned={badge.earned} size="lg" />
+                                        <span className={`text-paragraph font-bold leading-tight ${badge.earned ? 'text-primary' : 'text-gray-400'}`}>
                                             {badge.name.replace(/\s\([^)]+\)/, '')}
                                         </span>
-                                        <span className={`text-[10px] font-semibold ${badge.earned ? 'text-secondary' : 'text-gray-400'}`}>
+                                        <span className={`text-small font-semibold ${badge.earned ? 'text-secondary' : 'text-gray-400'}`}>
                                             {badge.points > 0 ? t('challenge.point_amount', { points: badge.points }) : t('challenge.point_none')}
                                             {badge.name.match(/\(([^)]+)\)/)?.[1] ? ` (${badge.name.match(/\(([^)]+)\)/)[1]})` : ''}
                                         </span>
@@ -277,10 +247,10 @@ export default function ChallengeIndex({
                     </section>
 
                     {/* ── MISI HAMPIR SELESAI ── */}
-                    <section className="mb-8">
+                    <section className="mb-16">
                         <div className="bg-[#FAF8F4] border border-gray-100 rounded-2xl p-5 shadow-sm">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="w-14 h-14 flex-shrink-0">
+                                <div className="w-32 flex-shrink-0">
                                     <img
                                         src="/images/mascots/map.png"
                                         alt="mascot"
@@ -288,21 +258,21 @@ export default function ChallengeIndex({
                                     />
                                 </div>
                                 <div>
-                                    <h2 className="font-heading text-lg font-bold text-primary">{t('challenge.missions_title')}</h2>
-                                    <p className="text-sm text-gray-500 font-medium">{t('challenge.missions_desc')}</p>
+                                    <h2 className="font-heading text-subtitle font-bold text-primary">{t('challenge.missions_title')}</h2>
+                                    <p className="text-paragraph text-secondary">{t('challenge.missions_desc')}</p>
                                 </div>
                             </div>
 
                             {ongoingMissions && ongoingMissions.length > 0 ? (
                                 <div className="grid grid-cols-1 gap-4">
                                     {ongoingMissions.map((mission) => (
-                                        <Link 
-                                            key={mission.id} 
+                                        <Link
+                                            key={mission.id}
                                             href={route('challenge.badges')}
-                                            className="bg-[#EEF5F0] rounded-xl p-4 border border-green-100 shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md hover:bg-[#E2ECE5] transition-all cursor-pointer"
+                                            className="bg-secondary-10/50 rounded-xl p-4 shadow-md flex flex-col justify-between relative overflow-hidden group hover:shadow-md hover:bg-secondary-10 transition-all cursor-pointer"
                                         >
-                                            <div className="flex items-start gap-3 mb-4 z-10 relative">
-                                                <div className="w-14 h-14 flex-shrink-0 group-hover:scale-105 transition-transform">
+                                            <div className="flex items-start gap-4 mb-4 z-10 relative">
+                                                <div className="w-24 h-24 flex-shrink-0 group-hover:scale-105 transition-transform">
                                                     {mission.badge_icon ? (
                                                         <img
                                                             src={`/${mission.badge_icon}`}
@@ -312,15 +282,15 @@ export default function ChallengeIndex({
                                                     ) : null}
                                                 </div>
                                                 <div className="flex-1">
-                                                    <div className="font-bold text-base text-primary leading-tight group-hover:text-secondary transition-colors">{mission.title}</div>
-                                                    <div className="text-xs text-secondary font-bold mt-0.5">
+                                                    <div className="font-bold text-paragraph text-primary leading-tight group-hover:text-secondary transition-colors">{mission.title}</div>
+                                                    <div className="text-paragraph text-secondary font-bold mt-0.5">
                                                         {t('challenge.mission_points', { points: mission.points })}
                                                     </div>
-                                                    <p className="text-xs text-gray-700 font-medium mt-1 leading-relaxed">{mission.description}</p>
+                                                    <p className="text-body text-gray-700 font-medium mt-1 leading-relaxed">{mission.description}</p>
                                                 </div>
                                             </div>
                                             <div className="mt-auto z-10 relative">
-                                                <div className="flex justify-between text-xs text-gray-500 mb-1">
+                                                <div className="flex justify-between text-small text-gray-500 mb-1">
                                                     <span className="font-medium">{t('challenge.progress_you')}</span>
                                                     <span className="font-medium">{t('challenge.mission_progress', { progress: mission.progress, target: mission.target, percent: mission.percent })}</span>
                                                 </div>
@@ -330,23 +300,22 @@ export default function ChallengeIndex({
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-6 bg-[#EEF5F0] rounded-xl border border-green-100 shadow-sm">
-                                    <div className="text-3xl mb-2">🎉</div>
-                                    <div className="font-bold text-primary">{t('challenge.missions_empty_title')}</div>
-                                    <div className="text-sm text-gray-500 mt-1">{t('challenge.missions_empty_desc')}</div>
-                                </div>
+                                <EmptyState
+                                    title={t('challenge.missions_empty_title')}
+                                    description={t('challenge.missions_empty_desc')}
+                                />
                             )}
                         </div>
                     </section>
 
                     {/* ── PAPAN PERINGKAT ── */}
-                    <section className="mb-8">
+                    <section className="mb-16">
                         <div className="flex items-center gap-2 mb-4">
-                            <img src="/images/badges/special/3.png" alt="icon" className="w-6 h-6 object-contain drop-shadow-sm" />
-                            <h2 className="font-heading text-xl font-bold text-primary">{t('challenge.leaderboard_title')}</h2>
+                            <PiRanking size={48} className='text-secondary' />
+                            <h2 className="font-heading text-subtitle font-bold text-primary">{t('challenge.leaderboard_title')}</h2>
                         </div>
 
-                        <div className="bg-[#FAF8F4] rounded-2xl shadow-sm">
+                        <div className="rounded-2xl">
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
                                 {/* Left Side: Podium (cols 1-7) */}
                                 <div className="lg:col-span-7 flex flex-col justify-end">
@@ -369,11 +338,11 @@ export default function ChallengeIndex({
                                                 >
                                                     <UserAvatar path={entry.profile_path} name={entry.name} className="w-12 h-12" />
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="font-bold text-sm text-primary truncate">{entry.name}</div>
-                                                        <div className="text-[10px] text-gray-500 font-medium italic mb-0.5">{entry.level}</div>
-                                                        <div className="text-xs text-secondary font-bold">{t('challenge.points_nura', { points: entry.points?.toLocaleString('id-ID') })}</div>
+                                                        <div className="text-paragraph font-heading text-primary truncate">{entry.name}</div>
+                                                        <div className="text-body text-secondary italic mb-3">{entry.level}</div>
+                                                        <div className="text-small text-secondary font-bold">{t('challenge.points_nura', { points: entry.points?.toLocaleString('id-ID') })}</div>
                                                     </div>
-                                                    <div className="text-xl font-black text-primary pr-2">
+                                                    <div className="text-subtitle font-heading font-bold text-accent pr-2">
                                                         #{entry.rank}
                                                     </div>
                                                 </Link>
@@ -382,8 +351,10 @@ export default function ChallengeIndex({
                                     )}
 
                                     <div className="flex justify-end mt-4">
-                                        <Link href={route('challenge.leaderboard')} className="px-5 py-3 bg-primary hover:bg-primary-85 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm text-center">
-                                            {t('challenge.see_all_leaderboard')}
+                                        <Link href={route('challenge.leaderboard')}>
+                                            <Button>
+                                                {t('challenge.see_all_leaderboard')}
+                                            </Button>
                                         </Link>
                                     </div>
                                 </div>
@@ -394,20 +365,20 @@ export default function ChallengeIndex({
                     {/* ── TUKAR POIN (Coming Soon) ── */}
                     <section className="mb-8">
                         <div className="flex items-center gap-2 mb-4">
-                            <img src="/images/badges/special/1.png" alt="icon" className="w-6 h-6 object-contain drop-shadow-sm" />
-                            <h2 className="font-heading text-xl font-bold text-primary">{t('challenge.redeem_title')}</h2>
+                            <FaCoins size={32} className='text-secondary' />
+                            <h2 className="font-heading text-subtitle font-bold text-primary">{t('challenge.redeem_title')}</h2>
                         </div>
 
-                        <div className="bg-[#F2F2F2] rounded-2xl border border-gray-200 shadow-sm p-10 flex flex-col items-center justify-center text-center">
-                            <div className="w-24 h-24 mb-4">
+                        <div className="bg-gray-10 rounded-2xl border border-gray-200 shadow-sm p-10 flex flex-col items-center justify-center text-center">
+                            <div className="w-32 mb-2">
                                 <img
                                     src="/images/mascots/wait.png"
                                     alt="mascot"
                                     className="w-full h-full object-contain"
                                 />
                             </div>
-                            <h3 className="font-heading text-xl font-bold text-primary mb-1">{t('challenge.coming_soon')}</h3>
-                            <p className="text-sm text-gray-600 font-medium">{t('challenge.coming_soon_desc')}</p>
+                            <h3 className="font-heading text-subtitle font-bold text-primary mb-1">{t('challenge.coming_soon')}</h3>
+                            <p className="text-body font-heading text-gray-70">{t('challenge.coming_soon_desc')}</p>
                         </div>
                     </section>
                 </main>
@@ -416,4 +387,4 @@ export default function ChallengeIndex({
     );
 }
 
-ChallengeIndex.layout = (page) => <MainLayout pageTitle="Tantangan" content={page}></MainLayout>
+ChallengeIndex.layout = (page) => <MainLayout pageTitle="title.challenge" content={page}></MainLayout>

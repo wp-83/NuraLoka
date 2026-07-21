@@ -9,6 +9,14 @@ use Illuminate\Validation\Rule;
 
 class AdminBadgeController extends Controller
 {
+    /**
+     * Every image upload goes through this service so size, format and file
+     * naming stay consistent across the application.
+     */
+    public function __construct(
+        private readonly ImageCompressionService $images,
+    ) {}
+
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -118,14 +126,14 @@ class AdminBadgeController extends Controller
         return $request->validate($rules);
     }
 
-    /** Kompres & simpan file icon ke public/images/badges/uploads; kembalikan path relatif (tanpa slash awal). */
+    /** Compress and store the icon in public/images/badges/uploads; returns a relative path (no leading slash). */
     private function storeIcon(Request $request): ?string
     {
         if (! $request->hasFile('icon_path')) {
             return null;
         }
 
-        $filename = app(ImageCompressionService::class)->compressToPublic(
+        $filename = $this->images->compressToPublic(
             $request->file('icon_path'),
             public_path('images/badges/uploads'),
         );
@@ -135,7 +143,7 @@ class AdminBadgeController extends Controller
 
     private function deleteIcon(?string $path): void
     {
-        // Hanya hapus file yang diunggah admin (di folder uploads), bukan aset seeder bawaan.
+        // Only delete admin-uploaded files (in the uploads folder), never seeded assets.
         if ($path && str_starts_with($path, 'images/badges/uploads/') && file_exists(public_path($path))) {
             @unlink(public_path($path));
         }

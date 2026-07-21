@@ -1,41 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState, Fragment } from "react";
 import Button from "@components/Forms/Button";
 import Footer from "@components/Layouts/User/Footer";
+import LanguageSwitcher from "@components/Common/LanguageSwitcher";
 import { Head, Link, usePage } from "@inertiajs/react";
+import { useTranslation } from "@js/i18n";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
-
-const FEATURES = [
-    {
-        image: "/images/mascots/car.png",
-        title: "Rute yang Personal",
-        description:
-            "Setiap rekomendasi disesuaikan dengan minat, gaya perjalanan, dan tujuanmu, sehingga perjalanan terasa lebih relevan dan menyenangkan.",
-    },
-    {
-        image: "/images/mascots/telescope.png",
-        title: "Hidden Gems & UMKM Lokal",
-        description:
-            "Temukan tempat tersembunyi, kuliner khas, dan UMKM lokal yang sering terlewat, sekaligus mendukung potensi daerah di setiap perjalanan.",
-    },
-    {
-        image: "/images/mascots/run.png",
-        title: "Jelajah Lebih Seru",
-        description:
-            "Selesaikan misi, kumpulkan lencana, naikkan level sebagai Nuravers, dan ubah setiap perjalanan menjadi pengalaman yang lebih menyenangkan.",
-    },
-    {
-        image: "/images/mascots/camera-v2.png",
-        title: "Abadikan Setiap Cerita",
-        description:
-            "Dokumentasikan setiap perjalananmu dalam Trip Album, bagikan inspirasi kepada sesama Nuravers, dan ciptakan kenangan yang selalu bisa dikenang.",
-    },
-    {
-        image: "/images/mascots/hi.png",
-        title: "Dekat dengan Sastra",
-        description:
-            "Kenali sapaan dan ungkapan lokal di setiap destinasi untuk menjalin koneksi yang lebih hangat dengan budaya dan masyarakat setempat.",
-    },
-];
 
 const TEAM_MEMBERS = [
     {
@@ -75,7 +44,7 @@ function getCircularOffset(index, active, total) {
     return diff;
 }
 
-// Card dimensions yang lebih proporsional
+// Proportional card dimensions per breakpoint.
 function getCardDimensions(viewportWidth) {
     if (viewportWidth >= 1024) return { width: 480, height: 280 };
     if (viewportWidth >= 768) return { width: 440, height: 270 };
@@ -83,8 +52,57 @@ function getCardDimensions(viewportWidth) {
     return { width: 320, height: 280 };
 }
 
+// Splits a translated string on the ":app" placeholder and renders the brand
+// name with the .nuraloka-text styling in its place. Safe to call on strings
+// that don't contain the placeholder — they just render unchanged.
+function withBrand(text, brandClassName = "nuraloka-text") {
+    const parts = String(text ?? "").split(":app");
+
+    return parts.map((part, index) => (
+        <Fragment key={index}>
+            {part}
+
+            {index < parts.length - 1 && (
+                <span className={brandClassName}>
+                    <span className="nura">Nura</span>
+                    <span className="loka">Loka</span>
+                </span>
+            )}
+        </Fragment>
+    ));
+}
+
 export default function LandingPage() {
     const { auth } = usePage().props;
+    const { t } = useTranslation();
+
+    const FEATURES = [
+        {
+            image: "/images/mascots/car.png",
+            title: t("landing.feature_route_title"),
+            description: t("landing.feature_route_desc"),
+        },
+        {
+            image: "/images/mascots/telescope.png",
+            title: t("landing.feature_hidden_title"),
+            description: t("landing.feature_hidden_desc"),
+        },
+        {
+            image: "/images/mascots/run.png",
+            title: t("landing.feature_explore_title"),
+            description: t("landing.feature_explore_desc"),
+        },
+        {
+            image: "/images/mascots/camera-v2.png",
+            title: t("landing.feature_album_title"),
+            description: t("landing.feature_album_desc"),
+        },
+        {
+            image: "/images/mascots/hi.png",
+            title: t("landing.feature_culture_title"),
+            description: t("landing.feature_culture_desc"),
+        },
+    ];
 
     const [activeIndex, setActiveIndex] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
@@ -125,18 +143,12 @@ export default function LandingPage() {
     return (
         <>
             <Head>
-                <title>
-                    NuraLoka | Temukan destinasi wisata, kuliner, dan pengalaman perjalanan
-                    terbaik di Indonesia.
-                </title>
-                <meta
-                    name="keywords"
-                    content="wisata, destinasi, kuliner, perjalanan, Indonesia, hidden gem, NuraLoka"
-                />
+                <title>{`NuraLoka | ${t("landing.meta_title_tagline")}`}</title>
+                <meta name="keywords" content={t("landing.meta_keywords")} />
                 <meta property="og:title" content="NuraLoka" />
                 <meta
                     property="og:description"
-                    content="Temukan destinasi wisata terbaik di Indonesia."
+                    content={t("landing.og_description")}
                 />
                 <meta property="og:type" content="website" />
             </Head>
@@ -150,15 +162,19 @@ export default function LandingPage() {
                             className="h-14 w-auto object-contain"
                         />
                     </Link>
-                    {auth.user ? (
-                        <Link href={route("home.index")}>
-                            <Button>Masuk ke Beranda</Button>
-                        </Link>
-                    ) : (
-                        <Link href={route("auth.login.index")}>
-                            <Button>Mulai Perjalananmu!</Button>
-                        </Link>
-                    )}
+                    <div className="flex items-center gap-3">
+                        <LanguageSwitcher />
+
+                        {auth.user ? (
+                            <Link href={route("home.index")}>
+                                <Button>{t("landing.cta_go_home")}</Button>
+                            </Link>
+                        ) : (
+                            <Link href={route("auth.login.index")}>
+                                <Button>{t("landing.cta_start")}</Button>
+                            </Link>
+                        )}
+                    </div>
                 </div>
             </header>
 
@@ -187,32 +203,38 @@ export default function LandingPage() {
                                 />
                                 <div>
                                     <h1 className="font-heading text-center text-title font-bold text-white sm:text-hero sm:text-left">
-                                        Selamat Datang
+                                        {t("landing.hero_welcome")}
                                     </h1>
                                     <p className="mt-2 font-heading text-subtitle text-white sm:text-title text-center sm:text-left">
-                                        di{" "}
-                                        <span className="relative inline-block whitespace-nowrap">
-                                            <span className="absolute inset-x-0 inset-y-0 -rotate-3 bg-white" />
-                                            <span className="nuraloka-text relative px-1">
-                                                <span className="nura">Nura</span>
-                                                <span className="loka">Loka</span>
-                                            </span>
-                                        </span>
+                                        {String(t("landing.hero_subtitle"))
+                                            .split(":app")
+                                            .map((part, i) => (
+                                                <Fragment key={i}>
+                                                    {part}
+
+                                                    {i === 0 && (
+                                                        <span className="relative inline-block whitespace-nowrap">
+                                                            <span className="absolute inset-x-0 inset-y-0 -rotate-3 bg-white" />
+                                                            <span className="nuraloka-text relative px-1">
+                                                                <span className="nura">Nura</span>
+                                                                <span className="loka">Loka</span>
+                                                            </span>
+                                                        </span>
+                                                    )}
+                                                </Fragment>
+                                            ))}
                                     </p>
                                 </div>
                             </div>
                             <div className="mt-12 max-w-xl sm:mt-8">
                                 <p className="font-heading text-paragraph leading-relaxed text-white">
-                                    Bersama{" "}
-                                    <span className="nuraloka-text bg-white px-1 font-bold">
-                                        <span className="nura">Nura</span>
-                                        <span className="loka">Loka</span>
-                                    </span>{" "}
-                                    temukan <strong>destinasi yang sesuai dengan gayamu</strong>,
-                                    susun <strong>rute perjalanan tanpa ribet</strong>, dan
-                                    jelajahi{" "}
+                                    {withBrand(t("landing.hero_desc_lead"))}{" "}
+                                    <strong>{t("landing.hero_desc_bold1")}</strong>
+                                    {t("landing.hero_desc_mid1")}{" "}
+                                    <strong>{t("landing.hero_desc_bold2")}</strong>
+                                    {t("landing.hero_desc_mid2")}{" "}
                                     <strong className="bg-white px-1 text-primary">
-                                        keindahan Indonesia yang penuh cerita.
+                                        {t("landing.hero_desc_highlight")}
                                     </strong>
                                 </p>
                                 <div className="mt-12 sm:mt-8">
@@ -223,9 +245,8 @@ export default function LandingPage() {
                                                 : route("auth.login.index")
                                         }
                                     >
-                                        <Button
-                                            variant="white">
-                                            Cobain NuraLoka Sekarang!
+                                        <Button variant="white">
+                                            {t("landing.hero_cta")}
                                         </Button>
                                     </Link>
                                 </div>
@@ -240,19 +261,12 @@ export default function LandingPage() {
                     <div className="container">
                         <div className="max-w-3xl">
                             <h2 className="font-heading text-subtitle font-bold leading-tight text-primary md:text-title">
-                                Perjalanan Lebih dari
+                                {t("landing.about_heading_line1")}
                                 <br />
-                                Sekadar Tujuan.
+                                {t("landing.about_heading_line2")}
                             </h2>
                             <p className="mt-5 max-w-2xl font-body text-body leading-relaxed text-primary-100">
-                                Kami percaya setiap perjalanan adalah kesempatan untuk
-                                menemukan tempat baru, mengenal cerita lokal, dan menciptakan
-                                pengalaman yang berkesan. Itulah mengapa{" "}
-                                <span className="nuraloka-text">
-                                    <span className="nura">Nura</span>
-                                    <span className="loka">Loka</span>
-                                </span>{" "}
-                                hadir untuk menemani setiap langkahmu menjelajahi Nusantara.
+                                {withBrand(t("landing.about_description"))}
                             </p>
                         </div>
 
@@ -321,10 +335,10 @@ export default function LandingPage() {
                                 })}
                             </div>
 
-                            <button
-                                type="button"
+                            <Button
+                                unstyled
                                 onClick={goPrev}
-                                aria-label="Previous"
+                                aria-label={t("landing.carousel_prev")}
                                 className="
                                     absolute left-2 top-1/2 z-30 flex h-12 w-12
                                     -translate-y-1/2 items-center justify-center
@@ -333,12 +347,12 @@ export default function LandingPage() {
                                 "
                             >
                                 <FiChevronLeft size={24} className="text-primary" />
-                            </button>
+                            </Button>
 
-                            <button
-                                type="button"
+                            <Button
+                                unstyled
                                 onClick={goNext}
-                                aria-label="Next"
+                                aria-label={t("landing.carousel_next")}
                                 className="
                                     absolute right-2 top-1/2 z-30 flex h-12 w-12
                                     -translate-y-1/2 items-center justify-center
@@ -347,16 +361,18 @@ export default function LandingPage() {
                                 "
                             >
                                 <FiChevronRight size={24} className="text-primary" />
-                            </button>
+                            </Button>
 
                             {/* Dot navigation */}
                             <div className="mt-4 flex items-center justify-center gap-2">
                                 {FEATURES.map((feature, index) => (
-                                    <button
+                                    <Button
+                                        unstyled
                                         key={feature.title}
-                                        type="button"
                                         onClick={() => goTo(index)}
-                                        aria-label={`Ke slide ${index + 1}`}
+                                        aria-label={t("landing.carousel_slide_aria", {
+                                            n: index + 1,
+                                        })}
                                         className={`
                                             h-2.5 rounded-full transition-all duration-300
                                             ${
@@ -377,19 +393,12 @@ export default function LandingPage() {
                     <div className="container">
                         <div className="max-w-2xl">
                             <h2 className="font-heading text-subtitle font-bold leading-tight text-primary md:text-title">
-                                Kenalan dengan Tim
+                                {withBrand(t("landing.team_heading_line1"))}
                                 <br />
-                                di Balik{" "}
-                                <span className="nuraloka-text">
-                                    <span className="nura">Nura</span>
-                                    <span className="loka">Loka</span>
-                                </span>
-                                .
+                                {withBrand(t("landing.team_heading_brand"))}
                             </h2>
                             <p className="mt-5 max-w-2xl font-body text-body leading-relaxed text-primary-100">
-                                NuraLoka dikembangkan oleh tim yang memiliki semangat untuk
-                                membantu masyarakat menemukan pengalaman wisata yang lebih
-                                personal, menyenangkan, dan bermakna.
+                                {t("landing.team_description")}
                             </p>
                         </div>
 

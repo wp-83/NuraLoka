@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Album;
-use App\Models\Mission;
 use App\Models\News;
+use App\Services\GamificationService;
 
 class HomeController extends Controller
 {
@@ -17,48 +17,14 @@ class HomeController extends Controller
             ->take(3)
             ->get();
 
-        // Misi yang sedang berjalan — logika identik dengan ChallengeController,
-        // hanya ambil 1 misi paling diprioritaskan (hampir selesai / termudah).
-        $ongoingMission = null;
-        if ($user) {
-            $result = Mission::leftJoin('user_missions', function ($join) use ($user) {
-                $join->on('missions.id', '=', 'user_missions.mission_id')
-                    ->where('user_missions.user_id', '=', $user->id);
-            })
-                ->join('badges', 'missions.badge_id', '=', 'badges.id')
-                ->where(function ($query) {
-                    $query->where('user_missions.status', '!=', 'completed')
-                        ->orWhereNull('user_missions.status');
-                })
-                ->select(
-                    'missions.id',
-                    'missions.title',
-                    'missions.description',
-                    'missions.points_reward as points',
-                    'badges.icon_path as badge_icon',
-                    'badges.name as badge',
-                    'badges.tier_level',
-                    \DB::raw('COALESCE(user_missions.progress, 0) as progress'),
-                    'missions.target'
-                )
-                ->orderByRaw('CASE WHEN COALESCE(user_missions.progress, 0) >= (missions.target * 0.5) AND COALESCE(user_missions.progress, 0) > 0 THEN 0 ELSE 1 END ASC')
-                ->orderBy('badges.tier_level', 'asc')
-                ->orderBy('missions.target', 'asc')
-                ->take(1)
-                ->get()
-                ->map(function ($mission) {
-                    $mission->percent = $mission->target > 0
-                        ? min(100, round(($mission->progress / $mission->target) * 100))
-                        : 0;
+        // The mission closest to completion. The logic lives in GamificationService
+        // so the home page and the Challenge page can never show a different
+        // mission or a different percentage.
+        $ongoingMission = $user
+            ? app(GamificationService::class)->ongoingMissions($user)->first()
+            : null;
 
-                    return $mission;
-                })
-                ->first();
-
-            $ongoingMission = $result;
-        }
-
-        // Album populer minggu ini (publik, dari semua user, sorted by view_count, constraint seminggu)
+        // This week's popular albums: public, from any user, ordered by view_count.
         $popularAlbums = Album::with(['trip.user.userDetails', 'tripPhotos'])
             ->whereHas('trip', function ($q) {
                 $q->where('is_public', true)

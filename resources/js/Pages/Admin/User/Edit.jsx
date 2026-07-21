@@ -27,7 +27,7 @@ export default function Edit({
 
 Edit.layout = (page) => (
     <AdminLayout
-        pageTitle="Edit Pengguna"
+        pageTitle="title.admin_user_edit"
         content={page}
     />
 );

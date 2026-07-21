@@ -221,5 +221,5 @@ export default function Create() {
 }
 
 Create.layout = (page) => (
-    <AdminLayout pageTitle="Tambah Lencana" content={page} />
+    <AdminLayout pageTitle="title.admin_badge_create" content={page} />
 );

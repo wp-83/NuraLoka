@@ -248,5 +248,5 @@ export default function Edit({ badge }) {
 }
 
 Edit.layout = (page) => (
-    <AdminLayout pageTitle="Edit Lencana" content={page} />
+    <AdminLayout pageTitle="title.admin_badge_edit" content={page} />
 );

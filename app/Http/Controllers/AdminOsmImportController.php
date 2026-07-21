@@ -25,7 +25,7 @@ class AdminOsmImportController extends Controller
         ]);
     }
 
-    /** Endpoint JSON untuk polling status (dipakai halaman agar tabel auto-refresh). */
+    /** JSON status endpoint, polled by the page so the table auto-refreshes. */
     public function status()
     {
         return response()->json([
@@ -34,7 +34,7 @@ class AdminOsmImportController extends Controller
         ]);
     }
 
-    /** Validasi input, buat record run, lalu dispatch job impor ke antrean. */
+    /** Validate the input, create the run record, then dispatch the import job to the queue. */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -71,7 +71,7 @@ class AdminOsmImportController extends Controller
         $tileSize = (float) ($validated['tile'] ?? 0.5);
         $sleep = (float) ($validated['sleep'] ?? 2);
 
-        // Pecah bbox jadi petak-petak; tiap petak menjadi satu job pendek.
+        // Split the bbox into tiles; each tile becomes one short job.
         $tiles = $this->service->tiles($south, $west, $north, $east, $tileSize);
         if (empty($tiles)) {
             return back()->withErrors(['mode' => 'Area terlalu kecil: tidak ada petak yang dihasilkan.']);
@@ -101,7 +101,7 @@ class AdminOsmImportController extends Controller
         );
 
         // Batch: satu petak gagal tak menggagalkan seluruhnya (allowFailures). Status akhir
-        // ditetapkan di finally (jalan baik saat semua sukses maupun ada yang gagal).
+        // set in finally, so it runs whether every tile succeeded or some failed.
         $batch = Bus::batch($jobs)
             ->name("osm-import-{$runId}")
             ->allowFailures()
@@ -146,8 +146,8 @@ class AdminOsmImportController extends Controller
 
     private function recentRuns()
     {
-        // Ambil nama pemicu lewat join (bukan eager-load User) agar tidak memicu
-        // accessor $appends milik model User yang mengakses relasi userDetail.
+        // Fetch the triggering user's name via a join rather than eager-loading the
+        // User model, which would fire its $appends accessor and hit userDetail.
         return OsmImportRun::query()
             ->leftJoin('users', 'users.id', '=', 'osm_import_runs.triggered_by')
             ->select('osm_import_runs.*', 'users.username as triggered_by_name')
