@@ -12,7 +12,11 @@ const STORAGE_KEY = 'nuraloka.daerah';
 // (bukan dibaca sebagai data yang salah bentuk).
 const VERSION = 1;
 
-const MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7;
+// NuraLoka aplikasi perjalanan — user memang berpindah provinsi, jadi sapaan
+// tidak boleh terkunci berhari-hari di lokasi lama. Disamakan dengan
+// `maximumAge` posisi di detector.js supaya cache store & cache posisi browser
+// menua bersama. Naikkan bila dialog izin terasa terlalu sering muncul.
+const MAX_AGE_MS = 1000 * 60 * 30;
 
 function isStorageAvailable() {
     try {

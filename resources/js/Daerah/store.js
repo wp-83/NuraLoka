@@ -42,11 +42,15 @@ export function getServerSnapshot() {
  * Sumber payload server yang sudah final sehingga deteksi di klien tidak perlu
  * dijalankan — dan tidak boleh menimpanya.
  *
- *   user_profile — provinsi tersimpan milik user;
- *   forced       — DAERAH_FORCE_PROVINCE di .env atau ?daerah= di URL.
+ * HANYA 'forced' (DAERAH_FORCE_PROVINCE di .env atau ?daerah= di URL), karena
+ * itu memang alat untuk memaksa tampilan saat pengujian.
+ *
+ * 'user_profile' SENGAJA tidak lagi final: sapaan harus mengikuti lokasi user
+ * SAAT INI lewat GPS, bukan provinsi yang tersimpan di profil. Provinsi profil
+ * tetap dipakai sebagai cadangan bila GPS maupun IP sama-sama gagal.
  */
 export function isAuthoritative(payload) {
-    return payload?.source === 'user_profile' || payload?.source === 'forced';
+    return payload?.source === 'forced';
 }
 
 let detectionStarted = false;
@@ -54,15 +58,18 @@ let detectionStarted = false;
 /**
  * Jalankan rantai deteksi bila memang diperlukan.
  *
- * Dilewati bila server sudah memakai provinsi profil user (sumber paling
- * tepercaya) atau bila cache deteksi sebelumnya masih berlaku — inilah yang
- * mencegah dialog izin lokasi muncul berulang kali.
+ * Dilewati HANYA bila payload server dipaksa (forced), atau bila cache deteksi
+ * sebelumnya masih berlaku — cache itulah yang mencegah dialog izin lokasi
+ * muncul berulang kali saat pindah halaman.
+ *
+ * User yang sudah login pun tetap dideteksi: provinsi di profil bukan lagi
+ * jawaban final, hanya cadangan terakhir.
  */
 export function ensureDetection(serverPayload) {
     if (detectionStarted) return;
     if (typeof window === 'undefined') return;
 
-    // Sudah final dari server — jangan jalankan deteksi yang malah menimpanya.
+    // Dipaksa untuk pengujian — jangan jalankan deteksi yang malah menimpanya.
     if (isAuthoritative(serverPayload)) {
         detectionStarted = true;
         return;
