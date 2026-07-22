@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { useTranslation } from '@js/i18n';
+import { mediaUrl } from '@js/mediaUrl';
 import Button from '@components/Forms/Button';
 
 const LOCALE_TAG = { id: 'id-ID', en: 'en-US', ko: 'ko-KR' };
@@ -105,7 +106,7 @@ export default function NewsCard({
             <div className="h-56 w-full shrink-0 md:h-auto md:w-72 lg:w-80">
                 <img
                     src={
-                        news.thumbnail ||
+                        mediaUrl(news.thumbnail) ||
                         '/images/defaults/image.png'
                     }
                     alt={news.title}

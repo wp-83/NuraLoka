@@ -2,6 +2,7 @@ import MainLayout from '@js/Layouts/MainLayout';
 import RegionalGreeting from '@js/Daerah/RegionalGreeting';
 import { Link, usePage } from '@inertiajs/react';
 import { useTranslation } from '@js/i18n';
+import { mediaUrl } from '@js/mediaUrl';
 import Button from '@components/Forms/Button';
 import { IoIosArrowBack } from 'react-icons/io';
 
@@ -120,7 +121,7 @@ export default function Index({ news }) {
 
                                 <img
                                     src={
-                                        item.thumbnail ||
+                                        mediaUrl(item.thumbnail) ||
                                         '/images/defaults/image.png'
                                     }
                                     alt={item.title}

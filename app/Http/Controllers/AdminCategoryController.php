@@ -61,12 +61,11 @@ class AdminCategoryController extends Controller
 
         $iconPath = null;
         if ($request->hasFile('icon_path')) {
-            $filename = $this->images->compressToPublic(
+            $iconPath = $this->images->compressToDisk(
                 $request->file('icon_path'),
-                public_path('images/categories'),
+                'category-icons',
+                maxWidth: 800,
             );
-
-            $iconPath = '/images/categories/'.$filename;
         }
 
         Category::create([
@@ -111,29 +110,22 @@ class AdminCategoryController extends Controller
 
         // Remove current icon if explicitly requested
         if ($request->boolean('remove_icon')) {
-            if ($category->icon_path && file_exists(public_path($category->icon_path))) {
-                if (str_starts_with($category->icon_path, '/images/categories/')) {
-                    @unlink(public_path($category->icon_path));
-                }
-            }
+            $this->images->deleteFromDisk($category->icon_path);
             $iconPath = null;
         }
 
         // Upload new icon
         if ($request->hasFile('icon_path')) {
             // Delete old icon if not already deleted
-            if (! $request->boolean('remove_icon') && $category->icon_path && file_exists(public_path($category->icon_path))) {
-                if (str_starts_with($category->icon_path, '/images/categories/')) {
-                    @unlink(public_path($category->icon_path));
-                }
+            if (! $request->boolean('remove_icon')) {
+                $this->images->deleteFromDisk($category->icon_path);
             }
 
-            $filename = $this->images->compressToPublic(
+            $iconPath = $this->images->compressToDisk(
                 $request->file('icon_path'),
-                public_path('images/categories'),
+                'category-icons',
+                maxWidth: 800,
             );
-
-            $iconPath = '/images/categories/'.$filename;
         }
 
         $category->update([
@@ -162,11 +154,7 @@ class AdminCategoryController extends Controller
         }
 
         // Delete icon file if exists
-        if ($category->icon_path && file_exists(public_path($category->icon_path))) {
-            if (str_starts_with($category->icon_path, '/images/categories/')) {
-                @unlink(public_path($category->icon_path));
-            }
-        }
+        $this->images->deleteFromDisk($category->icon_path);
 
         $category->delete();
 

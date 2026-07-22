@@ -6,6 +6,7 @@ import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
 import AdminLayout from '@js/Layouts/AdminLayout';
 import { useTranslation } from '@js/i18n';
+import { mediaUrl } from '@js/mediaUrl';
 
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
@@ -153,7 +154,7 @@ export default function Index({ news, filters = {} }) {
                                         >
                                             <td className="px-5 py-4">
                                                 <img
-                                                    src={item.thumbnail || '/images/defaults/image.png'}
+                                                    src={mediaUrl(item.thumbnail) || '/images/defaults/image.png'}
                                                     alt={item.title}
                                                     className="h-14 w-20 rounded-lg object-cover"
                                                     onError={(e) => {

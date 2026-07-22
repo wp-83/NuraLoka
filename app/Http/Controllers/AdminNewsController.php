@@ -66,13 +66,11 @@ class AdminNewsController extends Controller
 
         $thumbnailPath = null;
         if ($request->hasFile('thumbnail')) {
-            $filename = $this->images->compressToPublic(
+            $thumbnailPath = $this->images->compressToDisk(
                 $request->file('thumbnail'),
-                public_path('images/news'),
+                'news-thumbnails',
                 maxWidth: 1200,
             );
-
-            $thumbnailPath = '/images/news/'.$filename;
         }
 
         News::create([
@@ -123,29 +121,21 @@ class AdminNewsController extends Controller
 
         // If explicitly requested to remove current thumbnail
         if ($request->boolean('remove_thumbnail')) {
-            if ($newsItem->thumbnail && file_exists(public_path($newsItem->thumbnail))) {
-                if (str_starts_with($newsItem->thumbnail, '/images/news/')) {
-                    @unlink(public_path($newsItem->thumbnail));
-                }
-            }
+            $this->images->deleteFromDisk($newsItem->thumbnail);
             $thumbnailPath = null;
         }
 
         if ($request->hasFile('thumbnail')) {
             // Delete old file if it was custom uploaded (and not already deleted above)
-            if (! $request->boolean('remove_thumbnail') && $newsItem->thumbnail && file_exists(public_path($newsItem->thumbnail))) {
-                if (str_starts_with($newsItem->thumbnail, '/images/news/')) {
-                    @unlink(public_path($newsItem->thumbnail));
-                }
+            if (! $request->boolean('remove_thumbnail')) {
+                $this->images->deleteFromDisk($newsItem->thumbnail);
             }
 
-            $filename = $this->images->compressToPublic(
+            $thumbnailPath = $this->images->compressToDisk(
                 $request->file('thumbnail'),
-                public_path('images/news'),
+                'news-thumbnails',
                 maxWidth: 1200,
             );
-
-            $thumbnailPath = '/images/news/'.$filename;
         }
 
         $newsItem->update([
@@ -169,11 +159,7 @@ class AdminNewsController extends Controller
         $newsItem = $news;
 
         // Delete thumbnail file if it exists
-        if ($newsItem->thumbnail && file_exists(public_path($newsItem->thumbnail))) {
-            if (str_starts_with($newsItem->thumbnail, '/images/news/')) {
-                @unlink(public_path($newsItem->thumbnail));
-            }
-        }
+        $this->images->deleteFromDisk($newsItem->thumbnail);
 
         $newsItem->delete();
 

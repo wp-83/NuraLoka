@@ -126,27 +126,23 @@ class AdminBadgeController extends Controller
         return $request->validate($rules);
     }
 
-    /** Compress and store the icon in public/images/badges/uploads; returns a relative path (no leading slash). */
+    /** Compress and store the icon on the public storage disk; returns a relative disk path (e.g. "badge-icons/img_xxx.webp"). */
     private function storeIcon(Request $request): ?string
     {
         if (! $request->hasFile('icon_path')) {
             return null;
         }
 
-        $filename = $this->images->compressToPublic(
+        return $this->images->compressToDisk(
             $request->file('icon_path'),
-            public_path('images/badges/uploads'),
+            'badge-icons',
         );
-
-        return 'images/badges/uploads/'.$filename;
     }
 
     private function deleteIcon(?string $path): void
     {
-        // Only delete admin-uploaded files (in the uploads folder), never seeded assets.
-        if ($path && str_starts_with($path, 'images/badges/uploads/') && file_exists(public_path($path))) {
-            @unlink(public_path($path));
-        }
+        // Only removes files written to the storage disk; seeded assets are left alone.
+        $this->images->deleteFromDisk($path);
     }
 
     private function blocked(string $message)

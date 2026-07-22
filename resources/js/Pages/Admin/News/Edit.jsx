@@ -4,6 +4,7 @@ import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
 import AdminLayout from '@js/Layouts/AdminLayout';
 import { useTranslation } from '@js/i18n';
+import { mediaUrl } from '@js/mediaUrl';
 
 import { router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
@@ -28,7 +29,7 @@ function formatDateTimeLocal(dateString) {
 
 export default function Edit({ newsItem }) {
     const { t } = useTranslation();
-    const [previewUrl, setPreviewUrl] = useState(newsItem.thumbnail || null);
+    const [previewUrl, setPreviewUrl] = useState(mediaUrl(newsItem.thumbnail) || null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm({
@@ -42,7 +43,7 @@ export default function Edit({ newsItem }) {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         setData((d) => ({ ...d, thumbnail: file, remove_thumbnail: false }));
-        setPreviewUrl(file ? URL.createObjectURL(file) : newsItem.thumbnail || null);
+        setPreviewUrl(file ? URL.createObjectURL(file) : mediaUrl(newsItem.thumbnail) || null);
     };
 
     const handleRemoveImage = () => {

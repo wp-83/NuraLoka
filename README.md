@@ -2,106 +2,145 @@
   <img src="public/images/logo/with-tagline.png" width="320" alt="NuraLoka">
 </p>
 
-<h1 align="center">NuraLoka</h1>
+<h1 align="center">NuraLoka - Mantapkan Langkahmu!</h1>
 
 <p align="center">
-  A gamified travel-exploration platform for discovering Indonesia — plan routes,
-  find hidden gems, collect badges, and share your journey.
+  A web-based tourism platform that helps users discover destinations, culinary spots,
+  accommodations, and rest areas across Indonesia through intelligent recommendations
+  and gamified exploration.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white">
+  <img src="https://img.shields.io/badge/PHP-8.5-777BB4?style=for-the-badge&logo=php&logoColor=white">
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black">
+  <img src="https://img.shields.io/badge/TailwindCSS-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white">
 </p>
 
 ---
 
-## Overview
+# 🌏 Overview
 
-**NuraLoka** turns exploring Indonesia into an interactive, map-driven experience.
-Users discover places, get real driving routes, check in on arrival, and earn
-levels, badges, and leaderboard rankings — combining a curated, admin-managed
-catalog with live points-of-interest imported from OpenStreetMap. It even greets
-users in their local regional language based on where they are.
+**NuraLoka** is a web-based tourism recommendation platform that assists travelers in discovering attractions, culinary destinations, accommodations, and rest stops throughout Indonesia.
 
-**Core features:** interactive map exploration & check-ins · real routing between
-points · gamification (missions, badges, levels, leaderboard) · wishlists ·
-location photo albums · travel insights · multi-language UI (`id` / `en` / `ko`)
-with regional-language greetings · a full admin panel with background OSM imports.
+Whether planning an intercity journey or exploring a specific region, users receive intelligent recommendations, learn about local destinations, save travel inspirations, and document memorable experiences. To encourage continuous exploration, NuraLoka incorporates gamification through missions, badges, levels, and leaderboards while celebrating Indonesia's cultural diversity with location-based regional greetings.
 
 ---
 
-## Tech Stack
+# ✨ Flagship Features
 
-**Backend**
+## 🗺️ Smart Travel Recommendations
 
-![Laravel](https://img.shields.io/badge/Laravel_12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
-![PHP](https://img.shields.io/badge/PHP_8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white)
-![Inertia](https://img.shields.io/badge/Inertia.js-9553E9?style=for-the-badge&logo=inertia&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+Discover tourist attractions, culinary destinations, accommodations, souvenir shops, and rest areas around your current location or along your travel route using an interactive map.
 
-**Frontend**
+## 🌐 Regional Language Greetings
 
-![React](https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite_6-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![Tailwind](https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
-![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white)
+Experience localized greetings based on your geographical location, providing a more personal experience while helping preserve Indonesia's regional languages and culture.
 
-**Infrastructure**
+## 📖 Tourism Insights
 
-![Hostinger](https://img.shields.io/badge/Hostinger-673DE6?style=for-the-badge&logo=hostinger&logoColor=white)
-![OpenStreetMap](https://img.shields.io/badge/OpenStreetMap-7EBC6F?style=for-the-badge&logo=openstreetmap&logoColor=white)
-![Google](https://img.shields.io/badge/Google_OAuth-4285F4?style=for-the-badge&logo=google&logoColor=white)
+Learn more about every destination through curated information covering its history, cultural significance, unique attractions, and travel tips.
 
-| Layer | Details |
-| --- | --- |
-| **Framework** | Laravel 12 + Inertia.js (server-driven SPA), Ziggy for shared routes |
-| **UI** | React 19, Vite 6, Tailwind CSS 4, Leaflet / React-Leaflet, react-icons |
-| **Auth** | Laravel Socialite (Google OAuth) |
-| **Libraries** | Intervention Image, Spatie Laravel Sluggable, axios |
-| **Hosting & Storage** | Hostinger (web hosting + file/asset storage), MySQL database |
-| **Tooling** | Pint, PHPStan, PHPUnit, Faker, Pail, Sail, concurrently |
+## 📷 Trip Album
+
+Capture and organize memorable moments from your journeys while sharing experiences with other travelers for inspiration.
+
+## ❤️ Wishlist
+
+Save destinations and travel inspirations from both NuraLoka recommendations and fellow travelers to plan future adventures.
+
+## 🏆 Missions & Leaderboard
+
+Complete exploration missions, earn points, unlock badges, level up your profile, and compete with other travelers on the leaderboard.
 
 ---
 
-## APIs & External Services
+# 🏗 Tech Stack
 
-NuraLoka runs entirely on free, open mapping data — no paid map provider required.
+## Backend
 
-| Service | Used for |
-| --- | --- |
-| **OpenStreetMap tiles** | Base map rendering |
-| **Overpass API** (+ mirrors) | Importing POI data into the places catalog |
-| **Nominatim** | Location search / geocoding autocomplete |
-| **OSRM** (`router.project-osrm.org`) | Real driving routes between points |
-| **ip-api.com** | IP-based geolocation for regional greetings |
-| **Google OAuth** | Social sign-in / sign-up |
-| **Browser Geolocation API** | Detecting current position & province |
+| Technology | Purpose |
+|------------|---------|
+| Laravel 12 | Web Framework |
+| PHP 8.5 | Backend Language |
+| Inertia.js | Server-driven SPA |
+| MySQL | Relational Database |
 
-> The Overpass importer rotates across public mirrors, splits large areas into
-> tiles, and runs as queued background jobs to respect rate limits.
+## Frontend
+
+| Technology | Purpose |
+|------------|---------|
+| React 19 | User Interface |
+| Vite 6 | Build Tool |
+| Tailwind CSS 4 | Styling |
+| Leaflet | Interactive Maps |
+
+## Infrastructure
+
+| Technology | Purpose |
+|------------|---------|
+| Hostinger | Web Hosting |
+| OpenStreetMap | Mapping Platform |
+| Google OAuth | Social Authentication |
 
 ---
 
-## Getting Started
+# 🔌 External Services
 
-**Prerequisites:** PHP 8.2+ & Composer · Node.js 18+ & npm · MySQL (or SQLite for local)
+| Service | Purpose |
+|---------|---------|
+| OpenStreetMap | Interactive map tiles |
+| Overpass API | Import tourism locations |
+| Nominatim | Place search & geocoding |
+| OSRM | Driving route generation |
+| Browser Geolocation API | User location detection |
+| ip-api.com | Regional greeting localization |
+| Google OAuth | User authentication |
+
+> Tourism locations are imported asynchronously through Laravel Queues while rotating across multiple Overpass mirrors to comply with public API rate limits.
+
+---
+
+# 🚀 Getting Started
+
+## Requirements
+
+- PHP **8.5**
+- Composer
+- Node.js 18+
+- npm
+- MySQL
+
+## Installation
 
 ```bash
-# Install dependencies
-composer install && npm install
+composer install
+npm install
 
-# Configure environment
 cp .env.example .env
+
 php artisan key:generate
 
-# Set up the database, then run
 php artisan migrate --seed
-npm run build        # or: npm run dev
+
+npm run build
 ```
 
-Run the full local stack (server, queue, logs, and Vite) in one command:
+Run the development environment:
 
 ```bash
 composer run dev
 ```
 
-**Environment keys** to set in `.env`:
+Start the queue worker:
+
+```bash
+php artisan queue:listen
+```
+
+---
+
+# ⚙️ Environment Variables
 
 ```dotenv
 APP_NAME=NuraLoka
@@ -113,32 +152,34 @@ GOOGLE_REDIRECT=
 DAERAH_IP_LOOKUP_ENDPOINT=http://ip-api.com/json/{ip}
 ```
 
-> OSM imports run on the queue — keep a worker running (`php artisan queue:listen`)
-> when triggering an import from the admin panel.
-
 ---
 
-## Scripts
+# 📜 Available Commands
 
 | Command | Description |
-| --- | --- |
-| `npm run dev` / `npm run build` | Vite dev server / production build |
-| `composer run dev` | Server + queue + logs + Vite together |
-| `composer lint` · `composer format` | Code style check / auto-format (Pint) |
-| `composer analyse` | Static analysis (PHPStan) |
-| `php artisan test` | Run the test suite |
+|---------|-------------|
+| `composer run dev` | Run Laravel, Queue, Logs, and Vite simultaneously |
+| `npm run dev` | Start the Vite development server |
+| `npm run build` | Build production assets |
+| `composer lint` | Check code style with Laravel Pint |
+| `composer format` | Automatically format code |
+| `composer analyse` | Run PHPStan static analysis |
+| `php artisan test` | Execute the test suite |
 
 ---
 
-## Team
+# 👥 Development Team
 
-| Felicia Wijaya | William Pratama | Agnes G. F. Sukma | Andi Zulfikar | Steven J. Wiyanto |
-| :---: | :---: | :---: | :---: | :---: |
-| Product Owner | Scrum Master | Developer | Developer | Developer |
+| Member | Role |
+|---------|------|
+| Felicia Wijaya | Product Owner |
+| William Pratama | Scrum Master |
+| Agnes G. F. Sukma | Developer |
+| Andi Zulfikar | Developer |
+| Steven J. Wiyanto | Developer |
 
 ---
 
 <p align="center">
-  Built with the <a href="https://laravel.com">Laravel</a> framework · Licensed under
-  the <a href="https://opensource.org/licenses/MIT">MIT license</a>.
+Built with ❤️ using Laravel and React.
 </p>
