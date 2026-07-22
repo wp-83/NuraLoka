@@ -1,11 +1,12 @@
-name: Deploy to Hostinger Development (Laravel + React)
+name: Deploy to Hostinger Production (Laravel + React)
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - production
 
 concurrency:
-  group: deploy-development
+  group: deploy-production
   cancel-in-progress: true
 
 jobs:
@@ -20,7 +21,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
+          cache: npm
 
       - name: Install JS dependencies
         run: npm ci
@@ -29,18 +30,14 @@ jobs:
         run: npm run build
 
       - name: Setup SSH
-        shell: bash
         run: |
-          set -e
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p "${{ secrets.PORT }}" -H "${{ secrets.HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Upload project to server
-        shell: bash
+      - name: Upload project
         run: |
-          set -e
           rsync -az --delete \
             --filter='P .env' \
             --filter='P storage/***' \
@@ -51,44 +48,45 @@ jobs:
             -e "ssh -p ${{ secrets.PORT }}" \
             ./ "${{ secrets.USER }}@${{ secrets.HOST }}:${{ secrets.APP_DIR }}/"
 
-      - name: Composer + Artisan server
-        shell: bash
+      - name: Deploy Application
         run: |
           ssh -p "${{ secrets.PORT }}" "${{ secrets.USER }}@${{ secrets.HOST }}" << 'EOF'
             set -euo pipefail
+
             cd "${{ secrets.APP_DIR }}"
 
-            test -f .env
-            ls -la .env
-
             PHP="${{ secrets.PHP_BIN }}"
-            "$PHP" -v
+
+            "$PHP" artisan down --render="errors::503" || true
 
             "$PHP" "$(command -v composer)" install \
+              --no-dev \
               --prefer-dist \
               --no-interaction \
-              --optimize-autoloader
+              --optimize-autoloader \
+              --classmap-authoritative
 
             if [ -L public/storage ]; then
               rm public/storage
             elif [ -e public/storage ]; then
-              echo "public/storage exists but is not a symlink. Skipping delete."
+              echo "public/storage exists but is not a symlink."
             fi
 
             if [ ! -e public/storage ]; then
-              ln -s "${{ secrets.APP_DIR }}/storage/app/public" "${{ secrets.APP_DIR }}/public/storage"
+              ln -s "${{ secrets.APP_DIR }}/storage/app/public" \
+                    "${{ secrets.APP_DIR }}/public/storage"
             fi
 
-            "$PHP" artisan migrate:fresh --seed --force
+            "$PHP" artisan migrate --force
 
-            "$PHP" artisan config:clear || true
-            "$PHP" artisan route:clear || true
-            "$PHP" artisan view:clear || true
-            "$PHP" artisan cache:clear || true
+            "$PHP" artisan optimize:clear
 
-            "$PHP" artisan config:cache || true
-            "$PHP" artisan route:cache || true
-            "$PHP" artisan view:cache || true
+            "$PHP" artisan config:cache
+            "$PHP" artisan route:cache
+            "$PHP" artisan view:cache
+            "$PHP" artisan event:cache
 
             "$PHP" artisan queue:restart || true
+
+            "$PHP" artisan up
           EOF
