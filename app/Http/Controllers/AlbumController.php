@@ -92,8 +92,9 @@ class AlbumController extends Controller
                 });
         }
 
-        // This week's popular albums: public albums ranked by the views they got
-        // in the last 7 days (see Album::scopePopularThisWeek).
+        // This week's popular albums: public albums ranked by how many viewers
+        // they got in the last 7 days, oldest album first on a tie
+        // (see Album::scopePopularThisWeek).
         $popularAlbums = Album::with(['trip.user.userDetails', 'tripPhotos'])
             ->popularThisWeek()
             ->take(3)
@@ -493,8 +494,6 @@ class AlbumController extends Controller
             'is_public' => (bool) $trip->is_public,
             'is_system' => (bool) $trip->is_system,
             'view_count' => $album->view_count,
-            // Hanya terisi kalau query-nya lewat Album::scopePopularThisWeek.
-            'weekly_views' => isset($album->weekly_views) ? (int) $album->weekly_views : null,
             'caption' => $album->caption,
             'thumbnail' => $firstPhoto?->photo_path,
             'photo_count' => $album->tripPhotos->count(),

@@ -16,6 +16,7 @@ return [
     'origin_placeholder' => '시작 주소를 검색하세요...',
     'destination_label' => '목적지 주소',
     'destination_placeholder' => '목적지 주소를 검색하세요...',
+    'journey_same_point' => '출발지와 목적지는 같을 수 없습니다. 서로 다른 두 장소를 선택하세요.',
     'location_search_placeholder' => '위치 검색...',
 
     // 보조 패널

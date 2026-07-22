@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Album;
-use App\Models\AlbumView;
 use App\Models\Trip;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,17 +11,25 @@ use Tests\TestCase;
 /**
  * "Album populer minggu ini" di halaman Beranda dan halaman Album.
  *
- * Dulu peringkatnya menyaring trips.trip_date >= minggu lalu lalu mengurutkan
- * pakai view_count (total sepanjang masa). Album lama yang ramai dilihat minggu
- * ini karena itu tidak pernah muncul. Test di bawah menjaga agar yang dihitung
- * adalah view yang benar-benar terjadi dalam 7 hari terakhir.
+ * Aturannya: album publik yang DIBUAT dalam 7 hari terakhir, diurutkan dari
+ * jumlah penonton (albums.view_count — angka yang tercetak di kartu album).
+ * Kalau jumlah penontonnya sama, album yang lebih dulu dibuat menang.
+ *
+ * Dulu batas "minggu ini" diambil dari trips.trip_date dan urutannya dihitung
+ * dari view 7 hari terakhir, sementara kartunya menampilkan view_count total —
+ * urutan yang muncul di layar karena itu terlihat acak.
  */
 class PopularAlbumTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function makeAlbum(string $title, string $tripDate, int $viewCount = 0, bool $isPublic = true): Album
-    {
+    private function makeAlbum(
+        string $title,
+        int $viewCount = 0,
+        ?string $createdAt = null,
+        ?string $tripDate = null,
+        bool $isPublic = true,
+    ): Album {
         $trip = Trip::create([
             'user_id' => User::factory()->create()->id,
             'title' => $title,
@@ -32,71 +39,119 @@ class PopularAlbumTest extends TestCase
             'destination_name' => 'Bandung',
             'destination_latitude' => 0,
             'destination_longitude' => 0,
-            'trip_date' => $tripDate,
+            'trip_date' => $tripDate ?? now()->toDateString(),
             'is_public' => $isPublic,
         ]);
 
-        return Album::create([
+        $album = Album::create([
             'trip_id' => $trip->id,
             'caption' => $title,
             'view_count' => $viewCount,
         ]);
-    }
 
-    private function recordViews(Album $album, int $count, string $when): void
-    {
-        for ($i = 0; $i < $count; $i++) {
-            AlbumView::create([
-                'album_id' => $album->id,
-                'user_id' => User::factory()->create()->id,
-                'viewed_at' => $when,
-            ]);
+        if ($createdAt !== null) {
+            // Timestamp tidak bisa lewat create(): Eloquent menimpanya dengan
+            // now(). Kolomnya di-update langsung supaya umur album benar-benar
+            // terkontrol oleh test.
+            $album->forceFill(['created_at' => $createdAt])->saveQuietly();
         }
+
+        return $album->fresh();
     }
 
-    /** Peringkat murni dari view minggu ini, bukan dari tanggal trip. */
     private function ranking(): array
     {
         return Album::popularThisWeek()->pluck('albums.id')->all();
     }
 
-    public function test_album_lama_dengan_view_minggu_ini_tetap_masuk_peringkat(): void
+    /**
+     * Peringkat yang sudah disaring hanya untuk album milik test ini.
+     *
+     * DatabaseSeeder ikut mengisi tabel albums (dan album-album itu juga dibuat
+     * "minggu ini" karena seeding berjalan saat test dimulai), jadi peringkat
+     * mentahnya tidak pernah hanya berisi album buatan test. Yang diuji adalah
+     * urutan RELATIF antar album yang dibuat di sini.
+     */
+    private function rankingOf(Album ...$albums): array
     {
-        // Trip-nya dua bulan lalu — dulu tersaring habis oleh filter trip_date.
-        $albumLama = $this->makeAlbum('Trip Dua Bulan Lalu', now()->subMonths(2)->toDateString());
-        $this->recordViews($albumLama, 10, now()->subDays(2));
+        $ids = array_map(fn (Album $album) => $album->id, $albums);
 
-        $ranking = $this->ranking();
-
-        $this->assertContains($albumLama->id, $ranking);
-        $this->assertSame($albumLama->id, $ranking[0], 'Album dengan view terbanyak minggu ini harus berada di puncak.');
+        return array_values(array_filter(
+            $this->ranking(),
+            fn ($id) => in_array($id, $ids, true),
+        ));
     }
 
-    public function test_view_lebih_dari_seminggu_lalu_tidak_dihitung(): void
+    public function test_album_diurutkan_dari_jumlah_penonton_terbanyak(): void
     {
-        $ramaiMingguIni = $this->makeAlbum('Ramai Minggu Ini', now()->toDateString());
-        $ramaiDuluSekali = $this->makeAlbum('Ramai Bulan Lalu', now()->toDateString());
+        $sepi = $this->makeAlbum('Sepi', viewCount: 3);
+        $ramai = $this->makeAlbum('Ramai', viewCount: 40);
+        $sedang = $this->makeAlbum('Sedang', viewCount: 12);
 
-        $this->recordViews($ramaiMingguIni, 3, now()->subDay());
-        $this->recordViews($ramaiDuluSekali, 50, now()->subMonth());
-
-        $ranking = $this->ranking();
-
-        $this->assertLessThan(
-            array_search($ramaiDuluSekali->id, $ranking, true),
-            array_search($ramaiMingguIni->id, $ranking, true),
-            'View bulan lalu tidak boleh mengalahkan view minggu ini.'
+        $this->assertSame(
+            [$ramai->id, $sedang->id, $sepi->id],
+            $this->rankingOf($sepi, $ramai, $sedang),
         );
+    }
+
+    public function test_jumlah_penonton_sama_dimenangkan_album_yang_lebih_dulu_dibuat(): void
+    {
+        // Dibuat belakangan, tapi diurut lebih dulu di database supaya lulusnya
+        // benar-benar karena created_at, bukan karena urutan insert.
+        $termuda = $this->makeAlbum('Termuda', viewCount: 10, createdAt: now()->subDay());
+        $tertua = $this->makeAlbum('Tertua', viewCount: 10, createdAt: now()->subDays(5));
+        $tengah = $this->makeAlbum('Tengah', viewCount: 10, createdAt: now()->subDays(3));
+
+        $this->assertSame(
+            [$tertua->id, $tengah->id, $termuda->id],
+            $this->rankingOf($termuda, $tertua, $tengah),
+            'Saat jumlah penontonnya seri, album tertua harus berada di atas.',
+        );
+    }
+
+    public function test_jumlah_penonton_mengalahkan_umur_album(): void
+    {
+        $tuaTapiSepi = $this->makeAlbum('Tua Tapi Sepi', viewCount: 1, createdAt: now()->subDays(6));
+        $mudaTapiRamai = $this->makeAlbum('Muda Tapi Ramai', viewCount: 50, createdAt: now()->subHour());
+
+        $this->assertSame(
+            [$mudaTapiRamai->id, $tuaTapiSepi->id],
+            $this->rankingOf($tuaTapiSepi, $mudaTapiRamai),
+        );
+    }
+
+    public function test_album_yang_dibuat_lebih_dari_seminggu_lalu_tidak_masuk(): void
+    {
+        $mingguIni = $this->makeAlbum('Dibuat Minggu Ini', viewCount: 2, createdAt: now()->subDays(2));
+        $bulanLalu = $this->makeAlbum('Dibuat Bulan Lalu', viewCount: 999, createdAt: now()->subMonth());
+
+        $this->assertSame(
+            [$mingguIni->id],
+            $this->rankingOf($mingguIni, $bulanLalu),
+            'Album yang dibuat lebih dari seminggu lalu tidak boleh ikut, sebanyak apa pun penontonnya.',
+        );
+    }
+
+    public function test_yang_membatasi_adalah_tanggal_album_dibuat_bukan_tanggal_trip(): void
+    {
+        // Album baru tentang perjalanan bulan lalu — dulu tersaring habis oleh
+        // filter trips.trip_date.
+        $tripLamaAlbumBaru = $this->makeAlbum(
+            'Trip Bulan Lalu, Album Baru',
+            viewCount: 5,
+            createdAt: now()->subDay(),
+            tripDate: now()->subMonth()->toDateString(),
+        );
+
+        $this->assertContains($tripLamaAlbumBaru->id, $this->ranking());
     }
 
     public function test_album_privat_dan_user_dibanned_tidak_muncul(): void
     {
-        $privat = $this->makeAlbum('Album Privat', now()->toDateString(), isPublic: false);
-        $this->recordViews($privat, 20, now());
+        $privat = $this->makeAlbum('Album Privat', viewCount: 20, isPublic: false);
 
-        $dibanned = $this->makeAlbum('Album User Dibanned', now()->toDateString());
+        $dibanned = $this->makeAlbum('Album User Dibanned', viewCount: 20);
         $dibanned->trip->user->update(['is_banned' => true]);
-        $this->recordViews($dibanned, 20, now());
 
         $ranking = $this->ranking();
 
@@ -104,9 +159,9 @@ class PopularAlbumTest extends TestCase
         $this->assertNotContains($dibanned->id, $ranking);
     }
 
-    public function test_membuka_album_orang_lain_mencatat_view_berstempel_waktu(): void
+    public function test_membuka_album_orang_lain_menambah_jumlah_penonton(): void
     {
-        $album = $this->makeAlbum('Album Dilihat', now()->toDateString());
+        $album = $this->makeAlbum('Album Dilihat');
         $penonton = User::factory()->create();
 
         $this->actingAs($penonton)
@@ -122,7 +177,7 @@ class PopularAlbumTest extends TestCase
 
     public function test_pemilik_membuka_albumnya_sendiri_tidak_menambah_view(): void
     {
-        $album = $this->makeAlbum('Album Sendiri', now()->toDateString());
+        $album = $this->makeAlbum('Album Sendiri');
 
         $this->actingAs($album->trip->user)
             ->get(route('album.show', $album->slug))
@@ -134,8 +189,10 @@ class PopularAlbumTest extends TestCase
 
     public function test_beranda_dan_halaman_album_memakai_peringkat_yang_sama(): void
     {
-        $teratas = $this->makeAlbum('Paling Ramai', now()->subMonths(3)->toDateString());
-        $this->recordViews($teratas, 30, now()->subDays(3));
+        // Angkanya sengaja jauh di atas apa pun yang diisi DatabaseSeeder
+        // supaya album ini pasti berada di puncak kedua halaman.
+        $teratas = $this->makeAlbum('Paling Ramai', viewCount: 1_000_000, createdAt: now()->subDays(3));
+        $this->makeAlbum('Kurang Ramai', viewCount: 4, createdAt: now()->subDay());
 
         $penonton = User::factory()->create();
 

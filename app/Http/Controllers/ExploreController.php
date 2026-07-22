@@ -37,6 +37,16 @@ class ExploreController extends Controller
     // Maximum distance (metres) for a check-in to count as valid (location proof).
     private const CHECKIN_RADIUS_M = 300;
 
+    // Minimum separation (metres) between the two points of a journey. Titik
+    // keberangkatan dan tujuan tidak boleh sama: perjalanan tanpa jarak bukan
+    // perjalanan, rutenya kosong, dan albumnya jadi "Trip X → X".
+    //
+    // Dipakai ambang jarak, bukan perbandingan koordinat persis, karena satu
+    // tempat yang sama bisa muncul beberapa kali di hasil Nominatim dengan
+    // koordinat yang berbeda beberapa meter. 25 m masih jauh lebih rapat
+    // daripada jarak antar-tempat yang benar-benar berbeda.
+    private const JOURNEY_MIN_SEPARATION_M = 25;
+
     // Default radius (km) for the "Trending Places" section: only places near the
     // signed-in user. Places far from them are not recommended.
     private const TRENDING_RADIUS_KM = 100;
@@ -449,6 +459,11 @@ class ExploreController extends Controller
      *
      * Real mode (journey_demo_mode=false): the user's location must be within
      * CHECKIN_RADIUS_M of the destination, same as a check-in. Verified server-side.
+     *
+     * Titik keberangkatan dan tujuan wajib berbeda (JOURNEY_MIN_SEPARATION_M).
+     * Frontend sudah menolaknya lebih dulu, tapi endpoint ini bisa dipanggil
+     * langsung — dan tanpa penjagaan di sini sebuah trip berjarak nol tetap
+     * masuk database beserta album sistemnya.
      */
     public function startJourney(Request $request)
     {
@@ -462,6 +477,17 @@ class ExploreController extends Controller
             'user_lat' => 'nullable|numeric|between:-90,90',
             'user_lng' => 'nullable|numeric|between:-180,180',
         ]);
+
+        $separation = $this->haversineMeters(
+            (float) $data['origin_lat'], (float) $data['origin_lng'],
+            (float) $data['destination_lat'], (float) $data['destination_lng']
+        );
+        if ($separation < self::JOURNEY_MIN_SEPARATION_M) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Titik keberangkatan dan tujuan tidak boleh sama. Pilih dua tempat yang berbeda.',
+            ], 422);
+        }
 
         if (! config('nuraloka.journey_demo_mode')) {
             if (! isset($data['user_lat'], $data['user_lng'])) {

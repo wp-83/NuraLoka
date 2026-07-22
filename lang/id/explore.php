@@ -16,6 +16,7 @@ return [
     'origin_placeholder' => 'Cari alamat awal...',
     'destination_label' => 'Alamat Tujuan',
     'destination_placeholder' => 'Cari alamat tujuan...',
+    'journey_same_point' => 'Titik keberangkatan dan tujuan tidak boleh sama. Pilih dua tempat yang berbeda.',
     'location_search_placeholder' => 'Cari lokasi...',
 
     // Panel sekunder

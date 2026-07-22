@@ -24,7 +24,8 @@ class HomeController extends Controller
             ? app(GamificationService::class)->ongoingMissions($user)->first()
             : null;
 
-        // This week's popular albums. Sama persis dengan halaman Album — kedua
+        // This week's popular albums: album yang dibuat minggu ini, diurutkan
+        // dari jumlah penonton. Sama persis dengan halaman Album — kedua
         // halaman memakai satu scope (Album::scopePopularThisWeek) supaya
         // peringkatnya tidak pernah berbeda.
         $popularAlbums = Album::with(['trip.user.userDetails', 'tripPhotos'])
@@ -41,7 +42,6 @@ class HomeController extends Controller
                     'title' => $trip->title,
                     'thumbnail' => $firstPhoto?->photo_path,
                     'view_count' => $album->view_count,
-                    'weekly_views' => (int) $album->weekly_views,
                 ];
             });
 
