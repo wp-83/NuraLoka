@@ -19,17 +19,26 @@ class SetLocale
 
     public function handle(Request $request, Closure $next)
     {
-        $locale = $request->session()->get('locale');
-
-        if (! in_array($locale, self::SUPPORTED, true)) {
-            $locale = config('app.locale');
-            if (! in_array($locale, self::SUPPORTED, true)) {
-                $locale = self::SUPPORTED[0];
-            }
-        }
-
-        app()->setLocale($locale);
+        app()->setLocale(self::resolve($request->session()->get('locale')));
 
         return $next($request);
+    }
+
+    /**
+     * Normalisasi kode locale ke bahasa yang didukung. Bila null/invalid, jatuh ke
+     * config('app.locale'), lalu ke SUPPORTED[0] sebagai jaring pengaman terakhir.
+     *
+     * Dipakai juga oleh handler exception (halaman Error) yang bisa berjalan sebelum
+     * middleware ini sempat menetapkan locale.
+     */
+    public static function resolve(?string $locale): string
+    {
+        if (in_array($locale, self::SUPPORTED, true)) {
+            return $locale;
+        }
+
+        $config = config('app.locale');
+
+        return in_array($config, self::SUPPORTED, true) ? $config : self::SUPPORTED[0];
     }
 }
