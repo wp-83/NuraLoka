@@ -7,6 +7,7 @@ import PlaceCard from '@components/Features/PlaceCard';
 import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
 import { useTranslation } from '@js/i18n';
+import { categoryIconUrl } from '@js/categoryIcons';
 import { FiMapPin, FiSearch } from 'react-icons/fi';
 import { MdRestaurant, MdBeachAccess, MdDiamond, MdMuseum, MdWaterDrop, MdSportsHandball } from 'react-icons/md';
 import { FaMountain } from 'react-icons/fa6';
@@ -39,7 +40,7 @@ function CategoryIcon({ category }) {
     if (category?.icon_path) {
         return (
             <img
-                src={category.icon_path}
+                src={categoryIconUrl(category)}
                 alt=""
                 className="w-6 h-6 object-contain"
                 onError={(e) => { e.target.style.display = 'none'; }}

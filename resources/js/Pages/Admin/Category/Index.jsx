@@ -6,6 +6,7 @@ import Pagination from '@components/Common/Pagination';
 import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
 import AdminLayout from '@js/Layouts/AdminLayout';
+import { categoryIconUrl } from '@js/categoryIcons';
 import { useTranslation } from '@js/i18n';
 
 import { router } from '@inertiajs/react';
@@ -134,7 +135,7 @@ export default function Index({ categories, filters = {} }) {
                                         <td className="px-5 py-4 text-center">
                                             {cat.icon_path ? (
                                                 <img
-                                                    src={cat.icon_path}
+                                                    src={categoryIconUrl(cat)}
                                                     alt={cat.name}
                                                     className="mx-auto h-10 w-10 rounded-lg object-contain"
                                                     onError={(e) => {

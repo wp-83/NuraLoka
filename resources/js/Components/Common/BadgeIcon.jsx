@@ -1,4 +1,5 @@
 import { FaMedal } from 'react-icons/fa';
+import { mediaUrl } from '@js/mediaUrl';
 
 /**
  * Ukuran lencana.
@@ -30,7 +31,7 @@ export default function BadgeIcon({ iconPath, alt = '', earned = true, size = 'm
 
     return (
         <img
-            src={iconPath.startsWith('http') ? iconPath : `/${iconPath}`}
+            src={mediaUrl(iconPath)}
             alt={alt}
             className={`${sizeClass} ${className} shrink-0 object-contain ${dim}`}
         />

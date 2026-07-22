@@ -6,6 +6,7 @@ import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
 import AdminLayout from '@js/Layouts/AdminLayout';
 import { useTranslation } from '@js/i18n';
+import { mediaUrl } from '@js/mediaUrl';
 
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
@@ -149,11 +150,7 @@ export default function Index({ badges, filters = {} }) {
                                             <div className="flex items-center gap-3">
                                                 {badge.icon_path ? (
                                                     <img
-                                                        src={
-                                                            badge.icon_path.startsWith('http')
-                                                                ? badge.icon_path
-                                                                : `/${badge.icon_path}`
-                                                        }
+                                                        src={mediaUrl(badge.icon_path)}
                                                         alt={badge.name}
                                                         className="h-11 w-11 shrink-0 object-contain"
                                                     />

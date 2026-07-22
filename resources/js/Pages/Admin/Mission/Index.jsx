@@ -6,6 +6,7 @@ import Pagination from '@components/Common/Pagination';
 import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
 import AdminLayout from '@js/Layouts/AdminLayout';
+import { mediaUrl } from '@js/mediaUrl';
 import { useTranslation } from '@js/i18n';
 
 import { router } from '@inertiajs/react';
@@ -151,7 +152,7 @@ export default function Index({ missions, filters = {} }) {
                                                 <div className="flex items-center gap-2">
                                                     {mission.badge.icon_path ? (
                                                         <img
-                                                            src={mission.badge.icon_path}
+                                                            src={mediaUrl(mission.badge.icon_path)}
                                                             alt={mission.badge.name}
                                                             className="h-6 w-6 object-contain"
                                                             onError={(e) => {

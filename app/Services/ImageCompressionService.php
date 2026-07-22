@@ -27,13 +27,41 @@ class ImageCompressionService
         ?int $maxHeight = null,
         int $quality = 80,
     ): string {
+        $dir = trim($directory, '/');
+
+        // SVG uploads are vector graphics that GD cannot rasterize, so the raw
+        // bytes are stored untouched rather than run through the WebP pipeline.
+        if (strtolower($file->getClientOriginalExtension()) === 'svg') {
+            $path = $dir.'/'.uniqid('img_', true).'.svg';
+            Storage::disk($disk)->put($path, (string) file_get_contents($file->getPathname()));
+
+            return $path;
+        }
+
         $encoded = $this->encode($file, $maxWidth, $maxHeight, $quality);
 
-        $path = trim($directory, '/').'/'.uniqid('img_', true).'.webp';
+        $path = $dir.'/'.uniqid('img_', true).'.webp';
 
         Storage::disk($disk)->put($path, $encoded);
 
         return $path;
+    }
+
+    /**
+     * Delete a previously stored upload from a Storage disk. Legacy/seeded public
+     * assets (absolute URLs, "/…" web paths, or bundled "images/…" files) are left
+     * untouched — only files written to the disk by compressToDisk() are removed.
+     */
+    public function deleteFromDisk(?string $path, string $disk = 'public'): void
+    {
+        if (! $path
+            || str_starts_with($path, 'http')
+            || str_starts_with($path, '/')
+            || str_starts_with($path, 'images/')) {
+            return;
+        }
+
+        Storage::disk($disk)->delete($path);
     }
 
     /**

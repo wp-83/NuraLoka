@@ -10,6 +10,8 @@
  * kategori memang belum punya gambar yang diunggah.
  */
 
+import { mediaUrl } from '@js/mediaUrl';
+
 export const CATEGORY_EMOJI = {
     'Wisata Alam': '🌿',
     'Wisata Budaya': '🏛️',
@@ -39,14 +41,10 @@ export function categoryEmoji(name) {
 /**
  * URL gambar kategori bila ada, atau null.
  *
- * icon_path disimpan sudah berupa path publik lengkap (mis.
- * "/images/categories/xxx.webp"), jadi dipakai apa adanya. Nilai lama yang
- * tanpa garis miring depan tetap ditangani agar data lama tidak rusak.
+ * Ikon baru diunggah ke storage disk (mis. "category-icons/xxx.webp"),
+ * sedangkan data lama berupa path publik ("/images/categories/xxx.webp").
+ * mediaUrl() menangani keduanya agar data lama tidak rusak.
  */
 export function categoryIconUrl(category) {
-    const path = category?.icon_path;
-
-    if (!path) return null;
-
-    return path.startsWith('/') || path.startsWith('http') ? path : `/${path}`;
+    return mediaUrl(category?.icon_path);
 }

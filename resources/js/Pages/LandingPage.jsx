@@ -228,7 +228,10 @@ export default function LandingPage() {
                             </div>
                             <div className="mt-12 max-w-xl sm:mt-8">
                                 <p className="font-heading text-paragraph leading-relaxed text-white">
-                                    {withBrand(t("landing.hero_desc_lead"))}{" "}
+                                    {withBrand(
+                                        t("landing.hero_desc_lead"),
+                                        "nuraloka-text bg-white px-1"
+                                    )}{" "}
                                     <strong>{t("landing.hero_desc_bold1")}</strong>
                                     {t("landing.hero_desc_mid1")}{" "}
                                     <strong>{t("landing.hero_desc_bold2")}</strong>

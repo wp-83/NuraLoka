@@ -4,6 +4,7 @@ import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
 import AdminLayout from '@js/Layouts/AdminLayout';
 import { useTranslation } from '@js/i18n';
+import { categoryIconUrl } from '@js/categoryIcons';
 
 import { router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
@@ -18,7 +19,7 @@ import {
 
 export default function Edit({ category }) {
     const { t } = useTranslation();
-    const [previewUrl, setPreviewUrl] = useState(category.icon_path || null);
+    const [previewUrl, setPreviewUrl] = useState(categoryIconUrl(category) || null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm({
@@ -30,7 +31,7 @@ export default function Edit({ category }) {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         setData((d) => ({ ...d, icon_path: file, remove_icon: false }));
-        setPreviewUrl(file ? URL.createObjectURL(file) : category.icon_path || null);
+        setPreviewUrl(file ? URL.createObjectURL(file) : categoryIconUrl(category) || null);
     };
 
     const handleRemoveIcon = () => {

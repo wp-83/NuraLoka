@@ -15,6 +15,7 @@ import {
     FaExclamationTriangle,
 } from 'react-icons/fa';
 import AdminLayout from '@js/Layouts/AdminLayout';
+import { mediaUrl } from '@js/mediaUrl';
 
 function formatDate(dateString) {
     if (!dateString) return '-';
@@ -299,7 +300,7 @@ export default function Dashboard({ stats, recentUsers = [], recentNews = [] }) 
                             {recentNews.map((item) => (
                                 <div key={item.id} className="flex items-center gap-3">
                                     <img
-                                        src={item.thumbnail || '/images/defaults/image.png'}
+                                        src={mediaUrl(item.thumbnail) || '/images/defaults/image.png'}
                                         alt={item.title}
                                         className="h-10 w-14 shrink-0 rounded-lg object-cover"
                                         onError={(e) => {

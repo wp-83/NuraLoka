@@ -1,6 +1,7 @@
 import MainLayout from '@js/Layouts/MainLayout';
 import { Link } from '@inertiajs/react';
 import { useTranslation } from '@js/i18n';
+import { mediaUrl } from '@js/mediaUrl';
 import Button from '@components/Forms/Button';
 import { IoIosArrowBack } from 'react-icons/io';
 
@@ -116,7 +117,7 @@ export default function Show({ newsItem }) {
 
                 <img
                     src={
-                        newsItem.thumbnail ||
+                        mediaUrl(newsItem.thumbnail) ||
                         '/images/defaults/image.png'
                     }
                     alt={newsItem.title}

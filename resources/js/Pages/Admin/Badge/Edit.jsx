@@ -6,6 +6,7 @@ import Dropdown from '@components/Forms/Dropdown';
 import Input from '@components/Forms/Input';
 import AdminLayout from '@js/Layouts/AdminLayout';
 import { useTranslation } from '@js/i18n';
+import { mediaUrl } from '@js/mediaUrl';
 
 import { router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
@@ -28,11 +29,7 @@ export default function Edit({ badge }) {
         { value: 4, label: `4 · ${t('admin.badges.tier_diamond')}` },
     ];
 
-    const currentIcon = badge.icon_path
-        ? badge.icon_path.startsWith('http')
-            ? badge.icon_path
-            : `/${badge.icon_path}`
-        : null;
+    const currentIcon = mediaUrl(badge.icon_path);
 
     const [preview, setPreview] = useState(null);
 
