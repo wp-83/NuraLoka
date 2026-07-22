@@ -79,7 +79,7 @@ export default function SignUp({ title, titleKey, content }) {
 
                     {/* Pemilih bahasa untuk pengunjung (tamu) */}
                     <div className="absolute left-6 top-6 z-30">
-                        <LanguageSwitcher />
+                        <LanguageSwitcher align="left" />
                     </div>
 
                     <div className="container relative h-full overflow-y-auto pb-28 hide-scrollbar animate-swipe-up">
