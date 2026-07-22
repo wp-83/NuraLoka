@@ -9,7 +9,7 @@ export default function ForgetPasswordSuccess() {
 
     return (
         <>
-            <Head title={`NuraLoka | ${t('account.forget.meta_title')}`} />
+            <Head title={`NuraLoka | ${t('account.forgot.meta_title')}`} />
 
             <main className="relative flex min-h-screen items-start justify-center overflow-hidden bg-gray-10 px-6">
 
@@ -26,15 +26,15 @@ export default function ForgetPasswordSuccess() {
                     />
 
                     <h1 className="mb-1 text-title font-heading font-bold text-center text-primary-100">
-                        {t('account.forget_success.title')}
+                        {t('account.forgot_success.title')}
                     </h1>
 
                     <p className="mb-8 max-w-2xl text-center text-paragraph">
-                        {t('account.forget_success.desc')}
+                        {t('account.forgot_success.desc')}
                     </p>
 
                     <Link href={route('auth.login.index')}>
-                        <Button iconLeft={<IoChevronBackCircleOutline size={28} />}>{t('account.forget_success.back_to_login')}</Button>
+                        <Button iconLeft={<IoChevronBackCircleOutline size={28} />}>{t('account.forgot_success.back_to_login')}</Button>
                     </Link>
                 </section>
             </main>

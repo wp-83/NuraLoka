@@ -52,22 +52,19 @@ class LoginController extends Controller
                 ]);
         }
 
-        // /*
-        //  * Prevent banned users from logging in.
-        //  */
-        // if (Auth::user()->is_banned) {
-        //     Auth::logout();
-
-        //     $request->session()->invalidate();
-        //     $request->session()->regenerateToken();
-
-        //     return inertia('Auth/Banned');
-        // }
-
         /*
          * Regenerate the session ID after successful authentication.
          */
         $request->session()->regenerate();
+
+        /*
+         * Banned users stay authenticated but are shown the Banned page.
+         * The 'unbanned' middleware also gates every protected route, so the
+         * only actions available to them are viewing this page and logging out.
+         */
+        if (Auth::user()->is_banned) {
+            return inertia('Auth/Banned');
+        }
 
         // // Redirect the main administrator to the admin dashboard.
         // if (
