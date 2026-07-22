@@ -7,7 +7,6 @@ use App\Models\Badge;
 use App\Models\Level;
 use App\Models\User;
 use App\Services\GamificationService;
-use Database\Seeders\Concerns\SeedsAlbumPhotos;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -38,8 +37,6 @@ use Illuminate\Support\Str;
  */
 class ProductionUserSeeder extends Seeder
 {
-    use SeedsAlbumPhotos;
-
     private const ADMIN_EMAIL = 'admin@nuraloka.id';
 
     private const SHOWCASE_EMAIL = 'juara@nuraloka.id';
@@ -236,16 +233,14 @@ class ProductionUserSeeder extends Seeder
         for ($i = 0; $i < $minPhotos; $i++) {
             $placeId = $placeIds[$i % count($placeIds)];
             $albumId = $albumIds[$i % $albumCount];
-            $photoPath = $this->seedAlbumPhoto($i);
 
-            if ($photoPath === null) {
-                continue;
-            }
-
+            // Tanpa foto contoh: photo_path dikosongkan agar tampil blank,
+            // barisnya tetap dibuat supaya lencana bertingkat (jumlah foto,
+            // tempat unik) tetap terhitung.
             $photoRows[] = [
                 'album_id' => $albumId,
                 'place_id' => $placeId,
-                'photo_path' => $photoPath,
+                'photo_path' => '',
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

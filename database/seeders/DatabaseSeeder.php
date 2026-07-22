@@ -22,14 +22,15 @@ class DatabaseSeeder extends Seeder
             // berdasarkan urutan insert kategori.
             CategorySeeder::class,
             PlaceSeeder::class,
-            UserSeeder::class, // 10 user Jabodetabek realistis (province_id, level_id disinkronkan dari poin).
-            ChallengeSeeder::class, // Leaderboard users + progres misi user demo (jayadi_christopher).
-            TripSeeder::class, // 20 trip realistis untuk user non-admin.
-            SavedPlaceSeeder::class, // Saved places untuk fitur "Trending Places".
-            AlbumSeeder::class, // Album & foto trip untuk setiap trip.
+            // UserSeeder::class, // 10 user Jabodetabek realistis (province_id, level_id disinkronkan dari poin).
+            // ChallengeSeeder::class, // Leaderboard users + progres misi user demo (jayadi_christopher).
+            // TripSeeder::class, // 20 trip realistis untuk user non-admin.
+            // SavedPlaceSeeder::class, // Saved places untuk fitur "Trending Places".
+            // AlbumSeeder::class, // Album & foto trip untuk setiap trip.
             MissionActionSeeder::class, // Tautkan misi ke aksi user (gamifikasi dinamis).
-            PlaceVisitSeeder::class,
-            NewsSeeder::class,
+            // PlaceVisitSeeder::class,
+            // NewsSeeder::class,
+            ProductionUserSeeder::class,
         ]);
 
         // Hitung ulang lencana bertingkat dari album setiap user (mis. UserSeeder's
