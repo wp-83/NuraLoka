@@ -234,13 +234,13 @@ class ProductionUserSeeder extends Seeder
             $placeId = $placeIds[$i % count($placeIds)];
             $albumId = $albumIds[$i % $albumCount];
 
-            // Tanpa foto contoh: photo_path dikosongkan agar tampil blank,
+            // Tanpa foto contoh: photo_path dibiarkan null (bukan string kosong),
             // barisnya tetap dibuat supaya lencana bertingkat (jumlah foto,
             // tempat unik) tetap terhitung.
             $photoRows[] = [
                 'album_id' => $albumId,
                 'place_id' => $placeId,
-                'photo_path' => '',
+                'photo_path' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

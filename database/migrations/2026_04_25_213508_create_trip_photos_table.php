@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('album_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('place_id')->nullable()->constrained()->cascadeOnUpdate()->cascadeOnDelete();
-            $table->string('photo_path');
+            $table->string('photo_path')->nullable();
             $table->timestamps();
         });
     }

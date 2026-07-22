@@ -139,10 +139,6 @@ class ChallengeSeeder extends Seeder
                     foreach ($picked as $i => $place) {
                         $photoPath = $this->seedAlbumPhoto($albumId + $i);
 
-                        if ($photoPath === null) {
-                            continue;
-                        }
-
                         DB::table('trip_photos')->insert([
                             'album_id' => $albumId,
                             'place_id' => $place->id,
