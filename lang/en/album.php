@@ -50,6 +50,11 @@ return [
     'field_date' => 'Date',
     'field_visibility' => 'Visibility',
     'field_photos' => 'Photos',
+    'photo_hint' => 'Pick one or more trip photos to put in the album. JPG, PNG or WebP, up to :max MB per photo.',
+    'photo_error_size' => 'Each photo may be at most :max MB.',
+    'photo_error_type' => 'Photos must be JPG, PNG or WebP.',
+    'photo_error_required' => 'Pick at least one photo.',
+    'photo_upload_failed' => 'The photos could not be uploaded. Please try again.',
     'cancel_upload' => 'Cancel upload',
     'create_submit' => 'Create Album',
 

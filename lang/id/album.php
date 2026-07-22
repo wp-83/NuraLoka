@@ -50,6 +50,11 @@ return [
     'field_date' => 'Tanggal',
     'field_visibility' => 'Visibilitas',
     'field_photos' => 'Foto',
+    'photo_hint' => 'Pilih satu atau beberapa foto perjalanan untuk dimasukkan ke dalam album. Format JPG, PNG, atau WebP, maksimal :max MB per foto.',
+    'photo_error_size' => 'Ukuran setiap foto maksimal :max MB.',
+    'photo_error_type' => 'Format foto harus JPG, PNG, atau WebP.',
+    'photo_error_required' => 'Pilih minimal satu foto.',
+    'photo_upload_failed' => 'Foto gagal diunggah. Coba lagi.',
     'cancel_upload' => 'Batal unggah',
     'create_submit' => 'Buat Album',
 

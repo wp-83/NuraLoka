@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AlbumController;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsBanned;
@@ -9,6 +10,7 @@ use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\PostTooLargeException;
 use Inertia\Inertia;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
@@ -34,6 +36,21 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Unggahan yang melebihi post_max_size PHP dihentikan sebelum controller
+        // sempat memvalidasi, sehingga user hanya melihat halaman error 413 tanpa
+        // penjelasan. Kembalikan ke form dengan pesan batas ukuran foto.
+        $exceptions->render(function (PostTooLargeException $e, $request) {
+            if ($request->expectsJson()) {
+                return;
+            }
+
+            return back()->withErrors([
+                'photos' => __('album.photo_error_size', [
+                    'max' => AlbumController::PHOTO_MAX_KB / 1024,
+                ]),
+            ]);
+        });
+
         $exceptions->render(function (HttpExceptionInterface $e, $request) {
 
             if ($request->expectsJson()) {

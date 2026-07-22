@@ -50,6 +50,11 @@ return [
     'field_date' => '날짜',
     'field_visibility' => '공개 범위',
     'field_photos' => '사진',
+    'photo_hint' => '앨범에 넣을 여행 사진을 한 장 이상 선택하세요. JPG, PNG, WebP 형식이며 사진당 최대 :max MB입니다.',
+    'photo_error_size' => '사진 한 장의 크기는 최대 :max MB입니다.',
+    'photo_error_type' => '사진은 JPG, PNG 또는 WebP 형식이어야 합니다.',
+    'photo_error_required' => '사진을 한 장 이상 선택하세요.',
+    'photo_upload_failed' => '사진을 업로드하지 못했습니다. 다시 시도해 주세요.',
     'cancel_upload' => '업로드 취소',
     'create_submit' => '앨범 만들기',
 

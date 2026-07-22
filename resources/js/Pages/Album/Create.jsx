@@ -5,6 +5,12 @@ import MainLayout from '@js/Layouts/MainLayout';
 import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
 import { useTranslation } from '@js/i18n';
+import {
+    PHOTO_ACCEPT,
+    PHOTO_MAX_MB,
+    photoErrorsFrom,
+    screenPhotos,
+} from '@js/Utils/albumPhotos';
 
 import {
     FiChevronLeft,
@@ -20,6 +26,9 @@ import {
 export default function AlbumCreate() {
     const { t } = useTranslation();
     const [previewPhotos, setPreviewPhotos] = useState([]);
+    // Error unggah dari pemeriksaan di browser (ukuran/format), terpisah dari
+    // errors milik server supaya keduanya bisa tampil.
+    const [photoError, setPhotoError] = useState('');
     const fileInputRef = useRef(null);
 
     const [locationSuggestions, setLocationSuggestions] = useState([]);
@@ -43,6 +52,8 @@ export default function AlbumCreate() {
     const maxDate = new Date()
         .toISOString()
         .split('T')[0];
+
+    const serverPhotoError = photoErrorsFrom(errors);
 
     // ============================================================
     // CLEANUP PREVIEW URLS
@@ -100,7 +111,18 @@ export default function AlbumCreate() {
 
         if (files.length === 0) return;
 
-        const newPreviews = files.map((file) => ({
+        // Tolak foto yang terlalu besar / salah format di sini juga, supaya user
+        // tidak menunggu unggahan 10MB hanya untuk ditolak server.
+        const { accepted, error } = screenPhotos(files, t);
+
+        setPhotoError(error);
+
+        if (accepted.length === 0) {
+            event.target.value = '';
+            return;
+        }
+
+        const newPreviews = accepted.map((file) => ({
             id: crypto.randomUUID(),
             file,
             preview: URL.createObjectURL(file),
@@ -111,7 +133,7 @@ export default function AlbumCreate() {
             'photos',
             [
                 ...data.photos,
-                ...files,
+                ...accepted,
             ]
         );
 
@@ -455,9 +477,9 @@ export default function AlbumCreate() {
                                     text-gray-50
                                 "
                             >
-                                Pilih satu atau beberapa foto
-                                perjalanan untuk dimasukkan ke
-                                dalam album.
+                                {t('album.photo_hint', {
+                                    max: PHOTO_MAX_MB,
+                                })}
                             </p>
                         </div>
 
@@ -476,27 +498,26 @@ export default function AlbumCreate() {
                             ref={fileInputRef}
                             type="file"
                             multiple
-                            accept="
-                                image/jpeg,
-                                image/png,
-                                image/jpg,
-                                image/webp
-                            "
+                            accept={PHOTO_ACCEPT}
                             className="hidden"
                             onChange={handleFileChange}
                         />
                     </div>
 
-                    {/* Photo Error */}
-                    {errors.photos && (
+                    {/* Photo Error — server (termasuk kunci per berkas "photos.0")
+                        dan hasil pemeriksaan di browser. */}
+                    {(serverPhotoError || photoError) && (
                         <p
+                            role="alert"
                             className="
                                 mb-3
                                 font-body text-micro
                                 text-error-dark
                             "
                         >
-                            {errors.photos}
+                            {[serverPhotoError, photoError]
+                                .filter(Boolean)
+                                .join(' ')}
                         </p>
                     )}
 
