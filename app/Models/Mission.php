@@ -41,7 +41,7 @@ class Mission extends Model
         return $this->belongsTo(Badge::class);
     }
 
-    /** Filter kategori tempat (opsional) untuk aksi berbasis tempat. */
+    /** Optional place-category filter, for place-based actions. */
     public function category()
     {
         return $this->belongsTo(Category::class);

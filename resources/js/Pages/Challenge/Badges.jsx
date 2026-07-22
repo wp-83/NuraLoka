@@ -114,8 +114,9 @@ export default function Badges({ generalBadges = [], specialBadges = [] }) {
                     <div>
                         <h2 className="text-subtitle font-heading font-bold text-primary mb-4">{t('challenge.special_badges')}</h2>
 
-                        {/* Kartu, bukan tabel — alasan sama seperti Lencana Umum:
-                            tabel 4 kolom memaksa geser ke samping di ponsel. */}
+                        {/* Cards, not a table — the same reason as the general
+                            badges: a 4-column table forces sideways scrolling on
+                            a phone. */}
                         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                             {specialBadges.map((badge, idx) => (
                                 <div

@@ -22,10 +22,10 @@ export default function Input({
     const [showPassword, setShowPassword] = useState(false);
     const [focused, setFocused] = useState(false);
 
-    // onFocus/onBlur milik pemanggil dipisahkan dari sisa props, lalu DIGABUNG
-    // dengan handler internal. Tanpa ini, {...restProps} yang ditulis setelah
-    // onFocus/onBlur akan menimpanya sehingga sorotan fokus berhenti bekerja —
-    // diam-diam, tanpa error.
+    // The caller's onFocus/onBlur are pulled out of the remaining props and
+    // COMBINED with the internal handlers. Without this, spreading
+    // {...restProps} after onFocus/onBlur would overwrite them and the focus
+    // highlight would quietly stop working, with no error.
     const { onFocus: onFocusProp, onBlur: onBlurProp, ...restProps } = props;
 
     const handleFocus = (event) => {
@@ -127,9 +127,9 @@ export default function Input({
                         onChange={onChange}
                         placeholder={placeholder}
                         disabled={disabled}
-                        // 'required' sudah didestrukturisasi di atas, jadi
-                        // props.required selalu undefined — textarea tidak
-                        // pernah benar-benar wajib diisi.
+                        // 'required' is destructured above, so props.required
+                        // is always undefined here — the textarea would never
+                        // actually be required.
                         required={required}
                         onFocus={handleFocus}
                         onBlur={handleBlur}
@@ -154,9 +154,9 @@ export default function Input({
                             onChange={onChange}
                             placeholder={placeholder}
                             disabled={disabled}
-                            // Sebelumnya 'required' hanya memunculkan tanda
-                            // bintang di label, tidak pernah sampai ke elemen
-                            // input — jadi validasi bawaan browser tidak jalan.
+                            // 'required' used to only draw the asterisk on the
+                            // label and never reach the input element, so the
+                            // browser's own validation never ran.
                             required={required}
                             onFocus={handleFocus}
                             onBlur={handleBlur}

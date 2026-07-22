@@ -3,11 +3,11 @@ import PlaceDetail from '@components/Features/PlaceDetail';
 import { useTranslation } from '@js/i18n';
 
 /**
- * Detail tempat dari halaman Jelajah.
+ * Place detail, reached from Explore.
  *
- * Seluruh isinya ada di komponen PlaceDetail yang dipakai bersama halaman
- * Impian (Wishlist/Show) — dua halaman ini memang menampilkan hal yang sama,
- * jadi tampilannya tidak boleh berbeda. Yang berbeda hanya tombol kembali.
+ * All of it lives in the PlaceDetail component, shared with the Wishlist detail
+ * page (Wishlist/Show): the two show the same thing, so they must not look
+ * different. Only the back button differs.
  */
 export default function Show(props) {
     const { t } = useTranslation();

@@ -3,12 +3,10 @@ import PlaceDetail from '@components/Features/PlaceDetail';
 import { useTranslation } from '@js/i18n';
 
 /**
- * Detail tempat dari halaman Impian.
+ * Place detail, reached from the wishlist.
  *
- * Memakai komponen PlaceDetail yang SAMA dengan detail di Jelajah. Sebelumnya
- * halaman ini punya salinan tata letaknya sendiri yang sudah tertinggal jauh:
- * galerinya mengulang satu gambar delapan kali, tidak menampilkan jumlah
- * pengunjung maupun jumlah album, dan harganya cuma teks statis.
+ * Uses the SAME PlaceDetail component as the Explore detail page. This page once
+ * had its own copy of the layout, which had drifted badly out of date.
  */
 export default function Show(props) {
     const { t } = useTranslation();

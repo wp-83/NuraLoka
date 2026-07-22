@@ -1,8 +1,8 @@
 /**
- * Aturan unggah foto album, dipakai bersama halaman Buat Album dan Ubah Album.
+ * Album photo upload rules, shared by the Create Album and Edit Album pages.
  *
- * Batasnya HARUS sama dengan AlbumController::PHOTO_MAX_KB (10 MB) — pemeriksaan
- * di sisi klien hanya supaya user tahu lebih cepat; server tetap yang memutuskan.
+ * The limit MUST match AlbumController::PHOTO_MAX_KB (10 MB) — the client-side
+ * check exists only to tell the user sooner; the server still decides.
  */
 export const PHOTO_MAX_MB = 10;
 export const PHOTO_MAX_BYTES = PHOTO_MAX_MB * 1024 * 1024;
@@ -16,8 +16,8 @@ const ALLOWED_TYPES = [
 ];
 
 /**
- * Pisahkan berkas yang layak diunggah dari yang ditolak, lengkap dengan pesan
- * error siap tampil. `t` adalah fungsi terjemahan dari useTranslation().
+ * Split the files worth uploading from the rejected ones, with a ready-to-show
+ * error message. `t` is the translate function from useTranslation().
  */
 export function screenPhotos(files, t) {
     const accepted = [];
@@ -59,9 +59,10 @@ export function screenPhotos(files, t) {
 }
 
 /**
- * Kumpulkan pesan error unggah foto dari server. Laravel memberi kunci per
- * berkas ("photos.0", "photos.1"), bukan hanya "photos" — dulu pesan itu tidak
- * pernah muncul karena halaman hanya membaca errors.photos.
+ * Collect the server's photo-upload errors.
+ *
+ * Laravel keys them per file ("photos.0", "photos.1"), not just "photos", so a
+ * page reading only errors.photos shows nothing at all.
  */
 export function photoErrorsFrom(errors = {}) {
     return Object.entries(errors)

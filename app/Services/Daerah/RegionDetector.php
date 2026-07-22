@@ -8,16 +8,16 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Menentukan provinsi pengunjung. Urutan prioritas dipegang oleh pemanggil
- * (GreetingResolver); kelas ini hanya menyediakan cara-caranya.
+ * Works out which province a visitor is in. The order of preference belongs to
+ * the caller (GreetingResolver); this class only supplies the means.
  *
- *   1. provinsi tersimpan milik user  → fromUser()
- *   2. koordinat Geolocation browser  → fromCoordinates()
- *   3. geolokasi berbasis IP          → fromIp()
+ *   1. the user's saved province      → fromUser()
+ *   2. browser Geolocation coordinates → fromCoordinates()
+ *   3. IP-based geolocation            → fromIp()
  */
 class RegionDetector
 {
-    /** Provinsi dari profil user yang sedang login. */
+    /** The province on the signed-in user's profile. */
     public function fromUser(?object $user): ?string
     {
         if ($user === null) {
@@ -30,15 +30,14 @@ class RegionDetector
     }
 
     /**
-     * Provinsi dari koordinat.
+     * The province a pair of coordinates falls in.
      *
-     * Dua tahap:
-     *   1. kotak batas provinsi — akurat untuk kota dekat perbatasan;
-     *   2. centroid terdekat — cadangan bila titik tidak masuk kotak mana pun.
+     * Two stages:
+     *   1. province bounding boxes — accurate for cities near a border;
+     *   2. nearest centroid — the fallback when the point is in no box at all.
      *
-     * Disengaja memakai data lokal, bukan reverse-geocoding pihak ketiga: tidak
-     * ada koordinat pengguna yang dikirim keluar dan tidak ada ketergantungan
-     * jaringan.
+     * Deliberately uses local data rather than third-party reverse geocoding: no
+     * user coordinate ever leaves the server, and there is no network dependency.
      */
     public function fromCoordinates(float $latitude, float $longitude): ?string
     {
@@ -47,11 +46,11 @@ class RegionDetector
     }
 
     /**
-     * Provinsi yang kotak batasnya memuat titik ini.
+     * The province whose bounding box contains this point.
      *
-     * Bila titik masuk ke beberapa kotak (provinsi memang bisa tumpang tindih,
-     * dan DKI Jakarta sepenuhnya dikelilingi Jawa Barat & Banten), dipilih kotak
-     * TERKECIL — yaitu provinsi paling spesifik yang memuat titik tersebut.
+     * When the point falls inside several boxes (provinces do overlap, and DKI
+     * Jakarta is entirely surrounded by Jawa Barat and Banten), the SMALLEST box
+     * wins — that is the most specific province containing the point.
      */
     private function fromBounds(float $latitude, float $longitude): ?string
     {
@@ -80,7 +79,7 @@ class RegionDetector
         return $match;
     }
 
-    /** Centroid provinsi terdekat, dibatasi radius wajar. */
+    /** The nearest province centroid, bounded by a sane radius. */
     private function fromNearestCentroid(float $latitude, float $longitude): ?string
     {
         $nearest = null;
@@ -97,13 +96,13 @@ class RegionDetector
 
         $limit = config('daerah.detection.max_distance_km', 500);
 
-        // Di luar radius wajar → kemungkinan besar bukan di Indonesia.
+        // Beyond a sane radius → almost certainly not in Indonesia at all.
         return $shortest <= $limit ? $nearest : null;
     }
 
     /**
-     * Provinsi dari alamat IP. Nonaktif secara default karena memerlukan
-     * panggilan ke layanan pihak ketiga (IP pengunjung dikirim keluar).
+     * The province behind an IP address. Disabled by default because it requires
+     * a call to a third-party service (the visitor's IP leaves the server).
      */
     public function fromIp(Request $request): ?string
     {
@@ -137,14 +136,14 @@ class RegionDetector
                         return null;
                     }
 
-                    // Nama wilayah lebih dipercaya, tapi sebagian layanan hanya
-                    // mengembalikan kota — dulu itu terbuang percuma.
+                    // The region name is the more trustworthy field, but some
+                    // services return only a city — which used to be thrown away.
                     return $this->normaliseProvinceName((string) ($payload['regionName'] ?? ''))
                         ?? app(ProvinceMapper::class)->resolveName((string) ($payload['city'] ?? ''));
                 } catch (\Throwable $e) {
-                    // Deteksi lokasi bersifat pelengkap — kegagalan tidak boleh
-                    // menggagalkan request. Cukup mundur ke Bahasa Indonesia.
-                    Log::debug('Daerah IP lookup gagal: '.$e->getMessage());
+                    // Location detection is a nicety — a failure must not fail
+                    // the request. Falling back to Indonesian is enough.
+                    Log::debug('Daerah IP lookup failed: '.$e->getMessage());
 
                     return null;
                 }
@@ -153,8 +152,9 @@ class RegionDetector
     }
 
     /**
-     * Samakan penamaan provinsi dari layanan luar dengan nama di tabel provinces
-     * (mis. "West Java" / "Jawa Barat", "Special Region of Yogyakarta").
+     * Reconcile the province naming used by an external service with the names
+     * in the provinces table (e.g. "West Java" → "Jawa Barat", "Special Region
+     * of Yogyakarta" → "DI Yogyakarta").
      */
     private function normaliseProvinceName(string $name): ?string
     {
@@ -204,7 +204,7 @@ class RegionDetector
         return $aliases[mb_strtolower($name)] ?? null;
     }
 
-    /** Jarak lingkaran besar antara dua titik, dalam kilometer. */
+    /** Great-circle distance between two points, in kilometres. */
     private function haversineKm(float $lat1, float $lng1, float $lat2, float $lng2): float
     {
         $earthRadius = 6371;

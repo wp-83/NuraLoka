@@ -57,36 +57,58 @@ class Place extends Model
         return $this->hasMany(PlaceVisit::class);
     }
 
-    /** Foto yang dilampirkan admin ke tempat ini (pivot photo_place). */
+    /** Photos an admin attached to this place (the photo_place pivot). */
     public function photos()
     {
         return $this->belongsToMany(Photo::class, 'photo_place')
             ->withTimestamps();
     }
 
-    /** Referensi asal OSM (hanya ada bila source = 'osm'). */
+    /** Where this place came from in OSM (present only when source = 'osm'). */
     public function osmRef()
     {
         return $this->hasOne(PlaceOsmRef::class);
     }
 
-    /** Foto trip yang ditandai berada di tempat ini (dari album pengguna). */
+    /** Trip photos tagged as taken at this place (from users' albums). */
     public function tripPhotos()
     {
         return $this->hasMany(TripPhoto::class);
     }
 
     /**
-     * Foto sampul untuk kartu tempat (PlaceCard) — null bila tempat ini belum
-     * punya foto sama sekali, sehingga kartunya memakai gambar bawaan.
+     * The trip photos ANYONE may see: only those from public albums belonging to
+     * users who are not banned.
      *
-     * Urutan pencarian sama dengan galeri di halaman detail:
-     *   1. foto unggahan admin (relasi photos);
-     *   2. foto milik pengguna dari album yang menandai tempat ini.
+     * The raw tripPhotos relation knows nothing about privacy, even though album
+     * privacy is stored on trips.is_public (see
+     * AlbumController::toggleVisibility). The moment an owner makes an album
+     * private, its photos must stop appearing anywhere outside that album —
+     * including as the cover of a place card in Explore/Wishlist and in the
+     * gallery on a detail page. The rule is written once here so no caller can
+     * forget to apply it.
+     */
+    public function publicTripPhotos()
+    {
+        return $this->tripPhotos()
+            ->whereHas('album.trip', function ($q) {
+                $q->where('is_public', true)
+                    ->whereHas('user', fn ($uq) => $uq->where('is_banned', false));
+            });
+    }
+
+    /**
+     * The cover photo for a place card (PlaceCard) — null when the place has no
+     * photo at all, which makes the card fall back to its default image.
      *
-     * Diambil dari relasi yang SUDAH dimuat bila ada, supaya menampilkan
-     * sederet kartu tidak memicu kueri tambahan per kartu (N+1). Muat dengan
-     * ->with(['photos', 'tripPhotos']) sebelum memakainya untuk banyak tempat.
+     * The search order matches the gallery on the detail page:
+     *   1. photos uploaded by an admin (the photos relation);
+     *   2. users' photos from PUBLIC albums tagged with this place
+     *      (publicTripPhotos — a private album never becomes a cover).
+     *
+     * Reads from an ALREADY-LOADED relation when there is one, so rendering a
+     * row of cards does not fire an extra query per card (N+1). Eager-load with
+     * ->with(['photos', 'publicTripPhotos']) before using it across many places.
      */
     public function getImgAttribute(): ?string
     {
@@ -98,9 +120,9 @@ class Place extends Model
             return '/storage/'.$adminPhoto->path;
         }
 
-        $tripPhoto = $this->relationLoaded('tripPhotos')
-            ? $this->tripPhotos->first()
-            : $this->tripPhotos()->first();
+        $tripPhoto = $this->relationLoaded('publicTripPhotos')
+            ? $this->publicTripPhotos->first()
+            : $this->publicTripPhotos()->first();
 
         if ($tripPhoto?->photo_path) {
             return '/storage/'.$tripPhoto->photo_path;

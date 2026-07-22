@@ -12,18 +12,18 @@ export default function PlaceCard({ place, onVisit, isSaved = false, onToggleSav
             onClick={() => onVisit(place)}
             className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 group cursor-pointer relative"
         >
-            {/* Bidang foto — SELALU terisi penuh, termasuk saat memakai gambar
-                bawaan. /images/defaults/image.png memang placeholder selebar
-                bidang (570×321), jadi diperlakukan sama seperti foto asli:
-                object-cover, bukan ikon kecil di tengah. */}
+            {/* The photo area is ALWAYS filled, including with the default
+                image. /images/defaults/image.png is a full-bleed placeholder
+                (570x321), so it is treated exactly like a real photo:
+                object-cover, not a small icon in the middle. */}
             <div className="relative h-44 bg-gray-10 overflow-hidden">
                 <img
                     src={place.img || '/images/defaults/image.png'}
                     alt={place.img ? place.name : ''}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    // Foto bisa saja terhapus dari storage — jangan sampai
-                    // kartunya menampilkan ikon gambar rusak.
+                    // The photo may have been deleted from storage — never let
+                    // the card show a broken-image icon.
                     onError={(e) => {
                         e.currentTarget.onerror = null;
                         e.currentTarget.src = '/images/defaults/image.png';

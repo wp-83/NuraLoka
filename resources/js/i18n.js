@@ -1,9 +1,12 @@
 import { usePage } from '@inertiajs/react';
 
 /**
- * Terjemahkan satu key bertitik (mis. "nav.home") dari objek translations yang di-share
- * server. Bila key tak ditemukan, kembalikan key apa adanya (aman & memudahkan debug).
- * Mendukung placeholder gaya Laravel: t('common.hello', { name: 'Andi' }) → ":name" diganti.
+ * Translate one dotted key (e.g. "nav.home") from the translations object shared
+ * by the server. An unknown key is returned as-is, which is safe and makes the
+ * gap obvious while debugging.
+ *
+ * Supports Laravel-style placeholders: t('common.hello', { name: 'Andi' })
+ * replaces ":name".
  */
 export function translate(translations, key, replacements = {}) {
     const value = String(key)
@@ -20,9 +23,11 @@ export function translate(translations, key, replacements = {}) {
 }
 
 /**
- * Ambil nilai terjemahan MENTAH (bisa array/objek, mis. daftar slide) dari key bertitik.
- * Berbeda dari translate() yang selalu memaksa string; ini mengembalikan nilai apa adanya,
- * atau `fallback` bila tidak ditemukan.
+ * Read a RAW translation value (which may be an array or object, e.g. a list of
+ * slides) from a dotted key.
+ *
+ * Unlike translate(), which always coerces to a string, this returns the value
+ * untouched — or `fallback` when the key is missing.
  */
 export function translateRaw(translations, key, fallback = null) {
     const value = String(key)
@@ -33,11 +38,12 @@ export function translateRaw(translations, key, fallback = null) {
 }
 
 /**
- * Hook terjemahan untuk komponen. Membaca translations & locale dari props Inertia
- * (di-share via HandleInertiaRequests).
- * Pemakaian: const { t, tRaw, locale } = useTranslation().
- *   - t(key, repl)  → string (fallback ke key)
- *   - tRaw(key, fb) → nilai mentah (array/objek), fallback fb
+ * Translation hook for components. Reads translations and locale from the
+ * Inertia props (shared by HandleInertiaRequests).
+ *
+ * Usage: const { t, tRaw, locale } = useTranslation().
+ *   - t(key, repl)  → a string (falling back to the key itself)
+ *   - tRaw(key, fb) → the raw value (array/object), falling back to fb
  */
 export function useTranslation() {
     const { translations = {}, locale = 'id' } = usePage().props;

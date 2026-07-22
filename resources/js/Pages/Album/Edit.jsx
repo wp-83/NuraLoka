@@ -4,6 +4,7 @@ import { router, useForm } from '@inertiajs/react';
 import MainLayout from '@js/Layouts/MainLayout';
 import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
+import { useConfirm } from '@js/Contexts/ConfirmContext';
 import { useTranslation } from '@js/i18n';
 import {
     PHOTO_ACCEPT,
@@ -29,16 +30,17 @@ export default function AlbumEdit({
     photos: initialPhotos = [],
 }) {
     const { t } = useTranslation();
+    const confirm = useConfirm();
     const [photos, setPhotos] = useState(initialPhotos);
-    // Foto ditambahkan lewat router.post, bukan lewat useForm, sehingga error
-    // validasinya TIDAK pernah masuk ke `errors` milik form ini. Ditampung di
-    // sini supaya pesan dari server (dan dari pemeriksaan browser) tetap muncul.
+    // Photos are added through router.post rather than useForm, so their
+    // validation errors NEVER reach this form's `errors`. They are held here so
+    // messages from the server — and from the browser check — still appear.
     const [photoError, setPhotoError] = useState('');
     const [uploadingPhotos, setUploadingPhotos] = useState(false);
     const fileInputRef = useRef(null);
 
-    // Album sistem (perjalanan 2 titik): dibuat otomatis — judul, lokasi, dan
-    // tanggal terkunci. User hanya boleh menambah/menghapus foto.
+    // A system album (the two-point journey) is generated, so its title, location
+    // and date are locked. The user may only add or remove photos.
     const isSystem = album?.is_system ?? false;
 
     const [locationSuggestions, setLocationSuggestions] = useState([]);
@@ -134,8 +136,8 @@ export default function AlbumEdit({
 
         if (files.length === 0) return;
 
-        // Ukuran & format diperiksa lebih dulu di browser; server tetap
-        // memvalidasi ulang dengan batas yang sama (10MB per foto).
+        // Size and format are checked in the browser first; the server still
+        // revalidates against the same limit (10 MB per photo).
         const { accepted, error } = screenPhotos(files, t);
 
         setPhotoError(error);
@@ -178,10 +180,11 @@ export default function AlbumEdit({
         );
     };
 
-    const handleRemovePhoto = (photoId) => {
-        const isConfirmed = window.confirm(
-            t('album.delete_photo_confirm')
-        );
+    const handleRemovePhoto = async (photoId) => {
+        const isConfirmed = await confirm({
+            title: t('album.delete_photo'),
+            message: t('album.delete_photo_confirm'),
+        });
 
         if (!isConfirmed) return;
 
@@ -421,8 +424,8 @@ export default function AlbumEdit({
                     >
                         {/* Location */}
                         <div>
-                            {/* Dibungkus relative agar daftar saran di bawah
-                                menempel pada kolomnya. */}
+                            {/* Wrapped in relative so the suggestion list below
+                                anchors to this field. */}
                             <div className="relative">
                                 <Input
                                     name="location"
@@ -564,8 +567,8 @@ export default function AlbumEdit({
                         />
                     </div>
 
-                    {/* Photo Error — unggahan foto memakai router.post, jadi
-                        pesannya datang lewat state, bukan errors milik form. */}
+                    {/* Photo error — uploads go through router.post, so the
+                        message arrives via state, not the form's errors. */}
                     {photoError && (
                         <p
                             role="alert"

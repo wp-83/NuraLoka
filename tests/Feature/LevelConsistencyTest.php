@@ -86,7 +86,27 @@ class LevelConsistencyTest extends TestCase
     {
         // Inti keluhannya: kalau semua user bergelar sama, fitur level tidak
         // terlihat bekerja di leaderboard.
-        $levels = UserDetail::orderByDesc('total_points')
+        //
+        // User-nya dibuat di sini, bukan diambil dari data seed. DatabaseSeeder
+        // sekarang hanya memakai ProductionUserSeeder (dua akun), jadi versi
+        // lama menguji komposisi seeder — bukan apakah leaderboard benar-benar
+        // menampilkan level yang berbeda-beda.
+        $tingkat = Level::orderBy('order')->take(3)->get();
+
+        $this->assertCount(3, $tingkat, 'Katalog level kurang dari 3 tingkat.');
+
+        foreach ($tingkat as $index => $level) {
+            $user = User::factory()->create();
+
+            UserDetail::factory()->create([
+                'user_id' => $user->id,
+                'fullname' => "Penguji Level {$index}",
+                'total_points' => $level->min_points,
+                'level_id' => $level->id,
+            ]);
+        }
+
+        $levels = UserDetail::byRank()
             ->take(10)
             ->with('level')
             ->get()

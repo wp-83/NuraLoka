@@ -23,9 +23,9 @@ function getAlbumThumbnail(thumbnail) {
 
 // ============================================================
 // ALBUM CARD
-// Kartu album ringkas untuk grid. Meta (lokasi/tanggal/jumlah foto)
-// hanya dirender bila datanya tersedia, sehingga kartu ini bisa dipakai
-// baik di halaman Album maupun profil publik pengguna lain.
+// Compact album card for a grid. The meta line (location, date, photo count) is
+// rendered only when that data is present, so the same card works on the Album
+// page and on someone else's public profile.
 // ============================================================
 export default function AlbumCard({ album, showVisibility = false }) {
     const { t } = useTranslation();

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
 
 import EmptyState from '@components/Common/EmptyState';
+import Reveal from '@components/Common/Reveal';
 import CategoryChip from '@components/Features/CategoryChip';
 import PlaceMiniMap from '@components/Features/PlaceMiniMap';
 import Button from '@components/Forms/Button';
@@ -23,7 +24,7 @@ import {
 
 import { MdOutlinePark } from 'react-icons/md';
 
-// Ambil nilai cookie (untuk header CSRF pada fetch non-Inertia)
+// Read a cookie value, for the CSRF header on non-Inertia fetches.
 function getCookie(name) {
     const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
     return m ? decodeURIComponent(m.pop()) : '';
@@ -48,7 +49,7 @@ export default function PlaceDetail({
     const flashCheckin = (ok, message) =>
         showFlash(ok ? 'success' : 'error', message);
 
-    // Tinggi kartu bergilir agar tata letak masonry tetap bervariasi.
+    // Card heights cycle so the masonry layout stays varied.
     const galleryHeights = ['h-[28rem]', 'h-64', 'h-80', 'h-[32rem]', 'h-96', 'h-64', 'h-80', 'h-64'];
 
     const handleToggleSave = () => {
@@ -128,8 +129,9 @@ export default function PlaceDetail({
                             gap-4
                         "
                     >
-                        {/* Back — tujuannya ditentukan halaman pemanggil, karena
-                            komponen ini dipakai baik dari Jelajah maupun Impian. */}
+                        {/* Back — the destination is set by the calling page,
+                            since this component serves both Explore and
+                            Wishlist. */}
                         <Link
                             href={backHref}
                         >
@@ -219,7 +221,7 @@ export default function PlaceDetail({
                         {/* ====================================================
                             LEFT INFORMATION
                         ==================================================== */}
-                        <div className="w-full lg:w-2/3">
+                        <Reveal animation="fade-right" className="w-full lg:w-2/3">
                             {/* Place Name */}
                             <h1
                                 className="
@@ -424,12 +426,14 @@ export default function PlaceDetail({
                                     </span>
                                 </div>
                             </div>
-                        </div>
+                        </Reveal>
 
                         {/* ====================================================
                             MAP PREVIEW
                         ==================================================== */}
-                        <div
+                        <Reveal
+                            animation="fade-left"
+                            delay={120}
                             className="
                                 flex w-full justify-end
                                 lg:w-1/3
@@ -460,7 +464,7 @@ export default function PlaceDetail({
                                     />
                                 </div>
                             </div>
-                        </div>
+                        </Reveal>
                     </div>
                 </div>
             </section>
@@ -470,7 +474,7 @@ export default function PlaceDetail({
             ======================================================== */}
             <section className="py-12">
                 {/* Gallery Header */}
-                <div className="mb-10 flex items-center gap-4">
+                <Reveal className="mb-10 flex items-center gap-4">
                     <img
                         src="/images/mascots/camera.png"
                         alt="Maskot NuraLoka dengan kamera"
@@ -493,7 +497,7 @@ export default function PlaceDetail({
                     >
                         {t('explore.gallery_title', { name: place?.name })}
                     </h2>
-                </div>
+                </Reveal>
 
                 {/* Masonry Gallery */}
                 {gallery.length > 0 ? (
@@ -507,8 +511,14 @@ export default function PlaceDetail({
                         "
                     >
                         {gallery.map((item, index) => (
-                            <div
+                            // 'fade' is opacity-only on purpose: this is a CSS
+                            // multi-column layout, and animating a transform on
+                            // a column child makes the browser re-flow the
+                            // columns mid-animation and the tiles jump.
+                            <Reveal
                                 key={item.id}
+                                animation="fade"
+                                stagger={index}
                                 className="
                                     group relative
                                     break-inside-avoid
@@ -557,7 +567,7 @@ export default function PlaceDetail({
                                         group-hover:bg-black/10
                                     "
                                 />
-                            </div>
+                            </Reveal>
                         ))}
                     </div>
                 ) : (

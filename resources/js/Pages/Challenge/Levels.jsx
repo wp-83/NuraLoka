@@ -8,15 +8,15 @@ import { useTranslation } from '@js/i18n';
 import { IoChevronBackSharp } from 'react-icons/io5';
 
 /**
- * Bentuk jalan untuk dua rasio layar.
+ * The road shape, in two aspect ratios.
  *
- * Satu jalur saja tidak cukup: bentuk lebar 800×900 kalau dipaksakan ke layar
- * ponsel hanya setinggi ±386px — jalannya jadi kecil dan penanda levelnya
- * berdesakan. Versi ponsel dibuat sempit-tinggi supaya memakai ruang vertikal
- * yang memang tersedia di sana.
+ * One path is not enough: forced onto a phone screen, the wide 800x900 shape is
+ * only about 386px tall — the road shrinks and the level markers crowd together.
+ * The phone version is narrow and tall so it uses the vertical space that screen
+ * actually has.
  *
- * Keduanya memakai Bézier kubik dengan titik kendali SEGARIS di tiap sambungan,
- * sehingga belokannya mengalir tanpa sudut patah.
+ * Both use cubic Béziers with COLLINEAR control points at every join, so the
+ * curves flow without a visible kink.
  */
 const ROAD_WIDE = {
     width: 800,
@@ -47,14 +47,15 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
     const [carPos, setCarPos] = useState({ x: 0, y: 0 });
     const [labelVisible, setLabelVisible] = useState(false);
     const [isDriving, setIsDriving] = useState(false);
-    // Sekali true dan tidak pernah kembali false — menandai garis berwarna sudah
-    // boleh terisi. Berbeda dari isDriving yang kembali false setelah animasi
-    // selesai (kalau dipakai, garisnya akan menyusut lagi ke nol).
+    // Goes true once and never back to false — the signal that the coloured line
+    // may fill. Unlike isDriving, which returns to false when the animation ends
+    // and would therefore shrink the line back to zero.
     const [progressStarted, setProgressStarted] = useState(false);
     const [pathReady, setPathReady] = useState(false);
 
-    // Pilih bentuk jalan sesuai lebar layar. Memakai matchMedia, bukan sekadar
-    // kelas Tailwind, karena viewBox & pembagi posisi persen ikut berubah.
+    // Pick the road shape from the screen width. This uses matchMedia rather than
+    // Tailwind classes alone, because the viewBox and the percentage divisors
+    // change with it too.
     const [road, setRoad] = useState(ROAD_WIDE);
 
     useEffect(() => {
@@ -92,9 +93,9 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
 
         setIsDriving(true);
 
-        // Menyalakan garis berwarna pada saat yang sama dengan mobil mulai jalan.
-        // Tanpa ini garisnya sudah bergerak sejak jalur selesai diukur, 400 ms
-        // sebelum mobilnya berangkat, sehingga keduanya tidak pernah sejajar.
+        // Start the coloured line at the same moment the car sets off. Without
+        // this the line begins as soon as the path is measured, 400 ms before the
+        // car leaves, and the two never line up.
         setProgressStarted(true);
 
         // Set initial position
@@ -143,20 +144,14 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
         checkPath();
     }, []);
 
-    // Posisi penanda level DIHITUNG dari jalur SVG yang sama dengan yang dilalui
-    // mobil, memakai pembagian jarak yang sama dengan globalPercent di atas.
-    //
-    // Sebelumnya koordinatnya ditulis tangan dan tidak menempel di jalur — mis.
-    // penanda terakhir di (550, 670) padahal jalurnya berakhir di (700, 800).
-    // Akibatnya mobil tidak pernah berhenti tepat di penanda levelnya.
+    // Level marker positions are COMPUTED from the same SVG path the car drives,
+    // using the same distance division as globalPercent above — so a marker
+    // always sits exactly where the car stops.
     const [positions, setPositions] = useState([]);
 
-    // Panjang jalur SEBENARNYA, diukur dari elemen SVG-nya.
-    //
-    // Sebelumnya nilai ini ditulis tetap 2600 untuk garis berwarna, sementara
-    // mobil memakai path.getTotalLength() yang sesungguhnya. Karena keduanya
-    // memakai panjang yang berbeda, ujung garis berwarna tidak pernah berhimpit
-    // dengan posisi mobil.
+    // The REAL path length, measured from the SVG element. The coloured line and
+    // the car must use one and the same length, or the end of the line never
+    // coincides with the car.
     const [pathLength, setPathLength] = useState(0);
 
     useEffect(() => {
@@ -178,13 +173,13 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
                 return { left: point.x, top: point.y };
             }),
         );
-        // 'road' ikut jadi dependensi: saat bentuk jalan berganti (mis. layar
-        // diputar), panjang & posisinya harus dihitung ulang.
+        // 'road' is a dependency too: when the shape changes (on rotation, say)
+        // the length and the positions must be recomputed.
     }, [pathReady, allLevels, road]);
 
-    // Garis berwarna memakai panjang yang sama dengan mobil, sehingga ujungnya
-    // tepat di posisi mobil. Sebelum terukur, dipakai 1 agar dasharray/offset
-    // saling meniadakan — garisnya tersembunyi, bukan tampil penuh sesaat.
+    // The coloured line uses the car's length, so it ends exactly at the car.
+    // Before measurement it uses 1, so dasharray and offset cancel out and the
+    // line is hidden rather than flashing at full length.
     const strokeLength = pathLength || 1;
     const fillLength = progressStarted ? strokeLength * globalPercent : 0;
 
@@ -216,15 +211,15 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
                         */}
                         <div
                             className="relative w-full max-w-[800px]"
-                            // Rasio mengikuti viewBox jalan yang sedang dipakai,
-                            // supaya SVG mengisi penuh tanpa ruang kosong dan
-                            // posisi persen penanda tetap tepat.
+                            // The ratio follows the road's current viewBox, so
+                            // the SVG fills its box with no empty space and the
+                            // markers' percentage positions stay accurate.
                             style={{ aspectRatio: `${road.width} / ${road.height}` }}
                         >
                             {/* Winding road SVG */}
-                            {/* drop-shadow-md dilepas: bayangan kini dari filter
-                                roadShadow yang hanya mengenai badan jalan, bukan
-                                seluruh isi SVG. */}
+                            {/* drop-shadow-md removed: the shadow now comes from
+                                the roadShadow filter, which applies to the road
+                                body alone rather than the whole SVG. */}
                             <svg
                                 width="100%"
                                 height="100%"
@@ -235,15 +230,15 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
                             >
                                 <defs>
                                     <path
-                                        // key memaksa elemen dibuat ulang saat
-                                        // bentuk jalan berganti, sehingga
-                                        // getTotalLength() membaca jalur baru.
+                                        // The key forces a remount when the road
+                                        // shape changes, so getTotalLength()
+                                        // measures the new path.
                                         key={road.width}
                                         ref={pathRef}
                                         id="mainPath"
                                         d={road.d}
                                     />
-                                    {/* Bayangan lembut di bawah badan jalan. */}
+                                    {/* A soft shadow under the road body. */}
                                     <filter
                                         id="roadShadow"
                                         x="-20%"
@@ -275,11 +270,12 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
                                             stroke: #5A3812;
                                             stroke-dasharray: ${strokeLength};
                                             stroke-dashoffset: ${strokeLength - fillLength};
-                                            /* Harus sama dengan animasi mobil:
-                                               2500 ms, ease-out cubic (lihat
-                                               animateCar). Kurva yang berbeda
-                                               membuat garis & mobil berpisah di
-                                               tengah animasi meski finis bareng. */
+                                            /* Must match the car animation:
+                                               2500 ms, ease-out cubic (see
+                                               animateCar). A different curve
+                                               separates the line from the car
+                                               mid-animation even though they
+                                               finish together. */
                                             transition: stroke-dashoffset 2.5s cubic-bezier(0.33, 1, 0.68, 1);
                                         }
                                         /* Marka tengah putus-putus. Proporsi garis
@@ -314,18 +310,17 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
                                     </style>
                                 </defs>
 
-                                {/* Jalan disusun berlapis dari luar ke dalam supaya
-                                    terbaca seperti jalan sungguhan:
+                                {/* The road is layered outside in so it reads as a
+                                    real road:
 
-                                      bahu jalan → marka tepi → aspal → marka tengah
+                                      shoulder -> edge line -> asphalt -> centre line
 
-                                    Marka tepi dibuat dengan menumpuk aspal yang
-                                    sedikit lebih sempit di atas lapisan putih,
-                                    sehingga menyisakan garis putih tipis di kedua
-                                    sisi — SVG tidak bisa menggambar garis sejajar
-                                    dari satu path. */}
+                                    The edge lines come from stacking slightly
+                                    narrower asphalt over a white layer, leaving a
+                                    thin white line on each side — SVG cannot draw
+                                    parallel lines from a single path. */}
 
-                                {/* Bahu jalan (tanah/kerikil) + bayangan */}
+                                {/* Shoulder (dirt/gravel) plus its shadow */}
                                 <use
                                     href="#mainPath"
                                     stroke="#FFF0E8"
@@ -335,16 +330,16 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
                                     filter="url(#roadShadow)"
                                 />
 
-                                {/* Lapisan marka tepi */}
+                                {/* The edge-line layer */}
                                 <use href="#mainPath" stroke="#F3F4F2" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round" />
 
-                                {/* Aspal belum ditempuh */}
+                                {/* Asphalt not yet travelled */}
                                 <use href="#mainPath" className="path-bg" strokeWidth="28" strokeLinecap="round" strokeLinejoin="round" />
 
-                                {/* Aspal sudah ditempuh */}
+                                {/* Asphalt already travelled */}
                                 <use href="#mainPath" className="path-fill" strokeWidth="28" strokeLinecap="round" strokeLinejoin="round" />
 
-                                {/* Marka tengah putus-putus */}
+                                {/* Dashed centre line */}
                                 <use href="#mainPath" className="path-dash-bg" strokeWidth="3" strokeLinecap="butt" strokeLinejoin="round" />
                             </svg>
 
@@ -352,8 +347,9 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
                             {allLevels.map((level, idx) => {
                                 const pos = positions[idx];
 
-                                // Menunggu jalur siap; tanpa ini penanda sempat
-                                // menumpuk di pojok sebelum posisinya dihitung.
+                                // Wait for the path; without this the markers
+                                // briefly pile up in the corner before their
+                                // positions are computed.
                                 if (!pos) return null;
 
                                 const isCurrent = level.name === currentLevel?.name;
@@ -373,12 +369,12 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
                                             }
                                         `}
                                         /*
-                                         * Posisi dalam PERSEN terhadap viewBox, bukan
-                                         * piksel. Mobil sudah memakai cara ini
-                                         * (x/800, y/900); penanda yang masih memakai
-                                         * piksel akan meleset dari jalannya begitu
-                                         * lebar kontainer bukan tepat 800px — yaitu
-                                         * di hampir semua layar.
+                                         * Positioned in PERCENT of the viewBox, not
+                                         * in pixels. The car already works this way
+                                         * (x/800, y/900); a marker still using pixels
+                                         * drifts off the road as soon as the
+                                         * container is not exactly 800px wide — which
+                                         * is nearly every screen.
                                          */
                                         style={{
                                             left: `${(pos.left / road.width) * 100}%`,
@@ -420,9 +416,9 @@ export default function Levels({ totalPoints = 0, currentLevel = {}, allLevels =
 // ─── Car component that positions itself based on SVG coordinates ─────────────
 function CarOnPath({ x, y, road, totalPoints, isDriving, labelVisible }) {
     const { t } = useTranslation();
-    // Koordinat SVG (viewBox 0 0 800 900) diubah jadi persen. Kontainernya
-    // mengunci rasio 800:900, jadi persen ini selalu tepat di lebar layar mana
-    // pun. Penanda level memakai perhitungan yang sama.
+    // SVG coordinates (viewBox 0 0 800 900) converted to percentages. The
+    // container locks the 800:900 ratio, so these stay accurate at any width.
+    // The level markers use the same calculation.
     const leftPercent = (x / road.width) * 100;
     const topPercent = (y / road.height) * 100;
 

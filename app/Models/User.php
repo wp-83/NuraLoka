@@ -58,10 +58,10 @@ class User extends Authenticatable
             return asset('storage/'.$this->userDetail->profile_path);
         }
 
-        // Null-safe: user bisa saja belum punya baris user_details (mis. baru
-        // dibuat, atau akun sistem). Tanpa ini seluruh serialisasi user gagal
-        // fatal — dan karena 'public_profile_photo' ada di $appends, itu terjadi
-        // di hampir setiap halaman, termasuk saat logout.
+        // Null-safe: a user may not have a user_details row yet (freshly
+        // created, or a system account). Without this the whole user
+        // serialization fails fatally — and since 'public_profile_photo' is in
+        // $appends, that happens on nearly every page, logout included.
         return match ($this->userDetail?->gender) {
             'male' => asset('images/defaults/user-male.png'),
             'female' => asset('images/defaults/user-female.png'),

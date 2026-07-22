@@ -1,17 +1,17 @@
 /**
- * Deteksi wilayah di sisi klien.
+ * Client-side region detection.
  *
- * Tahap 1 (provinsi tersimpan milik user) TIDAK ada di sini — itu sudah
- * diselesaikan server dan ikut di props Inertia. Modul ini menangani tahap 2
- * (Geolocation browser) dan tahap 3 (geolokasi IP, dikerjakan server).
+ * Stage 1 (the user's saved province) is NOT here — the server has already
+ * settled that and it arrives in the Inertia props. This module covers stage 2
+ * (browser Geolocation) and stage 3 (IP geolocation, done by the server).
  */
 
 const GEOLOCATION_TIMEOUT_MS = 8000;
 
 /**
- * Minta koordinat dari browser. Mengembalikan null bila izin ditolak, tidak
- * didukung, atau melebihi batas waktu — penolakan izin adalah jalur normal,
- * bukan error yang perlu ditampilkan ke pengguna.
+ * Ask the browser for coordinates. Returns null when permission is denied,
+ * geolocation is unsupported, or the request times out — a denied permission is
+ * a normal path, not an error worth showing the user.
  */
 function requestCoordinates() {
     return new Promise((resolve) => {
@@ -42,8 +42,8 @@ function requestCoordinates() {
             },
         );
 
-        // Jaring pengaman: sebagian browser tidak pernah memanggil callback error
-        // bila dialog izin diabaikan begitu saja.
+        // Safety net: some browsers never call the error callback when the
+        // permission dialog is simply ignored.
         window.setTimeout(() => finish(null), GEOLOCATION_TIMEOUT_MS + 500);
     });
 }
@@ -57,8 +57,8 @@ function csrfToken() {
 }
 
 /**
- * Tanyakan ke server sapaan untuk koordinat tertentu. Tanpa koordinat, server
- * mencoba geolokasi IP lalu mundur ke Bahasa Indonesia.
+ * Ask the server for the greeting at given coordinates. With no coordinates the
+ * server tries IP geolocation and then falls back to Indonesian.
  */
 async function resolveOnServer(coordinates) {
     const response = await fetch('/bahasa-daerah/deteksi', {
@@ -78,9 +78,9 @@ async function resolveOnServer(coordinates) {
 }
 
 /**
- * Jalankan deteksi lengkap: koordinat browser → server (koordinat/IP).
- * Mengembalikan payload sapaan, atau null bila semuanya gagal — pemanggil tetap
- * punya payload default dari props Inertia sebagai jaring pengaman terakhir.
+ * Run the full detection: browser coordinates → server (coordinates or IP).
+ * Returns the greeting payload, or null if everything failed — the caller still
+ * has the default payload from the Inertia props as its last safety net.
  */
 export async function detectRegion() {
     try {
@@ -88,7 +88,7 @@ export async function detectRegion() {
 
         return await resolveOnServer(coordinates);
     } catch {
-        // Jaringan mati / permintaan dibatalkan. Fitur ini pelengkap, jadi diam saja.
+        // Network down or request aborted. This feature is a nicety — stay quiet.
         return null;
     }
 }

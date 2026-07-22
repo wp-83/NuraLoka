@@ -28,6 +28,13 @@ class HandleInertiaRequests extends Middleware
         return parent::version($request);
     }
 
+    /** The languages a user may pick (code => the label shown in the switcher). */
+    private const LOCALES = [
+        'id' => 'Indonesia',
+        'en' => 'English',
+        'ko' => '한국어',
+    ];
+
     /**
      * Define the props that are shared by default.
      *
@@ -35,13 +42,6 @@ class HandleInertiaRequests extends Middleware
      *
      * @return array<string, mixed>
      */
-    /** Bahasa yang bisa dipilih user (kode => label tampil di switcher). */
-    private const LOCALES = [
-        'id' => 'Indonesia',
-        'en' => 'English',
-        'ko' => '한국어',
-    ];
-
     public function share(Request $request): array
     {
         $user = $request->user();
@@ -55,7 +55,8 @@ class HandleInertiaRequests extends Middleware
                     'fullname' => $user->userDetail?->fullname,
                     'is_admin' => $user->is_admin,
                     'public_profile_photo' => $user->public_profile_photo,
-                    // Gelar/level pengguna — sumber tunggal dipakai bersama oleh Navbar & halaman Profil.
+                    // The user's level, one source shared by the navbar and the
+                    // profile page.
                     'level' => $user->userDetail?->level?->name,
                 ] : null,
             ],
@@ -65,18 +66,22 @@ class HandleInertiaRequests extends Middleware
                 'message' => fn () => $request->session()->get('flash.message'),
             ],
 
-            // Lokalisasi: bahasa aktif + daftar pilihan + pesan terjemahan untuk frontend.
-            // locale & translations sebagai CLOSURE agar diresolusi saat response dirender —
-            // yaitu SETELAH middleware SetLocale menetapkan locale (Inertia memanggil share()
-            // di fase request, sebelum SetLocale, sehingga nilai eager akan tertinggal).
+            // Localisation: the active language, the available choices, and the
+            // translations for the frontend.
+            //
+            // locale and translations are CLOSURES so they resolve when the
+            // response renders — that is, AFTER the SetLocale middleware has set
+            // the locale. Inertia calls share() during the request phase, before
+            // SetLocale, so an eager value would be the stale one.
             'locale' => fn () => app()->getLocale(),
             'locales' => self::LOCALES,
             'translations' => fn () => app(FrontendTranslations::class)->for(app()->getLocale()),
 
-            // Sapaan bahasa daerah — SENGAJA tidak bergantung pada 'locale' di atas.
-            // Untuk user login, provinsi tersimpan (prioritas 1) sudah cukup, jadi
-            // sapaan tersedia sejak render pertama tanpa kedipan teks. Tamu dapat
-            // payload default lalu frontend menyempurnakannya lewat deteksi lokasi.
+            // The regional greeting, DELIBERATELY independent of 'locale' above.
+            // For a signed-in user their saved province (priority 1) is enough, so
+            // the greeting is there on the first render with no flash of changing
+            // text. Guests get the default payload, which the frontend then
+            // refines through location detection.
             'daerah' => fn () => app(GreetingResolver::class)->forUser($request->user()),
         ]);
     }

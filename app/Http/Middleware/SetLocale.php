@@ -6,15 +6,19 @@ use Closure;
 use Illuminate\Http\Request;
 
 /**
- * Menetapkan locale aplikasi per-request dari pilihan bahasa user (disimpan di session).
- * Berlaku untuk backend (__(), validasi) sekaligus menjadi sumber locale yang di-share
- * ke frontend (lihat HandleInertiaRequests). Bahasa yang didukung: id, en, ko.
+ * Sets the application locale per request, from the language the user chose
+ * (stored in the session).
  *
- * Dijalankan SEBELUM HandleInertiaRequests agar locale sudah benar saat props di-share.
+ * It governs the backend (__(), validation) and is also the source of the locale
+ * shared with the frontend (see HandleInertiaRequests). Supported: id, en, ko.
+ *
+ * Runs BEFORE HandleInertiaRequests, so the locale is already correct by the
+ * time props are shared.
  */
 class SetLocale
 {
-    /** Bahasa yang didukung sistem. Urutan pertama = default bila session kosong/invalid. */
+    /** The languages the system supports. The first is the default when the
+     *  session is empty or holds something invalid. */
     public const SUPPORTED = ['id', 'en', 'ko'];
 
     public function handle(Request $request, Closure $next)
@@ -25,11 +29,12 @@ class SetLocale
     }
 
     /**
-     * Normalisasi kode locale ke bahasa yang didukung. Bila null/invalid, jatuh ke
-     * config('app.locale'), lalu ke SUPPORTED[0] sebagai jaring pengaman terakhir.
+     * Normalise a locale code to a supported language. Null or invalid input
+     * falls back to config('app.locale'), and then to SUPPORTED[0] as the last
+     * safety net.
      *
-     * Dipakai juga oleh handler exception (halaman Error) yang bisa berjalan sebelum
-     * middleware ini sempat menetapkan locale.
+     * Also used by the exception handler (the Error page), which can run before
+     * this middleware has had a chance to set the locale.
      */
     public static function resolve(?string $locale): string
     {

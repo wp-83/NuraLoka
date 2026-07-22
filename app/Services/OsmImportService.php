@@ -8,23 +8,29 @@ use App\Models\PlaceOsmRef;
 use Illuminate\Support\Facades\Http;
 
 /**
- * Logika inti impor POI dari Overpass (OSM) ke tabel `places` (source='osm').
- * Setiap node OSM disimpan sebagai satu Place; identitas & metadata asal OSM
- * (osm_id, subtype) disimpan terpisah di `place_osm_refs` agar `places` tetap
- * bersih dan impor idempotent (re-impor node yang sama = update, bukan duplikat).
+ * The core of importing POIs from Overpass (OSM) into the `places` table
+ * (source='osm').
  *
- * Dipakai bersama oleh:
- *  - Command CLI  App\Console\Commands\ImportOsmPlaces  (sekali jalan, sinkron via import())
- *  - Job antrean  App\Jobs\ImportOsmTileJob             (satu job per petak, dipicu panel admin)
+ * Each OSM node becomes one Place, while its OSM identity and metadata (osm_id,
+ * subtype) live separately in `place_osm_refs`. That keeps `places` clean and
+ * makes the import idempotent: re-importing the same node updates it rather than
+ * creating a duplicate.
+ *
+ * Shared by:
+ *  - the CLI command App\Console\Commands\ImportOsmPlaces (one synchronous run
+ *    through import());
+ *  - the queued job App\Jobs\ImportOsmTileJob (one job per tile, triggered from
+ *    the admin panel).
  */
 class OsmImportService
 {
-    /** Cache id kategori per nama (dibuat sekali per proses impor). */
+    /** Category ids cached by name, built once per import process. */
     private array $categoryIdCache = [];
 
-    // Preset area: key (slug) => ['label' => nama tampil, 'bbox' => [south, west, north, east]].
-    // Mencakup 38 provinsi Indonesia (selaras ProvinceSeeder) + opsi "Seluruh Indonesia".
-    // bbox bersifat perkiraan (cukup untuk membatasi area impor Overpass).
+    // Area presets: slug => ['label' => display name, 'bbox' => [south, west, north, east]].
+    // Covers Indonesia's 38 provinces (matching ProvinceSeeder) plus a whole-country
+    // option. The bounding boxes are approximate, which is accurate enough to bound
+    // an Overpass import.
     public const REGIONS = [
         // ── Sumatera ──
         'aceh' => ['label' => 'Aceh', 'bbox' => [2.00, 95.00, 6.10, 98.40]],
@@ -89,20 +95,20 @@ class OsmImportService
         'https://z.overpass-api.de/api/interpreter',
     ];
 
-    /** Bounding box [south, west, north, east] preset region, atau null bila tidak dikenal. */
+    /** A preset region's bounding box [south, west, north, east], or null if unknown. */
     public function boundsForRegion(string $region): ?array
     {
         return self::REGIONS[strtolower($region)]['bbox'] ?? null;
     }
 
-    /** Perkiraan jumlah petak Overpass untuk bbox & ukuran petak tertentu. */
+    /** How many Overpass tiles a bbox needs at a given tile size. */
     public function totalTiles(float $south, float $west, float $north, float $east, float $tile): int
     {
         return (int) (ceil(($north - $south) / $tile) * ceil(($east - $west) / $tile));
     }
 
     /**
-     * Pecah bbox menjadi daftar petak berukuran $tile derajat.
+     * Split a bbox into tiles of $tile degrees.
      *
      * @return array<int, array{south:float, west:float, north:float, east:float}>
      */
@@ -124,22 +130,24 @@ class OsmImportService
     }
 
     /**
-     * Impor SATU petak: ambil dari Overpass lalu simpan. Kembalikan jumlah node valid.
-     * Melempar exception bila semua mirror Overpass gagal, agar pemanggil (job antrean)
-     * bisa me-retry petak ini tanpa menggagalkan seluruh impor.
+     * Import ONE tile: fetch from Overpass, then store. Returns the number of
+     * valid nodes.
+     *
+     * Throws when every Overpass mirror fails, so the caller (the queued job) can
+     * retry this tile without failing the whole import.
      */
     public function importTile(float $south, float $west, float $north, float $east): int
     {
         $elements = $this->fetchTile($south, $west, $north, $east);
         if ($elements === null) {
-            throw new \RuntimeException('Overpass gagal untuk petak ['."$south,$west,$north,$east".'].');
+            throw new \RuntimeException('Overpass failed for tile ['."$south,$west,$north,$east".'].');
         }
 
         return $this->storeElements($elements);
     }
 
     /**
-     * Jalankan impor untuk bbox tertentu, dibagi menjadi petak berukuran $tile derajat.
+     * Run the import for a bbox, split into tiles of $tile degrees.
      *
      * @param  callable|null  $onProgress  fn(int $tileIndex, int $totalTiles, int $importedSoFar): void
      * @return array{imported:int, failedTiles:int, totalTiles:int}
@@ -183,14 +191,14 @@ class OsmImportService
         ];
     }
 
-    /** Coba tiap mirror Overpass berurutan; kembalikan array elements atau null bila semua gagal. */
+    /** Try each Overpass mirror in turn; returns the elements, or null if all fail. */
     private function fetchTile(float $south, float $west, float $north, float $east): ?array
     {
         $query = $this->buildQuery($south, $west, $north, $east);
 
         foreach ($this->endpoints as $endpoint) {
             try {
-                // User-Agent WAJIB: tanpa ini Overpass menolak dengan HTTP 406.
+                // The User-Agent is REQUIRED: without it Overpass answers HTTP 406.
                 $response = Http::timeout(90)
                     ->withHeaders(['User-Agent' => 'NuraLoka-POI-Importer/1.0 (Laravel)'])
                     ->asForm()
@@ -199,7 +207,7 @@ class OsmImportService
                     return $response->json('elements', []);
                 }
             } catch (\Throwable $e) {
-                // mirror gagal/timeout → coba berikutnya
+                // mirror failed or timed out — try the next one
             }
         }
 
@@ -207,12 +215,12 @@ class OsmImportService
     }
 
     /**
-     * Simpan/perbarui elements ke tabel `places` (source='osm') + `place_osm_refs`.
-     * Kembalikan jumlah node valid yang diproses.
+     * Store or update elements into `places` (source='osm') and `place_osm_refs`.
+     * Returns the number of valid nodes processed.
      *
-     * Idempotent lewat place_osm_refs.osm_id: node yang sudah pernah diimpor akan
-     * memperbarui Place terkait, bukan membuat baris baru. Atribut place yang tidak
-     * tersedia pada data OSM (mis. description) diisi null sesuai ketentuan.
+     * Idempotent through place_osm_refs.osm_id: a node already imported updates
+     * its Place rather than adding a row. Place attributes with no OSM equivalent
+     * (description, for one) are left null.
      */
     private function storeElements(array $elements): int
     {
@@ -239,7 +247,7 @@ class OsmImportService
                 'latitude' => $el['lat'],
                 'longitude' => $el['lon'],
                 'address' => $tags['addr:full'] ?? $tags['addr:street'] ?? null,
-                // Atribut place yang tak ada padanannya di OSM → default null.
+                // No OSM equivalent — left null by design.
                 'description' => null,
                 'source' => 'osm',
             ];
@@ -247,7 +255,7 @@ class OsmImportService
             $ref = PlaceOsmRef::where('osm_id', $osmId)->first();
 
             if ($ref) {
-                // Node sudah pernah diimpor → perbarui place & metadata OSM.
+                // Already imported — update the place and its OSM metadata.
                 $place = Place::find($ref->place_id);
                 if ($place) {
                     $place->fill($attributes)->save();
@@ -255,7 +263,8 @@ class OsmImportService
                     $place->categories()->syncWithoutDetaching([$this->categoryId($categoryName)]);
                 }
             } else {
-                // Node baru → buat place (slug unik otomatis via HasSlug) + referensi OSM.
+                // New node — create the place (HasSlug makes the slug unique) and
+                // its OSM reference.
                 $place = Place::create($attributes);
                 PlaceOsmRef::create([
                     'place_id' => $place->id,
@@ -271,7 +280,7 @@ class OsmImportService
         return $processed;
     }
 
-    /** Resolusi (dan cache) id Category berdasarkan nama; dibuat bila belum ada. */
+    /** Resolve (and cache) a Category id by name, creating it when absent. */
     private function categoryId(string $name): int
     {
         return $this->categoryIdCache[$name] ??= Category::firstOrCreate(['name' => $name])->id;

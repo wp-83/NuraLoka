@@ -1,28 +1,30 @@
 /**
- * Cache hasil deteksi wilayah di localStorage.
+ * localStorage cache for the region-detection result.
  *
- * Tujuannya menghindari permintaan izin lokasi berulang setiap pindah halaman.
- * Cache hanya disegarkan bila lokasi yang terdeteksi BERUBAH provinsi — selama
- * provinsinya sama, payload lama dipakai terus.
+ * It exists to stop the browser asking for location permission again on every
+ * page change. The cache is only refreshed when the detected location moves to
+ * a different PROVINCE — while the province is the same, the stored payload
+ * keeps being used.
  */
 
 const STORAGE_KEY = 'nuraloka.daerah';
 
-// Naikkan versi bila bentuk payload berubah, supaya cache lama diabaikan
-// (bukan dibaca sebagai data yang salah bentuk).
+// Bump when the payload shape changes, so an older cache is ignored rather than
+// read as malformed data.
 const VERSION = 1;
 
-// NuraLoka aplikasi perjalanan — user memang berpindah provinsi, jadi sapaan
-// tidak boleh terkunci berhari-hari di lokasi lama. Disamakan dengan
-// `maximumAge` posisi di detector.js supaya cache store & cache posisi browser
-// menua bersama. Naikkan bila dialog izin terasa terlalu sering muncul.
+// NuraLoka is a travel app — users really do cross provinces, so the greeting
+// must not stay locked to an old location for days. Kept in step with the
+// position `maximumAge` in detector.js so the store cache and the browser's
+// position cache age together. Raise it if the permission dialog feels too
+// frequent.
 const MAX_AGE_MS = 1000 * 60 * 30;
 
 function isStorageAvailable() {
     try {
         return typeof window !== 'undefined' && !!window.localStorage;
     } catch {
-        // Safari mode privat melempar saat localStorage diakses.
+        // Safari in private mode throws on touching localStorage.
         return false;
     }
 }
@@ -52,7 +54,7 @@ export function writeCache(payload) {
     try {
         const current = readCache();
 
-        // Lokasi tidak berubah → tidak perlu menulis ulang.
+        // Same location → nothing to rewrite.
         if (current && current.province === payload.province) return;
 
         window.localStorage.setItem(
@@ -64,7 +66,7 @@ export function writeCache(payload) {
             }),
         );
     } catch {
-        // Kuota penuh / storage diblokir — fitur ini opsional, abaikan saja.
+        // Quota full or storage blocked. This feature is optional — ignore it.
     }
 }
 
@@ -74,6 +76,6 @@ export function clearCache() {
     try {
         window.localStorage.removeItem(STORAGE_KEY);
     } catch {
-        // Abaikan.
+        // Ignore.
     }
 }

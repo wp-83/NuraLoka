@@ -14,13 +14,13 @@ import { FaMountain } from 'react-icons/fa6';
 import { GiPathDistance } from 'react-icons/gi';
 import { IoTimeOutline } from 'react-icons/io5';
 
-// Ambil nilai cookie (untuk header CSRF pada fetch non-Inertia).
+// Read a cookie value, for the CSRF header on non-Inertia fetches.
 function getCookie(name) {
     const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
     return m ? decodeURIComponent(m.pop()) : '';
 }
 
-// Ikon fallback per-nama kategori (dipakai bila kategori tidak punya icon_path di DB).
+// Per-name fallback icons, used when a category has no icon_path in the database.
 const filterIconMap = {
     'Kuliner': <MdRestaurant size={15} />,
     'Wisata Alam': <FaMountain size={13} />,
@@ -34,8 +34,8 @@ const filterIconMap = {
     'Religi': <MdMuseum size={15} />,
 };
 
-// Ikon kategori: pakai icon_path dari DB bila ada; jika null → ikon default per-nama,
-// terakhir jatuh ke ikon pin generik.
+// Category icon: the database's icon_path when present, otherwise the per-name
+// default, and finally a generic pin.
 function CategoryIcon({ category }) {
     if (category?.icon_path) {
         return (
@@ -50,8 +50,9 @@ function CategoryIcon({ category }) {
     return filterIconMap[category?.name] || <FiMapPin size={13} />;
 }
 
-// Format estimasi waktu tempuh (mis. "1 jam 30 menit"). Satuan mengikuti bahasa aktif;
-// `t` diteruskan dari komponen pemanggil (explore.unit_hour / explore.unit_minute).
+// Format an estimated travel time (e.g. "1 jam 30 menit"). The units follow the
+// active language; `t` is passed in by the caller (explore.unit_hour and
+// explore.unit_minute).
 function formatDuration(minutes, t) {
     if (minutes == null || Number.isNaN(minutes)) return '-';
     const h = Math.floor(minutes / 60);
@@ -74,22 +75,22 @@ function haversineKm(lat1, lng1, lat2, lng2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Jarak minimum (km) antara titik keberangkatan dan tujuan. Cerminan
-// ExploreController::JOURNEY_MIN_SEPARATION_M (25 m) — server tetap penjaga
-// terakhirnya, ini supaya user tahu sebelum menekan "Mulai Perjalanan".
+// Minimum distance (km) between the origin and the destination. Mirrors
+// ExploreController::JOURNEY_MIN_SEPARATION_M (25 m) — the server is still the
+// final guard; this exists so the user finds out before pressing "Start".
 const SAME_POINT_KM = 0.025;
 
-// Dua titik dianggap sama kalau jaraknya di bawah ambang di atas. Bukan
-// perbandingan koordinat persis: satu tempat yang sama bisa muncul beberapa
-// kali di hasil Nominatim dengan koordinat berbeda beberapa meter.
+// Two points count as the same when they are closer than the threshold above.
+// Not an exact coordinate comparison: one and the same place can appear several
+// times in Nominatim's results with coordinates a few metres apart.
 function isSamePoint(a, b) {
     if (!a || !b) return false;
 
     return haversineKm(a.lat, a.lng, b.lat, b.lng) <= SAME_POINT_KM;
 }
 
-// Saring titik agar hanya menyisakan yang berada dalam radius (km) dari garis rute.
-// Koordinat rute di-sampling agar perhitungan tetap ringan pada rute panjang.
+// Keep only the points within a radius (km) of the route line. The route
+// coordinates are sampled so the maths stays cheap on long routes.
 function filterPointsNearRoute(points, routeCoords, radiusKm) {
     if (!routeCoords || routeCoords.length === 0) return points;
     const step = Math.max(1, Math.floor(routeCoords.length / 150));
@@ -118,7 +119,7 @@ function JourneyPanel({
                 <span className="block font-body text-micro font-semibold text-gray-70 mb-1">{t('explore.destination_label')}</span>
                 <LocationSearchInput placeholder={t('explore.destination_placeholder')} onSelectLocation={setDestination} />
 
-                {/* Titik yang ditolak karena sama dengan titik satunya. */}
+                {/* A point rejected for being the same as the other one. */}
                 {pointError && (
                     <p role="alert" className="font-body text-micro text-error-dark">
                         {pointError}
@@ -128,7 +129,7 @@ function JourneyPanel({
         );
     }
 
-    // State 2/3 — 2 titik terkunci (fixed / running).
+    // State 2/3 — both points locked in (fixed / running).
     return (
         <div className="flex flex-col mt-2 gap-3">
             <div className="rounded-lg border border-gray-30 overflow-hidden">
@@ -455,7 +456,8 @@ function MapTooltip({ isVisible }) {
     );
 }
 
-// ── Loading Overlay (flashscreen saat mencari lokasi / menyusun rute) ──
+// Loading overlay: the full-screen flash shown while a place is being found or
+// a route built.
 function SearchLoadingOverlay({ show, isRoute = false }) {
     const { t } = useTranslation();
     if (!show) return null;
@@ -501,32 +503,33 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
     const [activeFilters, setActiveFilters] = useState([]);
     const [selectedPlace, setSelectedPlace] = useState(null);
     const [searchSuggestions, setSearchSuggestions] = useState([]);
-    const [searchLoading, setSearchLoading] = useState(false); // overlay fullscreen — pencarian satu titik
-    const [routeLoading, setRouteLoading] = useState(false);   // overlay fullscreen — rute dua titik
+    const [searchLoading, setSearchLoading] = useState(false); // full-screen overlay: single-point search
+    const [routeLoading, setRouteLoading] = useState(false);   // full-screen overlay: two-point route
     const [origin, setOrigin] = useState(null);
     const [destination, setDestination] = useState(null);
-    const [pointError, setPointError] = useState(null); // titik ditolak karena sama dengan titik satunya
+    const [pointError, setPointError] = useState(null); // point rejected for matching the other one
     const [routeData, setRouteData] = useState(null);
     const [routeRadius, setRouteRadius] = useState(5);
     const [mapPoints, setMapPoints] = useState([]);
     const [mapLoading, setMapLoading] = useState(false);
 
-    // ── Perjalanan 2 titik (state machine): 'input' → 'fixed' → 'running' ──
+    // Two-point journey state machine: 'input' → 'fixed' → 'running'.
     const [journeyState, setJourneyState] = useState('input');
-    const [journeyMsg, setJourneyMsg] = useState(null);      // pesan status/error saat berjalan
+    const [journeyMsg, setJourneyMsg] = useState(null);      // status or error while running
     const [journeySaving, setJourneySaving] = useState(false);
-    const [completedAlbum, setCompletedAlbum] = useState(null); // slug album → tampilkan modal selesai
-    const [userPos, setUserPos] = useState(null);            // posisi GPS user (mode real)
-    const [finishReady, setFinishReady] = useState(false);   // mode real: sudah dekat tujuan?
+    const [completedAlbum, setCompletedAlbum] = useState(null); // album slug → show the finished modal
+    const [userPos, setUserPos] = useState(null);            // the user's GPS position (real mode)
+    const [finishReady, setFinishReady] = useState(false);   // real mode: close enough to the destination?
     const geoWatchRef = useRef(null);
 
-    // ── Trending "Ramai Dikunjungi" — dibatasi radius sekitar lokasi user ──
-    // null = belum terselesaikan (masih menunggu izin lokasi / fetch).
+    // Trending places, limited to a radius around the user.
+    // null means unresolved — still waiting on location permission or the fetch.
     const [trending, setTrending] = useState(null);
     const [trendingLoading, setTrendingLoading] = useState(true);
 
-    // Saat halaman dimuat: minta lokasi user, lalu ambil rekomendasi di sekitarnya.
-    // Bila izin lokasi ditolak / tidak tersedia → pakai daftar global (prop server).
+    // On load: ask for the user's location, then fetch recommendations near them.
+    // If permission is denied or unavailable, fall back to the global list that
+    // came in the server props.
     useEffect(() => {
         let cancelled = false;
 
@@ -569,18 +572,19 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
     // ── Refs ──
     const currentBoundsRef = useRef(null);
     const mapFetchTimeoutRef = useRef(null);
-    const mapAbortRef = useRef(null);       // membatalkan request yang masih berjalan
-    const mapCacheRef = useRef(new Map());  // cache per (zoom+filter+area) → pan/zoom balik instan
-    const searchLoadingRef = useRef(false); // cermin state searchLoading untuk dibaca di event peta
-    const skipSearchRef = useRef(false);    // lewati refetch dropdown setelah memilih saran
-    const searchSafetyRef = useRef(null);   // timeout pengaman agar loading tidak macet
+    const mapAbortRef = useRef(null);       // aborts a request still in flight
+    const mapCacheRef = useRef(new Map());  // cache per (zoom+filter+area): panning back is instant
+    const searchLoadingRef = useRef(false); // mirrors searchLoading, readable from map events
+    const skipSearchRef = useRef(false);    // skip the dropdown refetch after picking a suggestion
+    const searchSafetyRef = useRef(null);   // safety timeout so the loader cannot stick
 
-    // Sinkronkan ref dengan state agar bisa dibaca dari handler event peta.
+    // Keep the ref in step with the state so map event handlers can read it.
     useEffect(() => { searchLoadingRef.current = searchLoading; }, [searchLoading]);
 
-    // ── Auto-focus dari navigasi Beranda: baca URL params focus_* saat halaman pertama dimuat ──
-    // Ini meniru persis logika handleSuggestionSelect agar peta langsung zoom + popup ke tempat
-    // yang dipilih pengguna di kotak pencarian halaman Beranda.
+    // Auto-focus when arriving from the home page: read the focus_* URL params on
+    // first load. This repeats handleSuggestionSelect exactly, so the map zooms
+    // straight to the place the user picked in the home page's search box and
+    // opens its popup.
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const focusId  = params.get('focus_id');
@@ -599,26 +603,26 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
             longitude: focusLng,
         };
 
-        // Sama persis dengan handleSuggestionSelect di halaman ini
+        // Identical to handleSuggestionSelect on this page.
         skipSearchRef.current = true;
         setSearchQuery(focusName);
-        setSelectedPlace(place);   // memicu flyTo + popup otomatis di ExploreMap
-        setSearchLoading(true);    // tampilkan flashscreen
+        setSelectedPlace(place);   // triggers the flyTo and auto-popup in ExploreMap
+        setSearchLoading(true);    // show the overlay
         if (searchSafetyRef.current) clearTimeout(searchSafetyRef.current);
         searchSafetyRef.current = setTimeout(() => setSearchLoading(false), 4000);
-    }, []); // hanya saat mount
+    }, []); // on mount only
 
-    // ── Ambil titik/klaster dari server sendiri (DB admin + OSM), tanpa rate-limit ──
+    // Fetch points from our own server (the admin DB plus OSM), with no rate limit.
     const fetchMapPoints = useCallback(async (bounds) => {
         if (!bounds) return;
 
-        // Batalkan request sebelumnya yang belum selesai
+        // Cancel any earlier request still in flight.
         if (mapAbortRef.current) mapAbortRef.current.abort();
 
         const { south, west, north, east, zoom } = bounds;
         const cats = activeFilters.join(',');
 
-        // Cache per (zoom + filter + area yang di-snap) → pan/zoom balik instan
+        // Cache per (zoom + filter + snapped area), so panning back is instant.
         const snap = (n) => Math.round(n * 50) / 50;
         const cacheKey = `${zoom}|${cats}|${snap(south)},${snap(west)},${snap(north)},${snap(east)}`;
         if (mapCacheRef.current.has(cacheKey)) {
@@ -643,10 +647,10 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
             mapCacheRef.current.set(cacheKey, points);
             setMapPoints(points);
         } catch (err) {
-            if (controller.signal.aborted) return; // dibatalkan request baru → abaikan
-            console.error('[Map] Gagal memuat titik peta:', err.message);
+            if (controller.signal.aborted) return; // superseded by a newer request
+            console.error('[Map] Failed to load map points:', err.message);
         } finally {
-            // Hanya request terakhir yang boleh mematikan indikator loading
+            // Only the most recent request may clear the loading indicator.
             if (mapAbortRef.current === controller) {
                 mapAbortRef.current = null;
                 setMapLoading(false);
@@ -660,7 +664,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         mapFetchTimeoutRef.current = setTimeout(() => fetchMapPoints(bounds), 500);
     }, [fetchMapPoints]);
 
-    // Muat ulang saat filter kategori berubah (pakai viewport terakhir)
+    // Reload when the category filter changes, reusing the last viewport.
     useEffect(() => {
         if (currentBoundsRef.current) fetchMapPoints(currentBoundsRef.current);
     }, [fetchMapPoints]);
@@ -672,11 +676,11 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         };
     }, []);
 
-    // Pemilihan titik keberangkatan/tujuan. Titik yang sama dengan titik satunya
-    // ditolak di sini, sebelum sempat mengunci panel: begitu kedua state terisi
-    // panel langsung pindah ke 'fixed' dan membangun rute, jadi menahannya di
-    // tahap pemilihan jauh lebih jelas daripada menolak saat "Mulai Perjalanan".
-    // ExploreController::startJourney tetap memeriksa ulang di server.
+    // Choosing the origin and destination. A point identical to the other one is
+    // rejected HERE, before the panel can lock: once both are set the panel moves
+    // straight to 'fixed' and builds a route, so catching it at selection time is
+    // far clearer than refusing at "Start journey".
+    // ExploreController::startJourney still re-checks this on the server.
     const selectOrigin = useCallback((loc) => {
         if (isSamePoint(loc, destination)) {
             setPointError(t('explore.journey_same_point'));
@@ -697,13 +701,14 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         setDestination(loc);
     }, [origin, t]);
 
-    // ── Rute 2 titik: via-point admin dulu; bila kosong, fallback OSM di-snap ke rute ──
+    // Two-point route: admin via-points first; if there are none, fall back to
+    // OSM points snapped onto the route.
     const fetchJourneyRoute = useCallback(async () => {
         if (!origin || !destination) return;
         setSelectedPlace(null);
         setRouteLoading(true);
         try {
-            // Bangun rute OSRM: asal → [via-point] → tujuan. Kembalikan objek route OSRM.
+            // Build an OSRM route: origin → [via-points] → destination.
             const buildOsrm = async (viaPoints) => {
                 const seq = [
                     [origin.lng, origin.lat],
@@ -716,7 +721,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                 return data.code === 'Ok' && data.routes.length > 0 ? data.routes[0] : null;
             };
 
-            // 1. Via-point WAJIB dari tempat admin (internal) yang tepat di jalur.
+            // 1. Required via-points: admin (internal) places right on the path.
             const wpParams = new URLSearchParams({
                 origin_lat: origin.lat, origin_lng: origin.lng,
                 dest_lat: destination.lat, dest_lng: destination.lng,
@@ -725,17 +730,18 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
             try {
                 const wpRes = await fetch(`/jelajah/rute-titik?${wpParams.toString()}`, { headers: { Accept: 'application/json' } });
                 if (wpRes.ok) waypoints = (await wpRes.json()).waypoints || [];
-            } catch { /* gagal → rute tanpa via-point admin */ }
+            } catch { /* failed → route without admin via-points */ }
 
-            // 2. Rute pertama (alami bila belum ada via-point admin).
+            // 2. The first route (the natural one when there are no admin via-points).
             let route = await buildOsrm(waypoints);
 
-            // 3. Fallback OSM (2-pass): bila tak ada via-point admin, cari titik OSM yang
-            //    ≤300m dari JALAN rute nyata, lalu bangun ulang rute melewatinya. Karena
-            //    titik sudah menempel jalan, bentuk rute nyaris tak berubah (anti-zigzag).
+            // 3. OSM fallback (two passes): with no admin via-points, look for OSM
+            //    points within 300 m of the actual route ROAD, then rebuild the
+            //    route through them. Because those points already sit on the road,
+            //    the route's shape barely changes — no zigzagging.
             if (waypoints.length === 0 && route) {
                 const path = route.geometry.coordinates.map((c) => [c[1], c[0]]); // [lat, lng]
-                // Kecilkan payload: ambil maksimal ~200 titik yang mewakili rute.
+                // Shrink the payload: at most ~200 points to represent the route.
                 const step = Math.ceil(path.length / 200);
                 const slim = step > 1 ? path.filter((_, i) => i % step === 0 || i === path.length - 1) : path;
                 try {
@@ -756,7 +762,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                             if (route2) { route = route2; waypoints = osmWps; }
                         }
                     }
-                } catch { /* gagal → pakai rute alami */ }
+                } catch { /* failed → keep the natural route */ }
             }
 
             if (route) {
@@ -767,25 +773,26 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                     duration: Math.round(route.duration / 60),
                     waypoints,
                 });
-                setJourneyState('fixed'); // 2 titik terkunci → siap "Mulai Perjalanan"
+                setJourneyState('fixed'); // both points locked → ready to start
             } else {
-                console.warn('Rute tidak ditemukan.');
+                console.warn('[Route] No route found.');
             }
         } catch (error) {
-            console.error('Gagal mengambil rute:', error);
+            console.error('[Route] Failed to fetch route:', error);
         } finally {
             setRouteLoading(false);
         }
     }, [origin, destination]);
 
-    // Begitu kedua titik terisi (saat input) → susun rute & kunci panel.
+    // As soon as both points are set (while in input), build the route and lock
+    // the panel.
     useEffect(() => {
         if (origin && destination && journeyState === 'input') {
             fetchJourneyRoute();
         }
     }, [origin, destination, journeyState, fetchJourneyRoute]);
 
-    // Bersihkan seluruh state perjalanan (dipakai Batal & pindah tab).
+    // Clear all journey state. Used by Cancel and by switching tabs.
     const resetJourney = useCallback(() => {
         if (geoWatchRef.current != null && navigator.geolocation) {
             navigator.geolocation.clearWatch(geoWatchRef.current);
@@ -802,7 +809,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         setPointError(null);
     }, []);
 
-    // Simpan trip + album (dipanggil saat perjalanan selesai).
+    // Save the trip and its album, once the journey is finished.
     const completeJourney = useCallback(async (userLatLng = null) => {
         if (!origin || !destination || journeySaving) return;
         setJourneySaving(true);
@@ -835,15 +842,17 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         }
     }, [origin, destination, journeySaving]);
 
-    // Klik "Mulai Perjalanan".
+    // The "Start journey" click.
     const handleStartJourney = useCallback(() => {
         setJourneyState('running');
         setJourneyMsg(null);
         if (journeyDemoMode) {
-            // Demo: animasi mobil berjalan (ExploreMap memanggil onJourneyComplete saat selesai).
+            // Demo: the car animation runs, and ExploreMap calls
+            // onJourneyComplete when it finishes.
             return;
         }
-        // Mode real: pantau lokasi user, aktifkan "Selesaikan" saat dekat tujuan.
+        // Real mode: watch the user's location and enable "Finish" once they are
+        // near the destination.
         setJourneyMsg('Menuju tujuan… tombol Selesai aktif saat kamu dekat.');
         if (navigator.geolocation) {
             geoWatchRef.current = navigator.geolocation.watchPosition(
@@ -859,20 +868,20 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         }
     }, [journeyDemoMode, destination]);
 
-    // Demo: animasi mobil selesai → simpan.
+    // Demo: the car animation finished — save.
     const handleJourneyAnimationDone = useCallback(() => {
         completeJourney(null);
     }, [completeJourney]);
 
-    // Mode real: klik "Selesaikan Perjalanan" (aktif saat dekat tujuan).
+    // Real mode: the "Finish journey" click, enabled near the destination.
     const handleFinishReal = useCallback(() => {
         completeJourney(userPos);
     }, [completeJourney, userPos]);
 
-    // ── Visit / Click handler ──
-    // Navigasi LANGSUNG ke halaman detail (SPA). Pencatatan "baru dikunjungi"
-    // dilakukan server saat halaman detail dibuka — tidak lagi lewat POST
-    // redirect-back yang memicu reload halaman Jelajah.
+    // Visit / click handler.
+    // Navigates STRAIGHT to the detail page (SPA). The "recently visited" record
+    // is written by the server when that page opens, rather than by a
+    // POST-and-redirect-back that would reload the Explore page.
     const handleVisit = (place) => {
         if (!place || !place.slug) return;
         router.visit(route('explore.show', place.slug));
@@ -886,19 +895,20 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         });
     };
 
-    // ── Tab switch: bersihkan rute saat kembali ke "Satu Titik" ──
+    // Tab switch: clear the route when going back to the single-point tab.
     const handleTabChange = useCallback((tab) => {
         setActiveTab(tab);
-        setSelectedPlace(null);   // bersihkan titik terpilih agar popup lama tak muncul di tab lain
-        setSearchLoading(false);  // pastikan flashscreen tidak nyangkut saat pindah tab
+        setSelectedPlace(null);   // drop the selection so an old popup cannot follow
+        setSearchLoading(false);  // make sure the overlay cannot stick across tabs
         if (tab === 'Satu Titik') {
             resetJourney();
         }
     }, [resetJourney]);
 
-    // ── Pencarian saran (admin + OSM) via backend, dengan debounce 300ms ──
+    // Suggestion search (admin + OSM) through the backend, debounced by 300 ms.
     useEffect(() => {
-        // Setelah user memilih saran, query diisi nama tempat → jangan refetch dropdown.
+        // After a suggestion is picked the query holds the place name — do not
+        // refetch the dropdown for it.
         if (skipSearchRef.current) {
             skipSearchRef.current = false;
             setSearchSuggestions([]);
@@ -925,28 +935,29 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         return () => { clearTimeout(t); controller.abort(); };
     }, [searchQuery]);
 
-    // Klik saran → zoom ke titik + buka overlay di peta (bukan langsung ke detail).
+    // Clicking a suggestion zooms to the point and opens the map overlay, rather
+    // than jumping straight to the detail page.
     const handleSuggestionSelect = useCallback((place) => {
         skipSearchRef.current = true;
         setSearchQuery(place.name);
         setSearchSuggestions([]);
-        setSelectedPlace(place);   // memicu flyTo + popup otomatis di ExploreMap
-        setSearchLoading(true);    // tampilkan flashscreen
-        // Pengaman: sembunyikan paksa bila peta tak mengirim sinyal selesai.
+        setSelectedPlace(place);   // triggers the flyTo and auto-popup in ExploreMap
+        setSearchLoading(true);    // show the overlay
+        // Safety net: hide it anyway if the map never signals that it settled.
         if (searchSafetyRef.current) clearTimeout(searchSafetyRef.current);
         searchSafetyRef.current = setTimeout(() => setSearchLoading(false), 4000);
     }, []);
 
-    // Peta selesai bergerak (flyTo) → sembunyikan flashscreen pencarian satu titik.
+    // The map finished moving (flyTo) — hide the single-point search overlay.
     const handleMapSettle = useCallback(() => {
         if (searchLoadingRef.current) {
-            // beri jeda kecil agar titik & popup sempat tampil
+            // a short pause so the point and its popup have time to appear
             setTimeout(() => setSearchLoading(false), 300);
         }
     }, []);
 
-    // Saat mode rute aktif, hanya tampilkan titik yang berada dalam radius (km) dari
-    // garis rute — sesuai pilihan "± X KM Rute". Di luar mode rute, tampilkan semua.
+    // In route mode show only the points within the chosen radius (km) of the
+    // route line — the "± X KM Rute" setting. Outside route mode, show them all.
     const displayedPoints = useMemo(() => {
         if (routeData && routeData.coordinates) {
             return filterPointsNearRoute(mapPoints, routeData.coordinates, routeRadius);
@@ -961,7 +972,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
     // ── Render ──
     return (
         <div className="min-h-screen flex flex-col mt-4">
-            {/* ── Flashscreen loading: pencarian satu titik / rute dua titik ── */}
+            {/* Loading overlay: single-point search or two-point route. */}
             <SearchLoadingOverlay show={searchLoading || routeLoading} isRoute={routeLoading} />
 
             {/* ── Map Section ──
@@ -1048,9 +1059,9 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                 </div>
             </section>
 
-            {/* ── Trending Section — hanya tempat "ramai" di sekitar lokasi user ──
-                Tampil saat masih memuat (spinner) atau saat ada hasil. Bila selesai
-                memuat tapi kosong, section disembunyikan. */}
+            {/* Trending section — only busy places near the user's location.
+                Shown while loading (the spinner) and when there are results. Once
+                loading has finished with nothing to show, the section is hidden. */}
             {(trendingLoading || (trending && trending.length > 0)) && (
             <section id="trending-section" className="w-full py-10">
                 <div className="overflow-hidden">

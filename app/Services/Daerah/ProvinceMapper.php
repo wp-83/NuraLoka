@@ -3,38 +3,39 @@
 namespace App\Services\Daerah;
 
 /**
- * Memetakan nama provinsi ke bahasa daerahnya, beserta fallback bertingkat:
+ * Maps a province name to its regional language, with a tiered fallback:
  *
- *   1. bahasa khusus provinsi   (config daerah.provinces)
- *   2. bahasa utama pulau       (config daerah.province_island + daerah.islands)
+ *   1. the province's own language  (config daerah.provinces)
+ *   2. the island's main language   (config daerah.province_island + daerah.islands)
  *
- * Bahasa Indonesia SENGAJA TIDAK ikut dalam rantai ini. Fitur ini menampilkan
- * bahasa daerah; begitu Indonesia diikutkan, provinsi yang terjemahannya belum
- * lengkap akan menampilkan teks Indonesia dan terlihat seperti fitur yang tidak
- * jalan. Karena itu batas terakhirnya adalah bahasa utama pulau.
+ * Indonesian is DELIBERATELY not part of that chain. The whole point of the
+ * feature is to show a regional language; the moment Indonesian joins the chain,
+ * any province whose translation is incomplete falls back to Indonesian text and
+ * simply looks like a feature that is not working. The last resort is therefore
+ * the island's main language.
  *
- * Konsekuensinya: setiap bahasa pulau di config daerah.islands WAJIB terisi
- * penuh — tanpa itu ada kunci yang tidak menghasilkan teks sama sekali.
- * `php artisan daerah:check` menjaga syarat ini.
+ * The consequence: every island language in config daerah.islands MUST be
+ * translated in full — otherwise some key produces no text at all.
+ * `php artisan daerah:check` enforces that.
  *
- * Bahasa Indonesia hanya dipakai bila wilayahnya benar-benar tidak diketahui
- * (tamu tanpa lokasi), yaitu saat $province === null.
+ * Indonesian is used only when the region is genuinely unknown (a guest with no
+ * location), that is, when $province === null.
  *
- * Mengembalikan RANTAI, bukan satu bahasa, supaya GreetingResolver bisa mundur
- * per-kunci: provinsi yang bahasanya baru diterjemahkan sebagian tetap memakai
- * frasa daerah untuk kunci yang ada, dan mundur hanya untuk kunci yang kosong.
+ * This returns a CHAIN rather than a single language so GreetingResolver can
+ * fall back key by key: a province whose language is only half-translated keeps
+ * its regional phrases for the keys that exist and falls back only for the rest.
  */
 class ProvinceMapper
 {
     /**
-     * Rantai bahasa dari paling spesifik ke paling umum, tanpa duplikat.
+     * The language chain, most specific first, without duplicates.
      *
      * @return list<string>
      */
     public function chainFor(?string $province): array
     {
-        // Wilayah tidak diketahui sama sekali — tidak ada pulau yang bisa
-        // dijadikan acuan, jadi barulah Bahasa Indonesia dipakai.
+        // The region is entirely unknown — there is no island to fall back on,
+        // so this is the one case where Indonesian is used.
         if ($province === null) {
             return [config('daerah.default', 'indonesia')];
         }
@@ -54,8 +55,8 @@ class ProvinceMapper
             $chain[] = $islandLanguage;
         }
 
-        // Provinsi dikenal tapi tidak punya pulau/bahasa sama sekali (salah
-        // konfigurasi). Jangan biarkan sapaan hilang total.
+        // A known province with no island and no language at all (a
+        // misconfiguration). Do not let the greeting disappear entirely.
         if ($chain === []) {
             $chain[] = config('daerah.default', 'indonesia');
         }
@@ -63,13 +64,13 @@ class ProvinceMapper
         return array_values(array_unique($chain));
     }
 
-    /** Bahasa paling spesifik untuk sebuah provinsi (tanpa memeriksa isi file). */
+    /** The most specific language for a province (without checking the file's contents). */
     public function languageFor(?string $province): string
     {
         return $this->chainFor($province)[0];
     }
 
-    /** Pulau tempat provinsi berada, null bila tidak dikenal. */
+    /** The island a province sits on, or null if it is not known. */
     public function islandFor(?string $province): ?string
     {
         if ($province === null) {
@@ -79,7 +80,7 @@ class ProvinceMapper
         return config('daerah.province_island')[$province] ?? null;
     }
 
-    /** Apakah nama provinsi dikenal sistem. */
+    /** Whether the system recognises this province name. */
     public function knows(?string $province): bool
     {
         return $province !== null
@@ -87,15 +88,14 @@ class ProvinceMapper
     }
 
     /**
-     * Ubah nama bebas menjadi nama provinsi resmi.
+     * Turn a free-form name into an official province name.
      *
-     * Menerima nama provinsi ("Jawa Barat") maupun nama kota ("Bandung"), tanpa
-     * peduli huruf besar/kecil. Ini satu-satunya tempat penerjemahan nama, agar
-     * pemaksaan lewat ?daerah=, geolokasi IP, dan perintah artisan memperlakukan
-     * masukan dengan cara yang sama.
+     * Accepts a province ("Jawa Barat") or a city ("Bandung"), case-insensitively.
+     * This is the only place names are translated, so that the ?daerah= override,
+     * IP geolocation and the artisan commands all treat input the same way.
      *
-     * Mengembalikan null bila nama tidak dikenal — pemanggil memutuskan sendiri
-     * apakah itu berarti mundur ke default atau menampilkan pesan salah.
+     * Returns null when the name is not recognised — the caller decides whether
+     * that means falling back to the default or reporting a mistake.
      */
     public function resolveName(?string $name): ?string
     {

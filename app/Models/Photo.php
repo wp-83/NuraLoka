@@ -8,14 +8,14 @@ class Photo extends Model
 {
     protected $fillable = ['path', 'uploaded_by'];
 
-    /** Tempat-tempat yang memakai foto ini (pivot photo_place). */
+    /** The places using this photo (the photo_place pivot). */
     public function places()
     {
         return $this->belongsToMany(Place::class, 'photo_place')
             ->withTimestamps();
     }
 
-    /** User (admin) yang mengunggah. */
+    /** The admin who uploaded it. */
     public function uploader()
     {
         return $this->belongsTo(User::class, 'uploaded_by');

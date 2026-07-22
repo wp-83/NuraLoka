@@ -43,16 +43,16 @@ export default function Button({
     const isDisabled =
         disabled || loading;
 
-    // Kontrol yang tampilannya memang bukan tombol biasa — sakelar visibilitas,
-    // tombol overlay lightbox, ubin foto, baris saran lokasi, ikon hapus di
-    // dalam input — tetap memakai komponen ini agar perilakunya seragam
-    // (type="button" secara default, penanganan disabled), tapi gaya visualnya
-    // ditentukan sendiri lewat className.
+    // Controls that are deliberately not shaped like a button — the password
+    // visibility toggle, lightbox overlay buttons, photo tiles, location
+    // suggestion rows, the clear icon inside an input — still use this component
+    // so their behaviour stays uniform (type="button" by default, disabled
+    // handling), while supplying their own look through className.
     //
-    // Base class Button tidak bisa sekadar ditimpa: Tailwind menentukan pemenang
-    // dari urutan CSS, bukan urutan string, jadi `p-0` akan kalah dari `px-3`.
-    // Children juga dibiarkan apa adanya (tidak dibungkus <span>) supaya layout
-    // flex milik pemanggil tidak berubah.
+    // The base classes cannot simply be overridden: Tailwind picks the winner by
+    // CSS order, not by string order, so `p-0` would lose to `px-3`. Children
+    // are also left untouched (not wrapped in a <span>) so the caller's flex
+    // layout is unchanged.
     if (unstyled) {
         return (
             <button

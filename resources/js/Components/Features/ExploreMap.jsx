@@ -34,16 +34,16 @@ const createMarkerIcon = (iconPath) => {
   });
 };
 
-// Escape teks agar aman disisipkan ke HTML divIcon (nama tempat bisa mengandung < " dll).
+// Escape text before it goes into a divIcon's HTML (a place name may contain <, ", etc.).
 const escapeHtml = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-// Peta emoji & resolusi gambar kategori kini tinggal di @js/categoryIcons agar
-// pin peta, kartu tempat, dan halaman detail memakai ikon yang sama persis.
+// The emoji map and category-image resolution live in @js/categoryIcons, so map
+// pins, place cards and detail pages all use exactly the same icon.
 
-// Ikon POI: pin peta (teardrop) berisi ikon kategori + label nama menempel di
-// sampingnya. Pin & label berada dalam SATU divIcon sehingga keduanya sama-sama
-// bisa diinteraksikan (hover/klik memicu event marker yang sama).
+// POI icon: a teardrop pin holding the category icon, with the name label beside
+// it. Pin and label sit in ONE divIcon so both are interactive — hovering or
+// clicking either fires the same marker event.
 const createPlaceIcon = (place) => {
   const category = place.categories?.[0];
   const iconUrl = categoryIconUrl(category);
@@ -59,8 +59,8 @@ const createPlaceIcon = (place) => {
         `<div class="nl-pin__pin"><span class="nl-pin__icon">${inner}</span></div>` +
         `<span class="nl-pin__label">${escapeHtml(place.name)}</span>` +
       `</div>`,
-    iconSize: null,       // biarkan konten (pin + label) menentukan ukuran
-    iconAnchor: [11, 31], // ujung bawah pin sebagai titik jangkar koordinat
+    iconSize: null,       // let the content (pin + label) decide the size
+    iconAnchor: [11, 31], // the pin's tip is the anchor on the coordinate
     popupAnchor: [0, -30],
   });
 };
@@ -82,7 +82,7 @@ const MapUpdater = ({ selectedPlace, routeData }) => {
 const BoundsWatcher = ({ onBoundsChange, onZoomChange, onSettle }) => {
   const map = useMapEvents({
     moveend: () => {
-      // Peta selesai bergerak (termasuk setelah flyTo ke titik terpilih).
+      // The map has finished moving (including after a flyTo to the selection).
       if (onSettle) onSettle();
       if (onBoundsChange) {
         const b = map.getBounds();
@@ -129,15 +129,15 @@ const BoundsWatcher = ({ onBoundsChange, onZoomChange, onSettle }) => {
   return null;
 };
 
-// Marker satuan untuk satu place (peta sisi user membaca satu sumber; tidak ada
-// pembedaan asal data OSM/internal di UI).
+// A single place marker. The user-facing map reads one source; the UI draws no
+// distinction between OSM and internal data.
 function LocalPlaceMarker({ place, onVisit }) {
   return (
     <Marker
       position={[parseFloat(place.latitude), parseFloat(place.longitude)]}
       icon={createPlaceIcon(place)}
-      // Laptop: overlay muncul saat hover. Mobile: muncul saat tap (event click).
-      // Pin & label satu divIcon → keduanya memicu event yang sama.
+      // Laptop: the overlay appears on hover. Mobile: on tap (the click event).
+      // Pin and label share one divIcon, so both fire the same event.
       eventHandlers={{
         mouseover: (e) => e.target.openPopup(),
         click: (e) => e.target.openPopup(),
@@ -178,29 +178,30 @@ function LocalPlaceMarker({ place, onVisit }) {
   );
 }
 
-// Render titik individual dari server (endpoint /jelajah/titik), dengan DECLUTTER
-// ala Google Maps: titik yang saling berdekatan (berpotensi menumpuk) dijarangkan —
-// hanya yang berprioritas lebih tinggi (urutan dari server) yang tampil, sisanya
-// baru muncul saat diperbesar; pada zoom PALING BESAR semua titik ditampilkan.
-// `excludeId` menyingkirkan titik yang sedang ditampilkan sebagai marker pencarian
-// agar tidak dobel.
-const MARKER_MIN_PX = 40; // jarak minimal antar pin (px) agar tidak menumpuk
+// Renders the individual points from the server (the /jelajah/titik endpoint),
+// with Google-Maps-style DECLUTTERING: points close enough to overlap are
+// thinned out, so only the higher-priority ones (the server's order) show and
+// the rest appear as you zoom in. At MAXIMUM zoom every point is drawn.
+//
+// `excludeId` drops the point currently shown as the search marker, so it is not
+// rendered twice.
+const MARKER_MIN_PX = 40; // minimum gap between pins, in px, to avoid overlap
 
 function MapMarkers({ points = [], onVisit, excludeId = null, excludeLat = null, excludeLng = null, excludeIds = null }) {
   const map = useMap();
   const [tick, setTick] = React.useState(0);
 
-  // Recompute declutter tiap kali zoom/geser peta (proyeksi piksel berubah).
+  // Recompute the declutter on every zoom or pan: the pixel projection moves.
   useMapEvents({
     zoomend: () => setTick((t) => t + 1),
     moveend: () => setTick((t) => t + 1),
   });
 
   const visible = React.useMemo(() => {
-    // Singkirkan titik yang sedang tampil sebagai marker pencarian agar tidak dobel:
-    // cocok berdasarkan id (toleran tipe), ATAU koordinat yang praktis sama (~5 m),
-    // untuk menangani duplikat baris (mis. dua node OSM di lokasi yang sama).
-    // excludeIds: id waypoint rute (dirender sebagai layer sendiri) agar tak dobel.
+    // Drop the point already drawn as the search marker so it is not doubled:
+    // matched by id (type-tolerant) OR by practically identical coordinates
+    // (~5 m), which covers duplicate rows such as two OSM nodes at one spot.
+    // excludeIds holds route waypoint ids, drawn as their own layer.
     const hasExclude = excludeId != null || (excludeLat != null && excludeLng != null) || (excludeIds && excludeIds.size > 0);
     const base = hasExclude
       ? points.filter((p) => {
@@ -216,10 +217,10 @@ function MapMarkers({ points = [], onVisit, excludeId = null, excludeLat = null,
     if (!map) return base;
 
     const maxZoom = map.getMaxZoom ? map.getMaxZoom() : 19;
-    // Zoom paling besar → tampilkan semua (tidak ada yang disembunyikan).
+    // At maximum zoom show everything — nothing is hidden.
     if (map.getZoom() >= maxZoom) return base;
 
-    // Grid hash berbasis piksel agar deteksi tumpang tindih tetap O(n).
+    // A pixel-based grid hash keeps overlap detection O(n).
     const cell = MARKER_MIN_PX;
     const grid = new Map();
     const kept = [];
@@ -261,14 +262,15 @@ function MapMarkers({ points = [], onVisit, excludeId = null, excludeLat = null,
   );
 }
 
-// Marker khusus untuk titik yang dipilih lewat pencarian. Popup-nya terbuka OTOMATIS
-// setelah peta selesai fly ke lokasi (sama seperti mengeklik ikon di peta), bukan
-// langsung membuka halaman detail.
+// The marker for a point chosen through search. Its popup opens AUTOMATICALLY
+// once the map has finished flying there — the same result as clicking the icon
+// on the map — rather than jumping straight to the detail page.
 function SelectedPlaceMarker({ place, onVisit }) {
   const markerRef = React.useRef(null);
   const pendingRef = React.useRef(false);
 
-  // Buka popup saat gerakan peta (flyTo) berhenti; fallback via timer bila peta tak bergerak.
+  // Open the popup when the map movement (flyTo) ends, with a timer fallback
+  // for when the map does not move at all.
   React.useEffect(() => {
     if (!place) return;
     pendingRef.current = true;
@@ -332,7 +334,7 @@ function SelectedPlaceMarker({ place, onVisit }) {
   );
 }
 
-// Ikon mobil untuk animasi perjalanan.
+// The car icon used by the journey animation.
 const journeyCarIcon = L.divIcon({
   className: 'nl-journey-car',
   html: '<div style="font-size:24px;line-height:34px;text-align:center;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))">🚗</div>',
@@ -340,8 +342,8 @@ const journeyCarIcon = L.divIcon({
   iconAnchor: [17, 17],
 });
 
-// Marker mobil: mode demo → animasi menyusuri garis rute (panggil onComplete saat habis);
-// mode real → mengikuti posisi GPS user.
+// The car marker. In demo mode it animates along the route line and calls
+// onComplete when it runs out; in real mode it follows the user's GPS position.
 function JourneyCar({ routeData, running, demo, userPosition, onComplete }) {
   const [pos, setPos] = React.useState(null);
   const rafRef = React.useRef(null);
@@ -379,8 +381,8 @@ function JourneyCar({ routeData, running, demo, userPosition, onComplete }) {
   return <Marker position={carPos} icon={journeyCarIcon} zIndexOffset={1000} />;
 }
 
-// Titik biru "lokasi saya" — dibedakan dari pin tempat (yang berbentuk teardrop)
-// supaya jelas ini posisi pengguna, bukan destinasi.
+// The blue "my location" dot, deliberately unlike the teardrop place pins so it
+// reads as the user's position rather than a destination.
 const createMyLocationIcon = () =>
   L.divIcon({
     className: 'nl-mylocation',
@@ -395,11 +397,11 @@ const createMyLocationIcon = () =>
   });
 
 /**
- * Tombol "Lokasi Saya".
+ * The "My Location" button.
  *
- * Harus berada DI DALAM MapContainer karena memakai useMap() untuk menggeser
- * peta ke posisi pengguna. Klik pada tombol dicegah menembus ke peta
- * (disableClickPropagation) agar peta tidak ikut bergeser/zoom saat ditekan.
+ * Must live INSIDE MapContainer, because it uses useMap() to move the map to the
+ * user's position. Clicks are stopped from reaching the map
+ * (disableClickPropagation) so pressing it does not also pan or zoom.
  */
 function MyLocationControl({ onLocated }) {
   const map = useMap();
@@ -434,7 +436,7 @@ function MyLocationControl({ onLocated }) {
         setStatus('idle');
         onLocated?.(found);
 
-        // Jangan menjauhkan pandangan bila pengguna sudah zoom lebih dekat.
+        // Do not pull the view back out if the user is already zoomed closer.
         map.flyTo([found.lat, found.lng], Math.max(map.getZoom(), 16), {
           duration: 1.2,
         });
@@ -456,14 +458,14 @@ function MyLocationControl({ onLocated }) {
   }[status];
 
   return (
-    // Ditempatkan di TENGAH ATAS: pojok kanan bawah sudah dipakai MapTooltip
-    // (maskot), sedangkan di desktop panel kiri mengisi kolom 1–4 dan panel
-    // kanan kolom 10–13 — bagian tengah atas satu-satunya area yang lapang.
-    // Kontrol zoom Leaflet ada di kiri atas, jadi juga tidak bertabrakan.
+    // Placed TOP CENTRE: the bottom-right corner belongs to MapTooltip (the
+    // mascot), and on desktop the left panel fills columns 1-4 while the right
+    // panel fills 10-13 — top centre is the only clear space. Leaflet's zoom
+    // control sits top-left, so there is no collision there either.
     //
-    // z-index mengikuti tingkat kontrol Leaflet (1000). Pane bawaan Leaflet
-    // mencapai 600 untuk marker dan 700 untuk popup, jadi nilai di bawah itu
-    // akan membuat tombolnya tertutup marker.
+    // The z-index matches Leaflet's control level (1000). Leaflet's own panes
+    // reach 600 for markers and 700 for popups, so anything below that would
+    // leave the button hidden behind a marker.
     <div
       ref={holderRef}
       className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000]"
@@ -499,8 +501,8 @@ function MyLocationControl({ onLocated }) {
 }
 
 export default function ExploreMap({
-  places = [],            // hanya dipakai untuk menghitung center awal peta
-  points = [],            // titik individual dari server
+  places = [],            // only used to compute the map's initial centre
+  points = [],            // the individual points from the server
   selectedPlace = null,
   onVisit,
   routeData,
@@ -508,18 +510,18 @@ export default function ExploreMap({
   destination,
   onBoundsChange,
   onSettle,
-  journeyRunning = false, // perjalanan 2 titik sedang berjalan
-  journeyDemo = true,     // true = animasi mobil; false = ikuti GPS user
-  userPosition = null,    // posisi GPS user (mode real)
-  onJourneyComplete,      // dipanggil saat animasi demo selesai
+  journeyRunning = false, // a two-point journey is under way
+  journeyDemo = true,     // true = animate the car; false = follow the user's GPS
+  userPosition = null,    // the user's GPS position (real mode)
+  onJourneyComplete,      // called when the demo animation finishes
 }) {
   const defaultCenter = [-8.0, 113.0];
   const [center, setCenter] = React.useState(defaultCenter);
   const [currentZoom, setCurrentZoom] = React.useState(selectedPlace ? 15 : 5);
 
-  // Hasil tombol "Lokasi Saya". Disimpan terpisah dari prop userPosition —
-  // prop itu dipakai untuk mengikuti GPS saat perjalanan berlangsung, sedangkan
-  // ini sekadar menandai posisi pengguna saat tombol ditekan.
+  // The result of the "My Location" button. Kept separate from the userPosition
+  // prop: that one tracks GPS while a journey is running, whereas this simply
+  // marks where the user was when they pressed the button.
   const [myLocation, setMyLocation] = React.useState(null);
 
   React.useEffect(() => {
@@ -555,8 +557,9 @@ export default function ExploreMap({
         {/* Bounds watcher — triggers OSM data fetch when user pans/zooms */}
         <BoundsWatcher onBoundsChange={onBoundsChange} onZoomChange={setCurrentZoom} onSettle={onSettle} />
 
-        {/* Marker titik terpilih dari pencarian — popup terbuka otomatis.
-            Disembunyikan saat ada rute (mode dua titik) agar tidak menimpa tampilan rute. */}
+        {/* The marker for a search selection; its popup opens automatically.
+            Hidden while a route exists (two-point mode) so it does not sit on
+            top of the route. */}
         {!routeData && <SelectedPlaceMarker place={selectedPlace} onVisit={onVisit} />}
 
         {/* Route Polyline */}
@@ -592,16 +595,17 @@ export default function ExploreMap({
           </Marker>
         )}
 
-        {/* ── Waypoint rute: SELALU tampil begitu rute muncul, tanpa bergantung pada
-            budget zoom server maupun declutter. Inilah titik "wajib/rekomendasi" yang
-            dilewati rute, jadi harus terlihat langsung meski peta masih zoom-out. ── */}
+        {/* Route waypoints: ALWAYS drawn as soon as a route exists, regardless
+            of the server's zoom budget or the declutter. These are the required
+            and recommended stops the route passes through, so they must be
+            visible immediately even while the map is zoomed out. */}
         {routeData?.waypoints?.map((w) => (
           <LocalPlaceMarker key={`wp-${w.id}`} place={w} onVisit={onVisit} />
         ))}
 
-        {/* ── Titik dari server (satu jenis), kepadatan diatur level-of-detail + declutter.
-            excludeId: hindari dobel dengan marker hasil pencarian yang sedang tampil.
-            excludeIds: hindari dobel dengan waypoint rute yang sudah dirender di atas. ── */}
+        {/* Points from the server (one kind), thinned by level-of-detail plus
+            declutter. excludeId avoids doubling the visible search marker;
+            excludeIds avoids doubling the route waypoints drawn above. */}
         <MapMarkers
           points={points}
           onVisit={onVisit}
