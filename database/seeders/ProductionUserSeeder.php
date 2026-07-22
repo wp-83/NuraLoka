@@ -121,7 +121,7 @@ class ProductionUserSeeder extends Seeder
         if (User::where('email', self::SHOWCASE_EMAIL)->exists()) {
             $this->command?->warn('Akun "completed all" sudah ada — dilewati.');
 
-            return; 
+            return;
         }
 
         $userId = DB::table('users')->insertGetId([
