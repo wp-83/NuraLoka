@@ -24,16 +24,11 @@ class HomeController extends Controller
             ? app(GamificationService::class)->ongoingMissions($user)->first()
             : null;
 
-        // This week's popular albums: public, from any user, ordered by view_count.
+        // This week's popular albums. Sama persis dengan halaman Album — kedua
+        // halaman memakai satu scope (Album::scopePopularThisWeek) supaya
+        // peringkatnya tidak pernah berbeda.
         $popularAlbums = Album::with(['trip.user.userDetails', 'tripPhotos'])
-            ->whereHas('trip', function ($q) {
-                $q->where('is_public', true)
-                    ->where('trip_date', '>=', now()->subWeek())
-                    ->whereHas('user', function ($uq) {
-                        $uq->where('is_banned', false);
-                    });
-            })
-            ->orderByDesc('view_count')
+            ->popularThisWeek()
             ->take(4)
             ->get()
             ->map(function ($album) {
@@ -46,6 +41,7 @@ class HomeController extends Controller
                     'title' => $trip->title,
                     'thumbnail' => $firstPhoto?->photo_path,
                     'view_count' => $album->view_count,
+                    'weekly_views' => (int) $album->weekly_views,
                 ];
             });
 

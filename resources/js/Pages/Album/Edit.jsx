@@ -5,6 +5,12 @@ import MainLayout from '@js/Layouts/MainLayout';
 import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
 import { useTranslation } from '@js/i18n';
+import {
+    PHOTO_ACCEPT,
+    PHOTO_MAX_MB,
+    photoErrorsFrom,
+    screenPhotos,
+} from '@js/Utils/albumPhotos';
 
 import {
     FiChevronLeft,
@@ -24,6 +30,11 @@ export default function AlbumEdit({
 }) {
     const { t } = useTranslation();
     const [photos, setPhotos] = useState(initialPhotos);
+    // Foto ditambahkan lewat router.post, bukan lewat useForm, sehingga error
+    // validasinya TIDAK pernah masuk ke `errors` milik form ini. Ditampung di
+    // sini supaya pesan dari server (dan dari pemeriksaan browser) tetap muncul.
+    const [photoError, setPhotoError] = useState('');
+    const [uploadingPhotos, setUploadingPhotos] = useState(false);
     const fileInputRef = useRef(null);
 
     // Album sistem (perjalanan 2 titik): dibuat otomatis — judul, lokasi, dan
@@ -123,14 +134,25 @@ export default function AlbumEdit({
 
         if (files.length === 0) return;
 
+        // Ukuran & format diperiksa lebih dulu di browser; server tetap
+        // memvalidasi ulang dengan batas yang sama (10MB per foto).
+        const { accepted, error } = screenPhotos(files, t);
+
+        setPhotoError(error);
+        event.target.value = '';
+
+        if (accepted.length === 0) return;
+
         const formData = new FormData();
 
-        files.forEach((file) => {
+        accepted.forEach((file) => {
             formData.append(
                 'photos[]',
                 file
             );
         });
+
+        setUploadingPhotos(true);
 
         router.post(
             route(
@@ -143,11 +165,17 @@ export default function AlbumEdit({
                 forceFormData: true,
                 onSuccess: (page) => {
                     setPhotos(page.props.photos);
+                    setPhotoError('');
                 },
+                onError: (uploadErrors) => {
+                    setPhotoError(
+                        photoErrorsFrom(uploadErrors) ||
+                            t('album.photo_upload_failed')
+                    );
+                },
+                onFinish: () => setUploadingPhotos(false),
             }
         );
-
-        event.target.value = '';
     };
 
     const handleRemovePhoto = (photoId) => {
@@ -507,8 +535,9 @@ export default function AlbumEdit({
                                     text-gray-50
                                 "
                             >
-                                Tambah atau hapus foto yang
-                                terdapat di dalam album ini.
+                                {t('album.photo_hint', {
+                                    max: PHOTO_MAX_MB,
+                                })}
                             </p>
                         </div>
 
@@ -519,6 +548,8 @@ export default function AlbumEdit({
                                 <FiPlus size={15} />
                             }
                             onClick={handleAddPhotos}
+                            loading={uploadingPhotos}
+                            disabled={uploadingPhotos}
                         >
                             Tambah Foto
                         </Button>
@@ -527,27 +558,24 @@ export default function AlbumEdit({
                             ref={fileInputRef}
                             type="file"
                             multiple
-                            accept="
-                                image/jpeg,
-                                image/png,
-                                image/jpg,
-                                image/webp
-                            "
+                            accept={PHOTO_ACCEPT}
                             className="hidden"
                             onChange={handleFileChange}
                         />
                     </div>
 
-                    {/* Photo Error */}
-                    {errors.photos && (
+                    {/* Photo Error — unggahan foto memakai router.post, jadi
+                        pesannya datang lewat state, bukan errors milik form. */}
+                    {photoError && (
                         <p
+                            role="alert"
                             className="
                                 mb-3
                                 font-body text-micro
                                 text-error-dark
                             "
                         >
-                            {errors.photos}
+                            {photoError}
                         </p>
                     )}
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Album;
+use App\Models\AlbumView;
 use App\Models\Place;
 use App\Models\Trip;
 use App\Models\TripPhoto;
@@ -16,12 +17,42 @@ use Illuminate\Support\Facades\Storage;
 class AlbumController extends Controller
 {
     /**
+     * Batas ukuran SATU foto album sebelum dikompres, dalam kilobyte (10 MB).
+     * Dipakai bersama oleh form buat album dan tambah foto di halaman ubah,
+     * supaya batasnya tidak pernah berbeda antar dua jalur unggah.
+     */
+    public const PHOTO_MAX_KB = 10240;
+
+    /**
      * Every image upload goes through this service so size, format and file
      * naming stay consistent across the application.
      */
     public function __construct(
         private readonly ImageCompressionService $images,
     ) {}
+
+    /** Aturan validasi untuk satu berkas foto album. */
+    private function photoRules(): string
+    {
+        return 'image|mimes:jpeg,png,jpg,webp|max:'.self::PHOTO_MAX_KB;
+    }
+
+    /**
+     * Pesan error unggah foto — diambil dari berkas lang album.php supaya bahasanya
+     * mengikuti locale user, bukan pesan validasi bawaan Laravel yang generik.
+     */
+    private function photoMessages(): array
+    {
+        $max = ['max' => self::PHOTO_MAX_KB / 1024];
+
+        return [
+            'photos.required' => __('album.photo_error_required'),
+            'photos.*.image' => __('album.photo_error_type'),
+            'photos.*.mimes' => __('album.photo_error_type'),
+            'photos.*.max' => __('album.photo_error_size', $max),
+            'photos.*.uploaded' => __('album.photo_error_size', $max),
+        ];
+    }
 
     /**
      * Album index page.
@@ -61,16 +92,10 @@ class AlbumController extends Controller
                 });
         }
 
-        // This week's popular albums: public, from any user, ordered by view_count.
+        // This week's popular albums: public albums ranked by the views they got
+        // in the last 7 days (see Album::scopePopularThisWeek).
         $popularAlbums = Album::with(['trip.user.userDetails', 'tripPhotos'])
-            ->whereHas('trip', function ($q) {
-                $q->where('is_public', true)
-                    ->where('trip_date', '>=', now()->subWeek())
-                    ->whereHas('user', function ($uq) {
-                        $uq->where('is_banned', false);
-                    });
-            })
-            ->orderByDesc('view_count')
+            ->popularThisWeek()
             ->take(3)
             ->get()
             ->map(function ($album) {
@@ -113,9 +138,17 @@ class AlbumController extends Controller
         $user = Auth::user();
         $isOwner = $album->trip->user_id === $user->id;
 
-        // Only count a view when the viewer is not the owner.
+        // Only count a view when the viewer is not the owner. The lifetime total
+        // lives on albums.view_count; the timestamped row in album_views is what
+        // makes the weekly ranking possible.
         if (! $isOwner) {
             $album->increment('view_count');
+
+            AlbumView::create([
+                'album_id' => $album->id,
+                'user_id' => $user->id,
+                'viewed_at' => now(),
+            ]);
         }
 
         return inertia('Album/Show', [
@@ -157,8 +190,8 @@ class AlbumController extends Controller
             'date' => 'required|date',
             'is_public' => 'boolean',
             'photos' => 'nullable|array',
-            'photos.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
-        ]);
+            'photos.*' => $this->photoRules(),
+        ], $this->photoMessages());
 
         $user = Auth::user();
 
@@ -400,10 +433,12 @@ class AlbumController extends Controller
 
         $request->validate([
             'photos' => 'required|array',
-            'photos.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120', // Max 5MB sebelum kompresi
-        ]);
+            'photos.*' => $this->photoRules(), // maks 10MB per foto sebelum kompresi
+        ], $this->photoMessages());
 
         foreach ($request->file('photos') as $photo) {
+            // Sama seperti saat album dibuat: setiap foto dikompres ke WebP,
+            // bukan disimpan mentah.
             $path = $this->images->compressToDisk($photo, 'album-photos');
 
             TripPhoto::create([
@@ -458,6 +493,8 @@ class AlbumController extends Controller
             'is_public' => (bool) $trip->is_public,
             'is_system' => (bool) $trip->is_system,
             'view_count' => $album->view_count,
+            // Hanya terisi kalau query-nya lewat Album::scopePopularThisWeek.
+            'weekly_views' => isset($album->weekly_views) ? (int) $album->weekly_views : null,
             'caption' => $album->caption,
             'thumbnail' => $firstPhoto?->photo_path,
             'photo_count' => $album->tripPhotos->count(),

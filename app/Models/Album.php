@@ -31,10 +31,46 @@ class Album extends Model
             ->saveSlugsTo('slug');
     }
 
+    /**
+     * "Popular this week": public albums from active users, ranked by the views
+     * they actually received in the last 7 days.
+     *
+     * Sebelumnya peringkat ini menyaring trips.trip_date >= minggu lalu dan
+     * mengurutkan pakai view_count (total sepanjang masa). Akibatnya album lama
+     * yang ramai ditonton minggu ini TIDAK pernah muncul — yang tersaring adalah
+     * tanggal jalan-jalannya, bukan kapan album itu dilihat. Sekarang tanggal
+     * trip tidak lagi membatasi; yang dihitung adalah baris album_views dalam
+     * 7 hari terakhir.
+     *
+     * view_count dipakai sebagai pemecah seri supaya bagian ini tetap terisi
+     * ketika belum ada view yang tercatat minggu ini (mis. tepat setelah fitur
+     * log view ini dirilis).
+     */
+    public function scopePopularThisWeek($query)
+    {
+        return $query
+            ->withCount(['views as weekly_views' => function ($q) {
+                $q->where('viewed_at', '>=', now()->subWeek());
+            }])
+            ->whereHas('trip', function ($q) {
+                $q->where('is_public', true)
+                    ->whereHas('user', function ($uq) {
+                        $uq->where('is_banned', false);
+                    });
+            })
+            ->orderByDesc('weekly_views')
+            ->orderByDesc('view_count');
+    }
+
     // Relationships
     public function tripPhotos()
     {
         return $this->hasMany(TripPhoto::class);
+    }
+
+    public function views()
+    {
+        return $this->hasMany(AlbumView::class);
     }
 
     public function trip()
