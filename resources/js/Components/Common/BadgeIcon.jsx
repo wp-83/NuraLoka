@@ -19,6 +19,7 @@ const SIZE_CLASSES = {
     '2xl': 'w-36 h-36 sm:w-40 sm:h-40 lg:w-44 lg:h-44',
 };
 
+
 // Full-picture badge icon — no circular/bordered frame, matches Admin/Badge/Index.jsx.
 // `earned={false}` dims the icon to show it's still locked.
 export default function BadgeIcon({ iconPath, alt = '', earned = true, size = 'md', className = '' }) {
