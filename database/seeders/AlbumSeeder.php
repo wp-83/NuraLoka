@@ -53,10 +53,6 @@ class AlbumSeeder extends Seeder
             for ($i = 1; $i <= $photoCount; $i++) {
                 $photoPath = $this->seedAlbumPhoto($albumId + $i);
 
-                if ($photoPath === null) {
-                    continue;
-                }
-
                 DB::table('trip_photos')->insert([
                     'album_id' => $albumId,
                     'place_id' => $primaryPlaceId ?? $placeIds[array_rand($placeIds)],
