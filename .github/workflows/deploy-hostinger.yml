@@ -2,8 +2,7 @@ name: Deploy to Hostinger Production (Laravel + React)
 
 on:
   push:
-    branches:
-      - production
+    branches: ["main"]
 
 concurrency:
   group: deploy-production
@@ -30,14 +29,18 @@ jobs:
         run: npm run build
 
       - name: Setup SSH
+        shell: bash
         run: |
+          set -e
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p "${{ secrets.PORT }}" -H "${{ secrets.HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Upload project
+      - name: Upload project to server
+        shell: bash
         run: |
+          set -e
           rsync -az --delete \
             --filter='P .env' \
             --filter='P storage/***' \
@@ -48,16 +51,21 @@ jobs:
             -e "ssh -p ${{ secrets.PORT }}" \
             ./ "${{ secrets.USER }}@${{ secrets.HOST }}:${{ secrets.APP_DIR }}/"
 
-      - name: Deploy Application
+      - name: Composer + Artisan server
+        shell: bash
         run: |
           ssh -p "${{ secrets.PORT }}" "${{ secrets.USER }}@${{ secrets.HOST }}" << 'EOF'
             set -euo pipefail
 
             cd "${{ secrets.APP_DIR }}"
 
-            PHP="${{ secrets.PHP_BIN }}"
+            test -f .env
+            ls -la .env
 
-            "$PHP" artisan down --render="errors::503" || true
+            PHP="${{ secrets.PHP_BIN }}"
+            "$PHP" -v
+
+            "$PHP" artisan down || true
 
             "$PHP" "$(command -v composer)" install \
               --no-dev \
@@ -69,7 +77,7 @@ jobs:
             if [ -L public/storage ]; then
               rm public/storage
             elif [ -e public/storage ]; then
-              echo "public/storage exists but is not a symlink."
+              echo "public/storage exists but is not a symlink. Skipping delete."
             fi
 
             if [ ! -e public/storage ]; then
