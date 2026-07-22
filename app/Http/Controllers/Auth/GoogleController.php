@@ -116,12 +116,13 @@ class GoogleController extends Controller
         | the account restriction.
         */
         if ($user->is_banned) {
-            return redirect()
-                ->route('auth.login.index')
-                ->with([
-                    'flash.type' => 'error',
-                    'flash.message' => 'Akun Anda telah diblokir.',
-                ]);
+            Auth::login($user);
+
+            request()
+                ->session()
+                ->regenerate();
+
+            return inertia('Auth/Banned');
         }
 
         /*

@@ -23,7 +23,7 @@ export default function ForgetPassword() {
 
     return (
         <>
-            <Head title={`NuraLoka | ${t("account.forget.meta_title")}`} />
+            <Head title={`NuraLoka | ${t("account.forgot.meta_title")}`} />
 
             <main className="relative flex min-h-screen items-start justify-center overflow-hidden bg-gray-10 px-6">
 
@@ -40,11 +40,11 @@ export default function ForgetPassword() {
                     />
 
                     <h1 className="mb-3 text-title font-heading font-bold text-center text-primary-100">
-                        {t("account.forget.title")}
+                        {t("account.forgot.title")}
                     </h1>
 
                     <p className="mb-10 max-w-2xl text-center text-paragraph">
-                        {t("account.forget.desc")}
+                        {t("account.forgot.desc")}
                     </p>
 
                     <form
@@ -54,7 +54,7 @@ export default function ForgetPassword() {
                         <Input
                             name="email"
                             type="email"
-                            placeholder={t("account.forget.email_placeholder")}
+                            placeholder={t("account.forgot.email_placeholder")}
                             value={data.email}
                             onChange={(e) =>
                                 setData("email", e.target.value)
@@ -74,15 +74,15 @@ export default function ForgetPassword() {
                             }
                         >
                             {processing
-                                ? t("account.forget.submit_processing")
-                                : t("account.forget.submit")}
+                                ? t("account.forgot.submit_processing")
+                                : t("account.forgot.submit")}
                         </Button>
                     </form>
 
                     <p className="mt-2 text-body font-body">
-                        {t("account.forget.remember_password")}{" "}
+                        {t("account.forgot.remember_password")}{" "}
                         <Link href={route("auth.login.index")} className="font-bold">
-                            {t("account.forget.login_now")}
+                            {t("account.forgot.login_now")}
                         </Link>
                     </p>
 
