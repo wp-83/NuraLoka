@@ -1,4 +1,4 @@
-name: Deploy to Hostinger Production (Laravel + React)
+name: Deploy to Hostinger - Production (Laravel + React)
 
 on:
   push:
