@@ -74,6 +74,20 @@ function haversineKm(lat1, lng1, lat2, lng2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// Jarak minimum (km) antara titik keberangkatan dan tujuan. Cerminan
+// ExploreController::JOURNEY_MIN_SEPARATION_M (25 m) — server tetap penjaga
+// terakhirnya, ini supaya user tahu sebelum menekan "Mulai Perjalanan".
+const SAME_POINT_KM = 0.025;
+
+// Dua titik dianggap sama kalau jaraknya di bawah ambang di atas. Bukan
+// perbandingan koordinat persis: satu tempat yang sama bisa muncul beberapa
+// kali di hasil Nominatim dengan koordinat berbeda beberapa meter.
+function isSamePoint(a, b) {
+    if (!a || !b) return false;
+
+    return haversineKm(a.lat, a.lng, b.lat, b.lng) <= SAME_POINT_KM;
+}
+
 // Saring titik agar hanya menyisakan yang berada dalam radius (km) dari garis rute.
 // Koordinat rute di-sampling agar perhitungan tetap ringan pada rute panjang.
 function filterPointsNearRoute(points, routeCoords, radiusKm) {
@@ -90,7 +104,7 @@ function filterPointsNearRoute(points, routeCoords, radiusKm) {
 // ── JourneyPanel: konten tab "Dua Titik" (state machine input → fixed → running) ──
 function JourneyPanel({
     state, origin, destination, routeData,
-    setOrigin, setDestination,
+    setOrigin, setDestination, pointError,
     onStart, onCancel, onFinish, demoMode, finishReady, msg, saving,
 }) {
     const { t } = useTranslation();
@@ -99,10 +113,17 @@ function JourneyPanel({
         return (
             <div className="flex flex-col mt-2">
                 <span className="block font-body text-micro font-semibold text-gray-70 mb-1">{t('explore.origin_label')}</span>
-                <LocationSearchInput placeholder={t('explore.origin_placeholder')} onSelectLocation={(loc) => setOrigin(loc)} />
+                <LocationSearchInput placeholder={t('explore.origin_placeholder')} onSelectLocation={setOrigin} />
 
                 <span className="block font-body text-micro font-semibold text-gray-70 mb-1">{t('explore.destination_label')}</span>
-                <LocationSearchInput placeholder={t('explore.destination_placeholder')} onSelectLocation={(loc) => setDestination(loc)} />
+                <LocationSearchInput placeholder={t('explore.destination_placeholder')} onSelectLocation={setDestination} />
+
+                {/* Titik yang ditolak karena sama dengan titik satunya. */}
+                {pointError && (
+                    <p role="alert" className="font-body text-micro text-error-dark">
+                        {pointError}
+                    </p>
+                )}
             </div>
         );
     }
@@ -306,6 +327,7 @@ function ExplorePanel({
                     routeData={journey.routeData}
                     setOrigin={setOrigin}
                     setDestination={setDestination}
+                    pointError={journey.pointError}
                     onStart={journey.onStart}
                     onCancel={journey.onCancel}
                     onFinish={journey.onFinish}
@@ -483,6 +505,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
     const [routeLoading, setRouteLoading] = useState(false);   // overlay fullscreen — rute dua titik
     const [origin, setOrigin] = useState(null);
     const [destination, setDestination] = useState(null);
+    const [pointError, setPointError] = useState(null); // titik ditolak karena sama dengan titik satunya
     const [routeData, setRouteData] = useState(null);
     const [routeRadius, setRouteRadius] = useState(5);
     const [mapPoints, setMapPoints] = useState([]);
@@ -649,6 +672,31 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         };
     }, []);
 
+    // Pemilihan titik keberangkatan/tujuan. Titik yang sama dengan titik satunya
+    // ditolak di sini, sebelum sempat mengunci panel: begitu kedua state terisi
+    // panel langsung pindah ke 'fixed' dan membangun rute, jadi menahannya di
+    // tahap pemilihan jauh lebih jelas daripada menolak saat "Mulai Perjalanan".
+    // ExploreController::startJourney tetap memeriksa ulang di server.
+    const selectOrigin = useCallback((loc) => {
+        if (isSamePoint(loc, destination)) {
+            setPointError(t('explore.journey_same_point'));
+
+            return;
+        }
+        setPointError(null);
+        setOrigin(loc);
+    }, [destination, t]);
+
+    const selectDestination = useCallback((loc) => {
+        if (isSamePoint(loc, origin)) {
+            setPointError(t('explore.journey_same_point'));
+
+            return;
+        }
+        setPointError(null);
+        setDestination(loc);
+    }, [origin, t]);
+
     // ── Rute 2 titik: via-point admin dulu; bila kosong, fallback OSM di-snap ke rute ──
     const fetchJourneyRoute = useCallback(async () => {
         if (!origin || !destination) return;
@@ -751,6 +799,7 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
         setRouteData(null);
         setOrigin(null);
         setDestination(null);
+        setPointError(null);
     }, []);
 
     // Simpan trip + album (dipanggil saat perjalanan selesai).
@@ -930,13 +979,13 @@ export default function Index({ places = [], categories = [], trendingPlaces = [
                                 categories={categories}
                                 searchSuggestions={searchSuggestions}
                                 onSuggestionClick={handleSuggestionSelect}
-                                setOrigin={setOrigin}
-                                setDestination={setDestination}
+                                setOrigin={selectOrigin}
+                                setDestination={selectDestination}
                                 osmLoading={mapLoading}
                                 osmCount={mapPoints.length}
                                 journey={{
                                     state: journeyState,
-                                    origin, destination, routeData,
+                                    origin, destination, routeData, pointError,
                                     onStart: handleStartJourney,
                                     onCancel: resetJourney,
                                     onFinish: handleFinishReal,

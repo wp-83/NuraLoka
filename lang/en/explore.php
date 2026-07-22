@@ -16,6 +16,7 @@ return [
     'origin_placeholder' => 'Search for starting address...',
     'destination_label' => 'Destination Address',
     'destination_placeholder' => 'Search for destination address...',
+    'journey_same_point' => 'Departure and destination cannot be the same. Pick two different places.',
     'location_search_placeholder' => 'Search location...',
 
     // Secondary panel

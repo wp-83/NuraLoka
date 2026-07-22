@@ -32,34 +32,43 @@ class Album extends Model
     }
 
     /**
-     * "Popular this week": public albums from active users, ranked by the views
-     * they actually received in the last 7 days.
+     * "Popular this week": album publik milik user aktif yang DIBUAT dalam 7
+     * hari terakhir (albums.created_at), diurutkan dari jumlah penontonnya —
+     * albums.view_count, angka yang sama dengan yang tercetak di kartu album.
+     * Kalau jumlah penontonnya seri, album yang lebih dulu dibuat menang.
      *
-     * Sebelumnya peringkat ini menyaring trips.trip_date >= minggu lalu dan
-     * mengurutkan pakai view_count (total sepanjang masa). Akibatnya album lama
-     * yang ramai ditonton minggu ini TIDAK pernah muncul — yang tersaring adalah
-     * tanggal jalan-jalannya, bukan kapan album itu dilihat. Sekarang tanggal
-     * trip tidak lagi membatasi; yang dihitung adalah baris album_views dalam
-     * 7 hari terakhir.
+     * Dua hal yang dulu membuat urutannya salah:
      *
-     * view_count dipakai sebagai pemecah seri supaya bagian ini tetap terisi
-     * ketika belum ada view yang tercatat minggu ini (mis. tepat setelah fitur
-     * log view ini dirilis).
+     * 1. Batas "minggu ini" diambil dari trips.trip_date — tanggal jalan-jalan,
+     *    bukan tanggal album dibuat. Album yang baru diunggah tentang perjalanan
+     *    bulan lalu karena itu tidak pernah muncul.
+     * 2. Urutannya dihitung dari baris album_views 7 hari terakhir, sementara
+     *    kartunya menampilkan view_count total. Album dengan angka view lebih
+     *    kecil bisa berada di atas album dengan angka lebih besar, sehingga
+     *    urutannya terlihat acak. Sekarang yang mengurutkan adalah angka yang
+     *    benar-benar dilihat pengguna.
+     *
+     * Jendelanya bergulir 7 hari (now()->subWeek()), bukan Senin–Minggu, sama
+     * seperti sebelumnya supaya daftar ini tidak kosong mendadak tiap awal
+     * pekan. Kalau memang tidak ada album baru minggu ini, halaman memakai
+     * empty state ('album.popular_empty').
+     *
+     * created_at ASC sekaligus membuat urutannya stabil antar-request;
+     * albums.id menutup kasus timestamp yang identik.
      */
     public function scopePopularThisWeek($query)
     {
         return $query
-            ->withCount(['views as weekly_views' => function ($q) {
-                $q->where('viewed_at', '>=', now()->subWeek());
-            }])
+            ->where('albums.created_at', '>=', now()->subWeek())
             ->whereHas('trip', function ($q) {
                 $q->where('is_public', true)
                     ->whereHas('user', function ($uq) {
                         $uq->where('is_banned', false);
                     });
             })
-            ->orderByDesc('weekly_views')
-            ->orderByDesc('view_count');
+            ->orderByDesc('albums.view_count')
+            ->orderBy('albums.created_at')
+            ->orderBy('albums.id');
     }
 
     // Relationships
