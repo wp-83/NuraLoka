@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\Daerah\GreetingResolver;
+use App\Services\Localization\FrontendTranslations;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -41,13 +42,6 @@ class HandleInertiaRequests extends Middleware
         'ko' => '한국어',
     ];
 
-    /** Grup file lang yang dikirim ke frontend (dikecualikan: validation & passwords — server-side). */
-    private const FRONTEND_GROUPS = [
-        'nav', 'common', 'home', 'explore', 'footer', 'auth',
-        'account', 'challenge', 'album', 'news', 'profile', 'wishlist', 'error', 'pagination', 'admin', 'landing',
-        'title', // Judul halaman (<title>) — dipakai MainLayout & AdminLayout.
-    ];
-
     public function share(Request $request): array
     {
         $user = $request->user();
@@ -77,7 +71,7 @@ class HandleInertiaRequests extends Middleware
             // di fase request, sebelum SetLocale, sehingga nilai eager akan tertinggal).
             'locale' => fn () => app()->getLocale(),
             'locales' => self::LOCALES,
-            'translations' => fn () => $this->translations(app()->getLocale()),
+            'translations' => fn () => app(FrontendTranslations::class)->for(app()->getLocale()),
 
             // Sapaan bahasa daerah — SENGAJA tidak bergantung pada 'locale' di atas.
             // Untuk user login, provinsi tersimpan (prioritas 1) sudah cukup, jadi
@@ -85,32 +79,5 @@ class HandleInertiaRequests extends Middleware
             // payload default lalu frontend menyempurnakannya lewat deteksi lokasi.
             'daerah' => fn () => app(GreetingResolver::class)->forUser($request->user()),
         ]);
-    }
-
-    /**
-     * Kumpulkan pesan terjemahan grup-grup UI untuk $locale, dengan fallback ke locale
-     * cadangan sehingga key yang belum diterjemahkan tetap tampil (bukan kosong).
-     */
-    private function translations(string $locale): array
-    {
-        $fallback = config('app.fallback_locale', 'id');
-        $out = [];
-
-        foreach (self::FRONTEND_GROUPS as $group) {
-            $base = $this->loadGroup($fallback, $group);
-            $out[$group] = $locale === $fallback
-                ? $base
-                : array_replace_recursive($base, $this->loadGroup($locale, $group));
-        }
-
-        return $out;
-    }
-
-    /** Muat satu file lang (lang/{locale}/{group}.php) sebagai array; [] bila tak ada. */
-    private function loadGroup(string $locale, string $group): array
-    {
-        $path = lang_path("{$locale}/{$group}.php");
-
-        return is_file($path) ? (array) require $path : [];
     }
 }
