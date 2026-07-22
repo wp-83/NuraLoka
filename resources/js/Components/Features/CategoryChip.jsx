@@ -3,17 +3,14 @@ import { useState } from 'react';
 import { categoryEmoji, categoryIconUrl } from '@js/categoryIcons';
 
 /**
- * Label kategori beserta ikonnya.
+ * A category label with its icon.
  *
- * Ikon mengikuti gambar yang diunggah admin bila kategori itu punya; kalau belum
- * ada, dipakai emoji khas kategorinya. Dipakai bersama oleh kartu tempat dan
- * halaman detail supaya kategori yang sama tidak tampil berbeda di dua tempat.
- *
- * Sebelumnya halaman detail memasang satu ikon taman untuk SEMUA kategori, dan
- * kartu tempat tidak menampilkan ikon sama sekali.
+ * The icon is the image an admin uploaded when the category has one, and the
+ * category's characteristic emoji when it does not. Shared by place cards and
+ * detail pages so one category never looks different in two places.
  */
 export default function CategoryChip({ category, size = 'md' }) {
-    // Gambar bisa saja terhapus dari public/; jangan sampai muncul ikon rusak.
+    // The image may have been deleted from public/; never show a broken icon.
     const [imageFailed, setImageFailed] = useState(false);
 
     if (!category?.name) return null;

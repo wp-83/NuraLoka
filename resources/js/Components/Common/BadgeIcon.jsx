@@ -2,19 +2,19 @@ import { FaMedal } from 'react-icons/fa';
 import { mediaUrl } from '@js/mediaUrl';
 
 /**
- * Ukuran lencana.
+ * Badge sizes.
  *
- * sm/md/lg DIBIARKAN seperti semula karena dipakai leaderboard, halaman profil,
- * dan ringkasan Tantangan — mengubahnya akan menggeser tata letak di sana.
- * Ukuran besar untuk halaman daftar lencana ditambahkan sebagai xl/2xl, dan
- * ikut mengecil di layar sempit.
+ * sm/md/lg are LEFT as they were, because the leaderboard, the profile page and
+ * the Challenge summary all use them — changing one would shift those layouts.
+ * The larger sizes for the badge listing page were added as xl/2xl, and scale
+ * down on narrow screens.
  */
 const SIZE_CLASSES = {
     sm: 'w-10 h-10',
     md: 'w-16 h-16',
     lg: 'w-20 h-20',
-    // Naik di md, bukan sm: tepat di 640px kolom tingkatan (4 kolom) hanya
-    // selebar 128px, jadi lencana 128px akan mengisi kolomnya tanpa sisa.
+    // Steps up at md, not sm: at exactly 640px a tier column (4 across) is only
+    // 128px wide, so a 128px badge would fill it edge to edge.
     xl: 'w-28 h-28 md:w-32 md:h-32',
     '2xl': 'w-36 h-36 sm:w-40 sm:h-40 lg:w-44 lg:h-44',
 };

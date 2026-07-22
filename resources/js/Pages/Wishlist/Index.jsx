@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 
 import EmptyState from '@components/Common/EmptyState';
 import PlaceCard from '@components/Features/PlaceCard';
+import Reveal from '@components/Common/Reveal';
 import Button from '@components/Forms/Button';
 import MainLayout from '@js/Layouts/MainLayout';
 import RegionalGreeting from '@js/Daerah/RegionalGreeting';
@@ -45,7 +46,7 @@ export default function Index({
             {/* Content */}
             <div className="relative z-10 py-10">
                 {/* Header */}
-                <div className="mb-8">
+                <Reveal className="mb-8">
                     <h1
                         className="
                             font-heading text-title
@@ -61,7 +62,7 @@ export default function Index({
                         phrase="wishlist_index"
                         className="text-paragraph mt-2 local-language"
                     />
-                </div>
+                </Reveal>
 
                 {/* Empty State */}
                 {!hasSavedPlaces ? (
@@ -99,16 +100,17 @@ export default function Index({
                                 lg:grid-cols-3
                             "
                         >
-                            {savedPlaces.map((place) => (
-                                <PlaceCard
-                                    key={place.id}
-                                    place={place}
-                                    onVisit={handleVisit}
-                                    isSaved={savedPlaceIds.includes(
-                                        place.id
-                                    )}
-                                    onToggleSave={handleToggleSave}
-                                />
+                            {savedPlaces.map((place, index) => (
+                                <Reveal key={place.id} stagger={index}>
+                                    <PlaceCard
+                                        place={place}
+                                        onVisit={handleVisit}
+                                        isSaved={savedPlaceIds.includes(
+                                            place.id
+                                        )}
+                                        onToggleSave={handleToggleSave}
+                                    />
+                                </Reveal>
                             ))}
                         </div>
                     </>

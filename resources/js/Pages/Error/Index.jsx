@@ -2,9 +2,11 @@ import { Head } from "@inertiajs/react";
 import { useTranslation } from "@js/i18n";
 
 /**
- * Fallback teks error bila props `translations` tidak ter-share dari server
- * (mis. 404 rute tak dikenal / 419 CSRF yang terjadi di luar pipeline Inertia).
- * Nilainya SENGAJA disamakan dengan lang/{id,en,ko}/error.php agar konsisten.
+ * Fallback error text for when the `translations` prop is not shared by the
+ * server — an unknown-route 404, or a CSRF 419, both of which happen outside the
+ * Inertia pipeline.
+ *
+ * These values DELIBERATELY mirror lang/{id,en,ko}/error.php.
  */
 const FALLBACK = {
     id: {
@@ -90,8 +92,8 @@ const FALLBACK = {
 export default function Error({ status }) {
     const { t, locale } = useTranslation();
 
-    // t() mengembalikan key apa adanya bila tak ditemukan. Bila itu terjadi
-    // (translations tak ter-share), pakai FALLBACK sesuai locale, lalu ke 'id'.
+    // t() returns the key itself when it finds nothing. When that happens (the
+    // translations were not shared), use FALLBACK for this locale, then 'id'.
     const resolve = (group) => {
         const key = `error.${group}.${status}`;
         const translated = t(key);

@@ -1,10 +1,10 @@
 // ============================================================
 // EMPTY STATE
-// Tampilan "belum ada data" untuk seluruh aplikasi. Desainnya mengikuti
-// halaman Wishlist: maskot pudar, judul, keterangan, lalu CTA opsional.
+// The application-wide "nothing here yet" state. The design follows the
+// Wishlist page: a faded mascot, a title, a description, then an optional CTA.
 //
-// `size="compact"` memakai desain yang sama persis, hanya diperkecil —
-// dipakai di dalam sel tabel admin dan kartu dashboard yang ruangnya sempit.
+// `size="compact"` is the exact same design, just smaller — used inside admin
+// table cells and dashboard cards, where space is tight.
 // ============================================================
 const SIZES = {
     default: {

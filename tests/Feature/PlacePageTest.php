@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Album;
 use App\Models\Place;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,14 +20,19 @@ class PlacePageTest extends TestCase
     // ── dari PlaceCardThumbnailTest ──────────────────────────────
     public function test_tempat_berfoto_punya_img_dari_fotonya(): void
     {
-        $place = Place::whereHas('tripPhotos')->with('tripPhotos')->first();
+        $place = Place::whereHas('publicTripPhotos')
+            ->whereDoesntHave('photos')
+            ->first();
 
         $this->assertNotNull($place, 'Tidak ada tempat berfoto untuk diuji.');
 
-        $this->assertSame(
-            '/storage/'.$place->tripPhotos->first()->photo_path,
-            $place->img,
-        );
+        // Seeder boleh meninggalkan photo_path kosong kalau file contohnya tidak
+        // ada, jadi isinya ditetapkan di sini supaya yang diuji benar-benar
+        // "sampul diambil dari foto albumnya", bukan kelengkapan data seed.
+        $photo = $place->publicTripPhotos()->first();
+        $photo->update(['photo_path' => 'albums/uji-sampul.jpg']);
+
+        $this->assertSame('/storage/albums/uji-sampul.jpg', $place->fresh()->img);
     }
 
     public function test_tempat_tanpa_foto_mengembalikan_null(): void
@@ -42,11 +48,29 @@ class PlacePageTest extends TestCase
         $this->assertNull($place->img);
     }
 
+    /**
+     * A user with places saved to their wishlist.
+     *
+     * The test builds this itself rather than hunting for one in the seed data:
+     * SavedPlaceSeeder is commented out of DatabaseSeeder, so relying on it made
+     * these tests fail on a fact about the seeder rather than about the page.
+     */
+    private function userWithSavedPlaces(int $count = 8): User
+    {
+        $user = User::whereHas('userDetail')->first();
+
+        $this->assertNotNull($user, 'Tidak ada user di data seed.');
+
+        $user->savedPlaces()->syncWithoutDetaching(
+            Place::query()->take($count)->pluck('id')
+        );
+
+        return $user;
+    }
+
     public function test_kartu_di_halaman_impian_menerima_img(): void
     {
-        $user = User::whereHas('savedPlaces')->first();
-
-        $this->assertNotNull($user, 'Tidak ada user dengan tempat tersimpan.');
+        $user = $this->userWithSavedPlaces();
 
         $props = $this->actingAs($user)
             ->get(route('wishlist.index'))
@@ -82,7 +106,7 @@ class PlacePageTest extends TestCase
     {
         // Relasi foto harus dimuat sekaligus; tanpa itu tiap kartu memicu
         // kueri sendiri (N+1) hanya untuk mencari satu foto sampul.
-        $user = User::whereHas('savedPlaces')->first();
+        $user = $this->userWithSavedPlaces();
 
         DB::enableQueryLog();
 
@@ -273,6 +297,91 @@ class PlacePageTest extends TestCase
 
             $this->assertStringContainsString('<PlaceDetail', $source);
         }
+    }
+
+    // ── privasi album ────────────────────────────────────────────
+    /**
+     * Tempat yang fotonya HANYA datang dari satu album publik, sehingga
+     * memprivatkan album itu membuat galerinya benar-benar kosong.
+     */
+    private function placeDenganSatuAlbumPublik(): ?Place
+    {
+        return Place::whereDoesntHave('photos')
+            ->whereHas('publicTripPhotos')
+            ->get()
+            ->first(function (Place $place) {
+                $albumIds = $place->publicTripPhotos()->distinct()->pluck('album_id');
+
+                return $albumIds->count() === 1
+                    && $place->tripPhotos()->count() === $place->publicTripPhotos()->count();
+            });
+    }
+
+    public function test_album_privat_hilang_dari_galeri_kedua_halaman_detail(): void
+    {
+        $place = $this->placeDenganSatuAlbumPublik();
+
+        if (! $place) {
+            $this->markTestSkipped('Tidak ada tempat yang fotonya hanya dari satu album publik.');
+        }
+
+        $user = User::whereHas('userDetail')->first();
+
+        foreach (['explore.show', 'wishlist.show'] as $rute) {
+            $this->assertNotEmpty(
+                $this->actingAs($user)->get(route($rute, $place->slug))
+                    ->viewData('page')['props']['gallery'],
+                "Galeri {$rute} sudah kosong sebelum album diprivatkan."
+            );
+        }
+
+        // Pemiliknya memprivatkan album (AlbumController::toggleVisibility
+        // menyimpan privasi di trips.is_public).
+        Album::whereIn('id', $place->tripPhotos()->distinct()->pluck('album_id'))
+            ->with('trip')
+            ->get()
+            ->each(fn (Album $album) => $album->trip->update(['is_public' => false]));
+
+        foreach (['explore.show', 'wishlist.show'] as $rute) {
+            $props = $this->actingAs($user)->get(route($rute, $place->slug))
+                ->assertOk()
+                ->viewData('page')['props'];
+
+            $this->assertSame(
+                [],
+                $props['gallery'],
+                "Foto dari album privat masih tampil di galeri {$rute}."
+            );
+
+            $this->assertSame(
+                0,
+                $props['albumPostersCount'],
+                "Jumlah album di {$rute} masih menghitung album privat."
+            );
+        }
+    }
+
+    public function test_album_privat_tidak_jadi_sampul_kartu_tempat(): void
+    {
+        $place = $this->placeDenganSatuAlbumPublik();
+
+        if (! $place) {
+            $this->markTestSkipped('Tidak ada tempat yang fotonya hanya dari satu album publik.');
+        }
+
+        $place->publicTripPhotos()->first()->update(['photo_path' => 'albums/uji-privasi.jpg']);
+
+        $this->assertNotNull($place->fresh()->img, 'Tempat ini sudah tidak punya sampul sejak awal.');
+
+        Album::whereIn('id', $place->tripPhotos()->distinct()->pluck('album_id'))
+            ->with('trip')
+            ->get()
+            ->each(fn (Album $album) => $album->trip->update(['is_public' => false]));
+
+        $this->assertNull(
+            $place->fresh()->img,
+            'Foto dari album privat masih dipakai sebagai sampul kartu tempat.'
+        );
     }
 
     public function test_halaman_detail_tidak_lagi_menyalin_tata_letak(): void

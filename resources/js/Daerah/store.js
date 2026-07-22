@@ -2,11 +2,12 @@ import { readCache, writeCache } from './cache';
 import { detectRegion } from './detector';
 
 /**
- * Penyimpan hasil deteksi wilayah di level modul (bukan React context).
+ * Module-level store for the region-detection result (deliberately not a React
+ * context).
  *
- * Dipilih agar deteksi berjalan SEKALI per pemuatan halaman meski ada banyak
- * sapaan di layar, tanpa perlu membungkus <App> Inertia — membungkusnya akan
- * memutus usePage() dan memaksa kita meniru sendiri resolusi layout Inertia.
+ * Chosen so detection runs ONCE per page load however many greetings are on
+ * screen, without having to wrap Inertia's <App> — wrapping it would break
+ * usePage() and force us to reimplement Inertia's own layout resolution.
  */
 
 let state = {
@@ -31,7 +32,7 @@ export function getSnapshot() {
     return state;
 }
 
-// Snapshot untuk SSR / render pertama di server: tidak ada hasil deteksi klien.
+// Snapshot for SSR / the first render on the server: no client detection yet.
 const serverSnapshot = { payload: null, isDetecting: false };
 
 export function getServerSnapshot() {
@@ -39,15 +40,15 @@ export function getServerSnapshot() {
 }
 
 /**
- * Sumber payload server yang sudah final sehingga deteksi di klien tidak perlu
- * dijalankan — dan tidak boleh menimpanya.
+ * Whether the server payload is final, so client detection need not run — and
+ * must not overwrite it.
  *
- * HANYA 'forced' (DAERAH_FORCE_PROVINCE di .env atau ?daerah= di URL), karena
- * itu memang alat untuk memaksa tampilan saat pengujian.
+ * ONLY 'forced' qualifies (DAERAH_FORCE_PROVINCE in .env, or ?daerah= in the
+ * URL), since that is precisely the tool for pinning the display while testing.
  *
- * 'user_profile' SENGAJA tidak lagi final: sapaan harus mengikuti lokasi user
- * SAAT INI lewat GPS, bukan provinsi yang tersimpan di profil. Provinsi profil
- * tetap dipakai sebagai cadangan bila GPS maupun IP sama-sama gagal.
+ * 'user_profile' is DELIBERATELY no longer final: the greeting should follow
+ * where the user is NOW via GPS, not the province saved on their profile. That
+ * saved province stays as the fallback for when GPS and IP both fail.
  */
 export function isAuthoritative(payload) {
     return payload?.source === 'forced';
@@ -56,20 +57,20 @@ export function isAuthoritative(payload) {
 let detectionStarted = false;
 
 /**
- * Jalankan rantai deteksi bila memang diperlukan.
+ * Run the detection chain if it is actually needed.
  *
- * Dilewati HANYA bila payload server dipaksa (forced), atau bila cache deteksi
- * sebelumnya masih berlaku — cache itulah yang mencegah dialog izin lokasi
- * muncul berulang kali saat pindah halaman.
+ * Skipped ONLY when the server payload is forced, or when a previous detection
+ * is still cached — that cache is what stops the location permission dialog
+ * reappearing on every page change.
  *
- * User yang sudah login pun tetap dideteksi: provinsi di profil bukan lagi
- * jawaban final, hanya cadangan terakhir.
+ * Signed-in users are detected too: the province on their profile is no longer
+ * the final answer, only the last fallback.
  */
 export function ensureDetection(serverPayload) {
     if (detectionStarted) return;
     if (typeof window === 'undefined') return;
 
-    // Dipaksa untuk pengujian — jangan jalankan deteksi yang malah menimpanya.
+    // Forced for testing — do not run a detection that would overwrite it.
     if (isAuthoritative(serverPayload)) {
         detectionStarted = true;
         return;
@@ -97,7 +98,7 @@ export function ensureDetection(serverPayload) {
         .finally(() => emit({ isDetecting: false }));
 }
 
-/** Paksa deteksi ulang — mis. setelah user mengubah provinsi di profil. */
+/** Force a re-detection — e.g. after the user changes their province. */
 export function resetDetection() {
     detectionStarted = false;
     emit({ payload: null, isDetecting: false });

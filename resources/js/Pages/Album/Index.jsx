@@ -6,6 +6,7 @@ import RegionalGreeting from '@js/Daerah/RegionalGreeting';
 import EmptyState from '@components/Common/EmptyState';
 import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
+import { useConfirm } from '@js/Contexts/ConfirmContext';
 import { useTranslation } from '@js/i18n';
 
 import {
@@ -43,8 +44,9 @@ function getAlbumThumbnail(thumbnail) {
         : '/images/defaults/image.png';
 }
 
-// Server sudah mengirim URL foto profil yang jadi (User::public_profile_photo),
-// termasuk avatar bawaan sesuai gender. Jangan menempelkan /storage/ lagi.
+// The server already sends a finished profile photo URL
+// (User::public_profile_photo), including the gender-appropriate default avatar.
+// Do not prepend /storage/ again.
 function getProfileImage(profileUrl) {
     return profileUrl || '/images/defaults/profile-general.png';
 }
@@ -452,6 +454,7 @@ export default function Index({
     searchQuery = '',
 }) {
     const { t } = useTranslation();
+    const confirm = useConfirm();
     const [search, setSearch] = useState(searchQuery);
 
     const isSearching = searchResults !== null;
@@ -488,10 +491,11 @@ export default function Index({
         );
     };
 
-    const handleDelete = (albumSlug) => {
-        const isConfirmed = window.confirm(
-            t('album.delete_confirm')
-        );
+    const handleDelete = async (albumSlug) => {
+        const isConfirmed = await confirm({
+            title: t('album.delete_title'),
+            message: t('album.delete_confirm'),
+        });
 
         if (!isConfirmed) return;
 

@@ -5,11 +5,11 @@ namespace App\Services\Daerah;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Sumber tunggal untuk membaca file lang/daerah/{bahasa}.php.
+ * The single way to read a lang/daerah/{language}.php file.
  *
- * Sengaja TIDAK memakai Lang/__() bawaan Laravel supaya sapaan daerah benar-benar
- * lepas dari locale aplikasi — mengganti bahasa aplikasi ke en/ko tidak boleh
- * mengubah apa pun di sini.
+ * Laravel's own Lang/__() is DELIBERATELY not used, so that regional greetings
+ * stay completely independent of the application locale — switching the app to
+ * en or ko must change nothing here.
  */
 class GreetingRepository
 {
@@ -18,9 +18,9 @@ class GreetingRepository
     private const CACHE_TTL = 3600;
 
     /**
-     * Ambil seluruh frasa satu bahasa daerah. Kunci bernilai '' (belum
-     * diterjemahkan) dibuang di sini, sehingga pemanggil cukup memeriksa
-     * "ada atau tidak" tanpa perlu tahu konvensi string kosong.
+     * Every phrase of one regional language. Keys whose value is '' (not yet
+     * translated) are dropped here, so callers can simply ask whether a key
+     * exists without knowing about the empty-string convention.
      *
      * @return array<string, string>
      */
@@ -44,13 +44,13 @@ class GreetingRepository
         );
     }
 
-    /** Satu frasa, atau null bila belum diterjemahkan. */
+    /** One phrase, or null when it has not been translated. */
     public function get(string $language, string $key): ?string
     {
         return $this->all($language)[$key] ?? null;
     }
 
-    /** Daftar bahasa daerah yang tersedia (nama file tanpa .php). */
+    /** The regional languages available (file names without .php). */
     public function availableLanguages(): array
     {
         return collect(glob(lang_path('daerah/*.php')))
@@ -60,7 +60,7 @@ class GreetingRepository
             ->all();
     }
 
-    /** Buang cache — dipakai setelah file bahasa daerah diubah. */
+    /** Drop the cache — call after editing a regional language file. */
     public function flush(): void
     {
         foreach ($this->availableLanguages() as $language) {

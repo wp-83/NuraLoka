@@ -2,6 +2,7 @@ import EmptyState from '@components/Common/EmptyState';
 import Button from '@components/Forms/Button';
 import Input from '@components/Forms/Input';
 import NewsCard from '@components/Features/NewsCard';
+import Reveal from '@components/Common/Reveal';
 import MainLayout from '@js/Layouts/MainLayout';
 import RegionalGreeting from '@js/Daerah/RegionalGreeting';
 import { useTranslation } from '@js/i18n';
@@ -15,60 +16,6 @@ import {
 } from 'react-icons/fi';
 import { HiOutlineEye } from 'react-icons/hi';
 
-const albums = [
-    {
-        id: 1,
-        title: 'Warna-warni Pasar Tradisional Ubud, Bali',
-        image: '/images/home/album-1.jpg',
-        className: 'row-span-2',
-    },
-    {
-        id: 2,
-        title: 'Denyut Kehidupan Malioboro, Yogyakarta',
-        image: '/images/home/album-2.jpg',
-        className: 'col-span-2',
-    },
-    {
-        id: 3,
-        title: 'Pesona Air Terjun Madakaripura, Jawa Timur',
-        image: '/images/home/album-3.jpg',
-        className: '',
-    },
-    {
-        id: 4,
-        title: 'Keajaiban Kaldera dari Gunung Bromo',
-        image: '/images/home/album-4.jpg',
-        className: '',
-    },
-];
-
-const news = [
-    {
-        id: 1,
-        title: 'Mengenal Filosofi Batik di Balik Setiap Motifnya',
-        date: '3 jam yang lalu',
-        image: '/images/home/news-1.jpg',
-        description:
-            'Batik tidak hanya dikenal sebagai warisan budaya Indonesia, tetapi juga sebagai media yang menyimpan berbagai makna dan cerita. Setiap motif batik memiliki...',
-    },
-    {
-        id: 2,
-        title: 'Menjelajahi Destinasi dengan Bertanggung Jawab',
-        date: '6 jam yang lalu',
-        image: '/images/home/news-2.jpg',
-        description:
-            'Menjadi wisatawan yang baik tidak hanya tentang menikmati keindahan suatu tempat, tetapi juga menjaga kelestariannya. Mulai dari mengurangi sampah, menghormati...',
-    },
-    {
-        id: 3,
-        title: 'Pesona Kuliner Lokal',
-        date: '12 jam yang lalu',
-        image: '/images/home/news-3.jpg',
-        description:
-            'Menjelajahi sebuah daerah tidak akan lengkap tanpa mencicipi kuliner khasnya. Setiap hidangan memiliki cerita yang berkaitan dengan sejarah, budaya, dan kehidupan...',
-    },
-];
-
 export default function Index({
     auth,
     latestNews = [],
@@ -77,20 +24,15 @@ export default function Index({
 }) {
     const { t } = useTranslation()
 
-    const newsItems =
-        latestNews.length > 0
-            ? latestNews
-            : news;
-
     const heroDescParts = t('home.hero_desc').split(':app');
     const greetingParts = t('home.search_greeting').split(':name');
 
-    // ── Search "Satu Titik" — sama persis dengan logika di halaman Jelajah ──
+    // Single-point search — identical to the logic on the Explore page.
     const [searchQuery, setSearchQuery] = useState('');
     const [searchSuggestions, setSearchSuggestions] = useState([]);
     const skipSearchRef = useRef(false);
 
-    // Debounced fetch saran dari /jelajah/cari (300ms)
+    // Debounced suggestion fetch from /jelajah/cari (300 ms).
     useEffect(() => {
         if (skipSearchRef.current) {
             skipSearchRef.current = false;
@@ -111,20 +53,21 @@ export default function Index({
                 const data = await res.json();
                 setSearchSuggestions(data.suggestions || []);
             } catch (err) {
-                if (!controller.signal.aborted) console.error('[HomeSearch] gagal memuat saran:', err.message);
+                if (!controller.signal.aborted) console.error('[HomeSearch] failed to load suggestions:', err.message);
             }
         }, 300);
 
         return () => { clearTimeout(timer); controller.abort(); };
     }, [searchQuery]);
 
-    // Klik saran → navigasi ke halaman Jelajah dengan koordinat tempat
+    // Clicking a suggestion navigates to Explore with the place's coordinates.
     const handleSuggestionSelect = useCallback((place) => {
         skipSearchRef.current = true;
         setSearchQuery(place.name);
         setSearchSuggestions([]);
 
-        // Kirim data tempat lewat URL params agar Jelajah bisa langsung zoom + popup
+        // Pass the place through URL params so Explore can zoom straight to it
+        // and open its popup.
         const url = new URL(route('explore.index'), window.location.origin);
         url.searchParams.set('focus_id', place.id);
         url.searchParams.set('focus_lat', place.latitude);
@@ -135,7 +78,8 @@ export default function Index({
         router.visit(url.toString());
     }, []);
 
-    // Submit form → jika ada saran, ambil yang teratas; jika tidak, pindah ke Jelajah biasa
+    // Submitting takes the top suggestion when there is one, and otherwise just
+    // opens Explore.
     const handleSearchSubmit = (e) => {
         e.preventDefault();
         if (searchSuggestions.length > 0) {
@@ -160,7 +104,7 @@ export default function Index({
                     <div className="absolute inset-0 bg-black/40" />
                 </div>
 
-                {/* Konten tetap mengikuti container dari MainLayout */}
+                {/* Content still follows MainLayout's container */}
                 <div className="absolute container inset-0 z-10 flex min-h-[540px] flex-col justify-between py-12 sm:py-16">
                     <div className="max-w-3xl text-white">
                         <h1 className="text-hero font-heading font-bold">
@@ -201,7 +145,10 @@ export default function Index({
 
             {/* Search */}
             <section className="container relative z-20 -mt-16">
-                <div className="rounded-2xl bg-white/95 p-5 shadow-lg backdrop-blur-sm sm:p-6">
+                <Reveal
+                    animation="fade-up"
+                    className="rounded-2xl bg-white/95 p-5 shadow-lg backdrop-blur-sm sm:p-6"
+                >
                     <h2 className="text-lg font-heading text-paragraph text-primary-100">
                         {greetingParts[0]}
                         <span className="font-bold">
@@ -228,7 +175,7 @@ export default function Index({
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
 
-                            {/* Dropdown Saran */}
+                            {/* Suggestions dropdown */}
                             {searchSuggestions.length > 0 && searchQuery.trim() !== '' && (
                                 <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-[500] overflow-y-auto max-h-56">
                                     {searchSuggestions.map((place) => (
@@ -261,13 +208,16 @@ export default function Index({
                             {t('home.search_button')}
                         </Button>
                     </form>
-                </div>
+                </Reveal>
             </section>
 
             {/* Mission */}
             <section className="container mt-10">
                 {ongoingMission ? (
-                    <div className="flex flex-col items-center gap-5 rounded-2xl border border-blue-100 bg-blue-50 p-5 shadow-sm sm:flex-row">
+                    <Reveal
+                        animation="fade-up"
+                        className="flex flex-col items-center gap-5 rounded-2xl border border-blue-100 bg-blue-50 p-5 shadow-sm sm:flex-row"
+                    >
                         {ongoingMission.badge_icon ? (
                             <img
                                 src={`/${ongoingMission.badge_icon}`}
@@ -323,7 +273,7 @@ export default function Index({
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </Reveal>
                 ) : (
                     <EmptyState
                         title={t('challenge.missions_empty_title')}
@@ -340,7 +290,7 @@ export default function Index({
             </section>
 
             {/* Album */}
-            <section className="container pt-16 pb-24">
+            <Reveal as="section" className="container pt-16 pb-24">
                 <SectionHeader
                     mascot="/images/mascots/camera.png"
                     title={t('home.album_title')}
@@ -443,7 +393,7 @@ export default function Index({
                         <EmptyState title={t('album.my_empty')} description={t('album.start_cta')} />
                     </div>
                 )}
-            </section>
+            </Reveal>
 
             {/* News */}
             <section className="container pb-20">
@@ -458,20 +408,12 @@ export default function Index({
                 />
 
                 <div className="mt-4 flex flex-col gap-5">
-                    {latestNews.length >
-                    0 ? (
-                        latestNews.map(
-                            (news) => (
-                                <NewsCard
-                                    key={
-                                        news.id
-                                    }
-                                    news={
-                                        news
-                                    }
-                                />
-                            ),
-                        )
+                    {latestNews.length > 0 ? (
+                        latestNews.map((item, index) => (
+                            <Reveal key={item.id} stagger={index}>
+                                <NewsCard news={item} />
+                            </Reveal>
+                        ))
                     ) : (
                         <EmptyState
                             title={t('home.news_empty_title')}
@@ -534,11 +476,10 @@ function AlbumCard({
     return (
         <Link
             href={slug ? route('album.show', slug) : '#'}
-            // 'block' WAJIB: Link merender <a> yang defaultnya display:inline,
-            // dan elemen inline mengabaikan min-height. Karena seluruh isi kartu
-            // diposisikan absolute, tanpa ini kartunya runtuh setinggi nol.
-            // Sebelumnya hanya terlihat benar saat kartunya kebetulan menjadi
-            // anak grid (grid membuat anaknya jadi block secara otomatis).
+            // 'block' is REQUIRED: Link renders an <a>, which defaults to
+            // display:inline, and inline elements ignore min-height. Since the
+            // whole card is absolutely positioned, without this the card
+            // collapses to zero height.
             className={`group relative block min-h-[180px] overflow-hidden rounded-2xl ${className}`}
         >
             <img

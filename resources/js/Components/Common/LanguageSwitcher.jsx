@@ -2,13 +2,17 @@ import { router, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import { FaGlobe, FaCheck } from 'react-icons/fa';
 
-// Kode ringkas per bahasa untuk tombol (label lengkap datang dari props `locales`).
+// Short code per language for the button (the full label comes from the
+// `locales` prop).
 const SHORT = { id: 'ID', en: 'EN', ko: 'KO' };
 
 /**
- * Pemilih bahasa (id/en/ko). Membaca bahasa aktif & daftar pilihan dari props Inertia,
- * lalu mengarahkan ke /bahasa/{kode} — server menyimpan pilihan ke session & mengembalikan
- * halaman dengan terjemahan baru (preserveScroll agar posisi gulir tetap).
+ * Language picker (id/en/ko).
+ *
+ * Reads the active language and the available choices from the Inertia props,
+ * then navigates to /bahasa/{code} — the server stores the choice in the session
+ * and returns the page with the new translations. preserveScroll keeps the
+ * reader where they were.
  */
 export default function LanguageSwitcher({ className = '', align = 'right' }) {
     const { locale = 'id', locales = {} } = usePage().props;

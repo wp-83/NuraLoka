@@ -9,26 +9,35 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * The user's wishlist ("Impian"): the places they have saved.
+ */
 class WishlistController extends Controller
 {
+    public function __construct(
+        private readonly PlaceDetailPresenter $placeDetail,
+        private readonly GamificationService $gamification,
+    ) {}
+
     /**
-     * Display the wishlist page with all saved places for the authenticated user.
+     * The wishlist page: every place the signed-in user has saved.
      */
     public function index()
     {
         $user = Auth::user();
 
-        // photos and tripPhotos are eager-loaded for the card cover image (the img
-        // accessor), then 'img' is appended so it reaches the frontend.
+        // photos and publicTripPhotos are eager-loaded for the card cover image
+        // (the img accessor), then 'img' is appended so it reaches the frontend.
+        // Only the PUBLIC trip photos: a place saved here must not expose a
+        // photo from an album its owner has made private.
         $savedPlaces = $user->savedPlaces()
-            ->with(['categories', 'photos', 'tripPhotos'])
+            ->with(['categories', 'photos', 'publicTripPhotos'])
             ->get()
             ->each(fn (Place $place) => $place->append('img'));
 
-        // Get the saved place IDs for bookmark state
         $savedPlaceIds = $savedPlaces->pluck('id')->toArray();
 
-        // Total saves per place, for the "frequently saved" label.
+        // How many people saved each place, for the "frequently saved" label.
         $saveCounts = DB::table('saved_places')
             ->select('place_id', DB::raw('count(*) as total_saves'))
             ->whereIn('place_id', $savedPlaceIds)
@@ -44,24 +53,23 @@ class WishlistController extends Controller
     }
 
     /**
-     * Display detail page for a saved place.
+     * Detail page for a saved place.
+     *
+     * Built by the same presenter as the Explore detail page, so the two show
+     * an identical gallery, visitor count, album count and price.
      */
     public function show(string $slug)
     {
         $place = Place::with(['categories', 'photos'])->where('slug', $slug)->firstOrFail();
 
-        // The SAME data source as the detail page under Explore, so both pages show
-        // an identical gallery, visitor count, album count and price. This page used
-        // to send only place/isSaved/totalSaves, so its gallery just repeated a
-        // single image eight times.
         return inertia(
             'Wishlist/Show',
-            app(PlaceDetailPresenter::class)->props($place, Auth::user()),
+            $this->placeDetail->props($place, Auth::user()),
         );
     }
 
     /**
-     * Toggle save/unsave a place for the authenticated user.
+     * Save or unsave a place.
      */
     public function toggle(Request $request)
     {
@@ -72,22 +80,17 @@ class WishlistController extends Controller
         $user = Auth::user();
         $placeId = $request->place_id;
 
-        // Check if already saved
-        $exists = $user->savedPlaces()->where('place_id', $placeId)->exists();
-
-        if ($exists) {
-            // Unsave
+        if ($user->savedPlaces()->where('place_id', $placeId)->exists()) {
             $user->savedPlaces()->detach($placeId);
-            $saved = false;
-        } else {
-            // Save
-            $user->savedPlaces()->attach($placeId);
-            $saved = true;
 
-            // Gamification: record the save action, filtered by the place's categories.
-            app(GamificationService::class)->record($user, 'save_place', Place::find($placeId));
+            return back()->with($this->flash('success', 'Tempat dihapus dari Daftar Impian.'));
         }
 
-        return back();
+        $user->savedPlaces()->attach($placeId);
+
+        // Gamification: record the save, filtered by the place's categories.
+        $this->gamification->record($user, 'save_place', Place::find($placeId));
+
+        return back()->with($this->flash('success', 'Tempat disimpan ke Daftar Impian.'));
     }
 }

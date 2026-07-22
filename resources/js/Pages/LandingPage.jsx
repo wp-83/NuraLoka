@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, Fragment } from "react";
 import Button from "@components/Forms/Button";
 import Footer from "@components/Layouts/User/Footer";
 import LanguageSwitcher from "@components/Common/LanguageSwitcher";
+import Reveal from "@components/Common/Reveal";
 import { Head, Link, usePage } from "@inertiajs/react";
 import { useTranslation } from "@js/i18n";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
@@ -137,7 +138,7 @@ export default function LandingPage() {
     }, [isPaused, total]);
 
     const { width: cardWidth, height: cardHeight } = dimensions;
-    const stageHeight = cardHeight + 80; // ruang untuk shadow & scale
+    const stageHeight = cardHeight + 80; // room for the shadow and the scale-up
     const offsetStep = cardWidth * 0.62;
 
     return (
@@ -196,12 +197,14 @@ export default function LandingPage() {
                     <div className="container relative z-10">
                         <div className="mx-auto max-w-4xl">
                             <div className="flex flex-col items-center gap-6 sm:flex-row">
-                                <img
+                                <Reveal
+                                    as="img"
+                                    animation="zoom-in"
                                     src="/images/mascots/map.png"
                                     alt="Maskot NuraLoka"
                                     className="w-60 shrink-0 object-contain"
                                 />
-                                <div>
+                                <Reveal animation="fade-left" delay={120}>
                                     <h1 className="font-heading text-center text-title font-bold text-white sm:text-hero sm:text-left">
                                         {t("landing.hero_welcome")}
                                     </h1>
@@ -224,9 +227,9 @@ export default function LandingPage() {
                                                 </Fragment>
                                             ))}
                                     </p>
-                                </div>
+                                </Reveal>
                             </div>
-                            <div className="mt-12 max-w-xl sm:mt-8">
+                            <Reveal className="mt-12 max-w-xl sm:mt-8" delay={240}>
                                 <p className="font-heading text-paragraph leading-relaxed text-white">
                                     {withBrand(
                                         t("landing.hero_desc_lead"),
@@ -253,7 +256,7 @@ export default function LandingPage() {
                                         </Button>
                                     </Link>
                                 </div>
-                            </div>
+                            </Reveal>
                         </div>
                     </div>
                 </section>
@@ -262,7 +265,7 @@ export default function LandingPage() {
                 <section className="relative overflow-hidden py-20 md:py-28">
 
                     <div className="container">
-                        <div className="max-w-3xl">
+                        <Reveal className="max-w-3xl">
                             <h2 className="font-heading text-subtitle font-bold leading-tight text-primary md:text-title">
                                 {t("landing.about_heading_line1")}
                                 <br />
@@ -271,9 +274,14 @@ export default function LandingPage() {
                             <p className="mt-5 max-w-2xl font-body text-body leading-relaxed text-primary-100">
                                 {withBrand(t("landing.about_description"))}
                             </p>
-                        </div>
+                        </Reveal>
 
-                        <div
+                        {/* The carousel drives its own transforms every few
+                            seconds, so AOS only fades the whole stage in — an
+                            animation on each card would fight with that. */}
+                        <Reveal
+                            animation="fade-up"
+                            delay={120}
                             className="relative mt-6"
                             onMouseEnter={() => setIsPaused(true)}
                             onMouseLeave={() => setIsPaused(false)}
@@ -387,14 +395,14 @@ export default function LandingPage() {
                                     />
                                 ))}
                             </div>
-                        </div>
+                        </Reveal>
                     </div>
                 </section>
 
                 {/* TEAM */}
                 <section className="relative overflow-hidden pb-24 md:pb-32">
                     <div className="container">
-                        <div className="max-w-2xl">
+                        <Reveal className="max-w-2xl">
                             <h2 className="font-heading text-subtitle font-bold leading-tight text-primary md:text-title">
                                 {withBrand(t("landing.team_heading_line1"))}
                                 <br />
@@ -403,11 +411,16 @@ export default function LandingPage() {
                             <p className="mt-5 max-w-2xl font-body text-body leading-relaxed text-primary-100">
                                 {t("landing.team_description")}
                             </p>
-                        </div>
+                        </Reveal>
 
                         <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5">
-                            {TEAM_MEMBERS.map((member) => (
-                                <div key={member.name} className="group text-center">
+                            {TEAM_MEMBERS.map((member, index) => (
+                                <Reveal
+                                    key={member.name}
+                                    animation="fade-up"
+                                    stagger={index}
+                                    className="group text-center"
+                                >
                                     <div className="relative mx-auto aspect-square w-52 overflow-hidden rounded-full bg-primary-10 transition duration-300 group-hover:scale-105 group-hover:shadow-2xl sm:w-44">
                                         <div className="absolute inset-0 from-primary/10 to-secondary/10" />
                                         <img
@@ -422,7 +435,7 @@ export default function LandingPage() {
                                     <p className="font-body text-body italic text-secondary">
                                         {member.role}
                                     </p>
-                                </div>
+                                </Reveal>
                             ))}
                         </div>
                     </div>

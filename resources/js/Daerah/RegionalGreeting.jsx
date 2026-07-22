@@ -1,15 +1,15 @@
 import { useRegionalGreeting } from './useRegionalGreeting';
 
 /**
- * Sapaan bahasa daerah di bawah judul halaman / hero.
+ * The regional greeting shown under a page title or hero.
  *
- * Gaya visualnya memakai kelas .local-language yang sudah didefinisikan di
- * resources/css/app.css — komponen ini tidak mendefinisikan gaya sendiri supaya
- * seluruh sapaan daerah tampil konsisten. `className` hanya untuk penyesuaian
- * per tempat (mis. warna terang di atas hero gelap).
+ * Styling comes from the .local-language class in resources/css/app.css — this
+ * component defines no styles of its own, so every regional greeting looks the
+ * same. `className` is only for per-site adjustments (a light colour over a dark
+ * hero, for instance).
  *
- * Tidak merender apa pun bila frasanya kosong, sehingga tidak meninggalkan
- * ruang kosong di layout.
+ * Renders nothing when the phrase is empty, so it never leaves a gap in the
+ * layout.
  */
 export default function RegionalGreeting({
     phrase,

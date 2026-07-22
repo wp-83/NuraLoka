@@ -2,6 +2,11 @@ import '@css/app.css'
 import { createInertiaApp } from '@inertiajs/react'
 import { createRoot } from 'react-dom/client'
 
+import initAos from '@js/Utils/aos'
+
+// Scroll animations, including the refresh Inertia navigation needs.
+initAos()
+
 createInertiaApp({
     progress: {
         delay: 250,

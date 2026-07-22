@@ -9,13 +9,13 @@ use App\Services\Daerah\ProvinceMapper;
 use Illuminate\Console\Command;
 
 /**
- * Memeriksa kesehatan fitur sapaan bahasa daerah.
+ * Health check for the regional-greeting feature.
  *
- *   php artisan daerah:check                        ringkasan semua provinsi
- *   php artisan daerah:check --province="Bali"      rincian satu provinsi
- *   php artisan daerah:check --coverage             kelengkapan tiap bahasa
+ *   php artisan daerah:check                        summary of every province
+ *   php artisan daerah:check --province="Bali"      detail for one province
+ *   php artisan daerah:check --coverage             completeness per language
  *
- * Keluar dengan kode 1 bila ada masalah, sehingga bisa dipakai di CI.
+ * Exits with code 1 when something is wrong, so it can be used in CI.
  */
 class DaerahCheck extends Command
 {
@@ -31,8 +31,8 @@ class DaerahCheck extends Command
         GreetingRepository $repository,
         ProvinceMapper $mapper,
     ): int {
-        // File bahasa daerah di-cache 1 jam; buang dulu supaya hasil pemeriksaan
-        // mencerminkan isi file saat ini, bukan versi lama.
+        // The regional language files are cached for an hour; drop that first so
+        // the check reflects the files as they are now, not an older version.
         $repository->flush();
 
         $referenceKeys = array_keys($repository->all(config('daerah.default', 'indonesia')));
@@ -58,15 +58,16 @@ class DaerahCheck extends Command
         return $this->showOverview($resolver, $repository, $referenceKeys);
     }
 
-    /** Rincian satu provinsi: rantai fallback + tiap frasa beserta asal bahasanya. */
+    /** One province in detail: its fallback chain, and each phrase with the
+     *  language it came from. */
     private function inspectProvince(
         string $province,
         GreetingResolver $resolver,
         ProvinceMapper $mapper,
         array $referenceKeys,
     ): int {
-        // Menerima nama provinsi, kota (--province=Bandung), maupun bahasa
-        // (--province=betawi) — sama seperti DAERAH_FORCE_PROVINCE dan ?daerah=.
+        // Accepts a province, a city (--province=Bandung) or a language
+        // (--province=betawi), exactly like DAERAH_FORCE_PROVINCE and ?daerah=.
         $resolved = $mapper->resolveName($province);
 
         if ($resolved !== null) {
@@ -129,7 +130,7 @@ class DaerahCheck extends Command
         return self::SUCCESS;
     }
 
-    /** Kelengkapan terjemahan tiap file bahasa. */
+    /** Translation completeness for each language file. */
     private function showCoverage(GreetingRepository $repository, array $referenceKeys): int
     {
         $total = count($referenceKeys);
@@ -148,7 +149,7 @@ class DaerahCheck extends Command
             $rows[] = [$language, "{$filled}/{$total}", $label];
         }
 
-        // Yang paling lengkap di atas.
+        // Most complete first.
         usort($rows, fn ($a, $b) => strcmp($b[1], $a[1]));
 
         $this->table(['Bahasa', 'Terisi', 'Kelengkapan'], $rows);
@@ -157,10 +158,10 @@ class DaerahCheck extends Command
     }
 
     /**
-     * Frasa yang masih sama persis dengan Bahasa Indonesia.
+     * Phrases still identical to the Indonesian ones.
      *
-     * Ini penyebab keluhan "bahasanya tidak berubah": mekanismenya jalan, tapi
-     * teksnya kebetulan sama sehingga halaman terlihat tidak berubah sama sekali.
+     * This is the cause behind "the language does not change": the mechanism
+     * works, but the text happens to match, so the page looks untouched.
      */
     private function showIdentical(GreetingRepository $repository): int
     {
@@ -243,9 +244,9 @@ class DaerahCheck extends Command
             }
         }
 
-        // Bahasa pulau adalah batas TERAKHIR rantai — Bahasa Indonesia sudah
-        // tidak ikut. Kalau bahasa pulau tidak lengkap, ada kunci yang tidak
-        // menghasilkan teks sama sekali dan sapaannya hilang dari halaman.
+        // The island language is the LAST link in the chain — Indonesian is no
+        // longer part of it. If an island language is incomplete, some key yields
+        // no text at all and the greeting disappears from the page.
         foreach (config('daerah.islands') as $island => $language) {
             if (! in_array($language, $available, true)) {
                 $problems[] = "fallback pulau \"{$island}\" menunjuk \"{$language}\" yang filenya tidak ada.";
@@ -271,16 +272,16 @@ class DaerahCheck extends Command
             }
         }
 
-        // Setiap kota harus menunjuk provinsi yang benar-benar ada.
+        // Every city must point at a province that actually exists.
         foreach (config('daerah.cities', []) as $city => $province) {
             if (! in_array($province, $configured, true)) {
                 $problems[] = "kota \"{$city}\" menunjuk provinsi \"{$province}\" yang tidak dikenal.";
             }
         }
 
-        // Titik tengah provinsi harus berada di dalam kotak batasnya sendiri.
-        // Kalau tidak, salah satu dari keduanya salah tulis — dan gejalanya
-        // (kota tetangga terbaca provinsi lain) sulit dilacak tanpa ini.
+        // A province's centroid must fall inside its own bounding box. If it does
+        // not, one of the two is mistyped — and the symptom (a neighbouring city
+        // reading as another province) is hard to trace without this check.
         foreach (config('daerah.province_bounds', []) as $province => $bounds) {
             $centroid = config('daerah.province_coordinates')[$province] ?? null;
 

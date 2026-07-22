@@ -19,7 +19,8 @@ export default function Login() {
     const { flash } = usePage().props;
     const { t, tRaw } = useTranslation();
 
-    // Slide latar (nama/lokasi/deskripsi) diambil dari file lang (account.login_slides).
+    // The background slides (name, location, description) come from the lang
+    // files (account.login_slides).
     const slides = tRaw('account.login_slides', []);
 
     // Sisipkan brand "NuraLoka" berstyle ke tengah teks subtitle (mengandung :app).
@@ -94,7 +95,7 @@ export default function Login() {
                             <div className='circle bg-primary-70'></div>
                         </div>
                     </div>
-                    {/* Pemilih bahasa untuk pengunjung (tamu) di halaman login */}
+                    {/* Language picker for guests on the login page */}
                     <div className='absolute right-4 top-4 z-20'>
                         <LanguageSwitcher />
                     </div>

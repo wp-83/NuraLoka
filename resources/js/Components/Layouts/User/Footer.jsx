@@ -6,7 +6,8 @@ export default function Footer() {
     const { t } = useTranslation();
     const year = new Date().getFullYear();
 
-    // CTA maskot dua warna: kata pertama .nura, sisanya .loka (dari footer.mascot_cta).
+    // Two-tone mascot CTA: the first word takes .nura, the rest .loka (from
+    // footer.mascot_cta).
     const cta = t("footer.mascot_cta");
     const ctaSpace = cta.indexOf(" ");
     const ctaFirst = ctaSpace === -1 ? cta : cta.slice(0, ctaSpace + 1);

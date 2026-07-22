@@ -26,8 +26,8 @@ import {
 export default function AlbumCreate() {
     const { t } = useTranslation();
     const [previewPhotos, setPreviewPhotos] = useState([]);
-    // Error unggah dari pemeriksaan di browser (ukuran/format), terpisah dari
-    // errors milik server supaya keduanya bisa tampil.
+    // Upload errors from the browser-side check (size and format), kept separate
+    // from the server's errors so both can be shown.
     const [photoError, setPhotoError] = useState('');
     const fileInputRef = useRef(null);
 
@@ -111,8 +111,8 @@ export default function AlbumCreate() {
 
         if (files.length === 0) return;
 
-        // Tolak foto yang terlalu besar / salah format di sini juga, supaya user
-        // tidak menunggu unggahan 10MB hanya untuk ditolak server.
+        // Reject oversized or wrongly formatted photos here as well, so the user
+        // does not wait through a 10 MB upload only for the server to refuse it.
         const { accepted, error } = screenPhotos(files, t);
 
         setPhotoError(error);
@@ -365,8 +365,8 @@ export default function AlbumCreate() {
                     >
                         {/* Location */}
                         <div>
-                            {/* Dibungkus relative agar daftar saran di bawah
-                                menempel pada kolomnya. */}
+                            {/* Wrapped in relative so the suggestion list below
+                                anchors to this field. */}
                             <div className="relative">
                                 <Input
                                     name="location"

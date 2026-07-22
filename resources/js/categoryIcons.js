@@ -1,13 +1,13 @@
 /**
- * Ikon kategori — SATU sumber untuk kartu tempat, halaman detail, dan pin peta.
+ * Category icons — ONE source for place cards, detail pages and map pins.
  *
- * Urutan yang dipakai:
- *   1. gambar yang diunggah admin (categories.icon_path);
- *   2. emoji bawaan sesuai nama kategori;
- *   3. 📍 sebagai jaring pengaman.
+ * The order used is:
+ *   1. the image an admin uploaded (categories.icon_path);
+ *   2. a built-in emoji matching the category name;
+ *   3. 📍 as the safety net.
  *
- * Emoji dipilih agar tidak butuh aset tambahan — berguna karena sebagian besar
- * kategori memang belum punya gambar yang diunggah.
+ * Emoji were chosen because they need no extra assets, which matters while most
+ * categories still have no uploaded image.
  */
 
 import { mediaUrl } from '@js/mediaUrl';
@@ -33,17 +33,17 @@ export const CATEGORY_EMOJI = {
 
 export const CATEGORY_EMOJI_FALLBACK = '📍';
 
-/** Emoji untuk sebuah nama kategori. */
+/** The emoji for a category name. */
 export function categoryEmoji(name) {
     return CATEGORY_EMOJI[name] ?? CATEGORY_EMOJI_FALLBACK;
 }
 
 /**
- * URL gambar kategori bila ada, atau null.
+ * The category's image URL, or null when it has none.
  *
- * Ikon baru diunggah ke storage disk (mis. "category-icons/xxx.webp"),
- * sedangkan data lama berupa path publik ("/images/categories/xxx.webp").
- * mediaUrl() menangani keduanya agar data lama tidak rusak.
+ * New icons are uploaded to the storage disk (e.g. "category-icons/xxx.webp"),
+ * while older rows hold a public path ("/images/categories/xxx.webp").
+ * mediaUrl() handles both so the old data keeps working.
  */
 export function categoryIconUrl(category) {
     return mediaUrl(category?.icon_path);

@@ -3,7 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { FiMapPin } from 'react-icons/fi';
 
-// Perbaikan ikon marker default Leaflet agar tidak broken saat di-bundle.
+// Repair Leaflet's default marker icon, which breaks once bundled.
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
@@ -11,7 +11,7 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-// Peta preview kecil: fokus ke satu place dengan zoom tinggi (hanya sekitarnya).
+// Small preview map: one place at high zoom, showing just its surroundings.
 export default function PlaceMiniMap({ latitude, longitude, name, zoom = 16 }) {
     const lat = parseFloat(latitude);
     const lng = parseFloat(longitude);

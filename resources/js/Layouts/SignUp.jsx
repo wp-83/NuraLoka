@@ -77,7 +77,7 @@ export default function SignUp({ title, titleKey, content }) {
                         </div>
                     </div>
 
-                    {/* Pemilih bahasa untuk pengunjung (tamu) */}
+                    {/* Language picker for guests */}
                     <div className="absolute left-6 top-6 z-30">
                         <LanguageSwitcher align="left" />
                     </div>

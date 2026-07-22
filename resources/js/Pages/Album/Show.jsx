@@ -4,6 +4,7 @@ import { router } from '@inertiajs/react';
 import MainLayout from '@js/Layouts/MainLayout';
 import EmptyState from '@components/Common/EmptyState';
 import Button from '@components/Forms/Button';
+import { useConfirm } from '@js/Contexts/ConfirmContext';
 import { useTranslation } from '@js/i18n';
 
 import {
@@ -35,8 +36,9 @@ function formatViews(count = 0) {
     return Number(count).toLocaleString('id-ID');
 }
 
-// Server sudah mengirim URL foto profil yang jadi (User::public_profile_photo),
-// termasuk avatar bawaan sesuai gender. Jangan menempelkan /storage/ lagi.
+// The server already sends a finished profile photo URL
+// (User::public_profile_photo), including the gender-appropriate default avatar.
+// Do not prepend /storage/ again.
 function getProfileImage(profileUrl) {
     return profileUrl || '/images/defaults/profile-general.png';
 }
@@ -57,6 +59,7 @@ export default function AlbumShow({
     author = {},
 }) {
     const { t } = useTranslation();
+    const confirm = useConfirm();
     const [lightboxIndex, setLightboxIndex] = useState(null);
 
     const isLightboxOpen = lightboxIndex !== null;
@@ -151,10 +154,11 @@ export default function AlbumShow({
         );
     };
 
-    const handleDelete = () => {
-        const isConfirmed = window.confirm(
-            t('album.show_delete_confirm')
-        );
+    const handleDelete = async () => {
+        const isConfirmed = await confirm({
+            title: t('album.delete_title'),
+            message: t('album.show_delete_confirm'),
+        });
 
         if (!isConfirmed) return;
 
@@ -445,15 +449,9 @@ export default function AlbumShow({
                 ==================================================== */}
                 {photos.length > 0 ? (
                     /*
-                     * Semua foto memakai rasio yang SAMA (4:3) dan ukurannya
-                     * mengikuti lebar kolom.
-                     *
-                     * Sebelumnya tingginya dipatok piksel dan berbeda-beda —
-                     * dua foto pertama h-72, sisanya h-56 — sehingga barisnya
-                     * tidak rata dan pemotongan gambar berubah-ubah mengikuti
-                     * lebar layar. Foto terakhir pada jumlah ganjil juga
-                     * dilebarkan dua kolom, jadi tampil sebagai pita sangat
-                     * lebar tapi pendek (sekitar 4:1).
+                     * Every photo uses the SAME 4:3 ratio and takes its size from
+                     * the column width, so rows line up and the crop does not
+                     * shift with the screen width.
                      */
                     <div
                         className="

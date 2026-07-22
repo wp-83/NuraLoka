@@ -1,3 +1,4 @@
+import ConfirmProvider from '@components/Common/ConfirmProvider';
 import Flash from '@components/Common/Flash';
 import Footer from '@components/Layouts/User/Footer';
 import Navbar from '@components/Layouts/User/Navbar';
@@ -46,7 +47,7 @@ export default function MainLayout({
     */
 
     const showFlash = useCallback((type, message) => {
-        // id memaksa remount Flash agar animasi berjalan ulang tiap dipanggil.
+        // The id forces Flash to remount, so its animation replays every call.
         setCurrentFlash({ type, message, id: Date.now() });
     }, []);
 
@@ -65,9 +66,9 @@ export default function MainLayout({
         }
     };
 
-    // pageTitle boleh berupa kunci terjemahan ("album.meta_title") maupun teks
-    // biasa. translate() mengembalikan kuncinya apa adanya bila tidak ditemukan,
-    // jadi halaman yang masih memakai teks langsung tetap tampil seperti semula.
+    // pageTitle may be a translation key ("album.meta_title") or plain text.
+    // translate() returns an unknown key unchanged, so pages still passing
+    // literal text render exactly as before.
     const resolvedTitle = pageTitle ? t(pageTitle) : '';
 
     const title =
@@ -153,16 +154,19 @@ export default function MainLayout({
             </Head>
 
             <FlashContext.Provider value={showFlash}>
-                <Navbar />
+                <ConfirmProvider>
+                    <Navbar />
 
-                <main className='container min-h-80'>
-                    {content}
-                </main>
+                    <main className='container min-h-80'>
+                        {content}
+                    </main>
 
-                <Footer />
+                    <Footer />
+                </ConfirmProvider>
 
-                {/* Flash terpusat: dipakai pesan server (Inertia) & client (via showFlash).
-                    Dirender di root layout agar tampil di atas Navbar. */}
+                {/* One central Flash, used by both server messages (Inertia) and
+                    client ones (via showFlash). Rendered at the layout root so
+                    it sits above the navbar. */}
                 {currentFlash.type && currentFlash.message && (
                     <Flash
                         key={currentFlash.id}

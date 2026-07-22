@@ -5,10 +5,10 @@ namespace App\Services\Daerah;
 use Illuminate\Http\Request;
 
 /**
- * Orkestrator fitur sapaan bahasa daerah.
+ * Orchestrates the regional-greeting feature.
  *
- * Menggabungkan deteksi wilayah + pemetaan provinsi + rantai fallback menjadi
- * satu payload siap pakai untuk frontend.
+ * Combines region detection, province mapping and the fallback chain into one
+ * payload the frontend can use as-is.
  */
 class GreetingResolver
 {
@@ -19,14 +19,15 @@ class GreetingResolver
     ) {}
 
     /**
-     * Payload untuk user yang sedang login (prioritas 1: provinsi tersimpan).
-     * Dipakai HandleInertiaRequests agar sapaan sudah ada pada render pertama —
-     * tanpa kedipan teks dan tanpa kerja tambahan di klien.
+     * The payload for a signed-in user (priority 1: their saved province).
+     *
+     * HandleInertiaRequests uses this so the greeting is already there on the
+     * first render — no flash of changing text, no extra work on the client.
      */
     public function forUser(?object $user): array
     {
-        // Pemaksaan untuk pengujian menang atas segalanya, termasuk provinsi
-        // asli di profil user.
+        // A testing override beats everything, including the real province on
+        // the user's profile.
         $forced = $this->forced();
 
         if ($forced !== null) {
@@ -39,19 +40,19 @@ class GreetingResolver
     }
 
     /**
-     * Payload yang dipaksa lewat .env atau query string, untuk memeriksa
-     * tampilan sapaan tanpa berpindah lokasi. Selalu null di production.
+     * The payload forced through .env or the query string, for checking how a
+     * greeting looks without travelling there. Always null in production.
      *
-     * Menerima TIGA bentuk, karena ketiganya sama masuk akal saat menguji:
-     *   - nama provinsi  : "Jawa Barat"
-     *   - nama kota      : "Bandung"
-     *   - nama bahasa    : "sunda"  (nama file di lang/daerah)
+     * THREE forms are accepted, because all three are natural while testing:
+     *   - a province name : "Jawa Barat"
+     *   - a city name     : "Bandung"
+     *   - a language name : "sunda"  (a file name in lang/daerah)
      *
-     * Nama bahasa penting: saat memeriksa "apakah bahasa X sudah tampil", yang
-     * ada di kepala adalah bahasanya, bukan provinsi mana yang memakainya.
+     * The language name matters: when checking "is language X showing up yet",
+     * what you have in mind is the language, not which province speaks it.
      *
-     * Mengembalikan null bila namanya tidak dikenal sama sekali, sehingga salah
-     * ketik jatuh ke perilaku normal alih-alih menampilkan sapaan kosong.
+     * Returns null when the name is not recognised at all, so a typo falls back
+     * to normal behaviour instead of rendering an empty greeting.
      */
     public function forced(): ?array
     {
@@ -61,12 +62,12 @@ class GreetingResolver
             return null;
         }
 
-        // 1. Provinsi atau kota.
+        // 1. A province or a city.
         if ($province = $this->mapper->resolveName($candidate)) {
             return $this->build($province, 'forced');
         }
 
-        // 2. Nama bahasa daerah langsung.
+        // 2. The name of a regional language, directly.
         $language = $this->matchLanguage($candidate);
 
         if ($language !== null) {
@@ -76,7 +77,7 @@ class GreetingResolver
         return null;
     }
 
-    /** Nilai mentah pemaksaan: query string mengalahkan .env. */
+    /** The raw override value: the query string beats .env. */
     private function forcedValue(): ?string
     {
         if (! config('daerah.debug.enabled')) {
@@ -95,7 +96,7 @@ class GreetingResolver
         return is_string($candidate) && trim($candidate) !== '' ? trim($candidate) : null;
     }
 
-    /** Cocokkan dengan nama file di lang/daerah, tanpa peduli huruf besar/kecil. */
+    /** Match against the file names in lang/daerah, ignoring case. */
     private function matchLanguage(string $candidate): ?string
     {
         foreach ($this->greetings->availableLanguages() as $language) {
@@ -108,8 +109,8 @@ class GreetingResolver
     }
 
     /**
-     * Payload untuk satu bahasa daerah yang ditunjuk langsung, tanpa lewat
-     * provinsi. Rantainya cukup bahasa itu sendiri lalu Bahasa Indonesia.
+     * The payload for one regional language named directly, bypassing provinces.
+     * Its chain is just that language, then Indonesian.
      */
     public function buildForLanguage(string $language, string $source = 'forced'): array
     {
@@ -121,7 +122,7 @@ class GreetingResolver
         return $this->assemble($chain, null, $source);
     }
 
-    /** Payload dari koordinat Geolocation browser (prioritas 2). */
+    /** The payload from the browser's Geolocation coordinates (priority 2). */
     public function forCoordinates(float $latitude, float $longitude): array
     {
         $province = $this->detector->fromCoordinates($latitude, $longitude);
@@ -129,7 +130,7 @@ class GreetingResolver
         return $this->build($province, $province !== null ? 'geolocation' : 'default');
     }
 
-    /** Payload dari geolokasi berbasis IP (prioritas 3). */
+    /** The payload from IP-based geolocation (priority 3). */
     public function forIp(Request $request): array
     {
         $province = $this->detector->fromIp($request);
@@ -138,12 +139,12 @@ class GreetingResolver
     }
 
     /**
-     * Rakit payload lengkap untuk sebuah provinsi.
+     * Assemble the complete payload for a province.
      *
-     * Fallback dilakukan PER KUNCI, bukan per bahasa: bila bahasa provinsi baru
-     * menerjemahkan sebagian kunci, kunci yang sudah ada tetap tampil dalam
-     * bahasa daerah dan hanya sisanya yang mundur ke bahasa pulau lalu Indonesia.
-     * Jadi provinsi mana pun selalu mendapat sapaan yang relevan secara budaya.
+     * The fallback runs PER KEY, not per language: when a province's language
+     * has only some keys translated, those keys still show in the regional
+     * language and only the rest fall back to the island language and then to
+     * Indonesian. Every province therefore gets a culturally relevant greeting.
      */
     public function build(?string $province, string $source = 'default'): array
     {
@@ -155,10 +156,10 @@ class GreetingResolver
     }
 
     /**
-     * Rakit payload dari sebuah rantai bahasa.
+     * Assemble the payload from a language chain.
      *
-     * Fallback dilakukan PER KUNCI, bukan per bahasa: bahasa pertama yang punya
-     * sebuah kunci akan memenangkannya, lalu sisanya diisi bahasa berikutnya.
+     * The fallback runs PER KEY, not per language: the first language in the
+     * chain that has a key wins it, and the languages after it fill the gaps.
      */
     private function assemble(array $chain, ?string $province, string $source): array
     {
@@ -177,8 +178,8 @@ class GreetingResolver
         return [
             'province' => $province,
             'island' => $this->mapper->islandFor($province),
-            // Bahasa paling spesifik pada rantai — dipakai menandai bahasa
-            // aktif di UI (mis. atribut lang / tooltip).
+            // The most specific language in the chain — used to mark the active
+            // language in the UI (a lang attribute, a tooltip).
             'language' => $chain[0],
             'chain' => $chain,
             'source' => $source,

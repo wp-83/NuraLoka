@@ -1,10 +1,13 @@
 import { createContext, useContext } from 'react';
 
 /**
- * Flash terpusat milik layout. Halaman memanggil showFlash(type, message) untuk
- * menampilkan notifikasi client-side (mis. hasil check-in) lewat komponen Flash
- * yang SAMA dengan flash server (Inertia) — tidak membuat instance Flash baru.
- * Default no-op agar aman bila dipakai di luar provider.
+ * The layout-owned Flash.
+ *
+ * A page calls showFlash(type, message) to raise a client-side notification (a
+ * check-in result, say) through the SAME Flash component the server's Inertia
+ * flash uses — never a second instance.
+ *
+ * Defaults to a no-op so it is safe outside the provider.
  */
 export const FlashContext = createContext(() => {});
 

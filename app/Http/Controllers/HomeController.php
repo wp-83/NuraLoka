@@ -4,51 +4,53 @@ namespace App\Http\Controllers;
 
 use App\Models\Album;
 use App\Models\News;
+use App\Services\AlbumPresenter;
 use App\Services\GamificationService;
 
+/**
+ * The signed-in landing page: latest news, the mission in progress, and the
+ * albums people are looking at this week.
+ */
 class HomeController extends Controller
 {
+    /** News items shown in the "latest" strip. */
+    private const NEWS_LIMIT = 3;
+
+    /** Albums shown in the "popular this week" strip. */
+    private const POPULAR_ALBUM_LIMIT = 4;
+
+    public function __construct(
+        private readonly AlbumPresenter $albums,
+        private readonly GamificationService $gamification,
+    ) {}
+
     public function index()
     {
         $user = auth()->user();
 
         $latestNews = News::with('user.userDetail')
-            ->orderBy('publish_date', 'desc')
-            ->take(3)
+            ->orderByDesc('publish_date')
+            ->take(self::NEWS_LIMIT)
             ->get();
 
-        // The mission closest to completion. The logic lives in GamificationService
-        // so the home page and the Challenge page can never show a different
-        // mission or a different percentage.
+        // The mission closest to completion. The logic lives in
+        // GamificationService so the home page and the Challenge page can never
+        // show a different mission or a different percentage.
         $ongoingMission = $user
-            ? app(GamificationService::class)->ongoingMissions($user)->first()
+            ? $this->gamification->ongoingMissions($user)->first()
             : null;
 
-        // This week's popular albums: album yang dibuat minggu ini, diurutkan
-        // dari jumlah penonton. Sama persis dengan halaman Album — kedua
-        // halaman memakai satu scope (Album::scopePopularThisWeek) supaya
-        // peringkatnya tidak pernah berbeda.
-        $popularAlbums = Album::with(['trip.user.userDetails', 'tripPhotos'])
+        // Popular albums come from the same scope as the Album page
+        // (Album::scopePopularThisWeek), so the two rankings cannot disagree.
+        $popularAlbums = Album::withCardData()
             ->popularThisWeek()
-            ->take(4)
-            ->get()
-            ->map(function ($album) {
-                $trip = $album->trip;
-                $firstPhoto = $album->tripPhotos->first();
-
-                return [
-                    'id' => $album->id,
-                    'slug' => $album->slug,
-                    'title' => $trip->title,
-                    'thumbnail' => $firstPhoto?->photo_path,
-                    'view_count' => $album->view_count,
-                ];
-            });
+            ->take(self::POPULAR_ALBUM_LIMIT)
+            ->get();
 
         return inertia('Home/Index', [
             'latestNews' => $latestNews,
             'ongoingMission' => $ongoingMission,
-            'popularAlbums' => $popularAlbums,
+            'popularAlbums' => $this->albums->cards($popularAlbums),
         ]);
     }
 }

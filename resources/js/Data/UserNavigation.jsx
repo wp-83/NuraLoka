@@ -6,8 +6,8 @@ import { TiHomeOutline } from "react-icons/ti";
 import { HiOutlineBookmark } from "react-icons/hi";
 
 
-// labelKey → key terjemahan (lang/*/nav.php). `label` dipertahankan sebagai fallback
-// bila terjemahan belum termuat.
+// labelKey is the translation key (lang/*/nav.php). `label` is kept as the
+// fallback for when translations have not loaded yet.
 export const NAV_ITEMS = [
     {
         label: "Beranda",

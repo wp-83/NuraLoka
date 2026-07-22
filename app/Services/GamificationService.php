@@ -16,31 +16,33 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Mesin gamifikasi terpusat.
+ * The one gamification engine.
  *
- * Saat user melakukan aksi nyata (mis. check-in), method record() mencari misi
- * yang action_type-nya cocok, menaikkan progress-nya, dan — bila target tercapai —
- * menandai misi selesai, menambah poin ke total_points (otomatis menaikkan level),
- * serta memberi badge terkait. Dibuat tahan-gagal: kegagalan gamifikasi TIDAK boleh
- * membuat aksi utama user (check-in/simpan/album) ikut error.
+ * When a user does something real (a check-in, say), record() finds the missions
+ * whose action_type matches, advances their progress and — once the target is
+ * reached — marks the mission complete, adds points to total_points (which
+ * raises the level automatically) and awards the badge behind it.
+ *
+ * Deliberately failure-tolerant: a gamification error must NEVER make the user's
+ * actual action (check-in, save, album) fail with it.
  */
 class GamificationService
 {
-    /** Aksi pemicu yang didukung → label untuk dropdown admin. */
+    /** Supported trigger actions → the label shown in the admin dropdown. */
     public const ACTIONS = [
         'checkin' => 'Check-in di tempat',
         'save_place' => 'Simpan tempat ke Daftar Impian',
         'create_album' => 'Membuat album perjalanan',
     ];
 
-    /** Aksi yang bisa difilter kategori tempat. */
+    /** The actions that can be narrowed to a place category. */
     public const CATEGORY_ACTIONS = ['checkin', 'save_place'];
 
     /**
-     * Catat satu aksi user & perbarui semua misi yang cocok.
+     * Record one user action and advance every mission it matches.
      *
-     * @param  Place|null  $place  tempat terkait (untuk aksi berbasis tempat & filter kategori)
-     * @return Mission[] daftar misi yang BARU selesai pada pemanggilan ini
+     * @param  Place|null  $place  the place involved, for place-based actions and the category filter
+     * @return Mission[] the missions this call has just COMPLETED
      */
     public function record(User $user, string $action, ?Place $place = null): array
     {
@@ -50,7 +52,8 @@ class GamificationService
             $query = Mission::where('action_type', $action);
 
             if (in_array($action, self::CATEGORY_ACTIONS, true)) {
-                // Misi tanpa kategori (berlaku semua) ATAU yang kategorinya cocok tempat ini.
+                // Missions with no category (they apply everywhere) OR whose
+                // category matches this particular place.
                 $query->where(function ($q) use ($categoryIds) {
                     $q->whereNull('category_id');
                     if (! empty($categoryIds)) {
@@ -58,7 +61,7 @@ class GamificationService
                     }
                 });
             } else {
-                // Aksi non-tempat hanya cocok dengan misi tanpa kategori.
+                // An action with no place can only match an uncategorised mission.
                 $query->whereNull('category_id');
             }
 
@@ -72,8 +75,8 @@ class GamificationService
 
             return $completed;
         } catch (\Throwable $e) {
-            // Jangan pernah menggagalkan aksi utama user.
-            Log::warning('Gamification record gagal: '.$e->getMessage(), [
+            // Never let this take the user's actual action down with it.
+            Log::warning('Gamification record failed: '.$e->getMessage(), [
                 'user_id' => $user->id ?? null,
                 'action' => $action,
             ]);
@@ -82,7 +85,7 @@ class GamificationService
         }
     }
 
-    /** Naikkan progress 1 langkah; kembalikan Mission bila baru selesai, atau null. */
+    /** Advance progress by one step; returns the Mission if this completed it, else null. */
     private function advanceMission(User $user, Mission $mission): ?Mission
     {
         return DB::transaction(function () use ($user, $mission) {
@@ -101,10 +104,10 @@ class GamificationService
             }
 
             if ($um->status === 'completed') {
-                return null; // sudah selesai → jangan hitung lagi
+                return null; // already done → do not count it twice
             }
 
-            // Kolom user_missions.status = enum('on_going','completed').
+            // The user_missions.status column is enum('on_going','completed').
             $target = max(1, (int) $mission->target);
             $um->progress = min((int) $um->progress + 1, $target);
             $um->status = $um->progress >= $target ? 'completed' : 'on_going';
@@ -120,7 +123,7 @@ class GamificationService
         });
     }
 
-    /** Beri hadiah saat misi selesai: +poin & badge (idempotent). */
+    /** Hand out the reward for a completed mission: its badge, then points (idempotent). */
     private function awardCompletion(User $user, Mission $mission): void
     {
         if ($mission->badge_id) {
@@ -134,17 +137,17 @@ class GamificationService
             }
         }
 
-        // Poin SELALU diturunkan ulang dari lencana yang dimiliki, tidak pernah
-        // ditambahkan sendiri di sini.
+        // Points are ALWAYS re-derived from the badges owned, never incremented
+        // here.
         //
-        // Sebelumnya kode ini menambahkan missions.points_reward LALU memasang
-        // lencananya tanpa menghitung poin lencana itu. Akibatnya dua-duanya salah:
-        // poin bertambah dari angka yang bukan berasal dari lencana, sementara poin
-        // lencana yang baru dipasang tidak pernah ikut terhitung — sehingga total
-        // poin user tidak lagi sama dengan jumlah poin lencananya.
+        // This code used to add missions.points_reward and THEN attach the badge
+        // without counting that badge's own points, which got it wrong twice
+        // over: points grew by a number that came from somewhere other than a
+        // badge, while the newly attached badge's points were never counted at
+        // all — so a user's total stopped matching the sum of their badges.
         //
-        // points_reward kini hanya informasi tampilan ("misi ini bernilai N poin");
-        // MissionSeeder menyalinnya dari poin lencana agar tidak berbeda.
+        // points_reward is now display information only ("this mission is worth
+        // N points"); MissionSeeder copies it from the badge so the two agree.
         $this->recalculatePoints($user);
     }
 
@@ -166,8 +169,8 @@ class GamificationService
      *   Si Paling Penjelajah — distinct places captured, whatever the category
      *   Si Paling Trip       — albums created
      *
-     * Setiap kategori lencana WAJIB punya hitungan di sini; tanpa itu lencananya
-     * tidak akan pernah bisa diraih walau datanya sudah ada di seeder.
+     * EVERY badge category must have a count here; without one its badge can
+     * never be earned no matter what the seeder put in the database.
      *
      * Used both to award tiers (syncAlbumBadges) and to display accurate progress.
      */
@@ -226,14 +229,16 @@ class GamificationService
     }
 
     /**
-     * Setel ulang total_points user = jumlah poin SEMUA lencana yang dimilikinya,
-     * lalu sesuaikan level_id. Lencana adalah satu-satunya sumber kebenaran poin:
-     * setiap misi memberi reward yang sama besar dengan poin lencananya, sehingga
-     * menjumlah lencana tidak menghitung ganda.
+     * Reset the user's total_points to the sum of ALL the badges they own, then
+     * bring level_id in line.
      *
-     * Idempotent — aman dipanggil berkali-kali (dipakai seeder & `badges:sync`).
+     * Badges are the single source of truth for points: every mission rewards
+     * exactly what its badge is worth, so adding the badges up never
+     * double-counts.
      *
-     * @return int total poin setelah dihitung ulang
+     * Idempotent — safe to call repeatedly (the seeder and `badges:sync` do).
+     *
+     * @return int the recomputed point total
      */
     public function recalculatePoints(User $user): int
     {
@@ -278,36 +283,35 @@ class GamificationService
     }
 
     /**
-     * Misi yang sedang berjalan, diurutkan dari yang PALING DEKAT selesai.
+     * The missions in progress, CLOSEST to completion first.
      *
-     * Dipakai bersama oleh beranda dan halaman Tantangan. Sebelumnya kueri ini
-     * disalin di kedua controller, jadi keduanya bisa berbeda diam-diam.
+     * Shared by the home page and the Challenge page. This query used to be
+     * copied into both controllers, so the two could quietly drift apart.
      *
-     * Urutannya:
-     *   1. misi yang sudah dimulai (progress > 0) lebih dulu — yang belum
-     *      disentuh sama sekali bukan "tinggal sedikit lagi";
-     *   2. sisa langkah paling sedikit (target - progress);
-     *   3. target terkecil sebagai pemecah seri.
+     * The ordering is:
+     *   1. missions already started (progress > 0) first — one that has not been
+     *      touched at all is not "nearly there";
+     *   2. fewest steps remaining (target - progress);
+     *   3. smallest target as the tiebreaker.
      *
-     * Urutan lama hanya mengelompokkan "sudah >= 50%" lalu mengurutkan tier
-     * lencana, sehingga misi 50% bisa mengalahkan misi 95%.
+     * The old ordering only grouped by "at least 50% done" and then sorted on
+     * badge tier, which let a mission at 50% outrank one at 95%.
      *
      * @return Collection<int, object>
      */
     public function ongoingMissions(User $user, int $limit = 1)
     {
-        // Sumber angka yang SAMA dengan halaman Lencana.
+        // The SAME numbers the Badges page shows.
         //
-        // Tiap misi mencerminkan satu lencana, tapi dulu keduanya menghitung hal
-        // yang berbeda: misi menghitung JUMLAH AKSI (user_missions.progress),
-        // sedangkan lencana menghitung DATA NYATA (foto, tempat, album). Untuk
-        // "Si Paling Cerita" yang sama, beranda bisa menulis 80% sementara
-        // halaman Lencana menulis 0% — dua-duanya "benar" menurut penghitungnya
-        // masing-masing.
+        // Each mission mirrors one badge, but the two used to count different
+        // things: a mission counted ACTIONS (user_missions.progress) while a
+        // badge counted REAL DATA (photos, places, albums). For one and the same
+        // "Si Paling Cerita" the home page could say 80% while the Badges page
+        // said 0% — each correct by its own measure.
         //
-        // Karena lencana dihitung dari data nyata dan otomatis mengoreksi diri,
-        // itulah yang dijadikan acuan. Penghitung aksi hanya dipakai untuk misi
-        // yang memang tidak punya padanan data (lencana khusus).
+        // Badges are computed from real data and correct themselves, so they are
+        // the reference. The action counter is used only for missions that have
+        // no data equivalent (the special badges).
         $counts = $this->albumCategoryCounts($user);
 
         $candidates = Mission::leftJoin('user_missions', function ($join) use ($user) {
@@ -333,9 +337,8 @@ class GamificationService
             )
             ->get()
             ->map(function ($mission) use ($counts) {
-                // Lencana bertingkat → pakai hitungan data. Lencana khusus
-                // (category null) tidak punya padanan data, jadi tetap memakai
-                // penghitung aksi.
+                // A tiered badge uses the data count. A special badge (category
+                // null) has no data equivalent, so it keeps the action counter.
                 $mission->progress = $mission->badge_category !== null
                     && array_key_exists($mission->badge_category, $counts)
                         ? (int) $counts[$mission->badge_category]
@@ -351,14 +354,14 @@ class GamificationService
 
                 return $mission;
             })
-            // Progres sudah mencapai target → bukan misi berjalan. Disaring di
-            // sini, bukan di SQL, karena progresnya baru dihitung di atas.
+            // Progress already at target → not an ongoing mission. Filtered here
+            // rather than in SQL because that progress is only computed above.
             ->filter(fn ($mission) => $mission->progress < $mission->target);
 
         return $candidates
             ->sortBy([
-                // Yang sudah dimulai lebih dulu — yang belum disentuh sama sekali
-                // bukan "tinggal sedikit lagi".
+                // Started ones first — a mission nobody has touched is not
+                // "nearly there".
                 fn ($a, $b) => ($a->progress > 0 ? 0 : 1) <=> ($b->progress > 0 ? 0 : 1),
                 fn ($a, $b) => $a->remaining <=> $b->remaining,
                 fn ($a, $b) => $a->target <=> $b->target,

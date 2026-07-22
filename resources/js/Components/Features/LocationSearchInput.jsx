@@ -19,7 +19,8 @@ export default function LocationSearchInput({ placeholder, onSelectLocation }) {
         const timeoutId = setTimeout(async () => {
             setLoading(true);
             try {
-                // Batasi pencarian ke Indonesia (countrycodes=id) agar relevan
+                // Restrict the search to Indonesia (countrycodes=id) to keep
+                // the suggestions relevant.
                 const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=id&limit=5`);
                 const data = await res.json();
                 setSuggestions(data);
@@ -66,7 +67,7 @@ export default function LocationSearchInput({ placeholder, onSelectLocation }) {
                         <div
                             key={idx}
                             onClick={() => {
-                                setQuery(item.display_name.split(',')[0]); // Isi input dengan nama pendek
+                                setQuery(item.display_name.split(',')[0]); // put the short name in the input
                                 setIsOpen(false);
                                 onSelectLocation({
                                     name: item.display_name.split(',')[0],

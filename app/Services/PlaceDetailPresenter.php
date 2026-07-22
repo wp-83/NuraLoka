@@ -8,17 +8,18 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Menyusun data halaman DETAIL TEMPAT.
+ * Builds the props for a PLACE DETAIL page.
  *
- * Halaman detail di Jelajah dan di Impian menampilkan hal yang sama persis, jadi
- * datanya pun harus datang dari satu tempat. Sebelumnya WishlistController hanya
- * mengirim place/isSaved/totalSaves, sehingga halaman Impian kehilangan galeri
- * asli, jumlah pengunjung, jumlah album, dan rentang harga.
+ * The detail page under Explore and the one under Wishlist show exactly the same
+ * thing, so both build their data here and cannot drift apart.
  */
 class PlaceDetailPresenter
 {
+    /** Album photos shown in the gallery, most-viewed album first. */
+    private const GALLERY_ALBUM_PHOTO_LIMIT = 20;
+
     /**
-     * Seluruh props yang dibutuhkan komponen PlaceDetail.
+     * Every prop the PlaceDetail component needs.
      *
      * @return array<string, mixed>
      */
@@ -38,46 +39,63 @@ class PlaceDetailPresenter
             'visitorsCount' => DB::table('place_visits')
                 ->where('place_id', $place->id)
                 ->count(),
-            'albumPostersCount' => DB::table('trip_photos')
-                ->join('albums', 'albums.id', '=', 'trip_photos.album_id')
-                ->join('trips', 'trips.id', '=', 'albums.trip_id')
-                ->where('trip_photos.place_id', $place->id)
-                ->distinct('trips.user_id')
-                ->count('trips.user_id'),
+            'albumPostersCount' => $this->albumPostersCount($place),
         ];
     }
 
     /**
-     * Galeri foto untuk halaman detail place, gabungan dari:
-     *  1. Foto yang diunggah admin (relasi photos → pivot photo_place).
-     *  2. Foto milik user dari album POPULER yang menandai tempat ini
-     *     (reuse logika "populer": album publik, user tak dibanned, urut view_count).
+     * The photo gallery, combining:
+     *  1. photos uploaded by an admin (the photos relation → photo_place pivot);
+     *  2. users' photos from public albums tagged with this place, most-viewed
+     *     album first.
      *
      * @return list<array{id: string, url: string}>
      */
     public function galleryFor(Place $place): array
     {
-        $adminPhotos = $place->photos
-            ->map(fn ($ph) => [
-                'id' => 'admin-'.$ph->id,
-                'url' => '/storage/'.$ph->path,
+        $adminPhotos = $place->photos->map(fn ($photo) => [
+            'id' => 'admin-'.$photo->id,
+            'url' => '/storage/'.$photo->path,
+        ]);
+
+        $albumPhotos = $this->visibleAlbumPhotos($place)
+            ->orderByDesc('albums.view_count')
+            ->limit(self::GALLERY_ALBUM_PHOTO_LIMIT)
+            ->get(['trip_photos.id', 'trip_photos.photo_path'])
+            ->map(fn ($photo) => [
+                'id' => 'album-'.$photo->id,
+                'url' => '/storage/'.$photo->photo_path,
             ]);
 
-        $albumPhotos = TripPhoto::query()
+        return $adminPhotos->concat($albumPhotos)->values()->all();
+    }
+
+    /**
+     * How many different people have posted an album about this place.
+     *
+     * Counted through the same filter as the gallery, so the page can never
+     * print "3 albums" above an empty gallery — a number that would itself give
+     * away the albums their owners have hidden.
+     */
+    private function albumPostersCount(Place $place): int
+    {
+        return $this->visibleAlbumPhotos($place)
+            ->distinct('trips.user_id')
+            ->count('trips.user_id');
+    }
+
+    /**
+     * Trip photos of this place that the public may see: from public albums
+     * belonging to users who are not banned.
+     */
+    private function visibleAlbumPhotos(Place $place)
+    {
+        return TripPhoto::query()
             ->join('albums', 'albums.id', '=', 'trip_photos.album_id')
             ->join('trips', 'trips.id', '=', 'albums.trip_id')
             ->join('users', 'users.id', '=', 'trips.user_id')
             ->where('trip_photos.place_id', $place->id)
             ->where('trips.is_public', true)
-            ->where('users.is_banned', false)
-            ->orderByDesc('albums.view_count')
-            ->limit(20)
-            ->get(['trip_photos.id', 'trip_photos.photo_path'])
-            ->map(fn ($ph) => [
-                'id' => 'album-'.$ph->id,
-                'url' => '/storage/'.$ph->photo_path,
-            ]);
-
-        return $adminPhotos->concat($albumPhotos)->values()->all();
+            ->where('users.is_banned', false);
     }
 }

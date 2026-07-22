@@ -10,23 +10,23 @@ import {
 } from './store';
 
 /**
- * Hook sapaan bahasa daerah.
+ * Hook for the regional-language greeting.
  *
  *   const { greeting } = useRegionalGreeting('home_hero');
  *   <p className="local-language">{greeting}</p>
  *
- * SENGAJA tidak memakai useTranslation(): sapaan daerah tidak boleh ikut berubah
- * saat pengguna mengganti bahasa aplikasi ke en/ko.
+ * DELIBERATELY not built on useTranslation(): a regional greeting must not
+ * change when the user switches the application language to en or ko.
  *
- * Sumber payload, dari yang paling menang:
- *   1. forced       — DAERAH_FORCE_PROVINCE / ?daerah=, alat pengujian
- *   2. geolocation  — lokasi GPS user SAAT INI, sumber utama fitur ini
- *   3. ip           — perkiraan lokasi dari alamat IP
- *   4. user_profile — provinsi tersimpan di profil, hanya cadangan
- *   5. default      — Bahasa Indonesia
+ * Payload sources, strongest first:
+ *   1. forced       — DAERAH_FORCE_PROVINCE / ?daerah=, the testing tool
+ *   2. geolocation  — the user's GPS location right NOW, the feature's main source
+ *   3. ip           — a location guessed from the IP address
+ *   4. user_profile — the province saved on the profile, a fallback only
+ *   5. default      — Indonesian
  *
- * @param {string} key          kunci di lang/daerah/*.php, mis. 'album_index'
- * @param {object} replacements placeholder gaya Laravel, mis. { name: 'Andi' }
+ * @param {string} key          a key in lang/daerah/*.php, e.g. 'album_index'
+ * @param {object} replacements Laravel-style placeholders, e.g. { name: 'Andi' }
  */
 export function useRegionalGreeting(key, replacements = {}) {
     const { daerah: serverPayload = null } = usePage().props;
@@ -41,15 +41,15 @@ export function useRegionalGreeting(key, replacements = {}) {
         ensureDetection(serverPayload);
     }, [serverPayload]);
 
-    // Deteksi perangkat (GPS → IP) menang atas payload server, karena sapaan
-    // harus mengikuti lokasi user SAAT INI — bukan provinsi di profil, yang
-    // sudah usang begitu user bepergian. Pengecualiannya cuma 'forced': tanpa
-    // itu, nilai di .env kalah oleh cache deteksi di localStorage sehingga
-    // tampilan tidak berubah sama sekali saat diuji.
+    // Device detection (GPS → IP) beats the server payload, because the greeting
+    // must follow where the user is NOW — not the province on their profile,
+    // which is stale the moment they travel. The one exception is 'forced':
+    // without it the .env value would lose to the detection cache in
+    // localStorage and the display would not change at all while testing.
     //
-    // Deteksi yang GAGAL mengembalikan source 'default' (provinsi null); itu
-    // tidak boleh menang atas provinsi profil, jadi hanya hasil yang benar-benar
-    // menemukan lokasi yang dipakai.
+    // A FAILED detection returns source 'default' (province null); that must not
+    // beat the profile's province, so only a detection that genuinely found a
+    // location is used.
     const detectedWins =
         detectedPayload?.source === 'geolocation' || detectedPayload?.source === 'ip';
 
@@ -68,11 +68,12 @@ export function useRegionalGreeting(key, replacements = {}) {
     return {
         greeting,
 
-        // Bahasa yang benar-benar dipakai untuk kunci ini — bisa berbeda dari
-        // bahasa provinsi bila kuncinya mundur ke bahasa pulau / Indonesia.
+        // The language actually used for THIS key — it can differ from the
+        // province's language when the key falls back to the island language or
+        // to Indonesian.
         language: payload?.resolved_from?.[key] ?? payload?.language ?? null,
 
-        // Konteks tambahan untuk debugging & atribut lang.
+        // Extra context, for debugging and for the lang attribute.
         provinceLanguage: payload?.language ?? null,
         province: payload?.province ?? null,
         island: payload?.island ?? null,

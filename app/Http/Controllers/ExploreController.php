@@ -37,14 +37,14 @@ class ExploreController extends Controller
     // Maximum distance (metres) for a check-in to count as valid (location proof).
     private const CHECKIN_RADIUS_M = 300;
 
-    // Minimum separation (metres) between the two points of a journey. Titik
-    // keberangkatan dan tujuan tidak boleh sama: perjalanan tanpa jarak bukan
-    // perjalanan, rutenya kosong, dan albumnya jadi "Trip X → X".
+    // Minimum separation (metres) between the two points of a journey. Origin and
+    // destination must differ: a journey with no distance is not a journey, its
+    // route is empty, and its album ends up titled "Trip X -> X".
     //
-    // Dipakai ambang jarak, bukan perbandingan koordinat persis, karena satu
-    // tempat yang sama bisa muncul beberapa kali di hasil Nominatim dengan
-    // koordinat yang berbeda beberapa meter. 25 m masih jauh lebih rapat
-    // daripada jarak antar-tempat yang benar-benar berbeda.
+    // A distance threshold is used rather than an exact coordinate comparison,
+    // because one and the same place can appear several times in Nominatim's
+    // results with coordinates a few metres apart. 25 m is still far tighter than
+    // the gap between genuinely different places.
     private const JOURNEY_MIN_SEPARATION_M = 25;
 
     // Default radius (km) for the "Trending Places" section: only places near the
@@ -460,10 +460,10 @@ class ExploreController extends Controller
      * Real mode (journey_demo_mode=false): the user's location must be within
      * CHECKIN_RADIUS_M of the destination, same as a check-in. Verified server-side.
      *
-     * Titik keberangkatan dan tujuan wajib berbeda (JOURNEY_MIN_SEPARATION_M).
-     * Frontend sudah menolaknya lebih dulu, tapi endpoint ini bisa dipanggil
-     * langsung — dan tanpa penjagaan di sini sebuah trip berjarak nol tetap
-     * masuk database beserta album sistemnya.
+     * Origin and destination must differ (JOURNEY_MIN_SEPARATION_M). The frontend
+     * already refuses that, but this endpoint can be called directly — and without
+     * a guard here a zero-distance trip would still reach the database, system
+     * album and all.
      */
     public function startJourney(Request $request)
     {
@@ -710,10 +710,10 @@ class ExploreController extends Controller
             .'WHERE trip_photos.place_id = places.id) * '.self::WEIGHT_ALBUM.') + '
             .'((SELECT COUNT(*) FROM saved_places WHERE saved_places.place_id = places.id) * '.self::WEIGHT_SAVE.')';
 
-        // photos and tripPhotos are eager-loaded for the card cover image (the img
-        // accessor). Loading them together here keeps a row of cards from firing
-        // an extra query per card.
-        $query = Place::with(['categories', 'photos', 'tripPhotos'])
+        // photos and publicTripPhotos are eager-loaded for the card cover image (the
+        // img accessor). Loading them together here keeps a row of cards from firing
+        // an extra query per card. Photos from private albums are never candidates.
+        $query = Place::with(['categories', 'photos', 'publicTripPhotos'])
             ->select('places.*')
             ->selectRaw("$scoreSql as trending_score")
             ->selectSub(
