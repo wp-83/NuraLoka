@@ -36,8 +36,6 @@ class RegisterController extends Controller
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:10|max:50|regex:/^(?=.*[A-Z])(?=.*[!@#$%])[A-Za-z0-9!@#$%]+$/|same:confirmPassword',
             'confirmPassword' => 'required|string|same:password',
-        ], [
-            'password.regex' => 'Kata sandi harus mengandung minimal 1 huruf kapital dan 1 simbol di antara !,@,#,$,%',
         ]);
 
         $user = User::create([

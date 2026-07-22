@@ -182,6 +182,9 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'password' => [
+            'regex' => 'The password must be alphanumeric and contain at least 1 uppercase letter and 1 symbol among !,@,#,$,%',
+        ],
     ],
 
     /*

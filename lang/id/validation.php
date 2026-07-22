@@ -181,6 +181,9 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'password' => [
+            'regex' => 'Kata sandi harus alfanumerik serta mengandung minimal 1 huruf kapital dan 1 simbol di antara !,@,#,$,%',
+        ],
     ],
 
     /*
