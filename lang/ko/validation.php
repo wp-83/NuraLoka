@@ -172,6 +172,9 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'password' => [
+            'regex' => '비밀번호는 영숫자여야 하며 대문자 1개 이상과 !,@,#,$,% 중 기호 1개 이상을 포함해야 합니다',
+        ],
     ],
 
     /*

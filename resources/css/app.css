@@ -32,6 +32,14 @@
         object-fit: cover;
     }
 
+    /* Sembunyikan ikon "reveal"/clear bawaan Edge & IE pada input password —
+       komponen Input sudah menyediakan tombol mata sendiri, tanpa ini muncul
+       dua ikon mata. */
+    input::-ms-reveal,
+    input::-ms-clear {
+        display: none;
+    }
+
     body {
         @apply font-body bg-gray-10;
     }

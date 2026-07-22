@@ -10,7 +10,7 @@ const SHORT = { id: 'ID', en: 'EN', ko: 'KO' };
  * lalu mengarahkan ke /bahasa/{kode} — server menyimpan pilihan ke session & mengembalikan
  * halaman dengan terjemahan baru (preserveScroll agar posisi gulir tetap).
  */
-export default function LanguageSwitcher({ className = '' }) {
+export default function LanguageSwitcher({ className = '', align = 'right' }) {
     const { locale = 'id', locales = {} } = usePage().props;
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
@@ -47,7 +47,7 @@ export default function LanguageSwitcher({ className = '' }) {
 
             <div
                 className={`
-                    absolute right-0 top-full z-[1100] mt-2 w-40
+                    absolute ${align === 'left' ? 'left-0' : 'right-0'} top-full z-[1100] mt-2 w-40
                     rounded-2xl bg-white px-2 py-2 shadow-xl
                     transition-all duration-150
                     ${open ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0'}
